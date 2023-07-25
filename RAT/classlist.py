@@ -21,23 +21,22 @@ class ClassList(collections.UserList):
     We extend the UserList class to enable objects to be added and modified using just the keyword arguments, enable
     the object name to be used in place of the full object, and ensure all elements are of the specified type, with
     unique names defined.
+
+    Parameters
+    ----------
+    init_list : Sequence [object] or object
+        An instance, or list of instance(s), of the class to be used in this ClassList.
+    empty_list : bool, optional
+        If true, do not initialise the list with the contents of init_list, using an empty list instead
+        (default is False).
+
+    Raises
+    ------
+    ValueError
+        Raised if the input list is empty.
     """
 
     def __init__(self, init_list: Union[Sequence[object], object], empty_list: bool = False) -> None:
-        """Initialise and set the class for this list.
-
-        Parameters
-        ----------
-        init_list : Sequence[object] or object
-            An instance, or list of instance(s), of the class to be used in this ClassList.
-        empty_list : bool, optional
-            If true, do not initialise the list with the contents of init_list, using an empty list instead
-            (default is False).
-
-        Returns
-        -------
-        None
-        """
         # Set input as list if necessary, raising a ValueError for empty input
         if not (isinstance(init_list, collections.abc.Sequence) and not isinstance(init_list, str)):
             init_list = [init_list]
@@ -116,13 +115,9 @@ class ClassList(collections.UserList):
     def get_names(self) -> list[str]:
         """Return a list of the names of each class object in the list.
 
-        Parameters
-        ----------
-        None
-
         Returns
         -------
-        list
+        names : list [str]
             The value of the name attribute of each object in the ClassList.
         """
         return [model.name for model in self.data if hasattr(model, 'name')]
@@ -132,12 +127,13 @@ class ClassList(collections.UserList):
 
         Parameters
         ----------
-        input_args: dict
+        input_args : dict [str, Any]
             The input keyword arguments for a new object in the ClassList.
 
-        Returns
-        -------
-        None
+        Raises
+        ------
+        ValueError
+            Raised if the input arguments contain a name already defined in the ClassList.
         """
         names = self.get_names()
         with contextlib.suppress(KeyError):
@@ -151,12 +147,13 @@ class ClassList(collections.UserList):
 
         Parameters
         ----------
-        input_list: iterable
+        input_list : iterable
             An iterable of instances of the class given in self.class_handle.
 
-        Returns
-        -------
-        None
+        Raises
+        ------
+        ValueError
+            Raised if the input list defines more than one object with the same name.
         """
         names = [model.name for model in input_list if hasattr(model, 'name')]
         if len(set(names)) != len(names):
@@ -167,12 +164,13 @@ class ClassList(collections.UserList):
 
         Parameters
         ----------
-        input_list: iterable
+        input_list : iterable
             A list of instances of the class given in self.class_handle.
 
-        Returns
-        -------
-        None
+        Raises
+        ------
+        ValueError
+            Raised if the input list defines objects of different types.
         """
         if not (all(isinstance(element, self.class_handle) for element in input_list)):
             raise ValueError(f"Input list contains elements of type other than '{self.class_handle}'")
@@ -182,12 +180,12 @@ class ClassList(collections.UserList):
 
         Parameters
         ----------
-        name: str
+        name : str
             The name of an object in the ClassList.
 
         Returns
         -------
-        object or str
+        instance : object or str
             Either the object with the value of the "name" attribute given by name, or the input name if an object with
             that value of the "name" attribute cannot be found.
         """
