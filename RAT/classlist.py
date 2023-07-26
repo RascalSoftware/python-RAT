@@ -4,6 +4,7 @@
 import collections
 import collections.abc
 import contextlib
+import tabulate
 from typing import Any, Dict, Iterable, Sequence, Union
 
 
@@ -52,6 +53,10 @@ class ClassList(collections.UserList):
         super().__init__(init_list)
         if empty_list:
             self.data = []
+
+    def __repr__(self):
+        table = [model.__dict__ for model in self.data]
+        return tabulate.tabulate(table, headers='keys', showindex=True) + "\n"
 
     def __setitem__(self, index: int, set_dict: Dict[str, Any]) -> None:
         """Assign the values of an existing object's attributes using a dictionary."""

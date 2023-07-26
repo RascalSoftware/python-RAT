@@ -99,6 +99,14 @@ class TestInitialisation(object):
             ClassList(input_list)
 
 
+@pytest.mark.parametrize("expected_string", [
+    ('-\n0\n1\n-\n'),
+])
+def test_repr(two_name_classlist: 'ClassList', expected_string: str) -> None:
+    """We should be able to print the ClassList like a table."""
+    assert repr(two_name_classlist) == expected_string
+
+
 @pytest.mark.parametrize(["new_values", "expected_classlist"], [
     ({'name': 'Eve'}, ClassList([DotDict(name='Eve'), DotDict(name='Bob')])),
     ({'name': 'John', 'surname': 'Luther'}, ClassList([DotDict(name='John', surname='Luther'), DotDict(name='Bob')])),
