@@ -28,7 +28,7 @@ class ClassList(collections.UserList):
     init_list : Sequence [object] or object
         An instance, or list of instance(s), of the class to be used in this ClassList.
     empty_list : bool, optional
-        If true, do not initialise the list with the contents of init_list, using an empty list instead
+        If true, do not initialise the list with the contents of init_list, use an empty list instead
         (default is False).
 
     Raises
