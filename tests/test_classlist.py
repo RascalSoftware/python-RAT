@@ -19,6 +19,13 @@ class DotDict(dict):
             raise AttributeError(key) from exc
 
 
+class DictAttributes:
+    """Set the items in an input dictionary to be class attributes."""
+    def __init__(self, input_dict: Dict) -> None:
+        for key, value in input_dict.items():
+            setattr(self, key, value)
+
+
 @pytest.fixture
 def two_name_classlist():
     """A ClassList of DotDicts, containing two elements with names defined."""
@@ -40,11 +47,11 @@ class TestInitialisation(object):
     ])
     def test_input_object(self, input_object: Any) -> None:
         """For an input of an object, the ClassList should contain a one-element list containing the object and
-        class_handle should be set to the type of the object.
+        _class_handle should be set to the type of the object.
         """
         class_list = ClassList(input_object)
         assert class_list.data == [input_object]
-        assert isinstance(input_object, class_list.class_handle)
+        assert isinstance(input_object, class_list._class_handle)
 
     @pytest.mark.parametrize("input_sequence", [
         ([DotDict()]),
@@ -57,12 +64,12 @@ class TestInitialisation(object):
         ((DotDict(name='Alice'), DotDict(name='Bob'))),
     ])
     def test_input_sequence(self, input_sequence: Sequence) -> None:
-        """For an input of a sequence, the ClassList should be a list equal to the input sequence, and class_handle
+        """For an input of a sequence, the ClassList should be a list equal to the input sequence, and _class_handle
         should be set to the type of the objects within.
         """
         class_list = ClassList(input_sequence)
         assert class_list.data == list(input_sequence)
-        assert isinstance(input_sequence[-1], class_list.class_handle)
+        assert isinstance(input_sequence[-1], class_list._class_handle)
 
     @pytest.mark.parametrize("input_list", [
         ([DotDict()]),
@@ -74,7 +81,7 @@ class TestInitialisation(object):
         """If we initialise a ClassList with empty_list=True, the list should always be empty."""
         class_list = ClassList(input_list, empty_list=True)
         assert class_list == []
-        assert isinstance(input_list[-1], class_list.class_handle)
+        assert isinstance(input_list[-1], class_list._class_handle)
 
     @pytest.mark.parametrize("empty_input", [([]), (())])
     def test_empty_input(self, empty_input: Sequence) -> None:
@@ -100,11 +107,22 @@ class TestInitialisation(object):
 
 
 @pytest.mark.parametrize("expected_string", [
-    ('-\n0\n1\n-\n'),
+    ('    name\n--  ------\n 0  Alice\n 1  Bob'),
 ])
-def test_repr(two_name_classlist: 'ClassList', expected_string: str) -> None:
-    """We should be able to print the ClassList like a table."""
-    assert repr(two_name_classlist) == expected_string
+def test_repr_table(two_name_classlist: 'ClassList', expected_string: str) -> None:
+    """For classes with the __dict__ attribute, we should be able to print the ClassList like a table."""
+    # We need to redefine the class list using a class with a __dict__ attribute
+    class_list = ClassList([DictAttributes(element) for element in two_name_classlist])
+    assert repr(class_list) == expected_string
+
+
+@pytest.mark.parametrize("input_list", [
+    (['Alice', 'Bob']),
+])
+def test_repr_list(input_list: List) -> None:
+    """For classes without the __dict__ attribute, we should be able to print the ClassList as a list."""
+    class_list = ClassList(input_list)
+    assert repr(class_list) == str(input_list)
 
 
 @pytest.mark.parametrize(["new_values", "expected_classlist"], [
@@ -340,7 +358,7 @@ def test__check_classes_different_classes(input_list: Iterable) -> None:
     """We should raise a ValueError if an input list contains objects of different types."""
     class_list = ClassList([DotDict()])
     with pytest.raises(ValueError, match=(f"Input list contains elements of type other "
-                                          f"than '{class_list.class_handle}'")):
+                                          f"than '{class_list._class_handle}'")):
         class_list._check_classes(input_list)
 
 

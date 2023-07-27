@@ -46,7 +46,7 @@ class ClassList(collections.UserList):
 
         # Set class to be used for this instance of the ClassList
         # and check all elements are of the same type and have unique names
-        self.class_handle = type(init_list[0])
+        self._class_handle = type(init_list[0])
         self._check_classes(init_list)
         self._check_unique_names(init_list)
 
@@ -55,8 +55,13 @@ class ClassList(collections.UserList):
             self.data = []
 
     def __repr__(self):
-        table = [model.__dict__ for model in self.data]
-        return tabulate.tabulate(table, headers='keys', showindex=True) + "\n"
+        try:
+            table = [model.__dict__ for model in self.data]
+        except AttributeError:
+            output = repr(self.data)
+        else:
+            output = tabulate.tabulate(table, headers='keys', showindex=True)
+        return output
 
     def __setitem__(self, index: int, set_dict: Dict[str, Any]) -> None:
         """Assign the values of an existing object's attributes using a dictionary."""
@@ -86,28 +91,28 @@ class ClassList(collections.UserList):
     def append(self, **kwargs) -> None:
         """Append a new object to the ClassList using keyword arguments to set attribute values."""
         self._validate_name(kwargs)
-        self.data.append(self.class_handle(**kwargs))
+        self.data.append(self._class_handle(**kwargs))
 
     def insert(self, index: int, **kwargs) -> None:
         """Insert a new object into the ClassList at a given index using keyword arguments to set attribute values."""
         self._validate_name(kwargs)
-        self.data.insert(index, self.class_handle(**kwargs))
+        self.data.insert(index, self._class_handle(**kwargs))
 
     def remove(self, item: Union[object, str]) -> None:
         """Remove an object from the ClassList using either the object itself or its name."""
-        if not isinstance(item, self.class_handle):
+        if not isinstance(item, self._class_handle):
             item = self._get_item_from_name(item)
         self.data.remove(item)
 
     def count(self, item: Union[object, str]) -> int:
         """Return the number of times an object appears in the ClassList using either the object itself or its name."""
-        if not isinstance(item, self.class_handle):
+        if not isinstance(item, self._class_handle):
             item = self._get_item_from_name(item)
         return self.data.count(item)
 
     def index(self, item: Union[object, str], *args) -> int:
         """Return the index of a particular object in the ClassList using either the object itself or its name."""
-        if not isinstance(item, self.class_handle):
+        if not isinstance(item, self._class_handle):
             item = self._get_item_from_name(item)
         return self.data.index(item, *args)
 
@@ -153,7 +158,7 @@ class ClassList(collections.UserList):
         Parameters
         ----------
         input_list : iterable
-            An iterable of instances of the class given in self.class_handle.
+            An iterable of instances of the class given in self._class_handle.
 
         Raises
         ------
@@ -165,20 +170,20 @@ class ClassList(collections.UserList):
             raise ValueError("Input list contains objects with the same name")
 
     def _check_classes(self, input_list: Iterable[object]) -> None:
-        """Raise a ValueError if any object in a list of objects is not of the type specified by self.class_handle.
+        """Raise a ValueError if any object in a list of objects is not of the type specified by self._class_handle.
 
         Parameters
         ----------
         input_list : iterable
-            A list of instances of the class given in self.class_handle.
+            A list of instances of the class given in self._class_handle.
 
         Raises
         ------
         ValueError
             Raised if the input list defines objects of different types.
         """
-        if not (all(isinstance(element, self.class_handle) for element in input_list)):
-            raise ValueError(f"Input list contains elements of type other than '{self.class_handle}'")
+        if not (all(isinstance(element, self._class_handle) for element in input_list)):
+            raise ValueError(f"Input list contains elements of type other than '{self._class_handle}'")
 
     def _get_item_from_name(self, name: str) -> Union[object, str]:
         """Return the object with the given value of the attribute "name" in the ClassList.
