@@ -1,6 +1,6 @@
 from enum import Enum
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
-from typing import ClassVar, List, Literal
+from pydantic import BaseModel, Field, FieldValidationInfo, field_validator, model_validator
+from typing import ClassVar, List
 
 import math  # replace with np
 
@@ -46,9 +46,7 @@ class Types(str, Enum):
     Function = 'function'
 
 
-class Background(BaseModel, validate_assignment=True):
-    model_config = ConfigDict(extra='forbid')
-
+class Background(BaseModel, validate_assignment=True, extra='forbid'):
     name: str = Field(default_factory=lambda: 'New Background ' + next(background_id))
     type: Types = Types.Constant
     value1: str = ''
@@ -57,10 +55,17 @@ class Background(BaseModel, validate_assignment=True):
     value4: str = ''
     value5: str = ''
 
+    parameter_names: ClassVar[List[str]] = []
 
-class Contrast(BaseModel, validate_assignment=True):
-    model_config = ConfigDict(extra='forbid')
+    @field_validator('value_1', 'value_2', 'value_3', 'value_4', 'value_5')
+    @classmethod
+    def check_parameter_is_defined(cls, value) -> str:
+        if value not in Background.parameter_names:
+            raise ValueError(f'The parameter "{value}" has not been defined in the background parameters.')
+        return value
 
+
+class Contrast(BaseModel, validate_assignment=True, extra='forbid'):
     name: str = Field(default_factory=lambda: 'New Contrast ' + next(contrast_id))
     data: str = ''
     background: str = ''
@@ -71,19 +76,24 @@ class Contrast(BaseModel, validate_assignment=True):
     resample: bool = False
     model: List[str] = []  # But how many strings? How to deal with this?
 
+    all_names: ClassVar[dict[str, List[str]]] = []
 
-class CustomFile(BaseModel, validate_assignment=True):
-    model_config = ConfigDict(extra='forbid')
+    @field_validator('data', 'background', 'nba', 'nbs', 'scalefactor', 'resolution')
+    @classmethod
+    def check_parameter_is_defined(cls, value: str, info: FieldValidationInfo) -> str:
+        if value not in Contrast.all_names[info.field_name]:
+            raise ValueError(f'The parameter "{value}" has not been defined in the "{info.field_name}" parameters.')
+        return value
 
+
+class CustomFile(BaseModel, validate_assignment=True, extra='forbid'):
     name: str = Field(default_factory=lambda: 'New Custom File ' + next(custom_file_id))
     filename: str = ''
     language: Languages = Languages.Python
     path: str = 'pwd'  # Should later expand to find current file path
 
 
-class Data(BaseModel, validate_assignment=True):
-    model_config = ConfigDict(extra='forbid')
-
+class Data(BaseModel, validate_assignment=True, extra='forbid'):
     name: str = Field(default_factory=lambda: 'New Data ' + next(data_id))
     data: str = ''  # pandas dataframe?
     data_range: List[float] = []
@@ -97,16 +107,21 @@ class Data(BaseModel, validate_assignment=True):
         return range_
 
 
-class DomainContrast(BaseModel, validate_assignment=True):
-    model_config = ConfigDict(extra='forbid')
-
+class DomainContrast(BaseModel, validate_assignment=True, extra='forbid'):
     name: str = Field(default_factory=lambda: 'New Domain Contrast ' + next(domain_contrast_id))
     model: List[str] = []
 
+    layer_names: ClassVar[List[str]] = []
 
-class Layer(BaseModel, validate_assignment=True):
-    model_config = ConfigDict(extra='forbid')
+    @field_validator('model')
+    @classmethod
+    def check_parameter_is_defined(cls, value) -> str:
+        if value not in DomainContrast.layer_names:
+            raise ValueError(f'The parameter "{value}" has not been defined in the layers.')
+        return value
 
+
+class Layer(BaseModel, validate_assignment=True, extra='forbid'):
     name: str = Field(default_factory=lambda: 'New Layer ' + next(layer_id))
     thickness: str = ''
     SLD: str = ''
@@ -114,10 +129,17 @@ class Layer(BaseModel, validate_assignment=True):
     hydration: str = ''
     hydrate_with: Hydration = Hydration.BulkOut
 
+    parameter_names: ClassVar[List[str]] = []
 
-class Parameter(BaseModel, validate_assignment=True):
-    model_config = ConfigDict(extra='forbid')
+    @field_validator('thickness', 'SLD', 'roughness')
+    @classmethod
+    def check_parameter_is_defined(cls, value) -> str:
+        if value not in Layer.parameter_names:
+            raise ValueError(f'The parameter "{value}" has not been defined in the parameters.')
+        return value
 
+
+class Parameter(BaseModel, validate_assignment=True, extra='forbid'):
     name: str = Field(default_factory=lambda: 'New Parameter ' + next(parameter_id))
     min: float = 0.0
     value: float = 0.0
@@ -134,10 +156,7 @@ class Parameter(BaseModel, validate_assignment=True):
         return self
 
 
-class Resolution(BaseModel, validate_assignment=True):
-    model_config = ConfigDict(extra='forbid')
-
-    param_list: ClassVar[List[str]] = []
+class Resolution(BaseModel, validate_assignment=True, extra='forbid'):
     name: str = Field(default_factory=lambda: 'New Resolution ' + next(resolution_id))
     type: Types = Types.Constant
     value_1: str = ''
@@ -146,10 +165,11 @@ class Resolution(BaseModel, validate_assignment=True):
     value_4: str = ''
     value_5: str = ''
 
+    parameter_names: ClassVar[List[str]] = []
+
     @field_validator('value_1', 'value_2', 'value_3', 'value_4', 'value_5')
     @classmethod
-    def check_on_list(cls, value) -> str:
-        if value not in Resolution.param_list:
-            raise ValueError('Not on the list!')
+    def check_parameter_is_defined(cls, value) -> str:
+        if value not in Resolution.parameter_names:
+            raise ValueError(f'The parameter "{value}" has not been defined in the resolution parameters.')
         return value
-
