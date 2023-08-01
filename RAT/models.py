@@ -156,6 +156,10 @@ class Parameter(BaseModel, validate_assignment=True, extra='forbid'):
         return self
 
 
+class ProtectedParameter(Parameter, validate_assignment=True, extra='forbid'):
+    name: str = Field(frozen=True)
+
+
 class Resolution(BaseModel, validate_assignment=True, extra='forbid'):
     name: str = Field(default_factory=lambda: 'New Resolution ' + next(resolution_id))
     type: Types = Types.Constant
