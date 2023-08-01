@@ -21,12 +21,26 @@ Ensure to rebase your branch to include the latest changes on your branch and re
 
 Unit-testing and coverage
 -------------------------
-Python-RAT will use the **unittest** module for testing. Proper documentation and unit tests is highly recommended.
+Python-RAT uses the **pytest** module for testing. Proper documentation and unit tests are highly recommended.
+
+To install pytest use
+
+    pip install pytest pytest-cov
+
+Run the tests and generate a coverage report with
+
+    pytest tests --cov=RAT
+
+The coverage report can be saved to the directory htmlcov by running the tests with
+
+    pytest tests --cov-report html --cov=RAT
+
+For information on other coverage report formats, see https://pytest-cov.readthedocs.io/en/latest/reporting.html
 
 Documentation
 -------------
-The documentation will be hosted on GitHub pages
+The documentation will be hosted on GitHub pages.
 
 Style guidelines
 ----------------
-* Docstrings should be written in the reStructuredText format.
+* Docstrings should be written in the numpydoc format.
