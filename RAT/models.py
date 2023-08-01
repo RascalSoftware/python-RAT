@@ -49,11 +49,11 @@ class Types(str, Enum):
 class Background(BaseModel, validate_assignment=True, extra='forbid'):
     name: str = Field(default_factory=lambda: 'New Background ' + next(background_id))
     type: Types = Types.Constant
-    value1: str = ''
-    value2: str = ''
-    value3: str = ''
-    value4: str = ''
-    value5: str = ''
+    value_1: str = ''
+    value_2: str = ''
+    value_3: str = ''
+    value_4: str = ''
+    value_5: str = ''
 
     parameter_names: ClassVar[List[str]] = []
 
