@@ -5,26 +5,26 @@ import re
 from typing import Any, Dict, Iterable, List, Sequence, Union
 
 from RAT.classlist import ClassList
-from tests.utils import DictAttributes, DotDict
+from tests.utils import InputAttributes
 
 
 @pytest.fixture
 def two_name_class_list():
-    """A ClassList of DotDicts, containing two elements with names defined."""
-    return ClassList([DotDict(name='Alice'), DotDict(name='Bob')])
+    """A ClassList of InputAttributes, containing two elements with names defined."""
+    return ClassList([InputAttributes(name='Alice'), InputAttributes(name='Bob')])
 
 
 @pytest.fixture
 def three_name_class_list():
-    """A ClassList of DotDicts, containing three elements with names defined."""
-    return ClassList([DotDict(name='Alice'), DotDict(name='Bob'), DotDict(name='Eve')])
+    """A ClassList of InputAttributes, containing three elements with names defined."""
+    return ClassList([InputAttributes(name='Alice'), InputAttributes(name='Bob'), InputAttributes(name='Eve')])
 
 
 class TestInitialisation(object):
     @pytest.mark.parametrize("input_object", [
-        (DotDict()),
-        (DotDict(name='Alice')),
-        (DotDict(surname='Morgan')),
+        (InputAttributes()),
+        (InputAttributes(name='Alice')),
+        (InputAttributes(surname='Morgan')),
         ('Alice'),
     ])
     def test_input_object(self, input_object: Any) -> None:
@@ -36,14 +36,14 @@ class TestInitialisation(object):
         assert isinstance(input_object, class_list._class_handle)
 
     @pytest.mark.parametrize("input_sequence", [
-        ([DotDict()]),
-        ([DotDict(name='Alice')]),
-        ([DotDict(surname='Morgan')]),
-        ([DotDict(name='Alice'), DotDict(name='Bob')]),
-        ((DotDict(),)),
-        ((DotDict(name='Alice'),)),
-        ((DotDict(surname='Morgan'),)),
-        ((DotDict(name='Alice'), DotDict(name='Bob'))),
+        ([InputAttributes()]),
+        ([InputAttributes(name='Alice')]),
+        ([InputAttributes(surname='Morgan')]),
+        ([InputAttributes(name='Alice'), InputAttributes(name='Bob')]),
+        ((InputAttributes(),)),
+        ((InputAttributes(name='Alice'),)),
+        ((InputAttributes(surname='Morgan'),)),
+        ((InputAttributes(name='Alice'), InputAttributes(name='Bob'))),
     ])
     def test_input_sequence(self, input_sequence: Sequence) -> None:
         """For an input of a sequence, the ClassList should be a list equal to the input sequence, and _class_handle
@@ -54,10 +54,10 @@ class TestInitialisation(object):
         assert isinstance(input_sequence[-1], class_list._class_handle)
 
     @pytest.mark.parametrize("input_list", [
-        ([DotDict()]),
-        ([DotDict(name='Alice')]),
-        ([DotDict(surname='Morgan')]),
-        ([DotDict(name='Alice'), DotDict(name='Bob')]),
+        ([InputAttributes()]),
+        ([InputAttributes(name='Alice')]),
+        ([InputAttributes(surname='Morgan')]),
+        ([InputAttributes(name='Alice'), InputAttributes(name='Bob')]),
      ])
     def test_empty_list(self, input_list: Sequence) -> None:
         """If we initialise a ClassList with empty_list=True, the list should always be empty."""
@@ -72,7 +72,7 @@ class TestInitialisation(object):
             ClassList(empty_input)
 
     @pytest.mark.parametrize("input_list", [
-        ([DotDict(name='Alice'), dict(name='Bob')]),
+        ([InputAttributes(name='Alice'), dict(name='Bob')]),
     ])
     def test_different_classes(self, input_list: Sequence) -> None:
         """If we initialise a ClassList with an input containing multiple classes, we should raise a ValueError."""
@@ -81,7 +81,7 @@ class TestInitialisation(object):
             ClassList(input_list)
 
     @pytest.mark.parametrize("input_list", [
-        ([DotDict(name='Alice'), DotDict(name='Alice')]),
+        ([InputAttributes(name='Alice'), InputAttributes(name='Alice')]),
     ])
     def test_identical_name_fields(self, input_list: Sequence) -> None:
         """If we initialise a ClassList with input objects with identical values of the name_field,
@@ -95,9 +95,7 @@ class TestInitialisation(object):
 ])
 def test_repr_table(two_name_class_list: 'ClassList', expected_string: str) -> None:
     """For classes with the __dict__ attribute, we should be able to print the ClassList like a table."""
-    # We need to redefine the class list using a class with a __dict__ attribute
-    class_list = ClassList([DictAttributes(element) for element in two_name_class_list])
-    assert repr(class_list) == expected_string
+    assert repr(two_name_class_list) == expected_string
 
 
 @pytest.mark.parametrize("input_list", [
@@ -110,14 +108,15 @@ def test_repr_list(input_list: List) -> None:
 
 
 @pytest.mark.parametrize(["new_values", "expected_classlist"], [
-    ({'name': 'Eve'}, ClassList([DotDict(name='Eve'), DotDict(name='Bob')])),
-    ({'name': 'John', 'surname': 'Luther'}, ClassList([DotDict(name='John', surname='Luther'), DotDict(name='Bob')])),
+    ({'name': 'Eve'}, ClassList([InputAttributes(name='Eve'), InputAttributes(name='Bob')])),
+    ({'name': 'John', 'surname': 'Luther'},
+     ClassList([InputAttributes(name='John', surname='Luther'), InputAttributes(name='Bob')])),
 ])
 def test_setitem(two_name_class_list: 'ClassList', new_values: Dict, expected_classlist: 'ClassList') -> None:
     """We should be able to set values in an element of a ClassList using a dictionary."""
     class_list = two_name_class_list
     class_list[0] = new_values
-    assert class_list == expected_classlist
+    assert repr(class_list) == repr(expected_classlist)
 
 
 @pytest.mark.parametrize("new_values", [
@@ -132,9 +131,9 @@ def test_setitem_same_name_field(two_name_class_list: 'ClassList', new_values: D
 
 
 @pytest.mark.parametrize("added_list", [
-    (ClassList(DotDict(name='Eve'))),
-    ([DotDict(name='Eve')]),
-    ((DotDict(name='Eve'),)),
+    (ClassList(InputAttributes(name='Eve'))),
+    ([InputAttributes(name='Eve')]),
+    ((InputAttributes(name='Eve'),)),
 ])
 def test_iadd(two_name_class_list: 'ClassList', added_list: Iterable, three_name_class_list: 'ClassList') -> None:
     """We should be able to use the "+=" operator to add iterables to a ClassList."""
@@ -197,7 +196,9 @@ def test_append_same_name_field(two_name_class_list: 'ClassList', new_values: Di
 def test_insert(two_name_class_list: 'ClassList', new_values: Dict) -> None:
     """We should be able to insert an object within a ClassList using keyword arguments."""
     two_name_class_list.insert(1, **new_values)
-    assert two_name_class_list == ClassList([DotDict(name='Alice'), DotDict(name='Eve'), DotDict(name='Bob')])
+    assert two_name_class_list == ClassList([InputAttributes(name='Alice'),
+                                             InputAttributes(name='Eve'),
+                                             InputAttributes(name='Bob')])
 
 
 @pytest.mark.parametrize("new_values", [
@@ -213,18 +214,18 @@ def test_insert_same_name(two_name_class_list: 'ClassList', new_values: Dict) ->
 
 @pytest.mark.parametrize("remove_value", [
     ("Bob"),
-    (DotDict(name='Bob')),
+    (InputAttributes(name='Bob')),
 ])
 def test_remove(two_name_class_list: 'ClassList', remove_value: Union[object, str]) -> None:
     """We should be able to remove an object either by the value of the name_field or by specifying the object
     itself."""
     two_name_class_list.remove(remove_value)
-    assert two_name_class_list == ClassList([DotDict(name='Alice')])
+    assert two_name_class_list == ClassList([InputAttributes(name='Alice')])
 
 
 @pytest.mark.parametrize("remove_value", [
     ('Eve'),
-    (DotDict(name='Eve')),
+    (InputAttributes(name='Eve')),
 ])
 def test_remove_not_present(two_name_class_list: 'ClassList', remove_value: Union[object, str]) -> None:
     """If we remove an object not included in the ClassList we should raise a ValueError."""
@@ -234,9 +235,9 @@ def test_remove_not_present(two_name_class_list: 'ClassList', remove_value: Unio
 
 @pytest.mark.parametrize(["count_value", "expected_count"], [
     ('Bob', 1),
-    (DotDict(name='Bob'), 1),
+    (InputAttributes(name='Bob'), 1),
     ('Eve', 0),
-    (DotDict(name='Eve'), 0),
+    (InputAttributes(name='Eve'), 0),
 ])
 def test_count(two_name_class_list: 'ClassList', count_value: Union[object, str], expected_count: int) -> None:
     """We should be able to determine the number of times an object is in the ClassList using either the object itself
@@ -247,7 +248,7 @@ def test_count(two_name_class_list: 'ClassList', count_value: Union[object, str]
 
 @pytest.mark.parametrize(["index_value", "expected_index"], [
     ('Bob', 1),
-    (DotDict(name='Bob'), 1),
+    (InputAttributes(name='Bob'), 1),
 ])
 def test_index(two_name_class_list: 'ClassList', index_value: Union[object, str], expected_index: int) -> None:
     """We should be able to find the index of an object in the ClassList either by its name_field value or by
@@ -258,7 +259,7 @@ def test_index(two_name_class_list: 'ClassList', index_value: Union[object, str]
 
 @pytest.mark.parametrize("index_value", [
     ('Eve'),
-    (DotDict(name='Eve')),
+    (InputAttributes(name='Eve')),
 ])
 def test_index_not_present(two_name_class_list: 'ClassList', index_value: Union[object, str]) -> None:
     """If we try to find the index of an object not included in the ClassList we should raise a ValueError."""
@@ -268,9 +269,9 @@ def test_index_not_present(two_name_class_list: 'ClassList', index_value: Union[
 
 
 @pytest.mark.parametrize("extended_list", [
-    (ClassList(DotDict(name='Eve'))),
-    ([DotDict(name='Eve')]),
-    ((DotDict(name='Eve'),)),
+    (ClassList(InputAttributes(name='Eve'))),
+    ([InputAttributes(name='Eve')]),
+    ((InputAttributes(name='Eve'),)),
 ])
 def test_extend(two_name_class_list: 'ClassList', extended_list: Iterable, three_name_class_list: 'ClassList') -> None:
     """We should be able to extend a ClassList using another ClassList or an iterable"""
@@ -280,10 +281,10 @@ def test_extend(two_name_class_list: 'ClassList', extended_list: Iterable, three
 
 
 @pytest.mark.parametrize(["class_list", "expected_names"], [
-    (ClassList([DotDict(name='Alice'), DotDict(name='Bob')]), ["Alice", "Bob"]),
-    (ClassList([DotDict(surname='Morgan'), DotDict(surname='Terwilliger')]), []),
-    (ClassList([DotDict(name='Alice', surname='Morgan'), DotDict(surname='Terwilliger')]), ["Alice"]),
-    (ClassList(DotDict(), empty_list=True), []),
+    (ClassList([InputAttributes(name='Alice'), InputAttributes(name='Bob')]), ["Alice", "Bob"]),
+    (ClassList([InputAttributes(surname='Morgan'), InputAttributes(surname='Terwilliger')]), []),
+    (ClassList([InputAttributes(name='Alice', surname='Morgan'), InputAttributes(surname='Terwilliger')]), ["Alice"]),
+    (ClassList(InputAttributes(), empty_list=True), []),
 ])
 def test_get_names(class_list: 'ClassList', expected_names: List[str]) -> None:
     """We should get a list of the values of the name_field attribute from each object with it defined in the
@@ -313,10 +314,10 @@ def test__validate_name_field_not_unique(two_name_class_list: 'ClassList', input
 
 
 @pytest.mark.parametrize("input_list", [
-    ([DotDict(name='Alice'), DotDict(name='Bob')]),
-    ([DotDict(surname='Morgan'), DotDict(surname='Terwilliger')]),
-    ([DotDict(name='Alice', surname='Morgan'), DotDict(surname='Terwilliger')]),
-    ([DotDict()]),
+    ([InputAttributes(name='Alice'), InputAttributes(name='Bob')]),
+    ([InputAttributes(surname='Morgan'), InputAttributes(surname='Terwilliger')]),
+    ([InputAttributes(name='Alice', surname='Morgan'), InputAttributes(surname='Terwilliger')]),
+    ([InputAttributes()]),
     ([]),
 ])
 def test__check_unique_name_fields(two_name_class_list: 'ClassList', input_list: Iterable) -> None:
@@ -326,7 +327,7 @@ def test__check_unique_name_fields(two_name_class_list: 'ClassList', input_list:
 
 
 @pytest.mark.parametrize("input_list", [
-    ([DotDict(name='Alice'), DotDict(name='Alice')]),
+    ([InputAttributes(name='Alice'), InputAttributes(name='Alice')]),
 ])
 def test__check_unique_name_fields_not_unique(two_name_class_list: 'ClassList', input_list: Iterable) -> None:
     """We should raise a ValueError if an input list contains multiple objects with matching name_field values
@@ -337,27 +338,27 @@ def test__check_unique_name_fields_not_unique(two_name_class_list: 'ClassList', 
 
 
 @pytest.mark.parametrize("input_list", [
-    ([DotDict(name='Alice'), DotDict(name='Bob')]),
+    ([InputAttributes(name='Alice'), InputAttributes(name='Bob')]),
 ])
 def test__check_classes(input_list: Iterable) -> None:
     """We should not raise an error all objects in the ClassList are of the same type."""
-    class_list = ClassList([DotDict()])
+    class_list = ClassList([InputAttributes()])
     assert class_list._check_classes(input_list) is None
 
 
 @pytest.mark.parametrize("input_list", [
-    ([DotDict(name='Alice'), dict(name='Bob')]),
+    ([InputAttributes(name='Alice'), dict(name='Bob')]),
 ])
 def test__check_classes_different_classes(input_list: Iterable) -> None:
     """We should raise a ValueError if an input list contains objects of different types."""
-    class_list = ClassList([DotDict()])
+    class_list = ClassList([InputAttributes()])
     with pytest.raises(ValueError, match=(f"Input list contains elements of type other "
                                           f"than '{class_list._class_handle}'")):
         class_list._check_classes(input_list)
 
 
 @pytest.mark.parametrize(["value", "expected_output"], [
-    ("Alice", DotDict(name='Alice')),
+    ("Alice", InputAttributes(name='Alice')),
     ("Eve", "Eve"),
 ])
 def test__get_item_from_name_field(two_name_class_list: 'ClassList',
