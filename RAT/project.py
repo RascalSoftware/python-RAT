@@ -100,19 +100,21 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
                                                                           prior_type=RAT.models.Priors.Uniform, mu=0,
                                                                           sigma=math.inf))
 
+    backgrounds: Annotated[ClassList, AfterValidator(check_background)] = ClassList(RAT.models.Background(),
+                                                                                    empty_list=True)
+
     resolution_parameters: ParameterList = ClassList(RAT.models.Parameter(name='Resolution Param 1', min=0.01,
                                                                           value=0.03, max=0.05, fit=False,
                                                                           prior_type=RAT.models.Priors.Uniform, mu=0,
                                                                           sigma=math.inf))
 
-    backgrounds: Annotated[ClassList, AfterValidator(check_background)] = ClassList(RAT.models.Background(),
+    resolutions: Annotated[ClassList, AfterValidator(check_resolution)] = ClassList(RAT.models.Resolution(),
                                                                                     empty_list=True)
+
     custom_files: Annotated[ClassList, AfterValidator(check_custom_file)] = ClassList(RAT.models.CustomFile(),
                                                                                       empty_list=True)
     data: Annotated[ClassList, AfterValidator(check_data)] = ClassList(RAT.models.Data(name='Simulation'))
     layers: Annotated[ClassList, AfterValidator(check_layer)] = ClassList(RAT.models.Layer(), empty_list=True)
-    resolutions: Annotated[ClassList, AfterValidator(check_resolution)] = ClassList(RAT.models.Resolution(),
-                                                                                    empty_list=True)
     contrasts: Annotated[ClassList, AfterValidator(check_contrast)] = ClassList(RAT.models.Contrast(), empty_list=True)
 
     def model_post_init(self, __context: Any) -> None:
@@ -129,3 +131,16 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
 
         self.backgrounds.append(name='Background 1', type=RAT.models.Types.Constant.value, value_1='Background Param 1')
         self.resolutions.append(name='Resolution 1', type=RAT.models.Types.Constant.value, value_1='Resolution Param 1')
+
+    def __repr__(self):
+        output = ''
+        for key, value in self.__dict__.items():
+            if value:
+                output += f'{key.replace("_", " ").title() + ": " :-<100}\n\n'
+                try:
+                    value.value  # For enums
+                except AttributeError:
+                    output += repr(value) + '\n\n'
+                else:
+                    output += value.value + '\n\n'
+        return output
