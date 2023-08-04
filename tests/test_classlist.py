@@ -53,23 +53,13 @@ class TestInitialisation(object):
         assert class_list.data == list(input_sequence)
         assert isinstance(input_sequence[-1], class_list._class_handle)
 
-    @pytest.mark.parametrize("input_list", [
-        ([InputAttributes()]),
-        ([InputAttributes(name='Alice')]),
-        ([InputAttributes(surname='Morgan')]),
-        ([InputAttributes(name='Alice'), InputAttributes(name='Bob')]),
-     ])
-    def test_empty_list(self, input_list: Sequence) -> None:
-        """If we initialise a ClassList with empty_list=True, the list should always be empty."""
-        class_list = ClassList(input_list, empty_list=True)
-        assert class_list == []
-        assert isinstance(input_list[-1], class_list._class_handle)
-
     @pytest.mark.parametrize("empty_input", [([]), (())])
     def test_empty_input(self, empty_input: Sequence) -> None:
-        """If we initialise a ClassList with an empty input (list or tuple), we should raise a ValueError."""
-        with pytest.raises(ValueError, match="Input value must not be empty"):
-            ClassList(empty_input)
+        """If we initialise a ClassList with an empty input (list or tuple), the ClassList should be an empty list, and
+        _class_handle should be unset."""
+        class_list = ClassList(empty_input)
+        assert class_list.data == []
+        assert not hasattr(class_list, '_class_handle')
 
     @pytest.mark.parametrize("input_list", [
         ([InputAttributes(name='Alice'), dict(name='Bob')]),
@@ -273,7 +263,7 @@ def test_index_not_present(two_name_class_list: 'ClassList', index_value: Union[
     ([InputAttributes(name='Eve')]),
     ((InputAttributes(name='Eve'),)),
 ])
-def test_extend(two_name_class_list: 'ClassList', extended_list: Iterable, three_name_class_list: 'ClassList') -> None:
+def test_extend(two_name_class_list: 'ClassList', extended_list: Sequence, three_name_class_list: 'ClassList') -> None:
     """We should be able to extend a ClassList using another ClassList or an iterable"""
     class_list = two_name_class_list
     class_list.extend(extended_list)
@@ -284,7 +274,7 @@ def test_extend(two_name_class_list: 'ClassList', extended_list: Iterable, three
     (ClassList([InputAttributes(name='Alice'), InputAttributes(name='Bob')]), ["Alice", "Bob"]),
     (ClassList([InputAttributes(surname='Morgan'), InputAttributes(surname='Terwilliger')]), []),
     (ClassList([InputAttributes(name='Alice', surname='Morgan'), InputAttributes(surname='Terwilliger')]), ["Alice"]),
-    (ClassList(InputAttributes(), empty_list=True), []),
+    (ClassList(InputAttributes()), []),
 ])
 def test_get_names(class_list: 'ClassList', expected_names: List[str]) -> None:
     """We should get a list of the values of the name_field attribute from each object with it defined in the

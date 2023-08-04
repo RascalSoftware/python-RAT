@@ -2,10 +2,11 @@
 """
 
 import collections
-import collections.abc
+from collections.abc import Iterable, Sequence
 import contextlib
 import tabulate
-from typing import Any, Dict, Iterable, Sequence, Union
+from typing import Any, Union
+import warnings
 
 
 class ClassList(collections.UserList):
@@ -26,40 +27,26 @@ class ClassList(collections.UserList):
 
     Parameters
     ----------
-    init_list : Sequence [object] or object
+    init_list : Sequence [object] or object, optional
         An instance, or list of instance(s), of the class to be used in this ClassList.
     name_field : str, optional
         The field used to define unique objects in the ClassList (default is "name").
-    empty_list : bool, optional
-        If true, do not initialise the list with the contents of init_list, use an empty list instead
-        (default is False).
-
-    Raises
-    ------
-    ValueError
-        Raised if the input list is empty.
     """
-    def __init__(self,
-                 init_list: Union[Sequence[object], object],
-                 name_field: str = "name",
-                 empty_list: bool = False) -> None:
-        # Set input as list if necessary, raising a ValueError for empty input
-        if not (isinstance(init_list, collections.abc.Sequence) and not isinstance(init_list, str)):
-            init_list = [init_list]
-        if not init_list:
-            raise ValueError("Input value must not be empty")
-
-        # Set class to be used for this instance of the ClassList, and the attribute that must contain unique values
-        self._class_handle = type(init_list[0])
+    def __init__(self, init_list: Union[Sequence[object], object] = None, name_field: str = "name") -> None:
         self.name_field = name_field
 
-        # Check all elements are of the same type and have unique values of name_field
-        self._check_classes(init_list)
-        self._check_unique_name_fields(init_list)
+        # Set input as list if necessary
+        if init_list and not (isinstance(init_list, Sequence) and not isinstance(init_list, str)):
+            init_list = [init_list]
+
+        # Set class to be used for this instance of the ClassList, checking that all elements of the input list are of
+        # the same type and have unique values of the specified name_field
+        if init_list:
+            self._class_handle = type(init_list[0])
+            self._check_classes(init_list)
+            self._check_unique_name_fields(init_list)
 
         super().__init__(init_list)
-        if empty_list:
-            self.data = []
 
     def __repr__(self):
         try:
@@ -70,14 +57,16 @@ class ClassList(collections.UserList):
             output = tabulate.tabulate(table, headers='keys', showindex=True)
         return output
 
-    def __setitem__(self, index: int, set_dict: Dict[str, Any]) -> None:
+    def __setitem__(self, index: int, set_dict: dict[str, Any]) -> None:
         """Assign the values of an existing object's attributes using a dictionary."""
         self._validate_name_field(set_dict)
         for key, value in set_dict.items():
             setattr(self.data[index], key, value)
 
-    def __iadd__(self, other: Iterable[object]) -> 'ClassList':
+    def __iadd__(self, other: Sequence[object]) -> 'ClassList':
         """Define in-place addition using the "+=" operator."""
+        if not hasattr(self, '_class_handle'):
+            self._class_handle = type(other[0])
         self._check_classes(self + other)
         self._check_unique_name_fields(self + other)
         super().__iadd__(other)
@@ -95,38 +84,105 @@ class ClassList(collections.UserList):
         """Define in-place multiplication using the "*=" operator."""
         raise TypeError(f"unsupported operand type(s) for *=: '{self.__class__.__name__}' and '{n.__class__.__name__}'")
 
-    def append(self, **kwargs) -> None:
-        """Append a new object to the ClassList using keyword arguments to set attribute values."""
-        self._validate_name_field(kwargs)
-        self.data.append(self._class_handle(**kwargs))
+    def append(self, obj: object = None, **kwargs) -> None:
+        """Append a new object to the ClassList using either the object itself, or keyword arguments to set attribute
+        values.
 
-    def insert(self, index: int, **kwargs) -> None:
-        """Insert a new object into the ClassList at a given index using keyword arguments to set attribute values."""
-        self._validate_name_field(kwargs)
-        self.data.insert(index, self._class_handle(**kwargs))
+        Parameters
+        ----------
+        obj : object, optional
+            An instance of the class specified by self._class_handle.
+        **kwargs : dict[str, Any], optional
+            The input keyword arguments for a new object in the ClassList.
+
+        Raises
+        ------
+        ValueError
+            Raised if the input arguments contain a name_field value already defined in the ClassList.
+
+        Warnings
+        --------
+        SyntaxWarning
+            Raised if the input arguments contain BOTH an object and keyword arguments. In this situation the object is
+            appended to the ClassList and the keyword arguments are discarded.
+        """
+        if obj and kwargs:
+            warnings.warn('ClassList.append() called with both an object and keyword arguments. '
+                          'The keyword arguments will be ignored.', SyntaxWarning)
+        if obj:
+            if not hasattr(self, '_class_handle'):
+                self._class_handle = type(obj)
+            self._check_classes(self + [obj])
+            self._check_unique_name_fields(self + [obj])
+            self.data.append(obj)
+        else:
+            if not hasattr(self, '_class_handle'):
+                raise TypeError('ClassList.append() called with keyword arguments for a ClassList without a class '
+                                'defined. Call ClassList.append() with an object to define the class.')
+            self._validate_name_field(kwargs)
+            self.data.append(self._class_handle(**kwargs))
+
+    def insert(self, index: int, obj: object = None, **kwargs) -> None:
+        """Insert a new object into the ClassList at a given index using either the object itself, or keyword arguments
+        to set attribute values.
+
+        Parameters
+        ----------
+        index: int
+            The index at which to insert a new object in the ClassList.
+        obj : object, optional
+            An instance of the class specified by self._class_handle.
+        **kwargs : dict[str, Any], optional
+            The input keyword arguments for a new object in the ClassList.
+
+        Raises
+        ------
+        ValueError
+            Raised if the input arguments contain a name_field value already defined in the ClassList.
+
+        Warnings
+        --------
+        SyntaxWarning
+            Raised if the input arguments contain both an object and keyword arguments. In this situation the object is
+            inserted into the ClassList and the keyword arguments are discarded.
+        """
+        if obj and kwargs:
+            warnings.warn('ClassList.insert() called with both object and keyword arguments. '
+                          'The keyword arguments will be ignored.', SyntaxWarning)
+        if obj:
+            if not hasattr(self, '_class_handle'):
+                self._class_handle = type(obj)
+            self._check_classes(self + [obj])
+            self._check_unique_name_fields(self + [obj])
+            self.data.insert(index, obj)
+        else:
+            if not hasattr(self, '_class_handle'):
+                raise TypeError('ClassList.insert() called with keyword arguments for a ClassList without a class '
+                                'defined. Call ClassList.insert() with an object to define the class.')
+            self._validate_name_field(kwargs)
+            self.data.insert(index, self._class_handle(**kwargs))
 
     def remove(self, item: Union[object, str]) -> None:
         """Remove an object from the ClassList using either the object itself or its name_field value."""
-        if not isinstance(item, self._class_handle):
-            item = self._get_item_from_name_field(item)
+        item = self._get_item_from_name_field(item)
         self.data.remove(item)
 
     def count(self, item: Union[object, str]) -> int:
         """Return the number of times an object appears in the ClassList using either the object itself or its
         name_field value."""
-        if not isinstance(item, self._class_handle):
-            item = self._get_item_from_name_field(item)
+        item = self._get_item_from_name_field(item)
         return self.data.count(item)
 
     def index(self, item: Union[object, str], *args) -> int:
         """Return the index of a particular object in the ClassList using either the object itself or its
         name_field value."""
-        if not isinstance(item, self._class_handle):
-            item = self._get_item_from_name_field(item)
+        item = self._get_item_from_name_field(item)
         return self.data.index(item, *args)
 
-    def extend(self, other: Iterable[object]) -> None:
-        """Extend the ClassList by adding another iterable."""
+    def extend(self, other: Sequence[object]) -> None:
+        """Extend the ClassList by adding another sequence."""
+        if not hasattr(self, '_class_handle'):
+            self._class_handle = type(other[0])
         self._check_classes(self + other)
         self._check_unique_name_fields(self + other)
         self.data.extend(other)
@@ -141,7 +197,7 @@ class ClassList(collections.UserList):
         """
         return [getattr(model, self.name_field) for model in self.data if hasattr(model, self.name_field)]
 
-    def _validate_name_field(self, input_args: Dict[str, Any]) -> None:
+    def _validate_name_field(self, input_args: dict[str, Any]) -> None:
         """Raise a ValueError if the name_field attribute is passed as an object parameter, and its value is already
         used within the ClassList.
 
@@ -161,7 +217,7 @@ class ClassList(collections.UserList):
                 raise ValueError(f"Input arguments contain the {self.name_field} '{input_args[self.name_field]}', "
                                  f"which is already specified in the ClassList")
 
-    def _check_unique_name_fields(self, input_list: Iterable) -> None:
+    def _check_unique_name_fields(self, input_list: Iterable[object]) -> None:
         """Raise a ValueError if any value of the name_field attribute is used more than once in a list of class
         objects.
 
@@ -195,13 +251,13 @@ class ClassList(collections.UserList):
         if not (all(isinstance(element, self._class_handle) for element in input_list)):
             raise ValueError(f"Input list contains elements of type other than '{self._class_handle}'")
 
-    def _get_item_from_name_field(self, value: str) -> Union[object, str]:
+    def _get_item_from_name_field(self, value: Union[object, str]) -> Union[object, str]:
         """Return the object with the given value of the name_field attribute in the ClassList.
 
         Parameters
         ----------
-        value : str
-            The value of the name_field attribute of an object in the ClassList.
+        value : object or str
+            Either an object in the ClassList, or the value of the name_field attribute of an object in the ClassList.
 
         Returns
         -------
