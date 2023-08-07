@@ -1,11 +1,19 @@
 """Test the ClassList."""
 
+from collections.abc import Iterable, Sequence
 import pytest
 import re
-from typing import Any, Dict, Iterable, List, Sequence, Union
+from typing import Any, Union
+import warnings
 
 from RAT.classlist import ClassList
 from tests.utils import InputAttributes
+
+
+@pytest.fixture
+def one_name_class_list():
+    """A ClassList of InputAttributes, containing one element with a name defined."""
+    return ClassList([InputAttributes(name='Alice')])
 
 
 @pytest.fixture
@@ -45,7 +53,7 @@ class TestInitialisation(object):
         ((InputAttributes(surname='Morgan'),)),
         ((InputAttributes(name='Alice'), InputAttributes(name='Bob'))),
     ])
-    def test_input_sequence(self, input_sequence: Sequence) -> None:
+    def test_input_sequence(self, input_sequence: Sequence[object]) -> None:
         """For an input of a sequence, the ClassList should be a list equal to the input sequence, and _class_handle
         should be set to the type of the objects within.
         """
@@ -54,7 +62,7 @@ class TestInitialisation(object):
         assert isinstance(input_sequence[-1], class_list._class_handle)
 
     @pytest.mark.parametrize("empty_input", [([]), (())])
-    def test_empty_input(self, empty_input: Sequence) -> None:
+    def test_empty_input(self, empty_input: Sequence[object]) -> None:
         """If we initialise a ClassList with an empty input (list or tuple), the ClassList should be an empty list, and
         _class_handle should be unset."""
         class_list = ClassList(empty_input)
@@ -64,20 +72,22 @@ class TestInitialisation(object):
     @pytest.mark.parametrize("input_list", [
         ([InputAttributes(name='Alice'), dict(name='Bob')]),
     ])
-    def test_different_classes(self, input_list: Sequence) -> None:
+    def test_different_classes(self, input_list: Sequence[object]) -> None:
         """If we initialise a ClassList with an input containing multiple classes, we should raise a ValueError."""
         with pytest.raises(ValueError,
                            match=f"Input list contains elements of type other than '{type(input_list[0])}'"):
             ClassList(input_list)
 
-    @pytest.mark.parametrize("input_list", [
-        ([InputAttributes(name='Alice'), InputAttributes(name='Alice')]),
+    @pytest.mark.parametrize("input_list, name_field", [
+        ([InputAttributes(name='Alice'), InputAttributes(name='Alice')], 'name'),
+        ([InputAttributes(id='Alice'), InputAttributes(id='Alice')], 'id'),
     ])
-    def test_identical_name_fields(self, input_list: Sequence) -> None:
+    def test_identical_name_fields(self, input_list: Sequence[object], name_field: str) -> None:
         """If we initialise a ClassList with input objects with identical values of the name_field,
         we should raise a ValueError."""
-        with pytest.raises(ValueError, match=f"Input list contains objects with the same value of the name attribute"):
-            ClassList(input_list)
+        with pytest.raises(ValueError,
+                           match=f"Input list contains objects with the same value of the {name_field} attribute"):
+            ClassList(input_list, name_field=name_field)
 
 
 @pytest.mark.parametrize("expected_string", [
@@ -91,7 +101,7 @@ def test_repr_table(two_name_class_list: 'ClassList', expected_string: str) -> N
 @pytest.mark.parametrize("input_list", [
     (['Alice', 'Bob']),
 ])
-def test_repr_list(input_list: List) -> None:
+def test_repr_list(input_list: list[str]) -> None:
     """For classes without the __dict__ attribute, we should be able to print the ClassList as a list."""
     class_list = ClassList(input_list)
     assert repr(class_list) == str(input_list)
@@ -102,17 +112,17 @@ def test_repr_list(input_list: List) -> None:
     ({'name': 'John', 'surname': 'Luther'},
      ClassList([InputAttributes(name='John', surname='Luther'), InputAttributes(name='Bob')])),
 ])
-def test_setitem(two_name_class_list: 'ClassList', new_values: Dict, expected_classlist: 'ClassList') -> None:
+def test_setitem(two_name_class_list: 'ClassList', new_values: dict[str, Any], expected_classlist: 'ClassList') -> None:
     """We should be able to set values in an element of a ClassList using a dictionary."""
     class_list = two_name_class_list
     class_list[0] = new_values
-    assert repr(class_list) == repr(expected_classlist)
+    assert class_list == expected_classlist
 
 
 @pytest.mark.parametrize("new_values", [
     ({'name': 'Bob'}),
 ])
-def test_setitem_same_name_field(two_name_class_list: 'ClassList', new_values: Dict) -> None:
+def test_setitem_same_name_field(two_name_class_list: 'ClassList', new_values: dict[str, Any]) -> None:
     """If we set the name_field of an object in the ClassList to one already defined, we should raise a ValueError."""
     with pytest.raises(ValueError, match=f"Input arguments contain the {two_name_class_list.name_field} "
                                          f"'{new_values[two_name_class_list.name_field]}', "
@@ -130,6 +140,20 @@ def test_iadd(two_name_class_list: 'ClassList', added_list: Iterable, three_name
     class_list = two_name_class_list
     class_list += added_list
     assert class_list == three_name_class_list
+
+
+@pytest.mark.parametrize("added_list", [
+    (ClassList([InputAttributes(name='Alice'), InputAttributes(name='Bob')])),
+    ([InputAttributes(name='Alice'), InputAttributes(name='Bob')]),
+    ((InputAttributes(name='Alice'), InputAttributes(name='Bob'))),
+])
+def test_iadd_empty_classlist(added_list: Sequence, two_name_class_list: 'ClassList') -> None:
+    """We should be able to use the "+=" operator to add iterables to an empty ClassList, whilst also setting
+    _class_handle."""
+    class_list = ClassList()
+    class_list += added_list
+    assert class_list == two_name_class_list
+    assert isinstance(added_list[-1], class_list._class_handle)
 
 
 def test_mul(two_name_class_list: 'ClassList') -> None:
@@ -159,20 +183,84 @@ def test_imul(two_name_class_list: 'ClassList') -> None:
         two_name_class_list *= n
 
 
+@pytest.mark.parametrize("new_object", [
+    (InputAttributes(name='Eve')),
+])
+def test_append_object(two_name_class_list: 'ClassList',
+                       new_object: object,
+                       three_name_class_list: 'ClassList') -> None:
+    """We should be able to append to a ClassList using a new object."""
+    class_list = two_name_class_list
+    class_list.append(new_object)
+    assert class_list == three_name_class_list
+
+
 @pytest.mark.parametrize("new_values", [
     ({'name': 'Eve'}),
 ])
-def test_append(two_name_class_list: 'ClassList', new_values: Dict, three_name_class_list: 'ClassList') -> None:
+def test_append_kwargs(two_name_class_list: 'ClassList',
+                       new_values: dict[str, Any],
+                       three_name_class_list: 'ClassList') -> None:
     """We should be able to append to a ClassList using keyword arguments."""
     class_list = two_name_class_list
     class_list.append(**new_values)
     assert class_list == three_name_class_list
 
 
+@pytest.mark.parametrize(["new_object", "new_values"], [
+    (InputAttributes(name='Eve'), {'name': 'John'}),
+])
+def test_append_object_and_kwargs(two_name_class_list: 'ClassList',
+                                  new_object: object,
+                                  new_values: dict[str, Any],
+                                  three_name_class_list: 'ClassList') -> None:
+    """If we append to a ClassList using a new object and keyword arguments, we raise a warning, and append the object,
+    discarding the keyword arguments."""
+    class_list = two_name_class_list
+    with pytest.warns(SyntaxWarning):
+        warnings.warn('ClassList.append() called with both an object and keyword arguments. '
+                      'The keyword arguments will be ignored.', SyntaxWarning)
+        class_list.append(new_object, **new_values)
+        assert class_list == three_name_class_list
+
+
+@pytest.mark.parametrize("new_object", [
+    (InputAttributes(name='Alice')),
+])
+def test_append_object_empty_classlist(new_object: object, one_name_class_list: 'ClassList') -> None:
+    """We should be able to append to an empty ClassList using a new object, whilst also setting _class_handle."""
+    class_list = ClassList()
+    class_list.append(new_object)
+    assert class_list == one_name_class_list
+    assert isinstance(new_object, class_list._class_handle)
+
+
 @pytest.mark.parametrize("new_values", [
     ({'name': 'Alice'}),
 ])
-def test_append_same_name_field(two_name_class_list: 'ClassList', new_values: Dict) -> None:
+def test_append_kwargs_empty_classlist(new_values: dict[str, Any]) -> None:
+    """If we append to an empty ClassList using keyword arguments we should raise a TypeError."""
+    class_list = ClassList()
+    with pytest.raises(TypeError, match=re.escape('ClassList.append() called with keyword arguments for a ClassList '
+                                                  'without a class defined. Call ClassList.append() with an object to '
+                                                  'define the class.')):
+        class_list.append(**new_values)
+
+
+@pytest.mark.parametrize("new_object", [
+    (InputAttributes(name='Alice')),
+])
+def test_append_object_same_name_field(two_name_class_list: 'ClassList', new_object: object) -> None:
+    """If we append an object with an already-specified name_field value to a ClassList we should raise a ValueError."""
+    with pytest.raises(ValueError, match=f"Input list contains objects with the same value of the "
+                                         f"{two_name_class_list.name_field} attribute"):
+        two_name_class_list.append(new_object)
+
+
+@pytest.mark.parametrize("new_values", [
+    ({'name': 'Alice'}),
+])
+def test_append_kwargs_same_name_field(two_name_class_list: 'ClassList', new_values: dict[str, Any]) -> None:
     """If we append an object with an already-specified name_field value to a ClassList we should raise a ValueError."""
     with pytest.raises(ValueError, match=f"Input arguments contain the {two_name_class_list.name_field} "
                                          f"'{new_values[two_name_class_list.name_field]}', "
@@ -180,10 +268,21 @@ def test_append_same_name_field(two_name_class_list: 'ClassList', new_values: Di
         two_name_class_list.append(**new_values)
 
 
+@pytest.mark.parametrize("new_object", [
+    (InputAttributes(name='Eve'))
+])
+def test_insert_object(two_name_class_list: 'ClassList', new_object: object) -> None:
+    """We should be able to insert an object within a ClassList using a new object."""
+    two_name_class_list.insert(1, new_object)
+    assert two_name_class_list == ClassList([InputAttributes(name='Alice'),
+                                             InputAttributes(name='Eve'),
+                                             InputAttributes(name='Bob')])
+
+
 @pytest.mark.parametrize("new_values", [
     ({'name': 'Eve'})
 ])
-def test_insert(two_name_class_list: 'ClassList', new_values: Dict) -> None:
+def test_insert_kwargs(two_name_class_list: 'ClassList', new_values: dict[str, Any]) -> None:
     """We should be able to insert an object within a ClassList using keyword arguments."""
     two_name_class_list.insert(1, **new_values)
     assert two_name_class_list == ClassList([InputAttributes(name='Alice'),
@@ -191,10 +290,61 @@ def test_insert(two_name_class_list: 'ClassList', new_values: Dict) -> None:
                                              InputAttributes(name='Bob')])
 
 
+@pytest.mark.parametrize(["new_object", "new_values"], [
+    (InputAttributes(name='Eve'), {'name': 'John'}),
+])
+def test_insert_object_and_kwargs(two_name_class_list: 'ClassList',
+                                  new_object: object,
+                                  new_values: dict[str, Any],
+                                  three_name_class_list: 'ClassList') -> None:
+    """If call insert() on a ClassList using a new object and keyword arguments, we raise a warning, and append the
+    object, discarding the keyword arguments."""
+    class_list = two_name_class_list
+    with pytest.warns(SyntaxWarning):
+        warnings.warn('ClassList.insert() called with both an object and keyword arguments. '
+                      'The keyword arguments will be ignored.', SyntaxWarning)
+        class_list.insert(1, new_object, **new_values)
+        assert class_list == ClassList([InputAttributes(name='Alice'),
+                                        InputAttributes(name='Eve'),
+                                        InputAttributes(name='Bob')])
+
+@pytest.mark.parametrize("new_object", [
+    (InputAttributes(name='Alice')),
+])
+def test_insert_object_empty_classlist(new_object: object, one_name_class_list: 'ClassList') -> None:
+    """We should be able to insert a new object into an empty ClassList, whilst also setting _class_handle."""
+    class_list = ClassList()
+    class_list.insert(0, new_object)
+    assert class_list == one_name_class_list
+    assert isinstance(new_object, class_list._class_handle)
+
+
+@pytest.mark.parametrize("new_values", [
+    ({'name': 'Alice'}),
+])
+def test_insert_kwargs_empty_classlist(new_values: dict[str, Any]) -> None:
+    """If we append to an empty ClassList using keyword arguments we should raise a TypeError."""
+    class_list = ClassList()
+    with pytest.raises(TypeError, match=re.escape('ClassList.insert() called with keyword arguments for a ClassList '
+                                                  'without a class defined. Call ClassList.insert() with an object to '
+                                                  'define the class.')):
+        class_list.insert(0, **new_values)
+
+
+@pytest.mark.parametrize("new_object", [
+    (InputAttributes(name='Alice'))
+])
+def test_insert_object_same_name(two_name_class_list: 'ClassList', new_object: object) -> None:
+    """If we insert an object with an already-specified name_field value to a ClassList we should raise a ValueError."""
+    with pytest.raises(ValueError, match=f"Input list contains objects with the same value of the "
+                                         f"{two_name_class_list.name_field} attribute"):
+        two_name_class_list.insert(1, new_object)
+
+
 @pytest.mark.parametrize("new_values", [
     ({'name': 'Alice'})
 ])
-def test_insert_same_name(two_name_class_list: 'ClassList', new_values: Dict) -> None:
+def test_insert_kwargs_same_name(two_name_class_list: 'ClassList', new_values: dict[str, Any]) -> None:
     """If we insert an object with an already-specified name_field value to a ClassList we should raise a ValueError."""
     with pytest.raises(ValueError, match=f"Input arguments contain the {two_name_class_list.name_field} "
                                          f"'{new_values[two_name_class_list.name_field]}', "
@@ -264,19 +414,36 @@ def test_index_not_present(two_name_class_list: 'ClassList', index_value: Union[
     ((InputAttributes(name='Eve'),)),
 ])
 def test_extend(two_name_class_list: 'ClassList', extended_list: Sequence, three_name_class_list: 'ClassList') -> None:
-    """We should be able to extend a ClassList using another ClassList or an iterable"""
+    """We should be able to extend a ClassList using another ClassList or a sequence"""
     class_list = two_name_class_list
     class_list.extend(extended_list)
     assert class_list == three_name_class_list
 
 
+@pytest.mark.parametrize("extended_list", [
+    (ClassList(InputAttributes(name='Alice'))),
+    ([InputAttributes(name='Alice')]),
+    ((InputAttributes(name='Alice'),)),
+])
+def test_extend_empty_classlist(extended_list: Sequence, one_name_class_list: 'ClassList') -> None:
+    """We should be able to extend a ClassList using another ClassList or a sequence"""
+    class_list = ClassList()
+    class_list.extend(extended_list)
+    assert class_list == one_name_class_list
+    assert isinstance(extended_list[-1], class_list._class_handle)
+
+
 @pytest.mark.parametrize(["class_list", "expected_names"], [
     (ClassList([InputAttributes(name='Alice'), InputAttributes(name='Bob')]), ["Alice", "Bob"]),
+    (ClassList([InputAttributes(id='Alice'), InputAttributes(id='Bob')], name_field='id'), ["Alice", "Bob"]),
+    (ClassList([InputAttributes(name='Alice'), InputAttributes(name='Bob')], name_field='id'), []),
     (ClassList([InputAttributes(surname='Morgan'), InputAttributes(surname='Terwilliger')]), []),
     (ClassList([InputAttributes(name='Alice', surname='Morgan'), InputAttributes(surname='Terwilliger')]), ["Alice"]),
+    (ClassList([InputAttributes(name='Alice', surname='Morgan'), InputAttributes(surname='Terwilliger')],
+               name_field='surname'), ["Morgan", "Terwilliger"]),
     (ClassList(InputAttributes()), []),
 ])
-def test_get_names(class_list: 'ClassList', expected_names: List[str]) -> None:
+def test_get_names(class_list: 'ClassList', expected_names: list[str]) -> None:
     """We should get a list of the values of the name_field attribute from each object with it defined in the
     ClassList."""
     assert class_list.get_names() == expected_names
@@ -286,7 +453,7 @@ def test_get_names(class_list: 'ClassList', expected_names: List[str]) -> None:
     ({'name': 'Eve'}),
     ({'surname': 'Polastri'}),
 ])
-def test__validate_name_field(two_name_class_list: 'ClassList', input_dict: Dict) -> None:
+def test__validate_name_field(two_name_class_list: 'ClassList', input_dict: dict[str, Any]) -> None:
     """We should not raise an error if the input values do not contain a name_field value defined in an object in the
     ClassList."""
     assert two_name_class_list._validate_name_field(input_dict) is None
@@ -295,7 +462,7 @@ def test__validate_name_field(two_name_class_list: 'ClassList', input_dict: Dict
 @pytest.mark.parametrize("input_dict", [
     ({'name': 'Alice'}),
 ])
-def test__validate_name_field_not_unique(two_name_class_list: 'ClassList', input_dict: Dict) -> None:
+def test__validate_name_field_not_unique(two_name_class_list: 'ClassList', input_dict: dict[str, Any]) -> None:
     """We should raise a ValueError if we input values containing a name_field defined in an object in the ClassList."""
     with pytest.raises(ValueError, match=f"Input arguments contain the {two_name_class_list.name_field} "
                                          f"'{input_dict[two_name_class_list.name_field]}', "
