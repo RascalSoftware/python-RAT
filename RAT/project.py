@@ -78,7 +78,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
     geometry: Geometries = Geometries.AirSubstrate
     absorption: bool = False
 
-    parameters: ParameterList = ClassList(RAT.models.Parameter(), empty_list=True)
+    parameters: ParameterList = ClassList()
 
     bulk_in: ParameterList = ClassList(RAT.models.Parameter(name='SLD Air', min=0, value=0, max=0, fit=False,
                                                             prior_type=RAT.models.Priors.Uniform, mu=0, sigma=math.inf))
@@ -100,37 +100,42 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
                                                                           prior_type=RAT.models.Priors.Uniform, mu=0,
                                                                           sigma=math.inf))
 
-    backgrounds: Annotated[ClassList, AfterValidator(check_background)] = ClassList(RAT.models.Background(),
-                                                                                    empty_list=True)
+    backgrounds: Annotated[ClassList, AfterValidator(check_background)] = ClassList()
 
     resolution_parameters: ParameterList = ClassList(RAT.models.Parameter(name='Resolution Param 1', min=0.01,
                                                                           value=0.03, max=0.05, fit=False,
                                                                           prior_type=RAT.models.Priors.Uniform, mu=0,
                                                                           sigma=math.inf))
 
-    resolutions: Annotated[ClassList, AfterValidator(check_resolution)] = ClassList(RAT.models.Resolution(),
-                                                                                    empty_list=True)
+    resolutions: Annotated[ClassList, AfterValidator(check_resolution)] = ClassList()
 
-    custom_files: Annotated[ClassList, AfterValidator(check_custom_file)] = ClassList(RAT.models.CustomFile(),
-                                                                                      empty_list=True)
+    custom_files: Annotated[ClassList, AfterValidator(check_custom_file)] = ClassList(RAT.models.CustomFile())
     data: Annotated[ClassList, AfterValidator(check_data)] = ClassList(RAT.models.Data(name='Simulation'))
-    layers: Annotated[ClassList, AfterValidator(check_layer)] = ClassList(RAT.models.Layer(), empty_list=True)
-    contrasts: Annotated[ClassList, AfterValidator(check_contrast)] = ClassList(RAT.models.Contrast(), empty_list=True)
+    layers: Annotated[ClassList, AfterValidator(check_layer)] = ClassList(RAT.models.Layer())
+    contrasts: Annotated[ClassList, AfterValidator(check_contrast)] = ClassList(RAT.models.Contrast())
 
     def model_post_init(self, __context: Any) -> None:
 
-        # Add protected parameters here
-        self.parameters.extend([RAT.models.ProtectedParameter(name='Substrate Roughness', min=1, value=3, max=5,
-                                                              fit=True, prior_type=RAT.models.Priors.Uniform, mu=0,
-                                                              sigma=math.inf)])
+        # Add protected parameters here -- how to define class handle properly?
+        self.parameters.append(RAT.models.ProtectedParameter(name='Substrate Roughness', min=1, value=3, max=5,
+                                                             fit=True, prior_type=RAT.models.Priors.Uniform, mu=0,
+                                                             sigma=math.inf))
 
         RAT.models.Background.parameter_names = self.background_parameters.get_names()
         #RAT.models.Contrast.all_names = self.parameters.get_names()
         RAT.models.Layer.parameter_names = self.parameters.get_names()
         RAT.models.Resolution.parameter_names = self.resolution_parameters.get_names()
 
-        self.backgrounds.append(name='Background 1', type=RAT.models.Types.Constant.value, value_1='Background Param 1')
-        self.resolutions.append(name='Resolution 1', type=RAT.models.Types.Constant.value, value_1='Resolution Param 1')
+        self.backgrounds.append(RAT.models.Background(name='Background 1',
+                                                      type=RAT.models.Types.Constant.value,
+                                                      value_1='Background Param 1'))
+        self.resolutions.append(RAT.models.Resolution(name='Resolution 1',
+                                                      type=RAT.models.Types.Constant.value,
+                                                      value_1='Resolution Param 1'))
+
+        self.custom_files.data = []
+        self.layers.data = []
+        self.contrasts.data = []
 
     def __repr__(self):
         output = ''

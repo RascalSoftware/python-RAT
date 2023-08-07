@@ -1,6 +1,6 @@
 from enum import Enum
 from pydantic import BaseModel, Field, FieldValidationInfo, field_validator, model_validator
-from typing import ClassVar, List
+from typing import ClassVar
 
 import math  # replace with np
 
@@ -55,7 +55,7 @@ class Background(BaseModel, validate_assignment=True, extra='forbid'):
     value_4: str = ''
     value_5: str = ''
 
-    parameter_names: ClassVar[List[str]] = []
+    parameter_names: ClassVar[list[str]] = []
 
     @field_validator('value_1', 'value_2', 'value_3', 'value_4', 'value_5')
     @classmethod
@@ -74,9 +74,9 @@ class Contrast(BaseModel, validate_assignment=True, extra='forbid'):
     scalefactor: str = ''
     resolution: str = ''
     resample: bool = False
-    model: List[str] = []  # But how many strings? How to deal with this?
+    model: list[str] = []  # But how many strings? How to deal with this?
 
-    all_names: ClassVar[dict[str, List[str]]] = []
+    all_names: ClassVar[dict[str, list[str]]] = []
 
     @field_validator('data', 'background', 'nba', 'nbs', 'scalefactor', 'resolution')
     @classmethod
@@ -96,12 +96,12 @@ class CustomFile(BaseModel, validate_assignment=True, extra='forbid'):
 class Data(BaseModel, validate_assignment=True, extra='forbid'):
     name: str = Field(default_factory=lambda: 'New Data ' + next(data_id))
     data: str = ''  # pandas dataframe?
-    data_range: List[float] = []
-    simulation_range: List[float] = [0.005, 0.7]
+    data_range: list[float] = []
+    simulation_range: list[float] = [0.005, 0.7]
 
     @field_validator('data_range', 'simulation_range')
     @classmethod
-    def check_list_elements(cls, range_) -> List[int]:
+    def check_list_elements(cls, range_) -> list[int]:
         if len(range_) != 2:
             raise ValueError(f'{range_.__name__} must contain two values')
         return range_
@@ -109,9 +109,9 @@ class Data(BaseModel, validate_assignment=True, extra='forbid'):
 
 class DomainContrast(BaseModel, validate_assignment=True, extra='forbid'):
     name: str = Field(default_factory=lambda: 'New Domain Contrast ' + next(domain_contrast_id))
-    model: List[str] = []
+    model: list[str] = []
 
-    layer_names: ClassVar[List[str]] = []
+    layer_names: ClassVar[list[str]] = []
 
     @field_validator('model')
     @classmethod
@@ -129,7 +129,7 @@ class Layer(BaseModel, validate_assignment=True, extra='forbid'):
     hydration: str = ''
     hydrate_with: Hydration = Hydration.BulkOut
 
-    parameter_names: ClassVar[List[str]] = []
+    parameter_names: ClassVar[list[str]] = []
 
     @field_validator('thickness', 'SLD', 'roughness')
     @classmethod
@@ -169,7 +169,7 @@ class Resolution(BaseModel, validate_assignment=True, extra='forbid'):
     value_4: str = ''
     value_5: str = ''
 
-    parameter_names: ClassVar[List[str]] = []
+    parameter_names: ClassVar[list[str]] = []
 
     @field_validator('value_1', 'value_2', 'value_3', 'value_4', 'value_5')
     @classmethod
