@@ -50,11 +50,15 @@ class ClassList(collections.UserList):
 
     def __repr__(self):
         try:
-            table = [model.__dict__ for model in self.data]
+            [model.__dict__ for model in self.data]
         except AttributeError:
             output = repr(self.data)
         else:
-            output = tabulate.tabulate(table, headers='keys', showindex=True)
+            if any(model.__dict__ for model in self.data):
+                table = [model.__dict__ for model in self.data]
+                output = tabulate.tabulate(table, headers='keys', showindex=True)
+            else:
+                output = repr(self.data)
         return output
 
     def __setitem__(self, index: int, set_dict: dict[str, Any]) -> None:

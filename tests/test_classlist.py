@@ -98,6 +98,13 @@ def test_repr_table(two_name_class_list: 'ClassList', expected_string: str) -> N
     assert repr(two_name_class_list) == expected_string
 
 
+def test_repr_empty_table() -> None:
+    """For empty classes with the __dict__ attribute, we should be able to print the contents of the ClassList as a
+    list."""
+    empty_attributes = InputAttributes()
+    assert repr(ClassList(empty_attributes)) == repr([empty_attributes])
+
+
 @pytest.mark.parametrize("input_list", [
     (['Alice', 'Bob']),
 ])
@@ -105,6 +112,11 @@ def test_repr_list(input_list: list[str]) -> None:
     """For classes without the __dict__ attribute, we should be able to print the ClassList as a list."""
     class_list = ClassList(input_list)
     assert repr(class_list) == str(input_list)
+
+
+def test_repr_empty_classlist() -> None:
+    """For empty ClassLists, we should be able to print the ClassList as an empty list."""
+    assert repr(ClassList()) == repr([])
 
 
 @pytest.mark.parametrize(["new_values", "expected_classlist"], [
