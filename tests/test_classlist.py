@@ -75,7 +75,7 @@ class TestInitialisation(object):
     def test_different_classes(self, input_list: Sequence[object]) -> None:
         """If we initialise a ClassList with an input containing multiple classes, we should raise a ValueError."""
         with pytest.raises(ValueError,
-                           match=f"Input list contains elements of type other than '{type(input_list[0])}'"):
+                           match=f"Input list contains elements of type other than '{type(input_list[0]).__name__}'"):
             ClassList(input_list)
 
     @pytest.mark.parametrize("input_list, name_field", [
@@ -522,7 +522,7 @@ def test__check_classes_different_classes(input_list: Iterable) -> None:
     """We should raise a ValueError if an input list contains objects of different types."""
     class_list = ClassList([InputAttributes()])
     with pytest.raises(ValueError, match=(f"Input list contains elements of type other "
-                                          f"than '{class_list._class_handle}'")):
+                                          f"than '{class_list._class_handle.__name__}'")):
         class_list._check_classes(input_list)
 
 

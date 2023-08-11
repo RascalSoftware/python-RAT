@@ -1,6 +1,6 @@
 from enum import Enum
 import math
-from pydantic import AfterValidator, BaseModel
+from pydantic import AfterValidator, BaseModel, field_validator, model_validator
 from typing import Annotated, Any
 
 from RAT.classlist import ClassList
@@ -78,7 +78,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
     geometry: Geometries = Geometries.AirSubstrate
     absorption: bool = False
 
-    parameters: ParameterList = ClassList()
+    parameters: ParameterList = ClassList(RAT.models.Parameter())
 
     bulk_in: ParameterList = ClassList(RAT.models.Parameter(name='SLD Air', min=0, value=0, max=0, fit=False,
                                                             prior_type=RAT.models.Priors.Uniform, mu=0, sigma=math.inf))
@@ -100,14 +100,20 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
                                                                           prior_type=RAT.models.Priors.Uniform, mu=0,
                                                                           sigma=math.inf))
 
-    backgrounds: Annotated[ClassList, AfterValidator(check_background)] = ClassList()
+    backgrounds: Annotated[ClassList, AfterValidator(check_background)] = ClassList(RAT.models.Background(
+                                                                                    name='Background 1',
+                                                                                    type=RAT.models.Types.Constant.value,
+                                                                                    value_1='Background Param 1'))
 
     resolution_parameters: ParameterList = ClassList(RAT.models.Parameter(name='Resolution Param 1', min=0.01,
                                                                           value=0.03, max=0.05, fit=False,
                                                                           prior_type=RAT.models.Priors.Uniform, mu=0,
                                                                           sigma=math.inf))
 
-    resolutions: Annotated[ClassList, AfterValidator(check_resolution)] = ClassList()
+    resolutions: Annotated[ClassList, AfterValidator(check_resolution)] = ClassList(RAT.models.Resolution(
+                                                                                    name='Resolution 1',
+                                                                                    type=RAT.models.Types.Constant.value,
+                                                                                    value_1='Resolution Param 1'))
 
     custom_files: Annotated[ClassList, AfterValidator(check_custom_file)] = ClassList(RAT.models.CustomFile())
     data: Annotated[ClassList, AfterValidator(check_data)] = ClassList(RAT.models.Data(name='Simulation'))
@@ -115,27 +121,23 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
     contrasts: Annotated[ClassList, AfterValidator(check_contrast)] = ClassList(RAT.models.Contrast())
 
     def model_post_init(self, __context: Any) -> None:
+        self.custom_files.data = []
+        self.layers.data = []
+        self.contrasts.data = []
 
-        # Add protected parameters here -- how to define class handle properly?
+        # Add protected parameters here
+        self.parameters.data = []
         self.parameters.append(RAT.models.ProtectedParameter(name='Substrate Roughness', min=1, value=3, max=5,
                                                              fit=True, prior_type=RAT.models.Priors.Uniform, mu=0,
                                                              sigma=math.inf))
 
-        RAT.models.Background.parameter_names = self.background_parameters.get_names()
-        #RAT.models.Contrast.all_names = self.parameters.get_names()
-        RAT.models.Layer.parameter_names = self.parameters.get_names()
-        RAT.models.Resolution.parameter_names = self.resolution_parameters.get_names()
-
-        self.backgrounds.append(RAT.models.Background(name='Background 1',
-                                                      type=RAT.models.Types.Constant.value,
-                                                      value_1='Background Param 1'))
-        self.resolutions.append(RAT.models.Resolution(name='Resolution 1',
-                                                      type=RAT.models.Types.Constant.value,
-                                                      value_1='Resolution Param 1'))
-
-        self.custom_files.data = []
-        self.layers.data = []
-        self.contrasts.data = []
+    @model_validator(mode='after')
+    def cross_check_model_values(self):
+        fields = ['value_1', 'value_2', 'value_3', 'value_4', 'value_5']
+        self.check_allowed_values('backgrounds', fields, self.background_parameters.get_names())
+        self.check_allowed_values('resolutions', fields, self.resolution_parameters.get_names())
+        self.check_allowed_values('layers', ['thickness', 'SLD', 'roughness'], self.parameters.get_names())
+        return self
 
     def __repr__(self):
         output = ''
@@ -149,3 +151,27 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
                 else:
                     output += value.value + '\n\n'
         return output
+
+    def get_all_names(self):
+        """Get the names for all subclasses in the project."""
+        names = {
+            'data': self.data.get_names(),
+            'background': self.backgrounds.get_names(),
+            'nba': self.bulk_in.get_names(),
+            'nbs': self.bulk_out.get_names(),
+            'scalefactor': self.scalefactors.get_names(),
+            'resolution': self.resolutions.get_names(),
+            'layers': self.layers.get_names(),
+            'custom_file': self.custom_files.get_names(),
+        }
+        return names
+
+    def check_allowed_values(self, attribute, field_list, allowed_values):
+        model_list = getattr(self, attribute)
+        for model in model_list:
+            for field in field_list:
+                value = getattr(model, field)
+                print(value, allowed_values, bool(value in allowed_values))
+                if value and value not in allowed_values:
+                    setattr(model, field, '')
+                    raise ValueError(f'The parameter "{value}" has not been defined in the list of allowed values.')

@@ -55,15 +55,6 @@ class Background(BaseModel, validate_assignment=True, extra='forbid'):
     value_4: str = ''
     value_5: str = ''
 
-    parameter_names: ClassVar[list[str]] = []
-
-    @field_validator('value_1', 'value_2', 'value_3', 'value_4', 'value_5')
-    @classmethod
-    def check_parameter_is_defined(cls, value) -> str:
-        if value not in Background.parameter_names:
-            raise ValueError(f'The parameter "{value}" has not been defined in the background parameters.')
-        return value
-
 
 class Contrast(BaseModel, validate_assignment=True, extra='forbid'):
     name: str = Field(default_factory=lambda: 'New Contrast ' + next(contrast_id))
@@ -111,15 +102,6 @@ class DomainContrast(BaseModel, validate_assignment=True, extra='forbid'):
     name: str = Field(default_factory=lambda: 'New Domain Contrast ' + next(domain_contrast_id))
     model: list[str] = []
 
-    layer_names: ClassVar[list[str]] = []
-
-    @field_validator('model')
-    @classmethod
-    def check_parameter_is_defined(cls, value) -> str:
-        if value not in DomainContrast.layer_names:
-            raise ValueError(f'The parameter "{value}" has not been defined in the layers.')
-        return value
-
 
 class Layer(BaseModel, validate_assignment=True, extra='forbid'):
     name: str = Field(default_factory=lambda: 'New Layer ' + next(layer_id))
@@ -128,15 +110,6 @@ class Layer(BaseModel, validate_assignment=True, extra='forbid'):
     roughness: str = ''
     hydration: str = ''
     hydrate_with: Hydration = Hydration.BulkOut
-
-    parameter_names: ClassVar[list[str]] = []
-
-    @field_validator('thickness', 'SLD', 'roughness')
-    @classmethod
-    def check_parameter_is_defined(cls, value) -> str:
-        if value not in Layer.parameter_names:
-            raise ValueError(f'The parameter "{value}" has not been defined in the parameters.')
-        return value
 
 
 class Parameter(BaseModel, validate_assignment=True, extra='forbid'):
@@ -168,12 +141,3 @@ class Resolution(BaseModel, validate_assignment=True, extra='forbid'):
     value_3: str = ''
     value_4: str = ''
     value_5: str = ''
-
-    parameter_names: ClassVar[list[str]] = []
-
-    @field_validator('value_1', 'value_2', 'value_3', 'value_4', 'value_5')
-    @classmethod
-    def check_parameter_is_defined(cls, value) -> str:
-        if value not in Resolution.parameter_names:
-            raise ValueError(f'The parameter "{value}" has not been defined in the resolution parameters.')
-        return value
