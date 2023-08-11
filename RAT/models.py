@@ -1,7 +1,6 @@
 from enum import Enum
 import math
-from pydantic import BaseModel, Field, FieldValidationInfo, field_validator, model_validator
-from typing import ClassVar
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 def int_sequence():
@@ -65,15 +64,6 @@ class Contrast(BaseModel, validate_assignment=True, extra='forbid'):
     resolution: str = ''
     resample: bool = False
     model: list[str] = []  # But how many strings? How to deal with this?
-
-    all_names: ClassVar[dict[str, list[str]]] = []
-
-    @field_validator('data', 'background', 'nba', 'nbs', 'scalefactor', 'resolution')
-    @classmethod
-    def check_parameter_is_defined(cls, value: str, info: FieldValidationInfo) -> str:
-        if value not in Contrast.all_names[info.field_name]:
-            raise ValueError(f'The parameter "{value}" has not been defined in the "{info.field_name}" parameters.')
-        return value
 
 
 class CustomFile(BaseModel, validate_assignment=True, extra='forbid'):

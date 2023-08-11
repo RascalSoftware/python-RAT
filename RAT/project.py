@@ -113,6 +113,13 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         self.check_allowed_values('backgrounds', fields, self.background_parameters.get_names())
         self.check_allowed_values('resolutions', fields, self.resolution_parameters.get_names())
         self.check_allowed_values('layers', ['thickness', 'SLD', 'roughness'], self.parameters.get_names())
+
+        self.check_allowed_values('contrasts', ['data'], self.data.get_names())
+        self.check_allowed_values('contrasts', ['background'], self.backgrounds.get_names())
+        self.check_allowed_values('contrasts', ['nba'], self.bulk_in.get_names())
+        self.check_allowed_values('contrasts', ['nbs'], self.bulk_out.get_names())
+        self.check_allowed_values('contrasts', ['scalefactor'], self.scalefactors.get_names())
+        self.check_allowed_values('contrasts', ['resolution'], self.resolutions.get_names())
         return self
 
     def __repr__(self):
