@@ -1,8 +1,7 @@
 from enum import Enum
+import math
 from pydantic import BaseModel, Field, FieldValidationInfo, field_validator, model_validator
 from typing import ClassVar
-
-import math  # replace with np
 
 
 def int_sequence():
