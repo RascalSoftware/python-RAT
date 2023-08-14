@@ -1,3 +1,5 @@
+"""The project module. Defines and stores all the input data required for reflectivity calculations in RAT."""
+
 from enum import Enum
 import numpy as np
 from pydantic import BaseModel, FieldValidationInfo, field_validator, model_validator
@@ -26,6 +28,7 @@ class Geometries(str, Enum):
     SubstrateLiquid = 'substrate/liquid'
 
 
+# Map project fields to pydantic models
 model_in_classlist = {'parameters': 'Parameter',
                       'bulk_in': 'Parameter',
                       'bulk_out': 'Parameter',
@@ -43,13 +46,18 @@ model_in_classlist = {'parameters': 'Parameter',
 
 
 class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_types_allowed=True):
+    """Defines the input data for a reflectivity calculation in RAT.
+
+    This class combines the data defined in each of the pydantic models included in "models.py" into the full set of
+    inputs required for a reflectivity calculation.
+    """
     name: str = ''
     calc_type: CalcTypes = CalcTypes.NonPolarised
     model: ModelTypes = ModelTypes.StandardLayers
     geometry: Geometries = Geometries.AirSubstrate
     absorption: bool = False
 
-    parameters: ClassList = ClassList(RAT.models.Parameter())
+    parameters: ClassList = ClassList()
 
     bulk_in: ClassList = ClassList(RAT.models.Parameter(name='SLD Air', min=0, value=0, max=0, fit=False,
                                                         prior_type=RAT.models.Priors.Uniform, mu=0, sigma=np.inf))
@@ -81,16 +89,17 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
     resolutions: ClassList = ClassList(RAT.models.Resolution(name='Resolution 1', type=RAT.models.Types.Constant.value,
                                                              value_1='Resolution Param 1'))
 
-    custom_files: ClassList = ClassList(RAT.models.CustomFile())
+    custom_files: ClassList = ClassList()
     data: ClassList = ClassList(RAT.models.Data(name='Simulation'))
-    layers: ClassList = ClassList(RAT.models.Layer())
-    contrasts: ClassList = ClassList(RAT.models.Contrast())
+    layers: ClassList = ClassList()
+    contrasts: ClassList = ClassList()
 
     @field_validator('parameters', 'bulk_in', 'bulk_out', 'qz_shifts', 'scalefactors', 'background_parameters',
                      'backgrounds', 'resolution_parameters', 'resolutions', 'custom_files', 'data', 'layers',
                      'contrasts')
     @classmethod
-    def check_class(cls, value: str, info: FieldValidationInfo) -> str:
+    def check_class(cls, value: ClassList, info: FieldValidationInfo) -> ClassList:
+        """Each of the data fields should be a ClassList of the appropriate model."""
         model_name = model_in_classlist[info.field_name]
         model = getattr(RAT.models, model_name)
         assert all(isinstance(element, model) for element in value), \
@@ -98,17 +107,19 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         return value
 
     def model_post_init(self, __context: Any) -> None:
-        self.custom_files.data = []
-        self.layers.data = []
-        self.contrasts.data = []
-        self.parameters.data = []
+        """Initialises the class in the ClassLists for empty data fields, and sets protected parameters."""
+        for field_name, model in model_in_classlist.items():
+            field = getattr(self, field_name)
+            if not hasattr(field, "_class_handle"):
+                setattr(field, "_class_handle", getattr(RAT.models, model))
 
-        self.parameters.append(RAT.models.ProtectedParameter(name='Substrate Roughness', min=1, value=3, max=5,
-                                                             fit=True, prior_type=RAT.models.Priors.Uniform, mu=0,
-                                                             sigma=np.inf))
+        self.parameters.insert(0, RAT.models.ProtectedParameter(name='Substrate Roughness', min=1, value=3, max=5,
+                                                                fit=True, prior_type=RAT.models.Priors.Uniform, mu=0,
+                                                                sigma=np.inf))
 
     @model_validator(mode='after')
-    def cross_check_model_values(self):
+    def cross_check_model_values(self) -> 'Project':
+        """Certain model fields should contain values defined elsewhere in the project."""
         fields = ['value_1', 'value_2', 'value_3', 'value_4', 'value_5']
         self.check_allowed_values('backgrounds', fields, self.background_parameters.get_names())
         self.check_allowed_values('resolutions', fields, self.resolution_parameters.get_names())
@@ -135,7 +146,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
                     output += value.value + '\n\n'
         return output
 
-    def get_all_names(self):
+    def get_all_names(self) -> dict[str, list[str]]:
         """Get the names for all subclasses in the project."""
         names = {
             'data': self.data.get_names(),
@@ -149,9 +160,25 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         }
         return names
 
-    def check_allowed_values(self, attribute, field_list, allowed_values):
-        model_list = getattr(self, attribute)
-        for model in model_list:
+    def check_allowed_values(self, attribute: str, field_list: list[str], allowed_values: list[str]) -> None:
+        """Check the values of the given fields in the given model are in the supplied list of allowed values.
+
+        Parameters
+        ----------
+        attribute : str
+            The attribute of Project being validated.
+        field_list : list [str]
+            The fields of the attribute to be checked for valid values.
+        allowed_values : list [str]
+            The list of allowed values for the fields given in field_list.
+
+        Raises
+        ------
+        ValueError
+            Raised if any field in field_list has a value not specified in allowed_values.
+        """
+        class_list = getattr(self, attribute)
+        for model in class_list:
             for field in field_list:
                 value = getattr(model, field)
                 print(value, allowed_values, bool(value in allowed_values))

@@ -2,12 +2,11 @@
 
 from enum import Enum
 import numpy as np
-import numpy.typing as npt
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 def int_sequence():
-    """Iterate through integers for use as model counters"""
+    """Iterate through integers for use as model counters."""
     num = 1
     while True:
         yield str(num)
@@ -81,16 +80,16 @@ class CustomFile(BaseModel, validate_assignment=True, extra='forbid'):
     path: str = 'pwd'  # Should later expand to find current file path
 
 
-class Data(BaseModel, validate_assignment=True, extra='forbid'):
+class Data(BaseModel, validate_assignment=True, extra='forbid', arbitrary_types_allowed=True):
     """Defines the dataset required for each contrast."""
     name: str = Field(default_factory=lambda: 'New Data ' + next(data_id))
-    data: npt.ArrayLike = np.empty([0, 3])
+    data: np.ndarray[float] = np.empty([0, 3])
     data_range: list[float] = []
     simulation_range: list[float] = [0.005, 0.7]
 
     @field_validator('data')
     @classmethod
-    def check_data_dimension(cls, data) -> npt.ArrayLike[float]:
+    def check_data_dimension(cls, data: np.ndarray[float]) -> np.ndarray[float]:
         """The data must be a two-dimensional array containing at least three columns."""
         try:
             data.shape[1]
