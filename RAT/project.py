@@ -1,5 +1,5 @@
 from enum import Enum
-import math
+import numpy as np
 from pydantic import BaseModel, FieldValidationInfo, field_validator, model_validator
 from typing import Any
 
@@ -52,23 +52,23 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
     parameters: ClassList = ClassList(RAT.models.Parameter())
 
     bulk_in: ClassList = ClassList(RAT.models.Parameter(name='SLD Air', min=0, value=0, max=0, fit=False,
-                                                        prior_type=RAT.models.Priors.Uniform, mu=0, sigma=math.inf))
+                                                        prior_type=RAT.models.Priors.Uniform, mu=0, sigma=np.inf))
 
     bulk_out: ClassList = ClassList(RAT.models.Parameter(name='SLD D2O', min=6.2e-6, value=6.35e-6, max=6.35e-6,
                                                          fit=False, prior_type=RAT.models.Priors.Uniform, mu=0,
-                                                         sigma=math.inf))
+                                                         sigma=np.inf))
 
     qz_shifts: ClassList = ClassList(RAT.models.Parameter(name='Qz shift 1', min=-1e-4, value=0, max=1e-4, fit=False,
-                                                          prior_type=RAT.models.Priors.Uniform, mu=0, sigma=math.inf))
+                                                          prior_type=RAT.models.Priors.Uniform, mu=0, sigma=np.inf))
 
     scalefactors: ClassList = ClassList(RAT.models.Parameter(name='Scalefactor 1', min=0.02, value=0.23, max=0.25,
                                                              fit=False, prior_type=RAT.models.Priors.Uniform, mu=0,
-                                                             sigma=math.inf))
+                                                             sigma=np.inf))
 
     background_parameters: ClassList = ClassList(RAT.models.Parameter(name='Background Param 1', min=1e-7, value=1e-6,
                                                                       max=1e-5, fit=False,
                                                                       prior_type=RAT.models.Priors.Uniform, mu=0,
-                                                                      sigma=math.inf))
+                                                                      sigma=np.inf))
 
     backgrounds: ClassList = ClassList(RAT.models.Background(name='Background 1', type=RAT.models.Types.Constant.value,
                                                              value_1='Background Param 1'))
@@ -76,7 +76,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
     resolution_parameters: ClassList = ClassList(RAT.models.Parameter(name='Resolution Param 1', min=0.01, value=0.03,
                                                                       max=0.05, fit=False,
                                                                       prior_type=RAT.models.Priors.Uniform, mu=0,
-                                                                      sigma=math.inf))
+                                                                      sigma=np.inf))
 
     resolutions: ClassList = ClassList(RAT.models.Resolution(name='Resolution 1', type=RAT.models.Types.Constant.value,
                                                              value_1='Resolution Param 1'))
@@ -105,7 +105,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
 
         self.parameters.append(RAT.models.ProtectedParameter(name='Substrate Roughness', min=1, value=3, max=5,
                                                              fit=True, prior_type=RAT.models.Priors.Uniform, mu=0,
-                                                             sigma=math.inf))
+                                                             sigma=np.inf))
 
     @model_validator(mode='after')
     def cross_check_model_values(self):

@@ -1,15 +1,20 @@
+"""The models module. Contains the pydantic models used by RAT to store project parameters."""
+
 from enum import Enum
-import math
+import numpy as np
+import numpy.typing as npt
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 def int_sequence():
+    """Iterate through integers for use as model counters"""
     num = 1
     while True:
         yield str(num)
         num += 1
 
 
+# Create a counter for each model
 background_id = int_sequence()
 contrast_id = int_sequence()
 custom_file_id = int_sequence()
@@ -45,6 +50,7 @@ class Types(str, Enum):
 
 
 class Background(BaseModel, validate_assignment=True, extra='forbid'):
+    """Defines the Backgrounds in RAT."""
     name: str = Field(default_factory=lambda: 'New Background ' + next(background_id))
     type: Types = Types.Constant
     value_1: str = ''
@@ -55,6 +61,7 @@ class Background(BaseModel, validate_assignment=True, extra='forbid'):
 
 
 class Contrast(BaseModel, validate_assignment=True, extra='forbid'):
+    """Groups together all of the components of the model."""
     name: str = Field(default_factory=lambda: 'New Contrast ' + next(contrast_id))
     data: str = ''
     background: str = ''
@@ -67,6 +74,7 @@ class Contrast(BaseModel, validate_assignment=True, extra='forbid'):
 
 
 class CustomFile(BaseModel, validate_assignment=True, extra='forbid'):
+    """Defines the files containing functions to run when using custom models."""
     name: str = Field(default_factory=lambda: 'New Custom File ' + next(custom_file_id))
     filename: str = ''
     language: Languages = Languages.Python
@@ -74,25 +82,42 @@ class CustomFile(BaseModel, validate_assignment=True, extra='forbid'):
 
 
 class Data(BaseModel, validate_assignment=True, extra='forbid'):
+    """Defines the dataset required for each contrast."""
     name: str = Field(default_factory=lambda: 'New Data ' + next(data_id))
-    data: str = ''  # pandas dataframe?
+    data: npt.ArrayLike = np.empty([0, 3])
     data_range: list[float] = []
     simulation_range: list[float] = [0.005, 0.7]
 
+    @field_validator('data')
+    @classmethod
+    def check_data_dimension(cls, data) -> npt.ArrayLike[float]:
+        """The data must be a two-dimensional array containing at least three columns."""
+        try:
+            data.shape[1]
+        except IndexError:
+            raise ValueError('"data" must have at least two dimensions')
+        else:
+            if data.shape[1] < 3:
+                raise ValueError('"data" must have at least three columns')
+        return data
+
     @field_validator('data_range', 'simulation_range')
     @classmethod
-    def check_list_elements(cls, range_) -> list[int]:
+    def check_list_elements(cls, range_) -> list[float]:
+        """The data range and simulation range must contain exactly two parameters."""
         if len(range_) != 2:
             raise ValueError(f'{range_.__name__} must contain two values')
         return range_
 
 
 class DomainContrast(BaseModel, validate_assignment=True, extra='forbid'):
+    """Groups together the layers required for each domain."""
     name: str = Field(default_factory=lambda: 'New Domain Contrast ' + next(domain_contrast_id))
     model: list[str] = []
 
 
 class Layer(BaseModel, validate_assignment=True, extra='forbid'):
+    """Combines parameters into defined layers."""
     name: str = Field(default_factory=lambda: 'New Layer ' + next(layer_id))
     thickness: str = ''
     SLD: str = ''
@@ -102,6 +127,7 @@ class Layer(BaseModel, validate_assignment=True, extra='forbid'):
 
 
 class Parameter(BaseModel, validate_assignment=True, extra='forbid'):
+    """Defines parameters needed to specify the model"""
     name: str = Field(default_factory=lambda: 'New Parameter ' + next(parameter_id))
     min: float = 0.0
     value: float = 0.0
@@ -109,20 +135,23 @@ class Parameter(BaseModel, validate_assignment=True, extra='forbid'):
     fit: bool = False
     prior_type: Priors = Priors.Uniform
     mu: float = 0.0
-    sigma: float = math.inf
+    sigma: float = np.inf
 
     @model_validator(mode='after')
     def check_value_in_range(self) -> 'Parameter':
+        """The value of a parameter must lie within its defined bounds."""
         if self.value < self.min or self.value > self.max:
             raise ValueError(f'value {self.value} is not within the defined range: {self.min} <= value <= {self.max}')
         return self
 
 
 class ProtectedParameter(Parameter, validate_assignment=True, extra='forbid'):
+    """A Parameter with a fixed name."""
     name: str = Field(frozen=True)
 
 
 class Resolution(BaseModel, validate_assignment=True, extra='forbid'):
+    """Defines Resolutions in RAT."""
     name: str = Field(default_factory=lambda: 'New Resolution ' + next(resolution_id))
     type: Types = Types.Constant
     value_1: str = ''
