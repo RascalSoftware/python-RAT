@@ -2,7 +2,7 @@
 
 from enum import Enum
 import numpy as np
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, Field, FieldValidationInfo, field_validator, model_validator
 
 
 def int_sequence():
@@ -102,11 +102,13 @@ class Data(BaseModel, validate_assignment=True, extra='forbid', arbitrary_types_
 
     @field_validator('data_range', 'simulation_range')
     @classmethod
-    def check_list_elements(cls, range_) -> list[float]:
+    def check_list_elements(cls, range_: list[float], info: FieldValidationInfo) -> list[float]:
         """The data range and simulation range must contain exactly two parameters."""
         if len(range_) != 2:
-            raise ValueError(f'{range_.__name__} must contain two values')
+            raise ValueError(f'{info.field_name} must contain exactly two values')
         return range_
+
+    # Also need model validators for data range compared to data etc -- need more details.
 
 
 class DomainContrast(BaseModel, validate_assignment=True, extra='forbid'):
