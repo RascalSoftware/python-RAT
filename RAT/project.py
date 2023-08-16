@@ -146,20 +146,6 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
                     output += value.value + '\n\n'
         return output
 
-    def get_all_names(self) -> dict[str, list[str]]:
-        """Get the names for all subclasses in the project."""
-        names = {
-            'data': self.data.get_names(),
-            'background': self.backgrounds.get_names(),
-            'nba': self.bulk_in.get_names(),
-            'nbs': self.bulk_out.get_names(),
-            'scalefactor': self.scalefactors.get_names(),
-            'resolution': self.resolutions.get_names(),
-            'layers': self.layers.get_names(),
-            'custom_file': self.custom_files.get_names(),
-        }
-        return names
-
     def check_allowed_values(self, attribute: str, field_list: list[str], allowed_values: list[str]) -> None:
         """Check the values of the given fields in the given model are in the supplied list of allowed values.
 
@@ -181,7 +167,6 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         for model in class_list:
             for field in field_list:
                 value = getattr(model, field)
-                print(value, allowed_values, bool(value in allowed_values))
                 if value and value not in allowed_values:
                     setattr(model, field, '')
                     raise ValueError(f'The parameter "{value}" has not been defined in the list of allowed values.')
