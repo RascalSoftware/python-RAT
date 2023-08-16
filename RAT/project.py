@@ -13,8 +13,6 @@ class CalcTypes(str, Enum):
     NonPolarised = 'non polarised'
     Domains = 'domains'
     OilWater = 'oil water'
-    Magnetic = 'magnetic'
-    MagneticDomains = 'magnetic domains'
 
 
 class ModelTypes(str, Enum):
@@ -120,9 +118,9 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
     @model_validator(mode='after')
     def cross_check_model_values(self) -> 'Project':
         """Certain model fields should contain values defined elsewhere in the project."""
-        fields = ['value_1', 'value_2', 'value_3', 'value_4', 'value_5']
-        self.check_allowed_values('backgrounds', fields, self.background_parameters.get_names())
-        self.check_allowed_values('resolutions', fields, self.resolution_parameters.get_names())
+        value_fields = ['value_1', 'value_2', 'value_3', 'value_4', 'value_5']
+        self.check_allowed_values('backgrounds', value_fields, self.background_parameters.get_names())
+        self.check_allowed_values('resolutions', value_fields, self.resolution_parameters.get_names())
         self.check_allowed_values('layers', ['thickness', 'SLD', 'roughness'], self.parameters.get_names())
 
         self.check_allowed_values('contrasts', ['data'], self.data.get_names())

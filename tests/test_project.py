@@ -36,17 +36,17 @@ def test_initialise_wrong_classes(model: Callable) -> None:
 
 
 @pytest.mark.parametrize(["field", "input_model"], [
-    ("backgrounds", RAT.models.Resolution),
-    ("contrasts", RAT.models.Layer),
-    ("custom_files", RAT.models.Data),
-    ("data", RAT.models.Contrast),
-    ("layers", RAT.models.Parameter),
-    ("parameters", RAT.models.CustomFile),
-    ("resolutions", RAT.models.Background),
+    ('backgrounds', RAT.models.Resolution),
+    ('contrasts', RAT.models.Layer),
+    ('custom_files', RAT.models.Data),
+    ('data', RAT.models.Contrast),
+    ('layers', RAT.models.Parameter),
+    ('parameters', RAT.models.CustomFile),
+    ('resolutions', RAT.models.Background),
 ])
 def test_assign_wrong_classes(field: str, input_model: Callable) -> None:
     """If we assign incorrect classes to the "Project" model, we should raise a ValidationError."""
-    test_project = RAT.project.Project()
+    test_project = RAT.project.Project.model_construct()
     with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\n{field}\n  Assertion failed, '
                                                        f'"{field}" ClassList contains objects other than '
                                                        f'"{RAT.project.model_in_classlist[field]}"'):
@@ -54,29 +54,29 @@ def test_assign_wrong_classes(field: str, input_model: Callable) -> None:
 
 
 @pytest.mark.parametrize(["field", "input_model"], [
-    ("backgrounds", RAT.models.Background),
-    ("contrasts", RAT.models.Contrast),
-    ("custom_files", RAT.models.CustomFile),
-    ("data", RAT.models.Data),
-    ("layers", RAT.models.Layer),
-    ("parameters", RAT.models.Parameter),
-    ("resolutions", RAT.models.Resolution),
+    ('backgrounds', RAT.models.Background),
+    ('contrasts', RAT.models.Contrast),
+    ('custom_files', RAT.models.CustomFile),
+    ('data', RAT.models.Data),
+    ('layers', RAT.models.Layer),
+    ('parameters', RAT.models.Parameter),
+    ('resolutions', RAT.models.Resolution),
 ])
 def test_assign_models(field: str, input_model: Callable) -> None:
     """If the "Project" model is initialised with models rather than ClassLists, we should raise a ValidationError.
     """
-    test_project = RAT.project.Project()
+    test_project = RAT.project.Project.model_construct()
     with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\n{field}\n  Input should be an '
                                                        f'instance of ClassList'):
         setattr(test_project, field, input_model())
 
 
 @pytest.mark.parametrize("field", [
-    "value_1",
-    "value_2",
-    "value_3",
-    "value_4",
-    "value_5",
+    'value_1',
+    'value_2',
+    'value_3',
+    'value_4',
+    'value_5',
 ])
 def test_allowed_backgrounds(field: str) -> None:
     """If the "value" fields of the Background model are set to values that are not specified in the background
@@ -91,9 +91,9 @@ def test_allowed_backgrounds(field: str) -> None:
 
 
 @pytest.mark.parametrize("field", [
-    "thickness",
-    "SLD",
-    "roughness",
+    'thickness',
+    'SLD',
+    'roughness',
 ])
 def test_allowed_layers(field: str) -> None:
     """If the "thickness", "SLD", or "roughness" fields of the Layer model are set to values that are not specified in
@@ -108,11 +108,11 @@ def test_allowed_layers(field: str) -> None:
 
 
 @pytest.mark.parametrize("field", [
-    "value_1",
-    "value_2",
-    "value_3",
-    "value_4",
-    "value_5",
+    'value_1',
+    'value_2',
+    'value_3',
+    'value_4',
+    'value_5',
 ])
 def test_allowed_resolutions(field: str) -> None:
     """If the "value" fields of the Resolution model are set to values that are not specified in the background
@@ -127,12 +127,12 @@ def test_allowed_resolutions(field: str) -> None:
 
 
 @pytest.mark.parametrize("field", [
-    "data",
-    "background",
-    "nba",
-    "nbs",
-    "scalefactor",
-    "resolution",
+    'data',
+    'background',
+    'nba',
+    'nbs',
+    'scalefactor',
+    'resolution',
 ])
 def test_allowed_contrasts(field: str) -> None:
     """If the "value" fields of the Background model are set to values not specified in the background parameters, we
@@ -200,8 +200,8 @@ def test_repr(expected_string: str) -> None:
 
 
 @pytest.mark.parametrize("test_value", [
-    "",
-    "Background Param 1",
+    '',
+    'Background Param 1',
 ])
 def test_check_allowed_values(test_value: str) -> None:
     """We should not raise an error if string values are defined and on the list of allowed values."""

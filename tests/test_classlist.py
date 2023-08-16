@@ -33,7 +33,7 @@ class TestInitialisation(object):
         (InputAttributes()),
         (InputAttributes(name='Alice')),
         (InputAttributes(surname='Morgan')),
-        ('Alice'),
+        'Alice',
     ])
     def test_input_object(self, input_object: Any) -> None:
         """For an input of an object, the ClassList should contain a one-element list containing the object and
@@ -48,10 +48,10 @@ class TestInitialisation(object):
         ([InputAttributes(name='Alice')]),
         ([InputAttributes(surname='Morgan')]),
         ([InputAttributes(name='Alice'), InputAttributes(name='Bob')]),
-        ((InputAttributes(),)),
-        ((InputAttributes(name='Alice'),)),
-        ((InputAttributes(surname='Morgan'),)),
-        ((InputAttributes(name='Alice'), InputAttributes(name='Bob'))),
+        (InputAttributes(),),
+        (InputAttributes(name='Alice'),),
+        (InputAttributes(surname='Morgan'),),
+        (InputAttributes(name='Alice'), InputAttributes(name='Bob')),
     ])
     def test_input_sequence(self, input_sequence: Sequence[object]) -> None:
         """For an input of a sequence, the ClassList should be a list equal to the input sequence, and _class_handle
@@ -91,7 +91,7 @@ class TestInitialisation(object):
 
 
 @pytest.mark.parametrize("expected_string", [
-    ('    name\n--  ------\n 0  Alice\n 1  Bob'),
+    '    name\n--  ------\n 0  Alice\n 1  Bob',
 ])
 def test_repr_table(two_name_class_list: 'ClassList', expected_string: str) -> None:
     """For classes with the __dict__ attribute, we should be able to print the ClassList like a table."""
@@ -145,7 +145,7 @@ def test_setitem_same_name_field(two_name_class_list: 'ClassList', new_values: d
 @pytest.mark.parametrize("added_list", [
     (ClassList(InputAttributes(name='Eve'))),
     ([InputAttributes(name='Eve')]),
-    ((InputAttributes(name='Eve'),)),
+    (InputAttributes(name='Eve'),),
 ])
 def test_iadd(two_name_class_list: 'ClassList', added_list: Iterable, three_name_class_list: 'ClassList') -> None:
     """We should be able to use the "+=" operator to add iterables to a ClassList."""
@@ -157,7 +157,7 @@ def test_iadd(two_name_class_list: 'ClassList', added_list: Iterable, three_name
 @pytest.mark.parametrize("added_list", [
     (ClassList([InputAttributes(name='Alice'), InputAttributes(name='Bob')])),
     ([InputAttributes(name='Alice'), InputAttributes(name='Bob')]),
-    ((InputAttributes(name='Alice'), InputAttributes(name='Bob'))),
+    (InputAttributes(name='Alice'), InputAttributes(name='Bob')),
 ])
 def test_iadd_empty_classlist(added_list: Sequence, two_name_class_list: 'ClassList') -> None:
     """We should be able to use the "+=" operator to add iterables to an empty ClassList, whilst also setting
@@ -320,6 +320,7 @@ def test_insert_object_and_kwargs(two_name_class_list: 'ClassList',
                                         InputAttributes(name='Eve'),
                                         InputAttributes(name='Bob')])
 
+
 @pytest.mark.parametrize("new_object", [
     (InputAttributes(name='Alice')),
 ])
@@ -365,7 +366,7 @@ def test_insert_kwargs_same_name(two_name_class_list: 'ClassList', new_values: d
 
 
 @pytest.mark.parametrize("remove_value", [
-    ("Bob"),
+    "Bob",
     (InputAttributes(name='Bob')),
 ])
 def test_remove(two_name_class_list: 'ClassList', remove_value: Union[object, str]) -> None:
@@ -376,7 +377,7 @@ def test_remove(two_name_class_list: 'ClassList', remove_value: Union[object, st
 
 
 @pytest.mark.parametrize("remove_value", [
-    ('Eve'),
+    'Eve',
     (InputAttributes(name='Eve')),
 ])
 def test_remove_not_present(two_name_class_list: 'ClassList', remove_value: Union[object, str]) -> None:
@@ -410,7 +411,7 @@ def test_index(two_name_class_list: 'ClassList', index_value: Union[object, str]
 
 
 @pytest.mark.parametrize("index_value", [
-    ('Eve'),
+    'Eve',
     (InputAttributes(name='Eve')),
 ])
 def test_index_not_present(two_name_class_list: 'ClassList', index_value: Union[object, str]) -> None:
@@ -423,7 +424,7 @@ def test_index_not_present(two_name_class_list: 'ClassList', index_value: Union[
 @pytest.mark.parametrize("extended_list", [
     (ClassList(InputAttributes(name='Eve'))),
     ([InputAttributes(name='Eve')]),
-    ((InputAttributes(name='Eve'),)),
+    (InputAttributes(name='Eve'),),
 ])
 def test_extend(two_name_class_list: 'ClassList', extended_list: Sequence, three_name_class_list: 'ClassList') -> None:
     """We should be able to extend a ClassList using another ClassList or a sequence"""
@@ -435,7 +436,7 @@ def test_extend(two_name_class_list: 'ClassList', extended_list: Sequence, three
 @pytest.mark.parametrize("extended_list", [
     (ClassList(InputAttributes(name='Alice'))),
     ([InputAttributes(name='Alice')]),
-    ((InputAttributes(name='Alice'),)),
+    (InputAttributes(name='Alice'),),
 ])
 def test_extend_empty_classlist(extended_list: Sequence, one_name_class_list: 'ClassList') -> None:
     """We should be able to extend a ClassList using another ClassList or a sequence"""

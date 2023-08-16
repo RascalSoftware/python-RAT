@@ -20,7 +20,6 @@ import RAT.models
     (RAT.models.Resolution, "Resolution"),
 ])
 class TestModels(object):
-
     def test_default_names(self, model: Callable, model_name: str) -> None:
         """When initialising multiple models without specifying a name, they should be given a default name with the
         format: "New <model name> <integer>".
@@ -96,7 +95,7 @@ def test_data_dimension(input_data: np.ndarray[float]) -> None:
 ])
 def test_two_values_in_data_range(input_range: list[float]) -> None:
     """If the "data_range" field of the "Data" model contains more or less than two values, we should raise a
-    ValueError.
+    ValidationError.
     """
     with pytest.raises(pydantic.ValidationError, match='1 validation error for Data\ndata_range\n  Value error, '
                                                        'data_range must contain exactly two values'):

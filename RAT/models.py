@@ -14,14 +14,14 @@ def int_sequence():
 
 
 # Create a counter for each model
-background_id = int_sequence()
-contrast_id = int_sequence()
-custom_file_id = int_sequence()
-data_id = int_sequence()
-domain_contrast_id = int_sequence()
-layer_id = int_sequence()
-parameter_id = int_sequence()
-resolution_id = int_sequence()
+background_number = int_sequence()
+contrast_number = int_sequence()
+custom_file_number = int_sequence()
+data_number = int_sequence()
+domain_contrast_number = int_sequence()
+layer_number = int_sequence()
+parameter_number = int_sequence()
+resolution_number = int_sequence()
 
 
 class Hydration(str, Enum):
@@ -50,7 +50,7 @@ class Types(str, Enum):
 
 class Background(BaseModel, validate_assignment=True, extra='forbid'):
     """Defines the Backgrounds in RAT."""
-    name: str = Field(default_factory=lambda: 'New Background ' + next(background_id))
+    name: str = Field(default_factory=lambda: 'New Background ' + next(background_number))
     type: Types = Types.Constant
     value_1: str = ''
     value_2: str = ''
@@ -61,7 +61,7 @@ class Background(BaseModel, validate_assignment=True, extra='forbid'):
 
 class Contrast(BaseModel, validate_assignment=True, extra='forbid'):
     """Groups together all of the components of the model."""
-    name: str = Field(default_factory=lambda: 'New Contrast ' + next(contrast_id))
+    name: str = Field(default_factory=lambda: 'New Contrast ' + next(contrast_number))
     data: str = ''
     background: str = ''
     nba: str = ''
@@ -74,7 +74,7 @@ class Contrast(BaseModel, validate_assignment=True, extra='forbid'):
 
 class CustomFile(BaseModel, validate_assignment=True, extra='forbid'):
     """Defines the files containing functions to run when using custom models."""
-    name: str = Field(default_factory=lambda: 'New Custom File ' + next(custom_file_id))
+    name: str = Field(default_factory=lambda: 'New Custom File ' + next(custom_file_number))
     filename: str = ''
     language: Languages = Languages.Python
     path: str = 'pwd'  # Should later expand to find current file path
@@ -82,7 +82,7 @@ class CustomFile(BaseModel, validate_assignment=True, extra='forbid'):
 
 class Data(BaseModel, validate_assignment=True, extra='forbid', arbitrary_types_allowed=True):
     """Defines the dataset required for each contrast."""
-    name: str = Field(default_factory=lambda: 'New Data ' + next(data_id))
+    name: str = Field(default_factory=lambda: 'New Data ' + next(data_number))
     data: np.ndarray[float] = np.empty([0, 3])
     data_range: list[float] = []
     simulation_range: list[float] = [0.005, 0.7]
@@ -113,13 +113,13 @@ class Data(BaseModel, validate_assignment=True, extra='forbid', arbitrary_types_
 
 class DomainContrast(BaseModel, validate_assignment=True, extra='forbid'):
     """Groups together the layers required for each domain."""
-    name: str = Field(default_factory=lambda: 'New Domain Contrast ' + next(domain_contrast_id))
+    name: str = Field(default_factory=lambda: 'New Domain Contrast ' + next(domain_contrast_number))
     model: list[str] = []
 
 
 class Layer(BaseModel, validate_assignment=True, extra='forbid'):
     """Combines parameters into defined layers."""
-    name: str = Field(default_factory=lambda: 'New Layer ' + next(layer_id))
+    name: str = Field(default_factory=lambda: 'New Layer ' + next(layer_number))
     thickness: str = ''
     SLD: str = ''
     roughness: str = ''
@@ -129,7 +129,7 @@ class Layer(BaseModel, validate_assignment=True, extra='forbid'):
 
 class Parameter(BaseModel, validate_assignment=True, extra='forbid'):
     """Defines parameters needed to specify the model"""
-    name: str = Field(default_factory=lambda: 'New Parameter ' + next(parameter_id))
+    name: str = Field(default_factory=lambda: 'New Parameter ' + next(parameter_number))
     min: float = 0.0
     value: float = 0.0
     max: float = 0.0
@@ -153,7 +153,7 @@ class ProtectedParameter(Parameter, validate_assignment=True, extra='forbid'):
 
 class Resolution(BaseModel, validate_assignment=True, extra='forbid'):
     """Defines Resolutions in RAT."""
-    name: str = Field(default_factory=lambda: 'New Resolution ' + next(resolution_id))
+    name: str = Field(default_factory=lambda: 'New Resolution ' + next(resolution_number))
     type: Types = Types.Constant
     value_1: str = ''
     value_2: str = ''
