@@ -1,8 +1,12 @@
 """The models module. Contains the pydantic models used by RAT to store project parameters."""
 
-from enum import Enum
 import numpy as np
 from pydantic import BaseModel, Field, FieldValidationInfo, field_validator, model_validator
+
+try:
+    from enum import StrEnum
+except ImportError:
+    from strenum import StrEnum
 
 
 def int_sequence():
@@ -24,25 +28,25 @@ parameter_number = int_sequence()
 resolution_number = int_sequence()
 
 
-class Hydration(str, Enum):
+class Hydration(StrEnum):
     None_ = 'none'
     BulkIn = 'bulk in'
     BulkOut = 'bulk out'
     Oil = 'oil'
 
 
-class Languages(str, Enum):
+class Languages(StrEnum):
     Python = 'python'
     Matlab = 'matlab'
 
 
-class Priors(str, Enum):
+class Priors(StrEnum):
     Uniform = 'uniform'
     Gaussian = 'gaussian'
     Jeffreys = 'jeffreys'
 
 
-class Types(str, Enum):
+class Types(StrEnum):
     Constant = 'constant'
     Data = 'data'
     Function = 'function'

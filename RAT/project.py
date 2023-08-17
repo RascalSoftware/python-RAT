@@ -1,6 +1,5 @@
 """The project module. Defines and stores all the input data required for reflectivity calculations in RAT."""
 
-from enum import Enum
 import numpy as np
 from pydantic import BaseModel, FieldValidationInfo, field_validator, model_validator
 from typing import Any
@@ -8,20 +7,25 @@ from typing import Any
 from RAT.classlist import ClassList
 import RAT.models
 
+try:
+    from enum import StrEnum
+except ImportError:
+    from strenum import StrEnum
 
-class CalcTypes(str, Enum):
+
+class CalcTypes(StrEnum):
     NonPolarised = 'non polarised'
     Domains = 'domains'
     OilWater = 'oil water'
 
 
-class ModelTypes(str, Enum):
+class ModelTypes(StrEnum):
     CustomLayers = 'custom layers'
     CustomXY = 'custom xy'
     StandardLayers = 'standard layers'
 
 
-class Geometries(str, Enum):
+class Geometries(StrEnum):
     AirSubstrate = 'air/substrate'
     SubstrateLiquid = 'substrate/liquid'
 
