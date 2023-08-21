@@ -253,7 +253,7 @@ class ClassList(collections.UserList):
             Raised if the input list defines objects of different types.
         """
         if not (all(isinstance(element, self._class_handle) for element in input_list)):
-            raise ValueError(f"Input list contains elements of type other than '{self._class_handle}'")
+            raise ValueError(f"Input list contains elements of type other than '{self._class_handle.__name__}'")
 
     def _get_item_from_name_field(self, value: Union[object, str]) -> Union[object, str]:
         """Return the object with the given value of the name_field attribute in the ClassList.
