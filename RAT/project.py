@@ -1,7 +1,9 @@
 """The project module. Defines and stores all the input data required for reflectivity calculations in RAT."""
 
+import copy
+import functools
 import numpy as np
-from pydantic import BaseModel, FieldValidationInfo, field_validator, model_validator
+from pydantic import BaseModel, FieldValidationInfo, field_validator, model_validator, ValidationError
 from typing import Any
 
 from RAT.classlist import ClassList
@@ -119,6 +121,17 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
                                                                 fit=True, prior_type=RAT.models.Priors.Uniform, mu=0,
                                                                 sigma=np.inf))
 
+        # Tracking code - fingers crossed!
+        class_lists = ['parameters', 'bulk_in', 'bulk_out', 'qz_shifts', 'scalefactors', 'background_parameters',
+                       'backgrounds', 'resolution_parameters', 'resolutions', 'custom_files', 'data', 'layers',
+                       'contrasts']
+        methods_to_wrap = ['__setitem__', '__delitem__', '__iadd__', 'append', 'insert', 'pop', 'remove', 'clear',
+                           'extend']
+        for class_list in class_lists:
+            attribute = getattr(self, class_list)
+            for methodName in methods_to_wrap:
+                setattr(attribute, methodName, self._wrapper(attribute, getattr(attribute, methodName)))
+
     @model_validator(mode='after')
     def cross_check_model_values(self) -> 'Project':
         """Certain model fields should contain values defined elsewhere in the project."""
@@ -170,5 +183,18 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
             for field in field_list:
                 value = getattr(model, field)
                 if value and value not in allowed_values:
-                    setattr(model, field, '')
                     raise ValueError(f'The parameter "{value}" has not been defined in the list of allowed values.')
+
+    def _wrapper(self, attribute, func):
+        @functools.wraps(func)
+        def wrapped_func(*args, **kwargs):
+            previous_state = copy.copy(getattr(attribute, 'data'))
+            try:
+                func(*args, **kwargs)
+                Project.model_validate(self)
+            except ValidationError as e:
+                setattr(attribute, 'data', previous_state)
+                print(e)
+            finally:
+                del previous_state
+        return wrapped_func
