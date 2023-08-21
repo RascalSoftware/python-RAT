@@ -79,13 +79,22 @@ def test_data_too_few_dimensions(input_data: np.ndarray[float]) -> None:
     (np.array([[1.0]])),
     (np.array([[1.0, 1.0]])),
 ])
-def test_data_dimension(input_data: np.ndarray[float]) -> None:
+def test_data_too_few_values(input_data: np.ndarray[float]) -> None:
     """If the second dimension of the array in the "data" field of the "Data" model has fewer than three values we
     should raise a ValidationError.
     """
     with pytest.raises(pydantic.ValidationError, match='1 validation error for Data\ndata\n  Value error, "data" must '
                                                        'have at least three columns'):
         RAT.models.Data(data=input_data)
+
+
+@pytest.mark.parametrize("input_range", [
+    ([1.0, 2.0]),
+])
+def test_data_ranges(input_range: list[float]) -> None:
+    """The "data_range" and "simulation_range" fields of the "Data" model should contain exactly two values."""
+    assert RAT.models.Data(data_range=input_range).data_range == input_range
+    assert RAT.models.Data(simulation_range=input_range).simulation_range == input_range
 
 
 @pytest.mark.parametrize("input_range", [
