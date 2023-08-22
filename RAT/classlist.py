@@ -63,12 +63,28 @@ class ClassList(collections.UserList):
 
     def __setitem__(self, index: int, set_dict: dict[str, Any]) -> None:
         """Assign the values of an existing object's attributes using a dictionary."""
+        self._setitem(index, set_dict)
+
+    def _setitem(self, index: int, set_dict: dict[str, Any]) -> None:
+        """Auxiliary routine of "__setitem__" used to enable wrapping."""
         self._validate_name_field(set_dict)
         for key, value in set_dict.items():
             setattr(self.data[index], key, value)
 
+    def __delitem__(self, index: int) -> None:
+        """Delete an object from the list by index."""
+        self._delitem(index)
+
+    def _delitem(self, index: int) -> None:
+        """Auxiliary routine of "__delitem__" used to enable wrapping."""
+        del self.data[index]
+
     def __iadd__(self, other: Sequence[object]) -> 'ClassList':
         """Define in-place addition using the "+=" operator."""
+        return self._iadd(other)
+
+    def _iadd(self, other: Sequence[object]) -> 'ClassList':
+        """Auxiliary routine of "__iadd__" used to enable wrapping."""
         if not hasattr(self, '_class_handle'):
             self._class_handle = type(other[0])
         self._check_classes(self + other)

@@ -4,7 +4,7 @@ import copy
 import functools
 import numpy as np
 from pydantic import BaseModel, FieldValidationInfo, field_validator, model_validator, ValidationError
-from typing import Any
+from typing import Any, Callable
 
 from RAT.classlist import ClassList
 import RAT.models
@@ -111,7 +111,8 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         return value
 
     def model_post_init(self, __context: Any) -> None:
-        """Initialises the class in the ClassLists for empty data fields, and sets protected parameters."""
+        """Initialises the class in the ClassLists for empty data fields, sets protected parameters, and wraps
+        ClassList routines to control revalidation."""
         for field_name, model in model_in_classlist.items():
             field = getattr(self, field_name)
             if not hasattr(field, "_class_handle"):
@@ -121,16 +122,16 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
                                                                 fit=True, prior_type=RAT.models.Priors.Uniform, mu=0,
                                                                 sigma=np.inf))
 
-        # Tracking code - fingers crossed!
+        # Wrap ClassList routines - when any of these routines are called, the wrapper will force revalidation of the
+        # model, handle errors and reset previous values if necessary.
         class_lists = ['parameters', 'bulk_in', 'bulk_out', 'qz_shifts', 'scalefactors', 'background_parameters',
                        'backgrounds', 'resolution_parameters', 'resolutions', 'custom_files', 'data', 'layers',
                        'contrasts']
-        methods_to_wrap = ['__setitem__', '__delitem__', '__iadd__', 'append', 'insert', 'pop', 'remove', 'clear',
-                           'extend']
+        methods_to_wrap = ['_setitem', '_delitem', '_iadd', 'append', 'insert', 'pop', 'remove', 'clear', 'extend']
         for class_list in class_lists:
             attribute = getattr(self, class_list)
             for methodName in methods_to_wrap:
-                setattr(attribute, methodName, self._wrapper(attribute, getattr(attribute, methodName)))
+                setattr(attribute, methodName, self._classlist_wrapper(attribute, getattr(attribute, methodName)))
 
     @model_validator(mode='after')
     def cross_check_model_values(self) -> 'Project':
@@ -185,16 +186,38 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
                 if value and value not in allowed_values:
                     raise ValueError(f'The parameter "{value}" has not been defined in the list of allowed values.')
 
-    def _wrapper(self, attribute, func):
+    def _classlist_wrapper(self, attribute: 'ClassList', func: Callable):
+        """Defines the function used to wrap around ClassList routines to force revalidation.
+
+        Parameters
+        ----------
+        attribute : ClassList
+            The ClassList defined in the "Project" model
+        func : Callable
+            The "attribute" ClassList routine being wrapped.
+
+        Returns
+        -------
+        wrapped_func : Callable
+            The wrapped ClassList routine.
+        """
         @functools.wraps(func)
         def wrapped_func(*args, **kwargs):
-            previous_state = copy.copy(getattr(attribute, 'data'))
+            """Run the ClassList function and then revalidate the "Project" model. If any exception is raised, restore
+            the previous state of the model and report details of the exception.
+            """
+            previous_state = copy.deepcopy(getattr(attribute, 'data'))
+            return_value = None
             try:
-                func(*args, **kwargs)
+                return_value = func(*args, **kwargs)
                 Project.model_validate(self)
             except ValidationError as e:
                 setattr(attribute, 'data', previous_state)
                 print(e)
+            except (TypeError, ValueError):
+                setattr(attribute, 'data', previous_state)
+                raise
             finally:
                 del previous_state
+            return return_value
         return wrapped_func
