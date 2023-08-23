@@ -52,7 +52,17 @@ class Types(StrEnum):
     Function = 'function'
 
 
-class Background(BaseModel, validate_assignment=True, extra='forbid'):
+class WrappableBaseModel(BaseModel):
+
+    def __setattr__(self, key, value):
+        self._setattr(key, value)
+
+    def _setattr(self, key, value):
+        """Auxiliary routine of "__setattr__" used to enable wrapping."""
+        super().__setattr__(key, value)
+
+
+class Background(WrappableBaseModel, validate_assignment=True, extra='forbid'):
     """Defines the Backgrounds in RAT."""
     name: str = Field(default_factory=lambda: 'New Background ' + next(background_number))
     type: Types = Types.Constant
@@ -63,7 +73,7 @@ class Background(BaseModel, validate_assignment=True, extra='forbid'):
     value_5: str = ''
 
 
-class Contrast(BaseModel, validate_assignment=True, extra='forbid'):
+class Contrast(WrappableBaseModel, validate_assignment=True, extra='forbid'):
     """Groups together all of the components of the model."""
     name: str = Field(default_factory=lambda: 'New Contrast ' + next(contrast_number))
     data: str = ''
@@ -76,7 +86,7 @@ class Contrast(BaseModel, validate_assignment=True, extra='forbid'):
     model: list[str] = []  # But how many strings? How to deal with this?
 
 
-class CustomFile(BaseModel, validate_assignment=True, extra='forbid'):
+class CustomFile(WrappableBaseModel, validate_assignment=True, extra='forbid'):
     """Defines the files containing functions to run when using custom models."""
     name: str = Field(default_factory=lambda: 'New Custom File ' + next(custom_file_number))
     filename: str = ''
@@ -84,7 +94,7 @@ class CustomFile(BaseModel, validate_assignment=True, extra='forbid'):
     path: str = 'pwd'  # Should later expand to find current file path
 
 
-class Data(BaseModel, validate_assignment=True, extra='forbid', arbitrary_types_allowed=True):
+class Data(WrappableBaseModel, validate_assignment=True, extra='forbid', arbitrary_types_allowed=True):
     """Defines the dataset required for each contrast."""
     name: str = Field(default_factory=lambda: 'New Data ' + next(data_number))
     data: np.ndarray[float] = np.empty([0, 3])
@@ -115,13 +125,13 @@ class Data(BaseModel, validate_assignment=True, extra='forbid', arbitrary_types_
     # Also need model validators for data range compared to data etc -- need more details.
 
 
-class DomainContrast(BaseModel, validate_assignment=True, extra='forbid'):
+class DomainContrast(WrappableBaseModel, validate_assignment=True, extra='forbid'):
     """Groups together the layers required for each domain."""
     name: str = Field(default_factory=lambda: 'New Domain Contrast ' + next(domain_contrast_number))
     model: list[str] = []
 
 
-class Layer(BaseModel, validate_assignment=True, extra='forbid'):
+class Layer(WrappableBaseModel, validate_assignment=True, extra='forbid'):
     """Combines parameters into defined layers."""
     name: str = Field(default_factory=lambda: 'New Layer ' + next(layer_number))
     thickness: str = ''
@@ -131,7 +141,7 @@ class Layer(BaseModel, validate_assignment=True, extra='forbid'):
     hydrate_with: Hydration = Hydration.BulkOut
 
 
-class Parameter(BaseModel, validate_assignment=True, extra='forbid'):
+class Parameter(WrappableBaseModel, validate_assignment=True, extra='forbid'):
     """Defines parameters needed to specify the model"""
     name: str = Field(default_factory=lambda: 'New Parameter ' + next(parameter_number))
     min: float = 0.0
@@ -155,7 +165,7 @@ class ProtectedParameter(Parameter, validate_assignment=True, extra='forbid'):
     name: str = Field(frozen=True)
 
 
-class Resolution(BaseModel, validate_assignment=True, extra='forbid'):
+class Resolution(WrappableBaseModel, validate_assignment=True, extra='forbid'):
     """Defines Resolutions in RAT."""
     name: str = Field(default_factory=lambda: 'New Resolution ' + next(resolution_number))
     type: Types = Types.Constant
