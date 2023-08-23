@@ -133,6 +133,13 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
             for methodName in methods_to_wrap:
                 setattr(attribute, methodName, self._classlist_wrapper(attribute, getattr(attribute, methodName)))
 
+        # Wrap the "__setattr__" auxiliary routine for models where cross-check validation is required.
+        cross_check_class_lists = ['backgrounds', 'resolutions', 'layers', 'contrasts']
+        for class_list in cross_check_class_lists:
+            attribute = getattr(self, class_list)
+            model = getattr(RAT.models, model_in_classlist[class_list])
+            setattr(model, '_setattr', self._classlist_wrapper(attribute, getattr(model, '_setattr')))
+
     @model_validator(mode='after')
     def cross_check_model_values(self) -> 'Project':
         """Certain model fields should contain values defined elsewhere in the project."""
@@ -186,36 +193,36 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
                 if value and value not in allowed_values:
                     raise ValueError(f'The parameter "{value}" has not been defined in the list of allowed values.')
 
-    def _classlist_wrapper(self, attribute: 'ClassList', func: Callable):
+    def _classlist_wrapper(self, class_list: 'ClassList', func: Callable):
         """Defines the function used to wrap around ClassList routines to force revalidation.
 
         Parameters
         ----------
-        attribute : ClassList
-            The ClassList defined in the "Project" model
+        class_list : ClassList
+            The ClassList defined in the "Project" model that is being modified.
         func : Callable
-            The "attribute" ClassList routine being wrapped.
+            The routine being wrapped.
 
         Returns
         -------
         wrapped_func : Callable
-            The wrapped ClassList routine.
+            The wrapped routine.
         """
         @functools.wraps(func)
         def wrapped_func(*args, **kwargs):
-            """Run the ClassList function and then revalidate the "Project" model. If any exception is raised, restore
-            the previous state of the model and report details of the exception.
+            """Run the given function and then revalidate the "Project" model. If any exception is raised, restore
+            the previous state of the given ClassList and report details of the exception.
             """
-            previous_state = copy.deepcopy(getattr(attribute, 'data'))
+            previous_state = copy.deepcopy(getattr(class_list, 'data'))
             return_value = None
             try:
                 return_value = func(*args, **kwargs)
                 Project.model_validate(self)
             except ValidationError as e:
-                setattr(attribute, 'data', previous_state)
+                setattr(class_list, 'data', previous_state)
                 print(e)
             except (TypeError, ValueError):
-                setattr(attribute, 'data', previous_state)
+                setattr(class_list, 'data', previous_state)
                 raise
             finally:
                 del previous_state
