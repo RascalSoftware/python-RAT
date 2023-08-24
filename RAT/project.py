@@ -8,6 +8,7 @@ from typing import Any, Callable
 
 from RAT.classlist import ClassList
 import RAT.models
+from RAT.utils.CustomErrors import formatted_pydantic_error
 
 try:
     from enum import StrEnum
@@ -144,16 +145,19 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
     def cross_check_model_values(self) -> 'Project':
         """Certain model fields should contain values defined elsewhere in the project."""
         value_fields = ['value_1', 'value_2', 'value_3', 'value_4', 'value_5']
-        self.check_allowed_values('backgrounds', value_fields, self.background_parameters.get_names())
-        self.check_allowed_values('resolutions', value_fields, self.resolution_parameters.get_names())
-        self.check_allowed_values('layers', ['thickness', 'SLD', 'roughness'], self.parameters.get_names())
+        self.check_allowed_values('backgrounds', value_fields, self.background_parameters.get_names(),
+                                  'background_parameters')
+        self.check_allowed_values('resolutions', value_fields, self.resolution_parameters.get_names(),
+                                  'resolution_parameters')
+        self.check_allowed_values('layers', ['thickness', 'SLD', 'roughness'], self.parameters.get_names(),
+                                  'parameters')
 
-        self.check_allowed_values('contrasts', ['data'], self.data.get_names())
-        self.check_allowed_values('contrasts', ['background'], self.backgrounds.get_names())
-        self.check_allowed_values('contrasts', ['nba'], self.bulk_in.get_names())
-        self.check_allowed_values('contrasts', ['nbs'], self.bulk_out.get_names())
-        self.check_allowed_values('contrasts', ['scalefactor'], self.scalefactors.get_names())
-        self.check_allowed_values('contrasts', ['resolution'], self.resolutions.get_names())
+        self.check_allowed_values('contrasts', ['data'], self.data.get_names(), 'data')
+        self.check_allowed_values('contrasts', ['background'], self.backgrounds.get_names(), 'backgrounds')
+        self.check_allowed_values('contrasts', ['nba'], self.bulk_in.get_names(), 'bulk_in')
+        self.check_allowed_values('contrasts', ['nbs'], self.bulk_out.get_names(), 'bulk_out')
+        self.check_allowed_values('contrasts', ['scalefactor'], self.scalefactors.get_names(), 'scalefactors')
+        self.check_allowed_values('contrasts', ['resolution'], self.resolutions.get_names(), 'resolutions')
         return self
 
     def __repr__(self):
@@ -169,7 +173,8 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
                     output += value.value + '\n\n'
         return output
 
-    def check_allowed_values(self, attribute: str, field_list: list[str], allowed_values: list[str]) -> None:
+    def check_allowed_values(self, attribute: str, field_list: list[str], allowed_values: list[str],
+                             allowed_values_classlist: str) -> None:
         """Check the values of the given fields in the given model are in the supplied list of allowed values.
 
         Parameters
@@ -180,6 +185,8 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
             The fields of the attribute to be checked for valid values.
         allowed_values : list [str]
             The list of allowed values for the fields given in field_list.
+        allowed_values_classlist : str
+            The name of the ClassList containing the allowed values/
 
         Raises
         ------
@@ -191,7 +198,8 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
             for field in field_list:
                 value = getattr(model, field)
                 if value and value not in allowed_values:
-                    raise ValueError(f'The parameter "{value}" has not been defined in the list of allowed values.')
+                    raise ValueError(f'The value "{value}" in the "{field}" field of "{attribute}" must be defined in '
+                                     f'"{allowed_values_classlist}".')
 
     def _classlist_wrapper(self, class_list: 'ClassList', func: Callable):
         """Defines the function used to wrap around ClassList routines to force revalidation.
@@ -220,7 +228,9 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
                 Project.model_validate(self)
             except ValidationError as e:
                 setattr(class_list, 'data', previous_state)
-                print(e)
+                error_string = formatted_pydantic_error(e)
+                # Use ANSI escape sequences to print error text in red
+                print('\033[31m' + error_string + '\033[0m')
             except (TypeError, ValueError):
                 setattr(class_list, 'data', previous_state)
                 raise

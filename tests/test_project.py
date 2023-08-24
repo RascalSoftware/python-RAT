@@ -136,9 +136,9 @@ def test_allowed_backgrounds(field: str) -> None:
     """
     test_background = RAT.models.Background()
     setattr(test_background, field, "undefined")
-    with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\n  Value error, The '
-                                                       f'parameter "undefined" has not been defined in the list of '
-                                                       f'allowed values.'):
+    with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\n  Value error, The value '
+                                                       f'"undefined" in the "{field}" field of "backgrounds" must be '
+                                                       f'defined in "background_parameters".'):
         RAT.project.Project(backgrounds=ClassList(test_background))
 
 
@@ -153,9 +153,9 @@ def test_allowed_layers(field: str) -> None:
     """
     test_layer = RAT.models.Layer()
     setattr(test_layer, field, "undefined")
-    with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\n  Value error, The '
-                                                       f'parameter "undefined" has not been defined in the list of '
-                                                       f'allowed values.'):
+    with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\n  Value error, The value '
+                                                       f'"undefined" in the "{field}" field of "layers" must be '
+                                                       f'defined in "parameters".'):
         RAT.project.Project(layers=ClassList(test_layer))
 
 
@@ -172,29 +172,29 @@ def test_allowed_resolutions(field: str) -> None:
     """
     test_resolution = RAT.models.Resolution()
     setattr(test_resolution, field, "undefined")
-    with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\n  Value error, The '
-                                                       f'parameter "undefined" has not been defined in the list of '
-                                                       f'allowed values.'):
+    with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\n  Value error, The value '
+                                                       f'"undefined" in the "{field}" field of "resolutions" must be '
+                                                       f'defined in "resolution_parameters".'):
         RAT.project.Project(resolutions=ClassList(test_resolution))
 
 
-@pytest.mark.parametrize("field", [
-    'data',
-    'background',
-    'nba',
-    'nbs',
-    'scalefactor',
-    'resolution',
+@pytest.mark.parametrize(["field", "model_name"], [
+    ('data', 'data'),
+    ('background', 'backgrounds'),
+    ('nba', 'bulk_in'),
+    ('nbs', 'bulk_out'),
+    ('scalefactor', 'scalefactors'),
+    ('resolution', 'resolutions'),
 ])
-def test_allowed_contrasts(field: str) -> None:
-    """If the "value" fields of the Background model are set to values not specified in the background parameters, we
-    should raise a ValidationError.
+def test_allowed_contrasts(field: str, model_name: str) -> None:
+    """If the fields of the Contrast model are set to values not specified in the other respective models of the
+    project, we should raise a ValidationError.
     """
     test_contrast = RAT.models.Contrast()
     setattr(test_contrast, field, "undefined")
-    with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\n  Value error, The '
-                                                       f'parameter "undefined" has not been defined in the list of '
-                                                       f'allowed values.'):
+    with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\n  Value error, The value '
+                                                       f'"undefined" in the "{field}" field of "contrasts" must be '
+                                                       f'defined in "{model_name}".'):
         RAT.project.Project(contrasts=ClassList(test_contrast))
 
 
@@ -210,7 +210,8 @@ def test_repr(default_project_repr: str) -> None:
 def test_check_allowed_values(test_value: str) -> None:
     """We should not raise an error if string values are defined and on the list of allowed values."""
     test_project = RAT.project.Project.model_construct(backgrounds=ClassList(RAT.models.Background(value_1=test_value)))
-    assert test_project.check_allowed_values("backgrounds", ["value_1"], ["Background Param 1"]) is None
+    assert test_project.check_allowed_values("backgrounds", ["value_1"], ["Background Param 1"],
+                                             "background_parameters") is None
 
 
 @pytest.mark.parametrize("test_value", [
@@ -219,6 +220,6 @@ def test_check_allowed_values(test_value: str) -> None:
 def test_check_allowed_values_not_on_list(test_value: str) -> None:
     """If string values are defined and are not included on the list of allowed values we should raise a ValueError."""
     test_project = RAT.project.Project.model_construct(backgrounds=ClassList(RAT.models.Background(value_1=test_value)))
-    with pytest.raises(ValueError, match=f'The parameter "{test_value}" has not been defined in the list of allowed '
-                                         f'values.'):
-        test_project.check_allowed_values("backgrounds", ["value_1"], ["Background Param 1"])
+    with pytest.raises(ValueError, match=f'The value "{test_value}" in the "value_1" field of "backgrounds" must be '
+                                         f'defined in "background_parameters".'):
+        test_project.check_allowed_values("backgrounds", ["value_1"], ["Background Param 1"], "background_parameters")
