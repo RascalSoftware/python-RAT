@@ -134,13 +134,6 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
             for methodName in methods_to_wrap:
                 setattr(attribute, methodName, self._classlist_wrapper(attribute, getattr(attribute, methodName)))
 
-        # Wrap the "__setattr__" auxiliary routine for models where cross-check validation is required.
-        cross_check_class_lists = ['backgrounds', 'resolutions', 'layers', 'contrasts']
-        for class_list in cross_check_class_lists:
-            attribute = getattr(self, class_list)
-            model = getattr(RAT.models, model_in_classlist[class_list])
-            setattr(model, '_setattr', self._classlist_wrapper(attribute, getattr(model, '_setattr')))
-
     @model_validator(mode='after')
     def cross_check_model_values(self) -> 'Project':
         """Certain model fields should contain values defined elsewhere in the project."""
