@@ -8,7 +8,7 @@ from typing import Any, Callable
 
 from RAT.classlist import ClassList
 import RAT.models
-from RAT.utils.CustomErrors import formatted_pydantic_error
+from RAT.utils.custom_errors import formatted_pydantic_error
 
 try:
     from enum import StrEnum
@@ -48,6 +48,27 @@ model_in_classlist = {'parameters': 'Parameter',
                       'layers': 'Layer',
                       'contrasts': 'Contrast'
                       }
+
+defined_in = {'backgrounds.value_1': 'background_parameters',
+              'backgrounds.value_2': 'background_parameters',
+              'backgrounds.value_3': 'background_parameters',
+              'backgrounds.value_4': 'background_parameters',
+              'backgrounds.value_5': 'background_parameters',
+              'resolutions.value_1': 'resolution_parameters',
+              'resolutions.value_2': 'resolution_parameters',
+              'resolutions.value_3': 'resolution_parameters',
+              'resolutions.value_4': 'resolution_parameters',
+              'resolutions.value_5': 'resolution_parameters',
+              'layers.thickness': 'parameters',
+              'layers.SLD': 'parameters',
+              'layers.roughness': 'parameters',
+              'contrasts.data': 'data',
+              'contrasts.background': 'backgrounds',
+              'contrasts.nba': 'bulk_in',
+              'contrasts.nbs': 'bulk_out',
+              'contrasts.scalefactor': 'scalefactors',
+              'contrasts.resolution': 'resolutions',
+              }
 
 
 class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_types_allowed=True):
