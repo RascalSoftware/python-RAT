@@ -15,6 +15,7 @@ import RAT.project
 
 @pytest.fixture
 def test_project():
+    """Add parameters to the default project, so each ClassList can be tested properly."""
     test_project = RAT.project.Project()
     test_project.data[0] = {'data': np.array([[1, 1, 1]])}
     test_project.parameters.append(name='Test SLD')
@@ -232,8 +233,7 @@ def test_repr(default_project_repr: str) -> None:
 def test_check_allowed_values(test_value: str) -> None:
     """We should not raise an error if string values are defined and on the list of allowed values."""
     test_project = RAT.project.Project.model_construct(backgrounds=ClassList(RAT.models.Background(value_1=test_value)))
-    assert test_project.check_allowed_values("backgrounds", ["value_1"], ["Background Param 1"],
-                                             "background_parameters") is None
+    assert test_project.check_allowed_values("backgrounds", ["value_1"], ["Background Param 1"]) is None
 
 
 @pytest.mark.parametrize("test_value", [
@@ -244,7 +244,7 @@ def test_check_allowed_values_not_on_list(test_value: str) -> None:
     test_project = RAT.project.Project.model_construct(backgrounds=ClassList(RAT.models.Background(value_1=test_value)))
     with pytest.raises(ValueError, match=f'The value "{test_value}" in the "value_1" field of "backgrounds" must be '
                                          f'defined in "background_parameters".'):
-        test_project.check_allowed_values("backgrounds", ["value_1"], ["Background Param 1"], "background_parameters")
+        test_project.check_allowed_values("backgrounds", ["value_1"], ["Background Param 1"])
 
 
 @pytest.mark.parametrize(["class_list", "input_model", "field"], [
@@ -277,7 +277,7 @@ def test_wrap_set(test_project, class_list: str, input_model: Callable, field: s
         test_attribute[0] = {field: 'undefined'}
     assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "undefined" in '
                                     f'the "{field}" field of "{class_list}" must be defined in '
-                                    f'"{RAT.project.defined_in[class_list+"."+field]}".\033[0m\n')
+                                    f'"{RAT.project.values_defined_in[class_list+"."+field]}".\033[0m\n')
     # Ensure invalid model was not changed
     assert test_attribute == orig_class_list
 
@@ -338,7 +338,7 @@ def test_wrap_iadd(test_project, class_list: str, input_model: Callable, field: 
         test_attribute += [input_model(**{field: 'undefined'})]
     assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "undefined" in '
                                     f'the "{field}" field of "{class_list}" must be defined in '
-                                    f'"{RAT.project.defined_in[class_list + "." + field]}".\033[0m\n')
+                                    f'"{RAT.project.values_defined_in[class_list + "." + field]}".\033[0m\n')
     # Ensure invalid model was not added
     assert test_attribute == orig_class_list
 
@@ -372,7 +372,7 @@ def test_wrap_append(test_project, class_list: str, input_model: Callable, field
         test_attribute.append(input_model(**{field: 'undefined'}))
     assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "undefined" in '
                                     f'the "{field}" field of "{class_list}" must be defined in '
-                                    f'"{RAT.project.defined_in[class_list + "." + field]}".\033[0m\n')
+                                    f'"{RAT.project.values_defined_in[class_list + "." + field]}".\033[0m\n')
     # Ensure invalid model was not appended
     assert test_attribute == orig_class_list
 
@@ -406,7 +406,7 @@ def test_wrap_insert(test_project, class_list: str, input_model: Callable, field
         test_attribute.insert(0, input_model(**{field: 'undefined'}))
     assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "undefined" in '
                                     f'the "{field}" field of "{class_list}" must be defined in '
-                                    f'"{RAT.project.defined_in[class_list + "." + field]}".\033[0m\n')
+                                    f'"{RAT.project.values_defined_in[class_list + "." + field]}".\033[0m\n')
     # Ensure invalid model was not inserted
     assert test_attribute == orig_class_list
 
@@ -550,6 +550,6 @@ def test_wrap_extend(test_project, class_list: str, input_model: Callable, field
         test_attribute.extend([input_model(**{field: 'undefined'})])
     assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "undefined" in '
                                     f'the "{field}" field of "{class_list}" must be defined in '
-                                    f'"{RAT.project.defined_in[class_list + "." + field]}".\033[0m\n')
+                                    f'"{RAT.project.values_defined_in[class_list + "." + field]}".\033[0m\n')
     # Ensure invalid model was not appended
     assert test_attribute == orig_class_list

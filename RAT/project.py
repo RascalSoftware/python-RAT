@@ -49,26 +49,26 @@ model_in_classlist = {'parameters': 'Parameter',
                       'contrasts': 'Contrast'
                       }
 
-defined_in = {'backgrounds.value_1': 'background_parameters',
-              'backgrounds.value_2': 'background_parameters',
-              'backgrounds.value_3': 'background_parameters',
-              'backgrounds.value_4': 'background_parameters',
-              'backgrounds.value_5': 'background_parameters',
-              'resolutions.value_1': 'resolution_parameters',
-              'resolutions.value_2': 'resolution_parameters',
-              'resolutions.value_3': 'resolution_parameters',
-              'resolutions.value_4': 'resolution_parameters',
-              'resolutions.value_5': 'resolution_parameters',
-              'layers.thickness': 'parameters',
-              'layers.SLD': 'parameters',
-              'layers.roughness': 'parameters',
-              'contrasts.data': 'data',
-              'contrasts.background': 'backgrounds',
-              'contrasts.nba': 'bulk_in',
-              'contrasts.nbs': 'bulk_out',
-              'contrasts.scalefactor': 'scalefactors',
-              'contrasts.resolution': 'resolutions',
-              }
+values_defined_in = {'backgrounds.value_1': 'background_parameters',
+                     'backgrounds.value_2': 'background_parameters',
+                     'backgrounds.value_3': 'background_parameters',
+                     'backgrounds.value_4': 'background_parameters',
+                     'backgrounds.value_5': 'background_parameters',
+                     'resolutions.value_1': 'resolution_parameters',
+                     'resolutions.value_2': 'resolution_parameters',
+                     'resolutions.value_3': 'resolution_parameters',
+                     'resolutions.value_4': 'resolution_parameters',
+                     'resolutions.value_5': 'resolution_parameters',
+                     'layers.thickness': 'parameters',
+                     'layers.SLD': 'parameters',
+                     'layers.roughness': 'parameters',
+                     'contrasts.data': 'data',
+                     'contrasts.background': 'backgrounds',
+                     'contrasts.nba': 'bulk_in',
+                     'contrasts.nbs': 'bulk_out',
+                     'contrasts.scalefactor': 'scalefactors',
+                     'contrasts.resolution': 'resolutions',
+                     }
 
 
 class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_types_allowed=True):
@@ -134,7 +134,8 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
 
     def model_post_init(self, __context: Any) -> None:
         """Initialises the class in the ClassLists for empty data fields, sets protected parameters, and wraps
-        ClassList routines to control revalidation."""
+        ClassList routines to control revalidation.
+        """
         for field_name, model in model_in_classlist.items():
             field = getattr(self, field_name)
             if not hasattr(field, "_class_handle"):
@@ -159,19 +160,16 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
     def cross_check_model_values(self) -> 'Project':
         """Certain model fields should contain values defined elsewhere in the project."""
         value_fields = ['value_1', 'value_2', 'value_3', 'value_4', 'value_5']
-        self.check_allowed_values('backgrounds', value_fields, self.background_parameters.get_names(),
-                                  'background_parameters')
-        self.check_allowed_values('resolutions', value_fields, self.resolution_parameters.get_names(),
-                                  'resolution_parameters')
-        self.check_allowed_values('layers', ['thickness', 'SLD', 'roughness'], self.parameters.get_names(),
-                                  'parameters')
+        self.check_allowed_values('backgrounds', value_fields, self.background_parameters.get_names())
+        self.check_allowed_values('resolutions', value_fields, self.resolution_parameters.get_names())
+        self.check_allowed_values('layers', ['thickness', 'SLD', 'roughness'], self.parameters.get_names())
 
-        self.check_allowed_values('contrasts', ['data'], self.data.get_names(), 'data')
-        self.check_allowed_values('contrasts', ['background'], self.backgrounds.get_names(), 'backgrounds')
-        self.check_allowed_values('contrasts', ['nba'], self.bulk_in.get_names(), 'bulk_in')
-        self.check_allowed_values('contrasts', ['nbs'], self.bulk_out.get_names(), 'bulk_out')
-        self.check_allowed_values('contrasts', ['scalefactor'], self.scalefactors.get_names(), 'scalefactors')
-        self.check_allowed_values('contrasts', ['resolution'], self.resolutions.get_names(), 'resolutions')
+        self.check_allowed_values('contrasts', ['data'], self.data.get_names())
+        self.check_allowed_values('contrasts', ['background'], self.backgrounds.get_names())
+        self.check_allowed_values('contrasts', ['nba'], self.bulk_in.get_names())
+        self.check_allowed_values('contrasts', ['nbs'], self.bulk_out.get_names())
+        self.check_allowed_values('contrasts', ['scalefactor'], self.scalefactors.get_names())
+        self.check_allowed_values('contrasts', ['resolution'], self.resolutions.get_names())
         return self
 
     def __repr__(self):
@@ -187,8 +185,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
                     output += value.value + '\n\n'
         return output
 
-    def check_allowed_values(self, attribute: str, field_list: list[str], allowed_values: list[str],
-                             allowed_values_classlist: str) -> None:
+    def check_allowed_values(self, attribute: str, field_list: list[str], allowed_values: list[str]) -> None:
         """Check the values of the given fields in the given model are in the supplied list of allowed values.
 
         Parameters
@@ -199,8 +196,6 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
             The fields of the attribute to be checked for valid values.
         allowed_values : list [str]
             The list of allowed values for the fields given in field_list.
-        allowed_values_classlist : str
-            The name of the ClassList containing the allowed values/
 
         Raises
         ------
@@ -213,7 +208,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
                 value = getattr(model, field)
                 if value and value not in allowed_values:
                     raise ValueError(f'The value "{value}" in the "{field}" field of "{attribute}" must be defined in '
-                                     f'"{allowed_values_classlist}".')
+                                     f'"{values_defined_in[attribute + "." + field]}".')
 
     def _classlist_wrapper(self, class_list: 'ClassList', func: Callable):
         """Defines the function used to wrap around ClassList routines to force revalidation.
