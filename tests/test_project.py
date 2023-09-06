@@ -286,7 +286,6 @@ def test_wrap_set(test_project, class_list: str, input_model: Callable, field: s
     ('background_parameters', 'Background Param 1', 'backgrounds', 'value_1'),
     ('resolution_parameters', 'Resolution Param 1', 'resolutions', 'value_1'),
     ('parameters', 'Test SLD', 'layers', 'SLD'),
-    #('data', 'Simulation', 'contrasts', 'data'),
     ('backgrounds', 'Background 1', 'contrasts', 'background'),
     ('bulk_in', 'SLD Air', 'contrasts', 'nba'),
     ('bulk_out', 'SLD D2O', 'contrasts', 'nbs'),
@@ -306,6 +305,29 @@ def test_wrap_del(test_project, class_list: str, parameter: str, parent_list: st
                                     f'"{class_list}".\033[0m\n')
     # Ensure model was not deleted
     assert test_attribute == orig_class_list
+
+
+@pytest.mark.parametrize(["class_list", "parameter", "parent_list", "field"], [
+    ('data', 'Simulation', 'contrasts', 'data'),
+])
+def test_wrap_del_data(test_project, class_list: str, parameter: str, parent_list: str, field: str) -> None:
+    """If we delete a Data model in a ClassList containing values defined elsewhere, we should raise a ValidationError.
+    """
+    test_attribute = getattr(test_project, class_list)
+    orig_class_list = copy.deepcopy(test_attribute)
+
+    index = test_attribute.index(parameter)
+    with contextlib.redirect_stdout(io.StringIO()) as print_str:
+        del test_attribute[index]
+    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "{parameter}"'
+                                    f' in the "{field}" field of "{parent_list}" must be defined in '
+                                    f'"{class_list}".\033[0m\n')
+
+    # Ensure model was not deleted
+    assert test_attribute[index].name == orig_class_list[index].name
+    assert (test_attribute[index].data == orig_class_list[index].data).all()
+    assert test_attribute[index].data_range == orig_class_list[index].data_range
+    assert test_attribute[index].simulation_range == orig_class_list[index].simulation_range
 
 
 @pytest.mark.parametrize(["class_list", "input_model", "field"], [
@@ -448,7 +470,6 @@ def test_wrap_insert_type_error(test_project, class_list: str, input_model: Call
     ('background_parameters', 'Background Param 1', 'backgrounds', 'value_1'),
     ('resolution_parameters', 'Resolution Param 1', 'resolutions', 'value_1'),
     ('parameters', 'Test SLD', 'layers', 'SLD'),
-    #('data', 'Simulation', 'contrasts', 'data'),
     ('backgrounds', 'Background 1', 'contrasts', 'background'),
     ('bulk_in', 'SLD Air', 'contrasts', 'nba'),
     ('bulk_out', 'SLD D2O', 'contrasts', 'nbs'),
@@ -471,10 +492,31 @@ def test_wrap_pop(test_project, class_list: str, parameter: str, parent_list: st
 
 
 @pytest.mark.parametrize(["class_list", "parameter", "parent_list", "field"], [
+    ('data', 'Simulation', 'contrasts', 'data'),
+])
+def test_wrap_pop_data(test_project, class_list: str, parameter: str, parent_list: str, field: str) -> None:
+    """If we pop a Data model in a ClassList containing values defined elsewhere, we should raise a ValidationError."""
+    test_attribute = getattr(test_project, class_list)
+    orig_class_list = copy.deepcopy(test_attribute)
+
+    index = test_attribute.index(parameter)
+    with contextlib.redirect_stdout(io.StringIO()) as print_str:
+        test_attribute.pop(index)
+    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "{parameter}"'
+                                    f' in the "{field}" field of "{parent_list}" must be defined in '
+                                    f'"{class_list}".\033[0m\n')
+
+    # Ensure model was not popped
+    assert test_attribute[index].name == orig_class_list[index].name
+    assert (test_attribute[index].data == orig_class_list[index].data).all()
+    assert test_attribute[index].data_range == orig_class_list[index].data_range
+    assert test_attribute[index].simulation_range == orig_class_list[index].simulation_range
+
+
+@pytest.mark.parametrize(["class_list", "parameter", "parent_list", "field"], [
     ('background_parameters', 'Background Param 1', 'backgrounds', 'value_1'),
     ('resolution_parameters', 'Resolution Param 1', 'resolutions', 'value_1'),
     ('parameters', 'Test SLD', 'layers', 'SLD'),
-    #('data', 'Simulation', 'contrasts', 'data'),
     ('backgrounds', 'Background 1', 'contrasts', 'background'),
     ('bulk_in', 'SLD Air', 'contrasts', 'nba'),
     ('bulk_out', 'SLD D2O', 'contrasts', 'nbs'),
@@ -496,10 +538,32 @@ def test_wrap_remove(test_project, class_list: str, parameter: str, parent_list:
 
 
 @pytest.mark.parametrize(["class_list", "parameter", "parent_list", "field"], [
+    ('data', 'Simulation', 'contrasts', 'data'),
+])
+def test_wrap_remove_data(test_project, class_list: str, parameter: str, parent_list: str, field: str) -> None:
+    """If we remove a Data model in a ClassList containing values defined elsewhere, we should raise a ValidationError.
+    """
+    test_attribute = getattr(test_project, class_list)
+    orig_class_list = copy.deepcopy(test_attribute)
+    index = test_attribute.index(parameter)
+
+    with contextlib.redirect_stdout(io.StringIO()) as print_str:
+        test_attribute.remove(parameter)
+    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "{parameter}"'
+                                    f' in the "{field}" field of "{parent_list}" must be defined in '
+                                    f'"{class_list}".\033[0m\n')
+
+    # Ensure model was not removed
+    assert test_attribute[index].name == orig_class_list[index].name
+    assert (test_attribute[index].data == orig_class_list[index].data).all()
+    assert test_attribute[index].data_range == orig_class_list[index].data_range
+    assert test_attribute[index].simulation_range == orig_class_list[index].simulation_range
+
+
+@pytest.mark.parametrize(["class_list", "parameter", "parent_list", "field"], [
     ('background_parameters', 'Background Param 1', 'backgrounds', 'value_1'),
     ('resolution_parameters', 'Resolution Param 1', 'resolutions', 'value_1'),
     ('parameters', 'Test SLD', 'layers', 'SLD'),
-    #('data', 'Simulation', 'contrasts', 'data'),
     ('backgrounds', 'Background 1', 'contrasts', 'background'),
     ('bulk_in', 'SLD Air', 'contrasts', 'nba'),
     ('bulk_out', 'SLD D2O', 'contrasts', 'nbs'),
@@ -518,6 +582,28 @@ def test_wrap_clear(test_project, class_list: str, parameter: str, parent_list: 
                                     f'"{class_list}".\033[0m\n')
     # Ensure list was not cleared
     assert test_attribute == orig_class_list
+
+
+@pytest.mark.parametrize(["class_list", "parameter", "parent_list", "field"], [
+    ('data', 'Simulation', 'contrasts', 'data'),
+])
+def test_wrap_clear_data(test_project, class_list: str, parameter: str, parent_list: str, field: str) -> None:
+    """If we clear a ClassList containing Data models with values defined elsewhere, we should raise a ValidationError.
+    """
+    test_attribute = getattr(test_project, class_list)
+    orig_class_list = copy.deepcopy(test_attribute)
+
+    with contextlib.redirect_stdout(io.StringIO()) as print_str:
+        test_attribute.clear()
+    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "{parameter}"'
+                                    f' in the "{field}" field of "{parent_list}" must be defined in '
+                                    f'"{class_list}".\033[0m\n')
+    # Ensure list was not cleared
+    for index in range(len(test_attribute)):
+        assert test_attribute[index].name == orig_class_list[index].name
+        assert (test_attribute[index].data == orig_class_list[index].data).all()
+        assert test_attribute[index].data_range == orig_class_list[index].data_range
+        assert test_attribute[index].simulation_range == orig_class_list[index].simulation_range
 
 
 @pytest.mark.parametrize(["class_list", "input_model", "field"], [
