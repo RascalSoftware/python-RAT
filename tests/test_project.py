@@ -19,10 +19,10 @@ def test_project():
     test_project = RAT.project.Project()
     test_project.data[0] = {'data': np.array([[1, 1, 1]])}
     test_project.parameters.append(name='Test SLD')
-    test_project.custom_files.append()
-    test_project.layers.append(SLD='Test SLD')
-    test_project.contrasts.append(data='Simulation', background='Background 1', nba='SLD Air', nbs='SLD D2O',
-                                  scalefactor='Scalefactor 1', resolution='Resolution 1')
+    test_project.custom_files.append(name='Test Custom File')
+    test_project.layers.append(name='Test Layer', SLD='Test SLD')
+    test_project.contrasts.append(name='Test Contrast', data='Simulation', background='Background 1', nba='SLD Air',
+                                  nbs='SLD D2O', scalefactor='Scalefactor 1', resolution='Resolution 1')
     return test_project
 
 
@@ -140,14 +140,47 @@ def test_assign_models(field: str, input_model: Callable) -> None:
 
 def test_wrapped_routines(test_project) -> None:
     """When initialising a project, several ClassList routines should be wrapped."""
-    class_lists = ['parameters', 'bulk_in', 'bulk_out', 'qz_shifts', 'scalefactors', 'background_parameters',
-                   'backgrounds', 'resolution_parameters', 'resolutions', 'custom_files', 'data', 'layers',
-                   'contrasts']
     wrapped_methods = ['_setitem', '_delitem', '_iadd', 'append', 'insert', 'pop', 'remove', 'clear', 'extend']
-    for class_list in class_lists:
+    for class_list in RAT.project.class_lists:
         attribute = getattr(test_project, class_list)
         for methodName in wrapped_methods:
             assert hasattr(getattr(attribute, methodName), '__wrapped__')
+
+
+@pytest.mark.parametrize(["model", "attribute", "field"], [
+    ('background_parameters', 'backgrounds', 'value_1'),
+    ('resolution_parameters', 'resolutions', 'value_1'),
+    ('parameters', 'layers', 'SLD'),
+    ('data', 'contrasts', 'data'),
+    ('backgrounds', 'contrasts', 'background'),
+    ('bulk_in', 'contrasts', 'nba'),
+    ('bulk_out', 'contrasts', 'nbs'),
+    ('scalefactors', 'contrasts', 'scalefactor'),
+    ('resolutions', 'contrasts', 'resolution'),
+])
+def test_rename_models(test_project, model: str, attribute: str, field: str) -> None:
+    """When renaming a model in the project, the new name should be recorded when that model is referred to elsewhere
+    in the project.
+    """
+    getattr(test_project, model)[-1] = {'name': 'New Name'}
+    assert getattr(getattr(test_project, attribute)[-1], field) == 'New Name'
+
+
+def test_get_all_names(test_project) -> None:
+    """We should be able to get the names of all the models defined in the project."""
+    assert test_project.get_all_names() == {'parameters': ['Substrate Roughness', 'Test SLD'],
+                                            'bulk_in': ['SLD Air'],
+                                            'bulk_out': ['SLD D2O'],
+                                            'qz_shifts': ['Qz shift 1'],
+                                            'scalefactors': ['Scalefactor 1'],
+                                            'background_parameters': ['Background Param 1'],
+                                            'backgrounds': ['Background 1'],
+                                            'resolution_parameters': ['Resolution Param 1'],
+                                            'resolutions': ['Resolution 1'],
+                                            'custom_files': ['Test Custom File'],
+                                            'data': ['Simulation'],
+                                            'layers': ['Test Layer'],
+                                            'contrasts': ['Test Contrast']}
 
 
 @pytest.mark.parametrize("field", [
