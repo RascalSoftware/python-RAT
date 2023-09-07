@@ -1,5 +1,7 @@
 """The project module. Defines and stores all the input data required for reflectivity calculations in RAT."""
 
+import collections
+import contextlib
 import copy
 import functools
 import numpy as np
@@ -70,6 +72,23 @@ values_defined_in = {'backgrounds.value_1': 'background_parameters',
                      'contrasts.resolution': 'resolutions',
                      }
 
+AllFields = collections.namedtuple('AllFields', ['attribute', 'fields'])
+values_used_in = {'background_parameters': AllFields('backgrounds', ['value_1', 'value_2', 'value_3', 'value_4',
+                                                                     'value_5']),
+                  'resolution_parameters': AllFields('resolutions', ['value_1', 'value_2', 'value_3', 'value_4',
+                                                                     'value_5']),
+                  'parameters': AllFields('layers', ['thickness', 'SLD', 'roughness']),
+                  'data': AllFields('contrasts', ['data']),
+                  'backgrounds': AllFields('contrasts', ['background']),
+                  'bulk_in': AllFields('contrasts', ['nba']),
+                  'bulk_out': AllFields('contrasts', ['nbs']),
+                  'scalefactors': AllFields('contrasts', ['scalefactor']),
+                  'resolutions': AllFields('contrasts', ['resolution']),
+                  }
+
+class_lists = ['parameters', 'bulk_in', 'bulk_out', 'qz_shifts', 'scalefactors', 'background_parameters', 'backgrounds',
+               'resolution_parameters', 'resolutions', 'custom_files', 'data', 'layers', 'contrasts']
+
 
 class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_types_allowed=True):
     """Defines the input data for a reflectivity calculation in RAT.
@@ -120,6 +139,8 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
     layers: ClassList = ClassList()
     contrasts: ClassList = ClassList()
 
+    _all_names: dict
+
     @field_validator('parameters', 'bulk_in', 'bulk_out', 'qz_shifts', 'scalefactors', 'background_parameters',
                      'backgrounds', 'resolution_parameters', 'resolutions', 'custom_files', 'data', 'layers',
                      'contrasts')
@@ -133,8 +154,8 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         return value
 
     def model_post_init(self, __context: Any) -> None:
-        """Initialises the class in the ClassLists for empty data fields, sets protected parameters, and wraps
-        ClassList routines to control revalidation.
+        """Initialises the class in the ClassLists for empty data fields, sets protected parameters, gets names of all
+        defined parameters and wraps ClassList routines to control revalidation.
         """
         for field_name, model in model_in_classlist.items():
             field = getattr(self, field_name)
@@ -145,16 +166,32 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
                                                                 fit=True, prior_type=RAT.models.Priors.Uniform, mu=0,
                                                                 sigma=np.inf))
 
+        self._all_names = self.get_all_names()
+
         # Wrap ClassList routines - when any of these routines are called, the wrapper will force revalidation of the
         # model, handle errors and reset previous values if necessary.
-        class_lists = ['parameters', 'bulk_in', 'bulk_out', 'qz_shifts', 'scalefactors', 'background_parameters',
-                       'backgrounds', 'resolution_parameters', 'resolutions', 'custom_files', 'data', 'layers',
-                       'contrasts']
         methods_to_wrap = ['_setitem', '_delitem', '_iadd', 'append', 'insert', 'pop', 'remove', 'clear', 'extend']
         for class_list in class_lists:
             attribute = getattr(self, class_list)
             for methodName in methods_to_wrap:
                 setattr(attribute, methodName, self._classlist_wrapper(attribute, getattr(attribute, methodName)))
+
+    @model_validator(mode='after')
+    def update_renamed_models(self) -> 'Project':
+        """When models defined in the ClassLists are renamed, we need to update that name elsewhere in the project."""
+        for class_list in class_lists:
+            old_names = self._all_names[class_list]
+            new_names = getattr(self, class_list).get_names()
+            if len(old_names) == len(new_names):
+                name_diff = [(old, new) for (old, new) in zip(old_names, new_names) if old != new]
+                for (old_name, new_name) in name_diff:
+                    with contextlib.suppress(KeyError):
+                        for element in getattr(self, values_used_in[class_list].attribute):
+                            for field in values_used_in[class_list].fields:
+                                if getattr(element, field) == old_name:
+                                    setattr(element, field, new_name)
+        self._all_names = self.get_all_names()
+        return self
 
     @model_validator(mode='after')
     def cross_check_model_values(self) -> 'Project':
@@ -184,6 +221,10 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
                 else:
                     output += value.value + '\n\n'
         return output
+
+    def get_all_names(self):
+        """Record the names of all models defined in the project."""
+        return {class_list: getattr(self, class_list).get_names() for class_list in class_lists}
 
     def check_allowed_values(self, attribute: str, field_list: list[str], allowed_values: list[str]) -> None:
         """Check the values of the given fields in the given model are in the supplied list of allowed values.
