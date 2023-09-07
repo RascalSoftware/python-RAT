@@ -48,7 +48,7 @@ model_in_classlist = {'parameters': 'Parameter',
                       'custom_files': 'CustomFile',
                       'data': 'Data',
                       'layers': 'Layer',
-                      'contrasts': 'Contrast'
+                      'contrasts': 'Contrast',
                       }
 
 values_defined_in = {'backgrounds.value_1': 'background_parameters',
@@ -73,18 +73,18 @@ values_defined_in = {'backgrounds.value_1': 'background_parameters',
                      }
 
 AllFields = collections.namedtuple('AllFields', ['attribute', 'fields'])
-values_used_in = {'background_parameters': AllFields('backgrounds', ['value_1', 'value_2', 'value_3', 'value_4',
-                                                                     'value_5']),
-                  'resolution_parameters': AllFields('resolutions', ['value_1', 'value_2', 'value_3', 'value_4',
-                                                                     'value_5']),
-                  'parameters': AllFields('layers', ['thickness', 'SLD', 'roughness']),
-                  'data': AllFields('contrasts', ['data']),
-                  'backgrounds': AllFields('contrasts', ['background']),
-                  'bulk_in': AllFields('contrasts', ['nba']),
-                  'bulk_out': AllFields('contrasts', ['nbs']),
-                  'scalefactors': AllFields('contrasts', ['scalefactor']),
-                  'resolutions': AllFields('contrasts', ['resolution']),
-                  }
+model_names_used_in = {'background_parameters': AllFields('backgrounds', ['value_1', 'value_2', 'value_3', 'value_4',
+                                                                          'value_5']),
+                       'resolution_parameters': AllFields('resolutions', ['value_1', 'value_2', 'value_3', 'value_4',
+                                                                          'value_5']),
+                       'parameters': AllFields('layers', ['thickness', 'SLD', 'roughness']),
+                       'data': AllFields('contrasts', ['data']),
+                       'backgrounds': AllFields('contrasts', ['background']),
+                       'bulk_in': AllFields('contrasts', ['nba']),
+                       'bulk_out': AllFields('contrasts', ['nbs']),
+                       'scalefactors': AllFields('contrasts', ['scalefactor']),
+                       'resolutions': AllFields('contrasts', ['resolution']),
+                       }
 
 class_lists = ['parameters', 'bulk_in', 'bulk_out', 'qz_shifts', 'scalefactors', 'background_parameters', 'backgrounds',
                'resolution_parameters', 'resolutions', 'custom_files', 'data', 'layers', 'contrasts']
@@ -186,8 +186,8 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
                 name_diff = [(old, new) for (old, new) in zip(old_names, new_names) if old != new]
                 for (old_name, new_name) in name_diff:
                     with contextlib.suppress(KeyError):
-                        for element in getattr(self, values_used_in[class_list].attribute):
-                            for field in values_used_in[class_list].fields:
+                        for element in getattr(self, model_names_used_in[class_list].attribute):
+                            for field in model_names_used_in[class_list].fields:
                                 if getattr(element, field) == old_name:
                                     setattr(element, field, new_name)
         self._all_names = self.get_all_names()

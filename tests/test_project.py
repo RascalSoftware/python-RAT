@@ -87,7 +87,7 @@ def test_classlists(test_project) -> None:
         assert class_list._class_handle.__name__ == value
 
 
-@pytest.mark.parametrize("model", [
+@pytest.mark.parametrize("input_model", [
     RAT.models.Background,
     RAT.models.Contrast,
     RAT.models.CustomFile,
@@ -95,15 +95,15 @@ def test_classlists(test_project) -> None:
     RAT.models.Layer,
     RAT.models.Resolution,
 ])
-def test_initialise_wrong_classes(model: Callable) -> None:
+def test_initialise_wrong_classes(input_model: Callable) -> None:
     """If the "Project" model is initialised with incorrect classes, we should raise a ValidationError."""
     with pytest.raises(pydantic.ValidationError, match='1 validation error for Project\nparameters\n  Assertion '
                                                        'failed, "parameters" ClassList contains objects other than '
                                                        '"Parameter"'):
-        RAT.project.Project(parameters=ClassList(model()))
+        RAT.project.Project(parameters=ClassList(input_model()))
 
 
-@pytest.mark.parametrize(["field", "input_model"], [
+@pytest.mark.parametrize(["field", "wrong_input_model"], [
     ('backgrounds', RAT.models.Resolution),
     ('contrasts', RAT.models.Layer),
     ('custom_files', RAT.models.Data),
@@ -112,30 +112,29 @@ def test_initialise_wrong_classes(model: Callable) -> None:
     ('parameters', RAT.models.CustomFile),
     ('resolutions', RAT.models.Background),
 ])
-def test_assign_wrong_classes(test_project, field: str, input_model: Callable) -> None:
+def test_assign_wrong_classes(test_project, field: str, wrong_input_model: Callable) -> None:
     """If we assign incorrect classes to the "Project" model, we should raise a ValidationError."""
     with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\n{field}\n  Assertion failed, '
                                                        f'"{field}" ClassList contains objects other than '
                                                        f'"{RAT.project.model_in_classlist[field]}"'):
-        setattr(test_project, field, ClassList(input_model()))
+        setattr(test_project, field, ClassList(wrong_input_model()))
 
 
-@pytest.mark.parametrize(["field", "input_model"], [
-    ('backgrounds', RAT.models.Background),
-    ('contrasts', RAT.models.Contrast),
-    ('custom_files', RAT.models.CustomFile),
-    ('data', RAT.models.Data),
-    ('layers', RAT.models.Layer),
-    ('parameters', RAT.models.Parameter),
-    ('resolutions', RAT.models.Resolution),
+@pytest.mark.parametrize("field", [
+    'backgrounds',
+    'contrasts',
+    'custom_files',
+    'data',
+    'layers',
+    'parameters',
+    'resolutions',
 ])
-def test_assign_models(field: str, input_model: Callable) -> None:
-    """If the "Project" model is initialised with models rather than ClassLists, we should raise a ValidationError.
-    """
-    empty_project = RAT.project.Project.model_construct()
+def test_assign_models(test_project, field: str) -> None:
+    """If the "Project" model is initialised with models rather than ClassLists, we should raise a ValidationError."""
+    input_model = getattr(RAT.models, RAT.project.model_in_classlist[field])
     with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\n{field}\n  Input should be an '
                                                        f'instance of ClassList'):
-        setattr(empty_project, field, input_model())
+        setattr(test_project, field, input_model())
 
 
 def test_wrapped_routines(test_project) -> None:
@@ -147,22 +146,23 @@ def test_wrapped_routines(test_project) -> None:
             assert hasattr(getattr(attribute, methodName), '__wrapped__')
 
 
-@pytest.mark.parametrize(["model", "attribute", "field"], [
-    ('background_parameters', 'backgrounds', 'value_1'),
-    ('resolution_parameters', 'resolutions', 'value_1'),
-    ('parameters', 'layers', 'SLD'),
-    ('data', 'contrasts', 'data'),
-    ('backgrounds', 'contrasts', 'background'),
-    ('bulk_in', 'contrasts', 'nba'),
-    ('bulk_out', 'contrasts', 'nbs'),
-    ('scalefactors', 'contrasts', 'scalefactor'),
-    ('resolutions', 'contrasts', 'resolution'),
+@pytest.mark.parametrize(["model", "field"], [
+    ('background_parameters', 'value_1'),
+    ('resolution_parameters', 'value_1'),
+    ('parameters', 'SLD'),
+    ('data', 'data'),
+    ('backgrounds', 'background'),
+    ('bulk_in', 'nba'),
+    ('bulk_out', 'nbs'),
+    ('scalefactors', 'scalefactor'),
+    ('resolutions', 'resolution'),
 ])
-def test_rename_models(test_project, model: str, attribute: str, field: str) -> None:
+def test_rename_models(test_project, model: str, field: str) -> None:
     """When renaming a model in the project, the new name should be recorded when that model is referred to elsewhere
     in the project.
     """
     getattr(test_project, model)[-1] = {'name': 'New Name'}
+    attribute = RAT.project.model_names_used_in[model].attribute
     assert getattr(getattr(test_project, attribute)[-1], field) == 'New Name'
 
 
@@ -280,28 +280,28 @@ def test_check_allowed_values_not_on_list(test_value: str) -> None:
         test_project.check_allowed_values("backgrounds", ["value_1"], ["Background Param 1"])
 
 
-@pytest.mark.parametrize(["class_list", "input_model", "field"], [
-    ('backgrounds', RAT.models.Background, 'value_1'),
-    ('backgrounds', RAT.models.Background, 'value_2'),
-    ('backgrounds', RAT.models.Background, 'value_3'),
-    ('backgrounds', RAT.models.Background, 'value_4'),
-    ('backgrounds', RAT.models.Background, 'value_5'),
-    ('resolutions', RAT.models.Resolution, 'value_1'),
-    ('resolutions', RAT.models.Resolution, 'value_2'),
-    ('resolutions', RAT.models.Resolution, 'value_3'),
-    ('resolutions', RAT.models.Resolution, 'value_4'),
-    ('resolutions', RAT.models.Resolution, 'value_5'),
-    ('layers', RAT.models.Layer, 'thickness'),
-    ('layers', RAT.models.Layer, 'SLD'),
-    ('layers', RAT.models.Layer, 'roughness'),
-    ('contrasts', RAT.models.Contrast, 'data'),
-    ('contrasts', RAT.models.Contrast, 'background'),
-    ('contrasts', RAT.models.Contrast, 'nba'),
-    ('contrasts', RAT.models.Contrast, 'nbs'),
-    ('contrasts', RAT.models.Contrast, 'scalefactor'),
-    ('contrasts', RAT.models.Contrast, 'resolution'),
+@pytest.mark.parametrize(["class_list", "field"], [
+    ('backgrounds', 'value_1'),
+    ('backgrounds', 'value_2'),
+    ('backgrounds', 'value_3'),
+    ('backgrounds', 'value_4'),
+    ('backgrounds', 'value_5'),
+    ('resolutions', 'value_1'),
+    ('resolutions', 'value_2'),
+    ('resolutions', 'value_3'),
+    ('resolutions', 'value_4'),
+    ('resolutions', 'value_5'),
+    ('layers', 'thickness'),
+    ('layers', 'SLD'),
+    ('layers', 'roughness'),
+    ('contrasts', 'data'),
+    ('contrasts', 'background'),
+    ('contrasts', 'nba'),
+    ('contrasts', 'nbs'),
+    ('contrasts', 'scalefactor'),
+    ('contrasts', 'resolution'),
 ])
-def test_wrap_set(test_project, class_list: str, input_model: Callable, field: str) -> None:
+def test_wrap_set(test_project, class_list: str, field: str) -> None:
     """If we set the field values of a model in a ClassList as undefined values, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
@@ -315,17 +315,17 @@ def test_wrap_set(test_project, class_list: str, input_model: Callable, field: s
     assert test_attribute == orig_class_list
 
 
-@pytest.mark.parametrize(["class_list", "parameter", "parent_list", "field"], [
-    ('background_parameters', 'Background Param 1', 'backgrounds', 'value_1'),
-    ('resolution_parameters', 'Resolution Param 1', 'resolutions', 'value_1'),
-    ('parameters', 'Test SLD', 'layers', 'SLD'),
-    ('backgrounds', 'Background 1', 'contrasts', 'background'),
-    ('bulk_in', 'SLD Air', 'contrasts', 'nba'),
-    ('bulk_out', 'SLD D2O', 'contrasts', 'nbs'),
-    ('scalefactors', 'Scalefactor 1', 'contrasts', 'scalefactor'),
-    ('resolutions', 'Resolution 1', 'contrasts', 'resolution'),
+@pytest.mark.parametrize(["class_list", "parameter", "field"], [
+    ('background_parameters', 'Background Param 1', 'value_1'),
+    ('resolution_parameters', 'Resolution Param 1', 'value_1'),
+    ('parameters', 'Test SLD', 'SLD'),
+    ('backgrounds', 'Background 1', 'background'),
+    ('bulk_in', 'SLD Air', 'nba'),
+    ('bulk_out', 'SLD D2O', 'nbs'),
+    ('scalefactors', 'Scalefactor 1', 'scalefactor'),
+    ('resolutions', 'Resolution 1', 'resolution'),
 ])
-def test_wrap_del(test_project, class_list: str, parameter: str, parent_list: str, field: str) -> None:
+def test_wrap_del(test_project, class_list: str, parameter: str, field: str) -> None:
     """If we delete a model in a ClassList containing values defined elsewhere, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
@@ -333,17 +333,18 @@ def test_wrap_del(test_project, class_list: str, parameter: str, parent_list: st
     index = test_attribute.index(parameter)
     with contextlib.redirect_stdout(io.StringIO()) as print_str:
         del test_attribute[index]
-    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "{parameter}"'
-                                    f' in the "{field}" field of "{parent_list}" must be defined in '
-                                    f'"{class_list}".\033[0m\n')
+    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "{parameter}" '
+                                    f'in the "{field}" field of '
+                                    f'"{RAT.project.model_names_used_in[class_list].attribute}" '
+                                    f'must be defined in "{class_list}".\033[0m\n')
     # Ensure model was not deleted
     assert test_attribute == orig_class_list
 
 
-@pytest.mark.parametrize(["class_list", "parameter", "parent_list", "field"], [
-    ('data', 'Simulation', 'contrasts', 'data'),
+@pytest.mark.parametrize(["class_list", "parameter", "field"], [
+    ('data', 'Simulation', 'data'),
 ])
-def test_wrap_del_data(test_project, class_list: str, parameter: str, parent_list: str, field: str) -> None:
+def test_wrap_del_data(test_project, class_list: str, parameter: str, field: str) -> None:
     """If we delete a Data model in a ClassList containing values defined elsewhere, we should raise a ValidationError.
     """
     test_attribute = getattr(test_project, class_list)
@@ -352,9 +353,10 @@ def test_wrap_del_data(test_project, class_list: str, parameter: str, parent_lis
     index = test_attribute.index(parameter)
     with contextlib.redirect_stdout(io.StringIO()) as print_str:
         del test_attribute[index]
-    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "{parameter}"'
-                                    f' in the "{field}" field of "{parent_list}" must be defined in '
-                                    f'"{class_list}".\033[0m\n')
+    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "{parameter}" '
+                                    f'in the "{field}" field of '
+                                    f'"{RAT.project.model_names_used_in[class_list].attribute}" '
+                                    f'must be defined in "{class_list}".\033[0m\n')
 
     # Ensure model was not deleted
     assert test_attribute[index].name == orig_class_list[index].name
@@ -363,31 +365,32 @@ def test_wrap_del_data(test_project, class_list: str, parameter: str, parent_lis
     assert test_attribute[index].simulation_range == orig_class_list[index].simulation_range
 
 
-@pytest.mark.parametrize(["class_list", "input_model", "field"], [
-    ('backgrounds', RAT.models.Background, 'value_1'),
-    ('backgrounds', RAT.models.Background, 'value_2'),
-    ('backgrounds', RAT.models.Background, 'value_3'),
-    ('backgrounds', RAT.models.Background, 'value_4'),
-    ('backgrounds', RAT.models.Background, 'value_5'),
-    ('resolutions', RAT.models.Resolution, 'value_1'),
-    ('resolutions', RAT.models.Resolution, 'value_2'),
-    ('resolutions', RAT.models.Resolution, 'value_3'),
-    ('resolutions', RAT.models.Resolution, 'value_4'),
-    ('resolutions', RAT.models.Resolution, 'value_5'),
-    ('layers', RAT.models.Layer, 'thickness'),
-    ('layers', RAT.models.Layer, 'SLD'),
-    ('layers', RAT.models.Layer, 'roughness'),
-    ('contrasts', RAT.models.Contrast, 'data'),
-    ('contrasts', RAT.models.Contrast, 'background'),
-    ('contrasts', RAT.models.Contrast, 'nba'),
-    ('contrasts', RAT.models.Contrast, 'nbs'),
-    ('contrasts', RAT.models.Contrast, 'scalefactor'),
-    ('contrasts', RAT.models.Contrast, 'resolution'),
+@pytest.mark.parametrize(["class_list", "field"], [
+    ('backgrounds', 'value_1'),
+    ('backgrounds', 'value_2'),
+    ('backgrounds', 'value_3'),
+    ('backgrounds', 'value_4'),
+    ('backgrounds', 'value_5'),
+    ('resolutions', 'value_1'),
+    ('resolutions', 'value_2'),
+    ('resolutions', 'value_3'),
+    ('resolutions', 'value_4'),
+    ('resolutions', 'value_5'),
+    ('layers', 'thickness'),
+    ('layers', 'SLD'),
+    ('layers', 'roughness'),
+    ('contrasts', 'data'),
+    ('contrasts', 'background'),
+    ('contrasts', 'nba'),
+    ('contrasts', 'nbs'),
+    ('contrasts', 'scalefactor'),
+    ('contrasts', 'resolution'),
 ])
-def test_wrap_iadd(test_project, class_list: str, input_model: Callable, field: str) -> None:
+def test_wrap_iadd(test_project, class_list: str, field: str) -> None:
     """If we add a model containing undefined values to a ClassList, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
+    input_model = getattr(RAT.models, RAT.project.model_in_classlist[class_list])
 
     with contextlib.redirect_stdout(io.StringIO()) as print_str:
         test_attribute += [input_model(**{field: 'undefined'})]
@@ -397,31 +400,32 @@ def test_wrap_iadd(test_project, class_list: str, input_model: Callable, field: 
     # Ensure invalid model was not added
     assert test_attribute == orig_class_list
 
-@pytest.mark.parametrize(["class_list", "input_model", "field"], [
-    ('backgrounds', RAT.models.Background, 'value_1'),
-    ('backgrounds', RAT.models.Background, 'value_2'),
-    ('backgrounds', RAT.models.Background, 'value_3'),
-    ('backgrounds', RAT.models.Background, 'value_4'),
-    ('backgrounds', RAT.models.Background, 'value_5'),
-    ('resolutions', RAT.models.Resolution, 'value_1'),
-    ('resolutions', RAT.models.Resolution, 'value_2'),
-    ('resolutions', RAT.models.Resolution, 'value_3'),
-    ('resolutions', RAT.models.Resolution, 'value_4'),
-    ('resolutions', RAT.models.Resolution, 'value_5'),
-    ('layers', RAT.models.Layer, 'thickness'),
-    ('layers', RAT.models.Layer, 'SLD'),
-    ('layers', RAT.models.Layer, 'roughness'),
-    ('contrasts', RAT.models.Contrast, 'data'),
-    ('contrasts', RAT.models.Contrast, 'background'),
-    ('contrasts', RAT.models.Contrast, 'nba'),
-    ('contrasts', RAT.models.Contrast, 'nbs'),
-    ('contrasts', RAT.models.Contrast, 'scalefactor'),
-    ('contrasts', RAT.models.Contrast, 'resolution'),
+@pytest.mark.parametrize(["class_list", "field"], [
+    ('backgrounds', 'value_1'),
+    ('backgrounds', 'value_2'),
+    ('backgrounds', 'value_3'),
+    ('backgrounds', 'value_4'),
+    ('backgrounds', 'value_5'),
+    ('resolutions', 'value_1'),
+    ('resolutions', 'value_2'),
+    ('resolutions', 'value_3'),
+    ('resolutions', 'value_4'),
+    ('resolutions', 'value_5'),
+    ('layers', 'thickness'),
+    ('layers', 'SLD'),
+    ('layers', 'roughness'),
+    ('contrasts', 'data'),
+    ('contrasts', 'background'),
+    ('contrasts', 'nba'),
+    ('contrasts', 'nbs'),
+    ('contrasts', 'scalefactor'),
+    ('contrasts', 'resolution'),
 ])
-def test_wrap_append(test_project, class_list: str, input_model: Callable, field: str) -> None:
+def test_wrap_append(test_project, class_list: str, field: str) -> None:
     """If we append a model containing undefined values to a ClassList, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
+    input_model = getattr(RAT.models, RAT.project.model_in_classlist[class_list])
 
     with contextlib.redirect_stdout(io.StringIO()) as print_str:
         test_attribute.append(input_model(**{field: 'undefined'}))
@@ -431,31 +435,32 @@ def test_wrap_append(test_project, class_list: str, input_model: Callable, field
     # Ensure invalid model was not appended
     assert test_attribute == orig_class_list
 
-@pytest.mark.parametrize(["class_list", "input_model", "field"], [
-    ('backgrounds', RAT.models.Background, 'value_1'),
-    ('backgrounds', RAT.models.Background, 'value_2'),
-    ('backgrounds', RAT.models.Background, 'value_3'),
-    ('backgrounds', RAT.models.Background, 'value_4'),
-    ('backgrounds', RAT.models.Background, 'value_5'),
-    ('resolutions', RAT.models.Resolution, 'value_1'),
-    ('resolutions', RAT.models.Resolution, 'value_2'),
-    ('resolutions', RAT.models.Resolution, 'value_3'),
-    ('resolutions', RAT.models.Resolution, 'value_4'),
-    ('resolutions', RAT.models.Resolution, 'value_5'),
-    ('layers', RAT.models.Layer, 'thickness'),
-    ('layers', RAT.models.Layer, 'SLD'),
-    ('layers', RAT.models.Layer, 'roughness'),
-    ('contrasts', RAT.models.Contrast, 'data'),
-    ('contrasts', RAT.models.Contrast, 'background'),
-    ('contrasts', RAT.models.Contrast, 'nba'),
-    ('contrasts', RAT.models.Contrast, 'nbs'),
-    ('contrasts', RAT.models.Contrast, 'scalefactor'),
-    ('contrasts', RAT.models.Contrast, 'resolution'),
+@pytest.mark.parametrize(["class_list", "field"], [
+    ('backgrounds', 'value_1'),
+    ('backgrounds', 'value_2'),
+    ('backgrounds', 'value_3'),
+    ('backgrounds', 'value_4'),
+    ('backgrounds', 'value_5'),
+    ('resolutions', 'value_1'),
+    ('resolutions', 'value_2'),
+    ('resolutions', 'value_3'),
+    ('resolutions', 'value_4'),
+    ('resolutions', 'value_5'),
+    ('layers', 'thickness'),
+    ('layers', 'SLD'),
+    ('layers', 'roughness'),
+    ('contrasts', 'data'),
+    ('contrasts', 'background'),
+    ('contrasts', 'nba'),
+    ('contrasts', 'nbs'),
+    ('contrasts', 'scalefactor'),
+    ('contrasts', 'resolution'),
 ])
-def test_wrap_insert(test_project, class_list: str, input_model: Callable, field: str) -> None:
+def test_wrap_insert(test_project, class_list: str, field: str) -> None:
     """If we insert a model containing undefined values into a ClassList, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
+    input_model = getattr(RAT.models, RAT.project.model_in_classlist[class_list])
 
     with contextlib.redirect_stdout(io.StringIO()) as print_str:
         test_attribute.insert(0, input_model(**{field: 'undefined'}))
@@ -466,31 +471,32 @@ def test_wrap_insert(test_project, class_list: str, input_model: Callable, field
     assert test_attribute == orig_class_list
 
 
-@pytest.mark.parametrize(["class_list", "input_model", "field"], [
-    ('backgrounds', RAT.models.Background, 'value_1'),
-    ('backgrounds', RAT.models.Background, 'value_2'),
-    ('backgrounds', RAT.models.Background, 'value_3'),
-    ('backgrounds', RAT.models.Background, 'value_4'),
-    ('backgrounds', RAT.models.Background, 'value_5'),
-    ('resolutions', RAT.models.Resolution, 'value_1'),
-    ('resolutions', RAT.models.Resolution, 'value_2'),
-    ('resolutions', RAT.models.Resolution, 'value_3'),
-    ('resolutions', RAT.models.Resolution, 'value_4'),
-    ('resolutions', RAT.models.Resolution, 'value_5'),
-    ('layers', RAT.models.Layer, 'thickness'),
-    ('layers', RAT.models.Layer, 'SLD'),
-    ('layers', RAT.models.Layer, 'roughness'),
-    ('contrasts', RAT.models.Contrast, 'data'),
-    ('contrasts', RAT.models.Contrast, 'background'),
-    ('contrasts', RAT.models.Contrast, 'nba'),
-    ('contrasts', RAT.models.Contrast, 'nbs'),
-    ('contrasts', RAT.models.Contrast, 'scalefactor'),
-    ('contrasts', RAT.models.Contrast, 'resolution'),
+@pytest.mark.parametrize(["class_list", "field"], [
+    ('backgrounds', 'value_1'),
+    ('backgrounds', 'value_2'),
+    ('backgrounds', 'value_3'),
+    ('backgrounds', 'value_4'),
+    ('backgrounds', 'value_5'),
+    ('resolutions', 'value_1'),
+    ('resolutions', 'value_2'),
+    ('resolutions', 'value_3'),
+    ('resolutions', 'value_4'),
+    ('resolutions', 'value_5'),
+    ('layers', 'thickness'),
+    ('layers', 'SLD'),
+    ('layers', 'roughness'),
+    ('contrasts', 'data'),
+    ('contrasts', 'background'),
+    ('contrasts', 'nba'),
+    ('contrasts', 'nbs'),
+    ('contrasts', 'scalefactor'),
+    ('contrasts', 'resolution'),
 ])
-def test_wrap_insert_type_error(test_project, class_list: str, input_model: Callable, field: str) -> None:
+def test_wrap_insert_type_error(test_project, class_list: str, field: str) -> None:
     """If we raise a TypeError using the wrapped insert routine, we should re-raise the error."""
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
+    input_model = getattr(RAT.models, RAT.project.model_in_classlist[class_list])
 
     with pytest.raises(TypeError):
         test_attribute.insert(input_model(**{field: 'undefined'}))
@@ -499,17 +505,17 @@ def test_wrap_insert_type_error(test_project, class_list: str, input_model: Call
     assert test_attribute == orig_class_list
 
 
-@pytest.mark.parametrize(["class_list", "parameter", "parent_list", "field"], [
-    ('background_parameters', 'Background Param 1', 'backgrounds', 'value_1'),
-    ('resolution_parameters', 'Resolution Param 1', 'resolutions', 'value_1'),
-    ('parameters', 'Test SLD', 'layers', 'SLD'),
-    ('backgrounds', 'Background 1', 'contrasts', 'background'),
-    ('bulk_in', 'SLD Air', 'contrasts', 'nba'),
-    ('bulk_out', 'SLD D2O', 'contrasts', 'nbs'),
-    ('scalefactors', 'Scalefactor 1', 'contrasts', 'scalefactor'),
-    ('resolutions', 'Resolution 1', 'contrasts', 'resolution'),
+@pytest.mark.parametrize(["class_list", "parameter", "field"], [
+    ('background_parameters', 'Background Param 1', 'value_1'),
+    ('resolution_parameters', 'Resolution Param 1', 'value_1'),
+    ('parameters', 'Test SLD', 'SLD'),
+    ('backgrounds', 'Background 1', 'background'),
+    ('bulk_in', 'SLD Air', 'nba'),
+    ('bulk_out', 'SLD D2O', 'nbs'),
+    ('scalefactors', 'Scalefactor 1', 'scalefactor'),
+    ('resolutions', 'Resolution 1', 'resolution'),
 ])
-def test_wrap_pop(test_project, class_list: str, parameter: str, parent_list: str, field: str) -> None:
+def test_wrap_pop(test_project, class_list: str, parameter: str, field: str) -> None:
     """If we pop a model in a ClassList containing values defined elsewhere, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
@@ -517,17 +523,18 @@ def test_wrap_pop(test_project, class_list: str, parameter: str, parent_list: st
     index = test_attribute.index(parameter)
     with contextlib.redirect_stdout(io.StringIO()) as print_str:
         test_attribute.pop(index)
-    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "{parameter}"'
-                                    f' in the "{field}" field of "{parent_list}" must be defined in '
-                                    f'"{class_list}".\033[0m\n')
+    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "{parameter}" '
+                                    f'in the "{field}" field of '
+                                    f'"{RAT.project.model_names_used_in[class_list].attribute}" '
+                                    f'must be defined in "{class_list}".\033[0m\n')
     # Ensure model was not popped
     assert test_attribute == orig_class_list
 
 
-@pytest.mark.parametrize(["class_list", "parameter", "parent_list", "field"], [
-    ('data', 'Simulation', 'contrasts', 'data'),
+@pytest.mark.parametrize(["class_list", "parameter", "field"], [
+    ('data', 'Simulation', 'data'),
 ])
-def test_wrap_pop_data(test_project, class_list: str, parameter: str, parent_list: str, field: str) -> None:
+def test_wrap_pop_data(test_project, class_list: str, parameter: str, field: str) -> None:
     """If we pop a Data model in a ClassList containing values defined elsewhere, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
@@ -535,9 +542,10 @@ def test_wrap_pop_data(test_project, class_list: str, parameter: str, parent_lis
     index = test_attribute.index(parameter)
     with contextlib.redirect_stdout(io.StringIO()) as print_str:
         test_attribute.pop(index)
-    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "{parameter}"'
-                                    f' in the "{field}" field of "{parent_list}" must be defined in '
-                                    f'"{class_list}".\033[0m\n')
+    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "{parameter}" '
+                                    f'in the "{field}" field of '
+                                    f'"{RAT.project.model_names_used_in[class_list].attribute}" '
+                                    f'must be defined in "{class_list}".\033[0m\n')
 
     # Ensure model was not popped
     assert test_attribute[index].name == orig_class_list[index].name
@@ -546,34 +554,35 @@ def test_wrap_pop_data(test_project, class_list: str, parameter: str, parent_lis
     assert test_attribute[index].simulation_range == orig_class_list[index].simulation_range
 
 
-@pytest.mark.parametrize(["class_list", "parameter", "parent_list", "field"], [
-    ('background_parameters', 'Background Param 1', 'backgrounds', 'value_1'),
-    ('resolution_parameters', 'Resolution Param 1', 'resolutions', 'value_1'),
-    ('parameters', 'Test SLD', 'layers', 'SLD'),
-    ('backgrounds', 'Background 1', 'contrasts', 'background'),
-    ('bulk_in', 'SLD Air', 'contrasts', 'nba'),
-    ('bulk_out', 'SLD D2O', 'contrasts', 'nbs'),
-    ('scalefactors', 'Scalefactor 1', 'contrasts', 'scalefactor'),
-    ('resolutions', 'Resolution 1', 'contrasts', 'resolution'),
+@pytest.mark.parametrize(["class_list", "parameter", "field"], [
+    ('background_parameters', 'Background Param 1', 'value_1'),
+    ('resolution_parameters', 'Resolution Param 1', 'value_1'),
+    ('parameters', 'Test SLD', 'SLD'),
+    ('backgrounds', 'Background 1', 'background'),
+    ('bulk_in', 'SLD Air', 'nba'),
+    ('bulk_out', 'SLD D2O', 'nbs'),
+    ('scalefactors', 'Scalefactor 1', 'scalefactor'),
+    ('resolutions', 'Resolution 1', 'resolution'),
 ])
-def test_wrap_remove(test_project, class_list: str, parameter: str, parent_list: str, field: str) -> None:
+def test_wrap_remove(test_project, class_list: str, parameter: str, field: str) -> None:
     """If we remove a model in a ClassList containing values defined elsewhere, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
 
     with contextlib.redirect_stdout(io.StringIO()) as print_str:
         test_attribute.remove(parameter)
-    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "{parameter}"'
-                                    f' in the "{field}" field of "{parent_list}" must be defined in '
-                                    f'"{class_list}".\033[0m\n')
+    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "{parameter}" '
+                                    f'in the "{field}" field of '
+                                    f'"{RAT.project.model_names_used_in[class_list].attribute}" '
+                                    f'must be defined in "{class_list}".\033[0m\n')
     # Ensure model was not removed
     assert test_attribute == orig_class_list
 
 
-@pytest.mark.parametrize(["class_list", "parameter", "parent_list", "field"], [
-    ('data', 'Simulation', 'contrasts', 'data'),
+@pytest.mark.parametrize(["class_list", "parameter", "field"], [
+    ('data', 'Simulation', 'data'),
 ])
-def test_wrap_remove_data(test_project, class_list: str, parameter: str, parent_list: str, field: str) -> None:
+def test_wrap_remove_data(test_project, class_list: str, parameter: str, field: str) -> None:
     """If we remove a Data model in a ClassList containing values defined elsewhere, we should raise a ValidationError.
     """
     test_attribute = getattr(test_project, class_list)
@@ -582,9 +591,10 @@ def test_wrap_remove_data(test_project, class_list: str, parameter: str, parent_
 
     with contextlib.redirect_stdout(io.StringIO()) as print_str:
         test_attribute.remove(parameter)
-    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "{parameter}"'
-                                    f' in the "{field}" field of "{parent_list}" must be defined in '
-                                    f'"{class_list}".\033[0m\n')
+    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "{parameter}" '
+                                    f'in the "{field}" field of '
+                                    f'"{RAT.project.model_names_used_in[class_list].attribute}" '
+                                    f'must be defined in "{class_list}".\033[0m\n')
 
     # Ensure model was not removed
     assert test_attribute[index].name == orig_class_list[index].name
@@ -593,34 +603,35 @@ def test_wrap_remove_data(test_project, class_list: str, parameter: str, parent_
     assert test_attribute[index].simulation_range == orig_class_list[index].simulation_range
 
 
-@pytest.mark.parametrize(["class_list", "parameter", "parent_list", "field"], [
-    ('background_parameters', 'Background Param 1', 'backgrounds', 'value_1'),
-    ('resolution_parameters', 'Resolution Param 1', 'resolutions', 'value_1'),
-    ('parameters', 'Test SLD', 'layers', 'SLD'),
-    ('backgrounds', 'Background 1', 'contrasts', 'background'),
-    ('bulk_in', 'SLD Air', 'contrasts', 'nba'),
-    ('bulk_out', 'SLD D2O', 'contrasts', 'nbs'),
-    ('scalefactors', 'Scalefactor 1', 'contrasts', 'scalefactor'),
-    ('resolutions', 'Resolution 1', 'contrasts', 'resolution'),
+@pytest.mark.parametrize(["class_list", "parameter", "field"], [
+    ('background_parameters', 'Background Param 1', 'value_1'),
+    ('resolution_parameters', 'Resolution Param 1', 'value_1'),
+    ('parameters', 'Test SLD', 'SLD'),
+    ('backgrounds', 'Background 1', 'background'),
+    ('bulk_in', 'SLD Air', 'nba'),
+    ('bulk_out', 'SLD D2O', 'nbs'),
+    ('scalefactors', 'Scalefactor 1', 'scalefactor'),
+    ('resolutions', 'Resolution 1', 'resolution'),
 ])
-def test_wrap_clear(test_project, class_list: str, parameter: str, parent_list: str, field: str) -> None:
+def test_wrap_clear(test_project, class_list: str, parameter: str, field: str) -> None:
     """If we clear a ClassList containing models with values defined elsewhere, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
 
     with contextlib.redirect_stdout(io.StringIO()) as print_str:
         test_attribute.clear()
-    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "{parameter}"'
-                                    f' in the "{field}" field of "{parent_list}" must be defined in '
-                                    f'"{class_list}".\033[0m\n')
+    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "{parameter}" '
+                                    f'in the "{field}" field of '
+                                    f'"{RAT.project.model_names_used_in[class_list].attribute}" '
+                                    f'must be defined in "{class_list}".\033[0m\n')
     # Ensure list was not cleared
     assert test_attribute == orig_class_list
 
 
-@pytest.mark.parametrize(["class_list", "parameter", "parent_list", "field"], [
-    ('data', 'Simulation', 'contrasts', 'data'),
+@pytest.mark.parametrize(["class_list", "parameter", "field"], [
+    ('data', 'Simulation', 'data'),
 ])
-def test_wrap_clear_data(test_project, class_list: str, parameter: str, parent_list: str, field: str) -> None:
+def test_wrap_clear_data(test_project, class_list: str, parameter: str, field: str) -> None:
     """If we clear a ClassList containing Data models with values defined elsewhere, we should raise a ValidationError.
     """
     test_attribute = getattr(test_project, class_list)
@@ -628,9 +639,10 @@ def test_wrap_clear_data(test_project, class_list: str, parameter: str, parent_l
 
     with contextlib.redirect_stdout(io.StringIO()) as print_str:
         test_attribute.clear()
-    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "{parameter}"'
-                                    f' in the "{field}" field of "{parent_list}" must be defined in '
-                                    f'"{class_list}".\033[0m\n')
+    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "{parameter}" '
+                                    f'in the "{field}" field of '
+                                    f'"{RAT.project.model_names_used_in[class_list].attribute}" '
+                                    f'must be defined in "{class_list}".\033[0m\n')
     # Ensure list was not cleared
     for index in range(len(test_attribute)):
         assert test_attribute[index].name == orig_class_list[index].name
@@ -639,31 +651,32 @@ def test_wrap_clear_data(test_project, class_list: str, parameter: str, parent_l
         assert test_attribute[index].simulation_range == orig_class_list[index].simulation_range
 
 
-@pytest.mark.parametrize(["class_list", "input_model", "field"], [
-    ('backgrounds', RAT.models.Background, 'value_1'),
-    ('backgrounds', RAT.models.Background, 'value_2'),
-    ('backgrounds', RAT.models.Background, 'value_3'),
-    ('backgrounds', RAT.models.Background, 'value_4'),
-    ('backgrounds', RAT.models.Background, 'value_5'),
-    ('resolutions', RAT.models.Resolution, 'value_1'),
-    ('resolutions', RAT.models.Resolution, 'value_2'),
-    ('resolutions', RAT.models.Resolution, 'value_3'),
-    ('resolutions', RAT.models.Resolution, 'value_4'),
-    ('resolutions', RAT.models.Resolution, 'value_5'),
-    ('layers', RAT.models.Layer, 'thickness'),
-    ('layers', RAT.models.Layer, 'SLD'),
-    ('layers', RAT.models.Layer, 'roughness'),
-    ('contrasts', RAT.models.Contrast, 'data'),
-    ('contrasts', RAT.models.Contrast, 'background'),
-    ('contrasts', RAT.models.Contrast, 'nba'),
-    ('contrasts', RAT.models.Contrast, 'nbs'),
-    ('contrasts', RAT.models.Contrast, 'scalefactor'),
-    ('contrasts', RAT.models.Contrast, 'resolution'),
+@pytest.mark.parametrize(["class_list", "field"], [
+    ('backgrounds', 'value_1'),
+    ('backgrounds', 'value_2'),
+    ('backgrounds', 'value_3'),
+    ('backgrounds', 'value_4'),
+    ('backgrounds', 'value_5'),
+    ('resolutions', 'value_1'),
+    ('resolutions', 'value_2'),
+    ('resolutions', 'value_3'),
+    ('resolutions', 'value_4'),
+    ('resolutions', 'value_5'),
+    ('layers', 'thickness'),
+    ('layers', 'SLD'),
+    ('layers', 'roughness'),
+    ('contrasts', 'data'),
+    ('contrasts', 'background'),
+    ('contrasts', 'nba'),
+    ('contrasts', 'nbs'),
+    ('contrasts', 'scalefactor'),
+    ('contrasts', 'resolution'),
 ])
-def test_wrap_extend(test_project, class_list: str, input_model: Callable, field: str) -> None:
+def test_wrap_extend(test_project, class_list: str, field: str) -> None:
     """If we extend a ClassList with model containing undefined values, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
+    input_model = getattr(RAT.models, RAT.project.model_in_classlist[class_list])
 
     with contextlib.redirect_stdout(io.StringIO()) as print_str:
         test_attribute.extend([input_model(**{field: 'undefined'})])
