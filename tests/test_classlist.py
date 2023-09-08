@@ -142,6 +142,20 @@ def test_setitem_same_name_field(two_name_class_list: 'ClassList', new_values: d
         two_name_class_list[0] = new_values
 
 
+def test_delitem(two_name_class_list: 'ClassList', one_name_class_list: 'ClassList') -> None:
+    """We should be able to delete elements from a ClassList with the del operator."""
+    class_list = two_name_class_list
+    del class_list[1]
+    assert class_list == one_name_class_list
+
+
+def test_delitem_not_present(two_name_class_list: 'ClassList') -> None:
+    """If we use the del operator to delete an index out of range, we should raise an IndexError."""
+    class_list = two_name_class_list
+    with pytest.raises(IndexError, match=re.escape("list assignment index out of range")):
+        del class_list[2]
+
+
 @pytest.mark.parametrize("added_list", [
     (ClassList(InputAttributes(name='Eve'))),
     ([InputAttributes(name='Eve')]),
