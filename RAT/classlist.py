@@ -61,15 +61,22 @@ class ClassList(collections.UserList):
                 output = repr(self.data)
         return output
 
-    def __setitem__(self, index: int, set_dict: dict[str, Any]) -> None:
-        """Assign the values of an existing object's attributes using a dictionary."""
-        self._setitem(index, set_dict)
+    def __setitem__(self, index: int, item: Union['RAT.models', dict[str, Any]]) -> None:
+        """Assign the values of an existing object's attributes using either a replacement object or a dictionary
+        containing key-value pairs.
+        """
+        self._setitem(index, item)
 
-    def _setitem(self, index: int, set_dict: dict[str, Any]) -> None:
+    def _setitem(self, index: int, item: Union['RAT.models', dict[str, Any]]) -> None:
         """Auxiliary routine of "__setitem__" used to enable wrapping."""
-        self._validate_name_field(set_dict)
-        for key, value in set_dict.items():
-            setattr(self.data[index], key, value)
+        if isinstance(item, dict):
+            self._validate_name_field(item)
+            for key, value in item.items():
+                setattr(self.data[index], key, value)
+        else:
+            self._check_classes(self + [item])
+            self._check_unique_name_fields(self + [item])
+            self.data[index] = item
 
     def __delitem__(self, index: int) -> None:
         """Delete an object from the list by index."""

@@ -119,26 +119,56 @@ def test_repr_empty_classlist() -> None:
     assert repr(ClassList()) == repr([])
 
 
+@pytest.mark.parametrize(["new_item", "expected_classlist"], [
+    (InputAttributes(name='Eve'), ClassList([InputAttributes(name='Eve'), InputAttributes(name='Bob')])),
+    (InputAttributes(name='John', surname='Luther'),
+     ClassList([InputAttributes(name='John', surname='Luther'), InputAttributes(name='Bob')])),
+])
+def test_setitem_obj(two_name_class_list: ClassList, new_item: InputAttributes, expected_classlist: ClassList)\
+        -> None:
+    """We should be able to set values in an element of a ClassList using a new object."""
+    class_list = two_name_class_list
+    class_list[0] = new_item
+    assert class_list == expected_classlist
+
+
 @pytest.mark.parametrize(["new_values", "expected_classlist"], [
     ({'name': 'Eve'}, ClassList([InputAttributes(name='Eve'), InputAttributes(name='Bob')])),
     ({'name': 'John', 'surname': 'Luther'},
      ClassList([InputAttributes(name='John', surname='Luther'), InputAttributes(name='Bob')])),
 ])
-def test_setitem(two_name_class_list: 'ClassList', new_values: dict[str, Any], expected_classlist: 'ClassList') -> None:
+def test_setitem_dict(two_name_class_list: 'ClassList', new_values: dict[str, Any], expected_classlist: 'ClassList') -> None:
     """We should be able to set values in an element of a ClassList using a dictionary."""
     class_list = two_name_class_list
     class_list[0] = new_values
     assert class_list == expected_classlist
 
 
+@pytest.mark.parametrize("new_item", [
+    (InputAttributes(name='Bob')),
+])
+def test_setitem_same_name_field_obj(two_name_class_list: 'ClassList', new_item: InputAttributes) -> None:
+    """If we set the name_field of an object in the ClassList to one already defined, we should raise a ValueError."""
+    with pytest.raises(ValueError, match="Input list contains objects with the same value of the name attribute"):
+        two_name_class_list[0] = new_item
+
+
 @pytest.mark.parametrize("new_values", [
     ({'name': 'Bob'}),
 ])
-def test_setitem_same_name_field(two_name_class_list: 'ClassList', new_values: dict[str, Any]) -> None:
+def test_setitem_same_name_field_dict(two_name_class_list: 'ClassList', new_values: dict[str, Any]) -> None:
     """If we set the name_field of an object in the ClassList to one already defined, we should raise a ValueError."""
     with pytest.raises(ValueError, match=f"Input arguments contain the {two_name_class_list.name_field} "
                                          f"'{new_values[two_name_class_list.name_field]}', "
                                          f"which is already specified in the ClassList"):
+        two_name_class_list[0] = new_values
+
+@pytest.mark.parametrize("new_values", [
+    'Bob',
+])
+def test_setitem_different_classes(two_name_class_list: 'ClassList', new_values: dict[str, Any]) -> None:
+    """If we set the name_field of an object in the ClassList to one already defined, we should raise a ValueError."""
+    with pytest.raises(ValueError, match=f"Input list contains elements of type other than 'InputAttributes'"):
         two_name_class_list[0] = new_values
 
 
