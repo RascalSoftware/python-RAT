@@ -1,3 +1,4 @@
+import tabulate
 from typing import Union
 from utils.enums import ParallelOptions, Procedures, DisplayOptions, BoundHandlingOptions, StrategyOptions
 
@@ -271,8 +272,24 @@ class BaseProcedure:
         self._validate_value('display', value, DisplayOptions)
         self._display = value
 
+    def __repr__(self, procedure: Union[str, Procedures]):
+        """
+        Defines the display method for procedure classes.
 
-class CalculateProcedure(BaseProcedure):
+        Parameters
+        ----------
+        procedure : Union[str, Procedures]
+            The procedure for the controls classes.
+
+        """
+        properties = [["Property", "Value"]] +\
+            [["procedure", procedure]] +\
+            [[k.lstrip('_'), v] for k, v in self.__dict__.items()] 
+        table = tabulate.tabulate(properties, headers="firstrow")
+        return table
+
+
+class Calculate(BaseProcedure):
     """Defines the class for the calculate procedure"""
 
     def __init__(self,
@@ -298,9 +315,16 @@ class CalculateProcedure(BaseProcedure):
             The value of the procedure property.
         """
         return Procedures.Calculate.value
+
+    def __repr__(self):
+        """
+        Defines the display method for Calculate class
+        """
+        table = super().__repr__(Procedures.Calculate.value)
+        return table
     
 
-class SimplexProcedure(BaseProcedure):
+class Simplex(BaseProcedure):
     """Defines the class for the simplex procedure"""
 
     def __init__(self,
@@ -526,8 +550,15 @@ class SimplexProcedure(BaseProcedure):
         self._validate_type('updatePlotFreq', value, int)
         self._updatePlotFreq = value
 
+    def __repr__(self):
+        """
+        Defines the display method for Simplex class
+        """
+        table = super().__repr__(Procedures.Simplex.value)
+        return table
 
-class DEProcedure(BaseProcedure):
+
+class DE(BaseProcedure):
     """Defines the class for the Differential Evolution procedure"""
 
     def __init__(self,
@@ -773,8 +804,15 @@ class DEProcedure(BaseProcedure):
                              lower_exclusive = False)
         self._numGenerations = value
 
+    def __repr__(self):
+        """
+        Defines the display method for DE class
+        """
+        table = super().__repr__(Procedures.DE.value)
+        return table
 
-class NSProcedure(BaseProcedure):
+
+class NS(BaseProcedure):
     """Defines the class for the  Nested Sampler procedure"""
 
     def __init__(self,
@@ -950,8 +988,15 @@ class NSProcedure(BaseProcedure):
                              lower_exclusive = False)
         self._nsTolerance = float(value)
 
+    def __repr__(self):
+        """
+        Defines the display method for NS class
+        """
+        table = super().__repr__(Procedures.NS.value)
+        return table
 
-class DreamProcedure(BaseProcedure):
+
+class Dream(BaseProcedure):
     """Defines the class for the Dream procedure"""
 
     def __init__(self,
@@ -1161,6 +1206,13 @@ class DreamProcedure(BaseProcedure):
         self._validate_value('boundHandling', value, BoundHandlingOptions)
         self._boundHandling = value
 
+    def __repr__(self):
+        """
+        Defines the display method for Dream class
+        """
+        table = super().__repr__(Procedures.Dream.value)
+        return table
+
 
 class ControlsClass:
 
@@ -1172,19 +1224,19 @@ class ControlsClass:
         self._validate_properties(**properties)
 
         if self._procedure == Procedures.Calculate.value:
-            self._controls = CalculateProcedure(**properties)
+            self._controls = Calculate(**properties)
 
         elif self._procedure == Procedures.Simplex.value:
-            self._controls = SimplexProcedure(**properties)
+            self._controls = Simplex(**properties)
         
         elif self._procedure == Procedures.DE.value:
-            self._controls = DEProcedure(**properties)
+            self._controls = DE(**properties)
         
         elif self._procedure == Procedures.NS.value:
-            self._controls = NSProcedure(**properties)
+            self._controls = NS(**properties)
         
         elif self._procedure == Procedures.Dream.value:
-            self._controls = DreamProcedure(**properties)
+            self._controls = Dream(**properties)
     
     @property
     def controls(self):
@@ -1267,3 +1319,10 @@ class ControlsClass:
         if not (expected_properties | input_properties == expected_properties):
             raise ValueError((f"Properties that can be set for {self._procedure} are "
                               f"{', '.join(expected_properties)}"))
+
+    def __repr__(self):
+        """
+        Defines the display method for Controls class
+        """
+        table = self._controls.__repr__()
+        return table
