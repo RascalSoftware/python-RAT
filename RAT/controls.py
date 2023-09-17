@@ -21,7 +21,7 @@ class BaseProcedure:
 
     def _validate_type(self,
                        name: str,
-                       value: Union[int, float, str, bool, list[Union[int, float]], tuple],
+                       value: Union[int, float, str, bool, list[Union[int, float]]],
                        type: type) -> None:
         """
         Validates the value has the correct type.
@@ -30,7 +30,7 @@ class BaseProcedure:
         ----------
         name : str
             The name of the property.
-        value : Union[int, float, str, bool, list[Union[int, float]], tuple]
+        value : Union[int, float, str, bool, list[Union[int, float]]]
             The value of the property.
         type : type
             The expected type of the property.
@@ -43,15 +43,15 @@ class BaseProcedure:
         if not isinstance(value, type):
             raise TypeError(f"{name} must be of type {type.__name__}")
     
-    def _validate_value_in_enum(self,
-                                name: str,
-                                value: Union[str, int],
-                                enum: Union[ParallelOptions,
-                                            Procedures,
-                                            DisplayOptions,
-                                            BoundHandlingOptions,
-                                            StrategyOptions],
-                                type: Union[str, int] = str) -> None:
+    def _validate_value(self,
+                        name: str,
+                        value: Union[str, int],
+                        enum: Union[ParallelOptions,
+                                    Procedures,
+                                    DisplayOptions,
+                                    BoundHandlingOptions,
+                                    StrategyOptions],
+                        type: Union[str, int] = str) -> None:
         """
         Validates the value is present in the enum.
 
@@ -79,13 +79,13 @@ class BaseProcedure:
             f"enum or one of the following {type.__name__} " 
             f"{', '.join(allowed_options)}"))
     
-    def _validate_value_range(self,
-                              name: str,
-                              value: Union[float, int],
-                              lower_limit: Union[float, int] = float('-inf'),
-                              lower_exclusive: bool = True,
-                              upper_limit: Union[float, int] = float('inf'),
-                              upper_exclusive: bool = True) -> None:
+    def _validate_range(self,
+                        name: str,
+                        value: Union[float, int],
+                        lower_limit: Union[float, int] = float('-inf'),
+                        lower_exclusive: bool = True,
+                        upper_limit: Union[float, int] = float('inf'),
+                        upper_exclusive: bool = True) -> None:
         """
         Validates the value is between the lower and upper bounds.
 
@@ -162,7 +162,7 @@ class BaseProcedure:
             input of the wrong type or value.
         """
         self._validate_type('parallel', value, str)
-        self._validate_value_in_enum('parallel', value, ParallelOptions)
+        self._validate_value('parallel', value, ParallelOptions)
         self._parallel = value
     
     @property
@@ -228,15 +228,15 @@ class BaseProcedure:
         if len(value) != 2:
             raise ValueError("resamPars must have length of 2")
         if not all(isinstance(x, (float, int)) for x in value):
-            raise TypeError("resamPars must contain floats or ints")
-        self._validate_value_range(name = 'resamPars[0]',
-                                   value = value[0],
-                                   lower_limit = 0,
-                                   upper_limit = 1)
-        self._validate_value_range(name = 'resamPars[1]',
-                                   value = value[1],
-                                   lower_limit = 0,
-                                   lower_exclusive = False)
+            raise TypeError("resamPars must be defined using floats or ints")
+        self._validate_range(name = 'resamPars[0]',
+                             value = value[0],
+                             lower_limit = 0,
+                             upper_limit = 1)
+        self._validate_range(name = 'resamPars[1]',
+                             value = value[1],
+                             lower_limit = 0,
+                             lower_exclusive = False)
         self._resamPars = [float(v) for v in value]
 
     @property
@@ -268,7 +268,7 @@ class BaseProcedure:
             input of the wrong type or value.
         """
         self._validate_type('display', value, str)
-        self._validate_value_in_enum('display', value, DisplayOptions)
+        self._validate_value('display', value, DisplayOptions)
         self._display = value
 
 
@@ -596,10 +596,10 @@ class DEProcedure(BaseProcedure):
             input of the wrong type or value.
         """
         self._validate_type('populationSize', value, int)
-        self._validate_value_range(name = 'populationSize',
-                                   value = value,
-                                   lower_limit = 1,
-                                   lower_exclusive = False)
+        self._validate_range(name = 'populationSize',
+                             value = value,
+                             lower_limit = 1,
+                             lower_exclusive = False)
         self._populationSize = value
     
     @property
@@ -662,10 +662,10 @@ class DEProcedure(BaseProcedure):
             input of the wrong type or value.
         """
         self._validate_type('crossoverProbability', value, float)
-        self._validate_value_range(name = 'crossoverProbability',
-                                   value = value,
-                                   lower_limit = 0,
-                                   upper_limit = 1)
+        self._validate_range(name = 'crossoverProbability',
+                             value = value,
+                             lower_limit = 0,
+                             upper_limit = 1)
         self._crossoverProbability = value
     
     @property
@@ -697,10 +697,10 @@ class DEProcedure(BaseProcedure):
             input of the wrong type or value.
         """
         self._validate_type('strategy', value, int)
-        self._validate_value_in_enum(name = 'strategy',
-                                     value = value,
-                                     enum = StrategyOptions,
-                                     type = int)
+        self._validate_value(name = 'strategy',
+                             value = value,
+                             enum = StrategyOptions,
+                             type = int)
         self._strategy = value
     
     @property
@@ -732,10 +732,10 @@ class DEProcedure(BaseProcedure):
             input of the wrong type or value.
         """
         self._validate_type('targetValue', value, (int, float))
-        self._validate_value_range(name = 'targetValue',
-                                   value = value,
-                                   lower_limit = 1,
-                                   lower_exclusive = False)
+        self._validate_range(name = 'targetValue',
+                             value = value,
+                             lower_limit = 1,
+                             lower_exclusive = False)
         self._targetValue = float(value)
 
     @property
@@ -767,10 +767,10 @@ class DEProcedure(BaseProcedure):
             input of the wrong type or value.
         """
         self._validate_type('numGenerations', value, int)
-        self._validate_value_range(name = 'numGenerations',
-                                   value = value,
-                                   lower_limit = 1,
-                                   lower_exclusive = False)
+        self._validate_range(name = 'numGenerations',
+                             value = value,
+                             lower_limit = 1,
+                             lower_exclusive = False)
         self._numGenerations = value
 
 
@@ -839,10 +839,10 @@ class NSProcedure(BaseProcedure):
             input of the wrong type or value.
         """
         self._validate_type('Nlive', value, int)
-        self._validate_value_range(name = 'Nlive',
-                                   value = value,
-                                   lower_limit = 1,
-                                   lower_exclusive = False)
+        self._validate_range(name = 'Nlive',
+                             value = value,
+                             lower_limit = 1,
+                             lower_exclusive = False)
         self._Nlive = value
 
     @property
@@ -874,10 +874,10 @@ class NSProcedure(BaseProcedure):
             input of the wrong type or value.
         """
         self._validate_type('Nmcmc', value, (int, float))
-        self._validate_value_range(name = 'Nmcmc',
-                                   value = value,
-                                   lower_limit = 1,
-                                   lower_exclusive = False)
+        self._validate_range(name = 'Nmcmc',
+                             value = value,
+                             lower_limit = 1,
+                             lower_exclusive = False)
         self._Nmcmc = float(value)
 
     @property
@@ -909,10 +909,10 @@ class NSProcedure(BaseProcedure):
             input of the wrong type or value.
         """
         self._validate_type('propScale', value, float)
-        self._validate_value_range(name = 'propScale',
-                                   value = value,
-                                   lower_limit = 0,
-                                   upper_limit = 1)
+        self._validate_range(name = 'propScale',
+                             value = value,
+                             lower_limit = 0,
+                             upper_limit = 1)
         self._propScale = value
 
     @property
@@ -944,10 +944,10 @@ class NSProcedure(BaseProcedure):
             input of the wrong type or value.
         """
         self._validate_type('nsTolerance', value, (int, float))
-        self._validate_value_range(name = 'nsTolerance',
-                                   value = value,
-                                   lower_limit = 0,
-                                   lower_exclusive = False)
+        self._validate_range(name = 'nsTolerance',
+                             value = value,
+                             lower_limit = 0,
+                             lower_exclusive = False)
         self._nsTolerance = float(value)
 
 
@@ -1018,10 +1018,10 @@ class DreamProcedure(BaseProcedure):
             input of the wrong type or value.
         """
         self._validate_type('nSamples', value, int)
-        self._validate_value_range(name = 'nSamples',
-                                   value = value,
-                                   lower_limit = 0,
-                                   lower_exclusive = False)
+        self._validate_range(name = 'nSamples',
+                             value = value,
+                             lower_limit = 0,
+                             lower_exclusive = False)
         self._nSamples = value
 
     @property
@@ -1053,10 +1053,10 @@ class DreamProcedure(BaseProcedure):
             input of the wrong type or value.
         """
         self._validate_type('nChains', value, int)
-        self._validate_value_range(name = 'nChains',
-                                   value = value,
-                                   lower_limit = 0,
-                                   lower_exclusive = False)
+        self._validate_range(name = 'nChains',
+                             value = value,
+                             lower_limit = 0,
+                             lower_exclusive = False)
         self._nChains = value
 
     @property
@@ -1088,10 +1088,10 @@ class DreamProcedure(BaseProcedure):
             input of the wrong type or value.
         """
         self._validate_type('jumpProb', value, float)
-        self._validate_value_range(name = 'jumpProb',
-                                   value = value,
-                                   lower_limit = 0,
-                                   upper_limit = 1)
+        self._validate_range(name = 'jumpProb',
+                             value = value,
+                             lower_limit = 0,
+                             upper_limit = 1)
         self._jumpProb = value
 
     @property
@@ -1123,10 +1123,10 @@ class DreamProcedure(BaseProcedure):
             input of the wrong type or value.
         """
         self._validate_type('pUnitGamma', value, float)
-        self._validate_value_range(name = 'pUnitGamma',
-                                   value = value,
-                                   lower_limit = 0,
-                                   upper_limit = 1)
+        self._validate_range(name = 'pUnitGamma',
+                             value = value,
+                             lower_limit = 0,
+                             upper_limit = 1)
         self._pUnitGamma = value
 
     @property
@@ -1158,5 +1158,112 @@ class DreamProcedure(BaseProcedure):
             input of the wrong type or value.
         """
         self._validate_type('boundHandling', value, str)
-        self._validate_value_in_enum('boundHandling', value, BoundHandlingOptions)
+        self._validate_value('boundHandling', value, BoundHandlingOptions)
         self._boundHandling = value
+
+
+class ControlsClass:
+
+    def __init__(self,
+                 procedure: Union[str, Procedures] = Procedures.Calculate.value,
+                 **properties) -> None:
+        
+        self._procedure = procedure
+        self._validate_properties(**properties)
+
+        if self._procedure == Procedures.Calculate.value:
+            self._controls = CalculateProcedure(**properties)
+
+        elif self._procedure == Procedures.Simplex.value:
+            self._controls = SimplexProcedure(**properties)
+        
+        elif self._procedure == Procedures.DE.value:
+            self._controls = DEProcedure(**properties)
+        
+        elif self._procedure == Procedures.NS.value:
+            self._controls = NSProcedure(**properties)
+        
+        elif self._procedure == Procedures.Dream.value:
+            self._controls = DreamProcedure(**properties)
+    
+    @property
+    def controls(self):
+        """
+        Gets the controls.
+
+        Returns
+        -------
+        controls : Union[CalculateProcedure,
+                         SimplexProcedure,
+                         DEProcedure,
+                         NSProcedure,
+                         DreamProcedure]
+            The class with control properties.
+        """
+        return self._controls
+
+    def _validate_properties(self, **properties) -> bool:
+        """
+        Validates the inputs for the procedure.
+
+        Parameters
+        ----------
+        properties : dict[str, 
+                          Union[int,
+                                float,
+                                str,
+                                bool,
+                                list[Union[int, float]]]]
+            The properties of the procedure.
+
+        Raises
+        ------
+        ValueError
+            Raised if properties are not validated.
+        """
+        property_names = {Procedures.Calculate.value: {'parallel',
+                                                       'calcSLdDuringFit',
+                                                       'resamPars',
+                                                       'display'},
+                          Procedures.Simplex.value: {'parallel',
+                                                     'calcSLdDuringFit',
+                                                     'resamPars',
+                                                     'display',
+                                                     'tolX',
+                                                     'tolFun',
+                                                     'maxFunEvals',
+                                                     'maxIter',
+                                                     'updateFreq',
+                                                     'updatePlotFreq'},
+                          Procedures.DE.value: {'parallel',
+                                                'calcSLdDuringFit',
+                                                'resamPars',
+                                                'display',
+                                                'populationSize',
+                                                'fWeight',
+                                                'crossoverProbability',
+                                                'strategy',
+                                                'targetValue',
+                                                'numGenerations'},
+                          Procedures.NS.value: {'parallel',
+                                                'calcSLdDuringFit',
+                                                'resamPars',
+                                                'display',
+                                                'Nlive',
+                                                'Nmcmc',
+                                                'propScale',
+                                                'nsTolerance'},
+                          Procedures.Dream.value: {'parallel',
+                                                   'calcSLdDuringFit',
+                                                   'resamPars',
+                                                   'display',
+                                                   'nSamples',
+                                                   'nChains',
+                                                   'jumpProb',
+                                                   'pUnitGamma',
+                                                   'boundHandling'}}
+        expected_properties = property_names[self._procedure]
+        input_properties = properties.keys()
+        if not (expected_properties | input_properties == expected_properties):
+            raise ValueError((f"Properties that can be set for {self._procedure} are "
+                              f"{', '.join(expected_properties)}"))
