@@ -1318,7 +1318,7 @@ class ControlsClass:
         input_properties = properties.keys()
         if not (expected_properties | input_properties == expected_properties):
             raise ValueError((f"Properties that can be set for {self._procedure} are "
-                              f"{', '.join(expected_properties)}"))
+                              f"{', '.join(sorted(expected_properties))}"))
 
     def __repr__(self):
         """

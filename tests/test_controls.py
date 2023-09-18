@@ -7,6 +7,7 @@ from RAT.utils.enums import ParallelOptions, Procedures, DisplayOptions, BoundHa
 
 
 class TestBaseProcedure:
+    """Tests the BaseProcedure class."""
 
     def setup_class(self):
         self.base_procedure = BaseProcedure()
@@ -71,12 +72,16 @@ class TestBaseProcedure:
                              [('parallel', 1, 'parallel must be of type str'),
                               ('calcSldDuringFit', 1, 'calcSldDuringFit must be of type bool'),
                               ('resamPars', True, 'resamPars must be of type list'),
-                              ('resamPars', ['a', 'b'], 'resamPars must be defined using floats or ints'),
                               ('display', True, 'display must be of type str')])
     def test_base_procedure_properties_type_exceptions(self, property: str,  value: Any, msg: str) -> None:
         with pytest.raises(TypeError) as exc:
             setattr(self.base_procedure, property, value)
         assert msg == str(exc.value)
+    
+    def test_base_procedure_resamPars_type_exceptions(self) -> None:
+        with pytest.raises(TypeError) as exc:
+            self.base_procedure.resamPars = ['f', 'g']
+        assert 'resamPars must be defined using floats or ints' == str(exc.value)
     
     @pytest.mark.parametrize("property, value, msg", 
                              [('parallel',
@@ -95,6 +100,7 @@ class TestBaseProcedure:
 
 
 class TestCalculate:
+    """Tests the Calculate class."""
 
     def setup_class(self):
         self.calulate = Calculate()
@@ -137,6 +143,7 @@ class TestCalculate:
           
 
 class TestSimplex:
+    """Tests the Simplex class."""
 
     def setup_class(self):
         self.simplex = Simplex()
@@ -203,6 +210,7 @@ class TestSimplex:
 
 
 class TestDE:
+    """Tests the DE class."""
 
     def setup_class(self):
         self.de = DE()
@@ -269,6 +277,7 @@ class TestDE:
 
 
 class TestNS:
+    """Tests the NS class."""
 
     def setup_class(self):
         self.ns = NS()
@@ -327,6 +336,7 @@ class TestNS:
         
 
 class TestDream:
+    """Tests the Dream class."""
 
     def setup_class(self):
         self.dream = Dream()
@@ -385,4 +395,53 @@ class TestDream:
                      "jumpProb          0.5\n"
                      "pUnitGamma        0.2\n"
                      "boundHandling     fold")
+        assert table == table_str
+
+class TestControlsClass:
+    """Tests the Controls class."""
+
+    def setup_class(self):
+        self.controls = ControlsClass()
+    
+    def test_controls_class_default_type(self) -> None:
+        assert type(self.controls.controls).__name__ == "Calculate"
+    
+    def test_dream_procedure_properties(self) -> None:
+        assert hasattr(self.controls, 'controls')
+    
+    @pytest.mark.parametrize("procedure, name", [(Procedures.Calculate.value, "Calculate"),
+                                                 (Procedures.Simplex.value, "Simplex"),
+                                                 (Procedures.DE.value, "DE"),
+                                                 (Procedures.NS.value, "NS"),
+                                                 (Procedures.Dream.value, "Dream")])
+    def test_controls_class_return_type(self, procedure: str, name: str) -> None:
+        controls = ControlsClass(procedure)
+        assert type(controls.controls).__name__ == name
+
+    @pytest.mark.parametrize("procedure, msg", [(Procedures.Calculate.value,
+                                                 "Properties that can be set for calculate are calcSLdDuringFit, display, parallel, resamPars"),
+                                                (Procedures.Simplex.value,
+                                                 "Properties that can be set for simplex are calcSLdDuringFit, display, maxFunEvals, maxIter, parallel, resamPars, tolFun, tolX, updateFreq, updatePlotFreq"),
+                                                (Procedures.DE.value,
+                                                 "Properties that can be set for de are calcSLdDuringFit, crossoverProbability, display, fWeight, numGenerations, parallel, populationSize, resamPars, strategy, targetValue"),
+                                                (Procedures.NS.value,
+                                                 "Properties that can be set for ns are Nlive, Nmcmc, calcSLdDuringFit, display, nsTolerance, parallel, propScale, resamPars"),
+                                                (Procedures.Dream.value,
+                                                 "Properties that can be set for dream are boundHandling, calcSLdDuringFit, display, jumpProb, nChains, nSamples, pUnitGamma, parallel, resamPars")])
+    def test_controls_class_validate_properties(self, procedure: str, msg: str) -> None:
+        controls = ControlsClass(procedure)
+        with pytest.raises(ValueError) as exc:
+            controls._validate_properties(test_variable = 200)
+        assert msg == str(exc.value)
+    
+    def test_control_class_repr(self) -> None:
+        controls = ControlsClass()
+        table = controls.__repr__()
+        table_str = ("Property          Value\n"
+                     "----------------  ---------\n"
+                     "procedure         calculate\n"
+                     "parallel          single\n"
+                     "calcSldDuringFit  False\n"
+                     "resamPars         [0.9, 50]\n"
+                     "display           iter")
         assert table == table_str
