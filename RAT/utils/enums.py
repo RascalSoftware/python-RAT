@@ -1,7 +1,11 @@
 from enum import Enum
+try:
+    from enum import StrEnum
+except ImportError:
+    from strenum import StrEnum
 
 
-class ParallelOptions(Enum):
+class ParallelOptions(StrEnum):
     """Defines the avaliable options for parallelization"""
     Single = 'single'
     Points = 'points'
@@ -9,7 +13,7 @@ class ParallelOptions(Enum):
     All = 'all'
 
 
-class Procedures(Enum):
+class Procedures(StrEnum):
     """Defines the avaliable options for procedures"""
     Calculate = 'calculate'
     Simplex = 'simplex'
@@ -18,7 +22,7 @@ class Procedures(Enum):
     Dream = 'dream'
 
 
-class DisplayOptions(Enum):
+class DisplayOptions(StrEnum):
     """Defines the avaliable options for display"""
     Off = 'off'
     Iter = 'iter'
@@ -26,7 +30,7 @@ class DisplayOptions(Enum):
     Final = 'final'
 
 
-class BoundHandlingOptions(Enum):
+class BoundHandlingOptions(StrEnum):
     """Defines the avaliable options for bound handling"""
     No = 'no'
     Reflect = 'reflect'

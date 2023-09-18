@@ -12,10 +12,10 @@ class TestBaseProcedure:
     def setup_class(self):
         self.base_procedure = BaseProcedure()
 
-    @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.Single.value),
+    @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.Single),
                                                  ('calcSldDuringFit', False),
                                                  ('resamPars', [0.9, 50]),
-                                                 ('display', DisplayOptions.Iter.value)])
+                                                 ('display', DisplayOptions.Iter)])
     def test_base_procedure_values(self, property: str, value: Any) -> None:
         assert getattr(self.base_procedure, property) == value
     
@@ -23,10 +23,10 @@ class TestBaseProcedure:
     def test_base_procedure_properties(self, property: str) -> None:
         assert hasattr(self.base_procedure, property)
     
-    @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.All.value),
+    @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.All),
                                                  ('calcSldDuringFit', True),
                                                  ('resamPars', [0.2, 1]),
-                                                 ('display', DisplayOptions.Notify.value)])
+                                                 ('display', DisplayOptions.Notify)])
     def test_base_procedure_setters(self, property: str,  value: Any) -> None:
         setattr(self.base_procedure, property, value)
         assert getattr(self.base_procedure, property) == value
@@ -105,11 +105,11 @@ class TestCalculate:
     def setup_class(self):
         self.calulate = Calculate()
 
-    @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.Single.value),
+    @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.Single),
                                                  ('calcSldDuringFit', False),
                                                  ('resamPars', [0.9, 50]),
-                                                 ('display', DisplayOptions.Iter.value),
-                                                 ('procedure', Procedures.Calculate.value)])
+                                                 ('display', DisplayOptions.Iter),
+                                                 ('procedure', Procedures.Calculate)])
     def test_calculate_procedure_values(self, property: str, value: Any) -> None:
         assert getattr(self.calulate, property) == value
     
@@ -121,10 +121,10 @@ class TestCalculate:
     def test_calulate_procedure_properties(self, property: str) -> None:
         assert hasattr(self.calulate, property)
 
-    @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.All.value),
+    @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.All),
                                                  ('calcSldDuringFit', True),
                                                  ('resamPars', [0.2, 1]),
-                                                 ('display', DisplayOptions.Notify.value)])
+                                                 ('display', DisplayOptions.Notify)])
     def test_calculate_procedure_setters(self, property: str,  value: Any) -> None:
         setattr(self.calulate, property, value)
         assert getattr(self.calulate, property) == value
@@ -148,11 +148,11 @@ class TestSimplex:
     def setup_class(self):
         self.simplex = Simplex()
 
-    @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.Single.value),
+    @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.Single),
                                                  ('calcSldDuringFit', False),
                                                  ('resamPars', [0.9, 50]),
-                                                 ('display', DisplayOptions.Iter.value),
-                                                 ('procedure', Procedures.Simplex.value),
+                                                 ('display', DisplayOptions.Iter),
+                                                 ('procedure', Procedures.Simplex),
                                                  ('tolX', 1e-6),
                                                  ('tolFun', 1e-6),
                                                  ('maxFunEvals', 10000),
@@ -176,10 +176,10 @@ class TestSimplex:
     def test_simplex_procedure_properties(self, property: str) -> None:
         assert hasattr(self.simplex, property)
 
-    @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.All.value),
+    @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.All),
                                                  ('calcSldDuringFit', True),
                                                  ('resamPars', [0.2, 1]),
-                                                 ('display', DisplayOptions.Notify.value),
+                                                 ('display', DisplayOptions.Notify),
                                                  ('tolX', 4e-6),
                                                  ('tolFun', 3e-4),
                                                  ('maxFunEvals', 100),
@@ -215,15 +215,15 @@ class TestDE:
     def setup_class(self):
         self.de = DE()
 
-    @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.Single.value),
+    @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.Single),
                                                  ('calcSldDuringFit', False),
                                                  ('resamPars', [0.9, 50]),
-                                                 ('display', DisplayOptions.Iter.value),
-                                                 ('procedure', Procedures.DE.value),
+                                                 ('display', DisplayOptions.Iter),
+                                                 ('procedure', Procedures.DE),
                                                  ('populationSize', 20),
                                                  ('fWeight', 0.5),
                                                  ('crossoverProbability', 0.8),
-                                                 ('strategy', 4),
+                                                 ('strategy', StrategyOptions.RandomWithPerVectorDither),
                                                  ('targetValue', 1),
                                                  ('numGenerations', 500)])
     def test_de_procedure_values(self, property: str, value: Any) -> None:
@@ -243,10 +243,10 @@ class TestDE:
     def test_de_procedure_properties(self, property: str) -> None:
         assert hasattr(self.de, property)
 
-    @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.All.value),
+    @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.All),
                                                  ('calcSldDuringFit', True),
                                                  ('resamPars', [0.2, 1]),
-                                                 ('display', DisplayOptions.Notify.value),
+                                                 ('display', DisplayOptions.Notify),
                                                  ('populationSize', 20),
                                                  ('fWeight', 0.3),
                                                  ('crossoverProbability', 0.4),
@@ -261,7 +261,7 @@ class TestDE:
         de = DE()
         table = de.__repr__()
         table_str = ("Property              Value\n"
-                     "--------------------  ---------\n"
+                     "--------------------  -----------------------------------------\n"
                      "procedure             de\n"
                      "parallel              single\n"
                      "calcSldDuringFit      False\n"
@@ -270,7 +270,7 @@ class TestDE:
                      "populationSize        20\n"
                      "fWeight               0.5\n"
                      "crossoverProbability  0.8\n"
-                     "strategy              4\n"
+                     "strategy              StrategyOptions.RandomWithPerVectorDither\n"
                      "targetValue           1\n"
                      "numGenerations        500")
         assert table == table_str
@@ -282,11 +282,11 @@ class TestNS:
     def setup_class(self):
         self.ns = NS()
 
-    @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.Single.value),
+    @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.Single),
                                                  ('calcSldDuringFit', False),
                                                  ('resamPars', [0.9, 50]),
-                                                 ('display', DisplayOptions.Iter.value),
-                                                 ('procedure', Procedures.NS.value),
+                                                 ('display', DisplayOptions.Iter),
+                                                 ('procedure', Procedures.NS),
                                                  ('Nlive', 150),
                                                  ('Nmcmc', 0),
                                                  ('propScale', 0.1),
@@ -306,10 +306,10 @@ class TestNS:
     def test_ns_procedure_properties(self, property: str) -> None:
         assert hasattr(self.ns, property)
 
-    @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.All.value),
+    @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.All),
                                                  ('calcSldDuringFit', True),
                                                  ('resamPars', [0.2, 1]),
-                                                 ('display', DisplayOptions.Notify.value),
+                                                 ('display', DisplayOptions.Notify),
                                                  ('Nlive', 1500),
                                                  ('Nmcmc', 1),
                                                  ('propScale', 0.5),
@@ -341,16 +341,16 @@ class TestDream:
     def setup_class(self):
         self.dream = Dream()
 
-    @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.Single.value),
+    @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.Single),
                                                  ('calcSldDuringFit', False),
                                                  ('resamPars', [0.9, 50]),
-                                                 ('display', DisplayOptions.Iter.value),
-                                                 ('procedure', Procedures.Dream.value),
+                                                 ('display', DisplayOptions.Iter),
+                                                 ('procedure', Procedures.Dream),
                                                  ('nSamples', 50000),
                                                  ('nChains', 10),
                                                  ('jumpProb', 0.5),
                                                  ('pUnitGamma', 0.2),
-                                                 ('boundHandling', BoundHandlingOptions.Fold.value)])
+                                                 ('boundHandling', BoundHandlingOptions.Fold)])
     def test_dream_procedure_values(self, property: str, value: Any) -> None:
         assert getattr(self.dream, property) == value
 
@@ -367,15 +367,15 @@ class TestDream:
     def test_dream_procedure_properties(self, property: str) -> None:
         assert hasattr(self.dream, property)
 
-    @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.All.value),
+    @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.All),
                                                  ('calcSldDuringFit', True),
                                                  ('resamPars', [0.2, 1]),
-                                                 ('display', DisplayOptions.Notify.value),
+                                                 ('display', DisplayOptions.Notify),
                                                  ('nSamples', 500),
                                                  ('nChains', 1000),
                                                  ('jumpProb', 0.7),
                                                  ('pUnitGamma', 0.3),
-                                                 ('boundHandling', BoundHandlingOptions.Reflect.value)])
+                                                 ('boundHandling', BoundHandlingOptions.Reflect)])
     def test_dream_procedure_setters(self, property: str,  value: Any) -> None:
         setattr(self.dream, property, value)
         assert getattr(self.dream, property) == value
@@ -409,24 +409,24 @@ class TestControlsClass:
     def test_dream_procedure_properties(self) -> None:
         assert hasattr(self.controls, 'controls')
     
-    @pytest.mark.parametrize("procedure, name", [(Procedures.Calculate.value, "Calculate"),
-                                                 (Procedures.Simplex.value, "Simplex"),
-                                                 (Procedures.DE.value, "DE"),
-                                                 (Procedures.NS.value, "NS"),
-                                                 (Procedures.Dream.value, "Dream")])
+    @pytest.mark.parametrize("procedure, name", [(Procedures.Calculate, "Calculate"),
+                                                 (Procedures.Simplex, "Simplex"),
+                                                 (Procedures.DE, "DE"),
+                                                 (Procedures.NS, "NS"),
+                                                 (Procedures.Dream, "Dream")])
     def test_controls_class_return_type(self, procedure: str, name: str) -> None:
         controls = ControlsClass(procedure)
         assert type(controls.controls).__name__ == name
 
-    @pytest.mark.parametrize("procedure, msg", [(Procedures.Calculate.value,
+    @pytest.mark.parametrize("procedure, msg", [(Procedures.Calculate,
                                                  "Properties that can be set for calculate are calcSLdDuringFit, display, parallel, resamPars"),
-                                                (Procedures.Simplex.value,
+                                                (Procedures.Simplex,
                                                  "Properties that can be set for simplex are calcSLdDuringFit, display, maxFunEvals, maxIter, parallel, resamPars, tolFun, tolX, updateFreq, updatePlotFreq"),
-                                                (Procedures.DE.value,
+                                                (Procedures.DE,
                                                  "Properties that can be set for de are calcSLdDuringFit, crossoverProbability, display, fWeight, numGenerations, parallel, populationSize, resamPars, strategy, targetValue"),
-                                                (Procedures.NS.value,
+                                                (Procedures.NS,
                                                  "Properties that can be set for ns are Nlive, Nmcmc, calcSLdDuringFit, display, nsTolerance, parallel, propScale, resamPars"),
-                                                (Procedures.Dream.value,
+                                                (Procedures.Dream,
                                                  "Properties that can be set for dream are boundHandling, calcSLdDuringFit, display, jumpProb, nChains, nSamples, pUnitGamma, parallel, resamPars")])
     def test_controls_class_validate_properties(self, procedure: str, msg: str) -> None:
         controls = ControlsClass(procedure)
