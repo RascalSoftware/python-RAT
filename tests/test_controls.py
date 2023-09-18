@@ -23,6 +23,13 @@ class TestBaseProcedure:
     def test_base_procedure_properties(self, property: str) -> None:
         assert hasattr(self.base_procedure, property)
     
+    @pytest.mark.parametrize("property, var_type", [('parallel', str),
+                                                    ('calcSldDuringFit', bool),
+                                                    ('resamPars', list),
+                                                    ('display', str)])
+    def test_base_procedure_property_types(self, property: str, var_type) -> None:
+        assert isinstance(getattr(self.base_procedure, property), var_type)
+    
     @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.All),
                                                  ('calcSldDuringFit', True),
                                                  ('resamPars', [0.2, 1]),
@@ -120,6 +127,9 @@ class TestCalculate:
                                           'procedure'])
     def test_calulate_procedure_properties(self, property: str) -> None:
         assert hasattr(self.calulate, property)
+    
+    def test_calculate_procedure_property_types(self) -> None:
+        assert isinstance(getattr(self.calulate, 'procedure'), str)
 
     @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.All),
                                                  ('calcSldDuringFit', True),
@@ -175,6 +185,16 @@ class TestSimplex:
                                           'updatePlotFreq'])
     def test_simplex_procedure_properties(self, property: str) -> None:
         assert hasattr(self.simplex, property)
+    
+    @pytest.mark.parametrize("property, var_type", [('procedure', str),
+                                                    ('tolX', float),
+                                                    ('tolFun', float),
+                                                    ('maxFunEvals', int),
+                                                    ('maxIter', int),
+                                                    ('updateFreq', int),
+                                                    ('updatePlotFreq', int),])
+    def test_simplex_procedure_property_types(self, property: str, var_type) -> None:
+        assert isinstance(getattr(self.simplex, property), var_type)
 
     @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.All),
                                                  ('calcSldDuringFit', True),
@@ -223,7 +243,7 @@ class TestDE:
                                                  ('populationSize', 20),
                                                  ('fWeight', 0.5),
                                                  ('crossoverProbability', 0.8),
-                                                 ('strategy', StrategyOptions.RandomWithPerVectorDither),
+                                                 ('strategy', StrategyOptions.RandomWithPerVectorDither.value),
                                                  ('targetValue', 1),
                                                  ('numGenerations', 500)])
     def test_de_procedure_values(self, property: str, value: Any) -> None:
@@ -243,6 +263,16 @@ class TestDE:
     def test_de_procedure_properties(self, property: str) -> None:
         assert hasattr(self.de, property)
 
+    @pytest.mark.parametrize("property, var_type", [('procedure', str),
+                                                    ('populationSize', int),
+                                                    ('fWeight', float),
+                                                    ('crossoverProbability', float),
+                                                    ('strategy', int),
+                                                    ('targetValue', float),
+                                                    ('numGenerations', int)])
+    def test_de_procedure_property_types(self, property: str, var_type) -> None:
+        assert isinstance(getattr(self.de, property), var_type)
+
     @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.All),
                                                  ('calcSldDuringFit', True),
                                                  ('resamPars', [0.2, 1]),
@@ -261,7 +291,7 @@ class TestDE:
         de = DE()
         table = de.__repr__()
         table_str = ("Property              Value\n"
-                     "--------------------  -----------------------------------------\n"
+                     "--------------------  ---------\n"
                      "procedure             de\n"
                      "parallel              single\n"
                      "calcSldDuringFit      False\n"
@@ -270,8 +300,8 @@ class TestDE:
                      "populationSize        20\n"
                      "fWeight               0.5\n"
                      "crossoverProbability  0.8\n"
-                     "strategy              StrategyOptions.RandomWithPerVectorDither\n"
-                     "targetValue           1\n"
+                     "strategy              4\n"
+                     "targetValue           1.0\n"
                      "numGenerations        500")
         assert table == table_str
 
@@ -306,6 +336,14 @@ class TestNS:
     def test_ns_procedure_properties(self, property: str) -> None:
         assert hasattr(self.ns, property)
 
+    @pytest.mark.parametrize("property, var_type", [('procedure', str),
+                                                    ('Nlive', int),
+                                                    ('Nmcmc', float),
+                                                    ('propScale', float),
+                                                    ('nsTolerance', float)])
+    def test_ns_procedure_property_types(self, property: str, var_type) -> None:
+        assert isinstance(getattr(self.ns, property), var_type)
+
     @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.All),
                                                  ('calcSldDuringFit', True),
                                                  ('resamPars', [0.2, 1]),
@@ -329,7 +367,7 @@ class TestNS:
                      "resamPars         [0.9, 50]\n"
                      "display           iter\n"
                      "Nlive             150\n"
-                     "Nmcmc             0\n"
+                     "Nmcmc             0.0\n"
                      "propScale         0.1\n"
                      "nsTolerance       0.1")
         assert table == table_str
@@ -366,6 +404,15 @@ class TestDream:
                                           'boundHandling'])
     def test_dream_procedure_properties(self, property: str) -> None:
         assert hasattr(self.dream, property)
+
+    @pytest.mark.parametrize("property, var_type", [('procedure', str),
+                                                    ('nSamples', int),
+                                                    ('nChains', int),
+                                                    ('jumpProb', float),
+                                                    ('pUnitGamma', float),
+                                                    ('boundHandling', str)])
+    def test_dream_procedure_property_types(self, property: str, var_type) -> None:
+        assert isinstance(getattr(self.dream, property), var_type)
 
     @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.All),
                                                  ('calcSldDuringFit', True),

@@ -1,5 +1,5 @@
 import tabulate
-from typing import Union, Any
+from typing import Union, Any, Literal
 from RAT.utils.enums import ParallelOptions, Procedures, DisplayOptions, BoundHandlingOptions, StrategyOptions
 
 
@@ -10,10 +10,10 @@ class BaseProcedure:
     """
 
     def __init__(self,
-                 parallel: str = ParallelOptions.Single.value,
+                 parallel: Literal['single', 'points', 'contrasts', 'all'] = ParallelOptions.Single,
                  calcSldDuringFit: bool = False,
                  resamPars: list[Union[int, float]] = [0.9, 50],
-                 display: str = DisplayOptions.Iter) -> None:
+                 display: Literal['off', 'iter', 'notify', 'final'] = DisplayOptions.Iter) -> None:
 
         self._parallel = parallel
         self._calcSldDuringFit = calcSldDuringFit
@@ -54,7 +54,7 @@ class BaseProcedure:
                                     StrategyOptions],
                         type: Union[str, int] = str) -> None:
         """
-        Validates the value is present in the enum.
+        Validates value is present in enum.
 
         Parameters
         ----------
@@ -88,21 +88,21 @@ class BaseProcedure:
                         upper_limit: Union[float, int] = float('inf'),
                         upper_exclusive: bool = True) -> None:
         """
-        Validates the value is between the lower and upper bounds.
+        Validates value is in range.
 
         Parameters
         ----------
         name : str
             The name of the property.
-        value : str
+        value : Union[float, int]
             The value of the property.
         lower_limit : Union[float, int]
             The lower limit of the value.
-        lower_inclusive : bool
+        lower_exclusive : bool
             Boolean to indicate if lower limit is exclusive.
         upper_limit : Union[float, int]
             The upper limit of the value.
-        upper_inclusive : bool
+        upper_exclusive : bool
             Boolean to indicate if upper limit is exclusive.
 
         Raises
@@ -135,25 +135,25 @@ class BaseProcedure:
                     f"{lower_limit} and less than or equal to {upper_limit}"))
 
     @property
-    def parallel(self) -> str:
+    def parallel(self) -> Literal['single', 'points', 'contrasts', 'all']:
         """
         Gets the parallel property.
 
         Returns
         -------
-        parallel : str
+        parallel : Literal['single', 'points', 'contrasts', 'all']
             The value of the parallel property.
         """
         return self._parallel
 
     @parallel.setter
-    def parallel(self, value: str) -> None:
+    def parallel(self, value: Literal['single', 'points', 'contrasts', 'all']) -> None:
         """
         Sets the parallel property after validation.
 
         Parameters
         ----------
-        value : str
+        value :  Literal['single', 'points', 'contrasts', 'all']
             The value to be set for the parallel property.
 
         Raises
@@ -241,25 +241,25 @@ class BaseProcedure:
         self._resamPars = [float(v) for v in value]
 
     @property
-    def display(self) -> str:
+    def display(self) -> Literal['off', 'iter', 'notify', 'final']:
         """
         Gets the display property.
 
         Returns
         -------
-        display : str
+        display : Literal['off', 'iter', 'notify', 'final']
             The value of the display property.
         """
         return self._display
 
     @display.setter
-    def display(self, value: str) -> None:
+    def display(self, value: Literal['off', 'iter', 'notify', 'final']) -> None:
         """
         Sets the display property after validation.
 
         Parameters
         ----------
-        value : str
+        value : Literal['off', 'iter', 'notify', 'final']
             The value to be set for the display property.
 
         Raises
@@ -272,15 +272,14 @@ class BaseProcedure:
         self._validate_value('display', value, DisplayOptions)
         self._display = value
 
-    def __repr__(self, procedure: str):
+    def __repr__(self, procedure: Literal['calculate', 'simplex', 'de', 'ns', 'dream']) -> str:
         """
-        Defines the display method for procedure classes.
+        Defines the display method.
 
         Parameters
         ----------
-        procedure : str
+        procedure : Literal['calculate', 'simplex', 'de', 'ns', 'dream']
             The procedure for the controls classes.
-
         """
         properties = [["Property", "Value"]] +\
             [["procedure", procedure]] +\
@@ -293,10 +292,10 @@ class Calculate(BaseProcedure):
     """Defines the class for the calculate procedure"""
 
     def __init__(self,
-                 parallel: str = ParallelOptions.Single,
+                 parallel: Literal['single', 'points', 'contrasts', 'all'] = ParallelOptions.Single,
                  calcSldDuringFit: bool = False,
                  resamPars: list[Union[int, float]] = [0.9, 50],
-                 display: str = DisplayOptions.Iter) -> None:
+                 display: Literal['off', 'iter', 'notify', 'final'] = DisplayOptions.Iter) -> None:
         
         # call the constructor of the parent class
         super().__init__(parallel = parallel,
@@ -305,18 +304,18 @@ class Calculate(BaseProcedure):
                          display = display)
     
     @property
-    def procedure(self) -> str:
+    def procedure(self) -> Literal['calculate']:
         """
         Gets the procedure property.
 
         Returns
         -------
-        procedure : str
+        procedure : Literal['calculate']
             The value of the procedure property.
         """
         return Procedures.Calculate
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """
         Defines the display method for Calculate class
         """
@@ -328,10 +327,10 @@ class Simplex(BaseProcedure):
     """Defines the class for the simplex procedure"""
 
     def __init__(self,
-                 parallel: str = ParallelOptions.Single,
+                 parallel: Literal['single', 'points', 'contrasts', 'all'] = ParallelOptions.Single,
                  calcSldDuringFit: bool = False,
                  resamPars: list[Union[int, float]] = [0.9, 50],
-                 display: str = DisplayOptions.Iter,
+                 display: Literal['off', 'iter', 'notify', 'final'] = DisplayOptions.Iter,
                  tolX: float = 1e-6,
                  tolFun: float = 1e-6,
                  maxFunEvals: int = 10000,
@@ -353,13 +352,13 @@ class Simplex(BaseProcedure):
         self._updatePlotFreq = updatePlotFreq
 
     @property
-    def procedure(self) -> str:
+    def procedure(self) -> Literal['simplex']:
         """
         Gets the procedure property.
 
         Returns
         -------
-        procedure : str
+        procedure : Literal['simplex']
             The value of the procedure property.
         """
         return Procedures.Simplex
@@ -550,7 +549,7 @@ class Simplex(BaseProcedure):
         self._validate_type('updatePlotFreq', value, int)
         self._updatePlotFreq = value
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """
         Defines the display method for Simplex class
         """
@@ -562,15 +561,15 @@ class DE(BaseProcedure):
     """Defines the class for the Differential Evolution procedure"""
 
     def __init__(self,
-                 parallel: str = ParallelOptions.Single,
+                 parallel: Literal['single', 'points', 'contrasts', 'all'] = ParallelOptions.Single,
                  calcSldDuringFit: bool = False,
                  resamPars: list[Union[int, float]] = [0.9, 50],
-                 display: str = DisplayOptions.Iter,
+                 display: Literal['off', 'iter', 'notify', 'final'] = DisplayOptions.Iter,
                  populationSize: int = 20,
                  fWeight: float = 0.5,
                  crossoverProbability: float = 0.8,
-                 strategy: int = StrategyOptions.RandomWithPerVectorDither,
-                 targetValue: Union[int, float] = 1,
+                 strategy: Literal[1, 2, 3, 4, 5, 6] = StrategyOptions.RandomWithPerVectorDither.value,
+                 targetValue: Union[int, float] = 1.0,
                  numGenerations: int = 500) -> None:
         
         # call the constructor of the parent class
@@ -587,13 +586,13 @@ class DE(BaseProcedure):
         self._numGenerations = numGenerations
 
     @property
-    def procedure(self) -> str:
+    def procedure(self) -> Literal['de']:
         """
         Gets the procedure property.
 
         Returns
         -------
-        procedure : str
+        procedure : Literal['de']
             The value of the procedure property.
         """
         return Procedures.DE
@@ -700,13 +699,13 @@ class DE(BaseProcedure):
         self._crossoverProbability = value
     
     @property
-    def strategy(self) -> int:
+    def strategy(self) -> Literal[1, 2, 3, 4, 5, 6]:
         """
         Gets the strategy property.
 
         Returns
         -------
-        strategy : int
+        strategy : Literal[1, 2, 3, 4, 5, 6]
             The value of the strategy property.
         """
         return self._strategy
@@ -804,7 +803,7 @@ class DE(BaseProcedure):
                              lower_exclusive = False)
         self._numGenerations = value
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """
         Defines the display method for DE class
         """
@@ -816,12 +815,12 @@ class NS(BaseProcedure):
     """Defines the class for the  Nested Sampler procedure"""
 
     def __init__(self,
-                 parallel: str = ParallelOptions.Single,
+                 parallel: Literal['single', 'points', 'contrasts', 'all'] = ParallelOptions.Single,
                  calcSldDuringFit: bool = False,
                  resamPars: list[Union[int, float]] = [0.9, 50],
-                 display: str = DisplayOptions.Iter,
+                 display: Literal['off', 'iter', 'notify', 'final'] = DisplayOptions.Iter,
                  Nlive: int = 150,
-                 Nmcmc: Union[float, int] = 0,
+                 Nmcmc: Union[float, int] = 0.0,
                  propScale: float = 0.1,
                  nsTolerance: Union[float, int] = 0.1) -> None:
 
@@ -837,13 +836,13 @@ class NS(BaseProcedure):
         self._nsTolerance = nsTolerance
 
     @property
-    def procedure(self) -> str:
+    def procedure(self) -> Literal['ns']:
         """
         Gets the procedure property.
 
         Returns
         -------
-        procedure : str
+        procedure : Literal['ns']
             The value of the procedure property.
         """
         return Procedures.NS
@@ -988,7 +987,7 @@ class NS(BaseProcedure):
                              lower_exclusive = False)
         self._nsTolerance = float(value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """
         Defines the display method for NS class
         """
@@ -1000,15 +999,15 @@ class Dream(BaseProcedure):
     """Defines the class for the Dream procedure"""
 
     def __init__(self,
-                 parallel: str = ParallelOptions.Single,
+                 parallel: Literal['single', 'points', 'contrasts', 'all'] = ParallelOptions.Single,
                  calcSldDuringFit: bool = False,
                  resamPars: list[Union[int, float]] = [0.9, 50],
-                 display: str = DisplayOptions.Iter,
+                 display: Literal['off', 'iter', 'notify', 'final'] = DisplayOptions.Iter,
                  nSamples: int = 50000,
                  nChains: int = 10,
                  jumpProb: float = 0.5,
                  pUnitGamma:float = 0.2,
-                 boundHandling: str = BoundHandlingOptions.Fold) -> None:
+                 boundHandling: Literal['no', 'reflect', 'bound', 'fold'] = BoundHandlingOptions.Fold) -> None:
         
         # call the constructor of the parent class
         super().__init__(parallel=parallel,
@@ -1023,13 +1022,13 @@ class Dream(BaseProcedure):
         self._boundHandling = boundHandling
 
     @property
-    def procedure(self) -> str:
+    def procedure(self) -> Literal['dream']:
         """
         Gets the procedure property.
 
         Returns
         -------
-        procedure : str
+        procedure : Literal['dream']
             The value of the procedure property.
         """
         return Procedures.Dream
@@ -1175,25 +1174,25 @@ class Dream(BaseProcedure):
         self._pUnitGamma = value
 
     @property
-    def boundHandling(self) -> str:
+    def boundHandling(self) -> Literal['no', 'reflect', 'bound', 'fold']:
         """
         Gets the boundHandling property.
 
         Returns
         -------
-        boundHandling : str
+        boundHandling : Literal['no', 'reflect', 'bound', 'fold']
             The value of the boundHandling property.
         """
         return self._boundHandling
 
     @boundHandling.setter
-    def boundHandling(self, value: str) -> None:
+    def boundHandling(self, value: Literal['no', 'reflect', 'bound', 'fold']) -> None:
         """
         Sets the boundHandling property after validation.
 
         Parameters
         ----------
-        value : str
+        value : Literal['no', 'reflect', 'bound', 'fold']
             The value to be set for the boundHandling property.
 
         Raises
@@ -1206,7 +1205,7 @@ class Dream(BaseProcedure):
         self._validate_value('boundHandling', value, BoundHandlingOptions)
         self._boundHandling = value
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """
         Defines the display method for Dream class
         """
@@ -1217,7 +1216,7 @@ class Dream(BaseProcedure):
 class ControlsClass:
 
     def __init__(self,
-                 procedure: str = Procedures.Calculate,
+                 procedure: Literal['calculate', 'simplex', 'de', 'ns', 'dream'] = Procedures.Calculate,
                  **properties) -> None:
         
         self._procedure = procedure
@@ -1239,33 +1238,28 @@ class ControlsClass:
             self._controls = Dream(**properties)
     
     @property
-    def controls(self):
+    def controls(self) -> Union[Calculate, Simplex, DE, NS, Dream]:
         """
         Gets the controls.
 
         Returns
         -------
-        controls : Union[CalculateProcedure,
-                         SimplexProcedure,
-                         DEProcedure,
-                         NSProcedure,
-                         DreamProcedure]
+        controls : Union[Calculate,
+                         Simplex,
+                         DE,
+                         NS,
+                         Dream]
             The class with control properties.
         """
         return self._controls
 
-    def _validate_properties(self, **properties) -> bool:
+    def _validate_properties(self, **properties) -> None:
         """
         Validates the inputs for the procedure.
 
         Parameters
         ----------
-        properties : dict[str, 
-                          Union[int,
-                                float,
-                                str,
-                                bool,
-                                list[Union[int, float]]]]
+        properties : dict[str, Any]
             The properties of the procedure.
 
         Raises
@@ -1320,7 +1314,7 @@ class ControlsClass:
             raise ValueError((f"Properties that can be set for {self._procedure} are "
                               f"{', '.join(sorted(expected_properties))}"))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """
         Defines the display method for Controls class
         """
