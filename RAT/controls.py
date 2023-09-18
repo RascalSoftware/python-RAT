@@ -1,6 +1,6 @@
 import tabulate
 from typing import Union
-from utils.enums import ParallelOptions, Procedures, DisplayOptions, BoundHandlingOptions, StrategyOptions
+from RAT.utils.enums import ParallelOptions, Procedures, DisplayOptions, BoundHandlingOptions, StrategyOptions
 
 
 class BaseProcedure:
@@ -74,11 +74,11 @@ class BaseProcedure:
         ValueError
             Raised if the value is not in enum.
         """
-        allowed_options = [str(o.value) for o in enum]
+        allowed_options = [o.value for o in enum]
         if value not in allowed_options:
             raise ValueError((f"{name} must be a {enum.__name__} "
             f"enum or one of the following {type.__name__} " 
-            f"{', '.join(allowed_options)}"))
+            f"{', '.join([str(o) for o in allowed_options])}"))
     
     def _validate_range(self,
                         name: str,
@@ -131,7 +131,7 @@ class BaseProcedure:
         # Case 4 - lower and upper bounds are inclusive 
         elif not lower_exclusive and not upper_exclusive:
             if not lower_limit <= value <= upper_limit:
-                raise ValueError((f"{name} must be greater than or equal to"
+                raise ValueError((f"{name} must be greater than or equal to "
                     f"{lower_limit} and less than or equal to {upper_limit}"))
 
     @property
