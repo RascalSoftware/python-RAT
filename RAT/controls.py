@@ -1,5 +1,5 @@
 import tabulate
-from typing import Union
+from typing import Union, Any
 from RAT.utils.enums import ParallelOptions, Procedures, DisplayOptions, BoundHandlingOptions, StrategyOptions
 
 
@@ -10,10 +10,10 @@ class BaseProcedure:
     """
 
     def __init__(self,
-                 parallel: Union[str, ParallelOptions] = ParallelOptions.Single.value,
+                 parallel: str = ParallelOptions.Single.value,
                  calcSldDuringFit: bool = False,
                  resamPars: list[Union[int, float]] = [0.9, 50],
-                 display: Union[str, DisplayOptions] = DisplayOptions.Iter.value) -> None:
+                 display: str = DisplayOptions.Iter.value) -> None:
 
         self._parallel = parallel
         self._calcSldDuringFit = calcSldDuringFit
@@ -22,7 +22,7 @@ class BaseProcedure:
 
     def _validate_type(self,
                        name: str,
-                       value: Union[int, float, str, bool, list[Union[int, float]]],
+                       value: Any,
                        type: type) -> None:
         """
         Validates the value has the correct type.
@@ -31,7 +31,7 @@ class BaseProcedure:
         ----------
         name : str
             The name of the property.
-        value : Union[int, float, str, bool, list[Union[int, float]]]
+        value : Any
             The value of the property.
         type : type
             The expected type of the property.
@@ -147,13 +147,13 @@ class BaseProcedure:
         return self._parallel
 
     @parallel.setter
-    def parallel(self, value: Union[str, ParallelOptions]) -> None:
+    def parallel(self, value: str) -> None:
         """
         Sets the parallel property after validation.
 
         Parameters
         ----------
-        value : Union[str, ParallelOptions]
+        value : str
             The value to be set for the parallel property.
 
         Raises
@@ -253,13 +253,13 @@ class BaseProcedure:
         return self._display
 
     @display.setter
-    def display(self, value: Union[str, DisplayOptions]) -> None:
+    def display(self, value: str) -> None:
         """
         Sets the display property after validation.
 
         Parameters
         ----------
-        value : Union[str, DisplayOptions]
+        value : str
             The value to be set for the display property.
 
         Raises
@@ -272,13 +272,13 @@ class BaseProcedure:
         self._validate_value('display', value, DisplayOptions)
         self._display = value
 
-    def __repr__(self, procedure: Union[str, Procedures]):
+    def __repr__(self, procedure: str):
         """
         Defines the display method for procedure classes.
 
         Parameters
         ----------
-        procedure : Union[str, Procedures]
+        procedure : str
             The procedure for the controls classes.
 
         """
@@ -293,10 +293,10 @@ class Calculate(BaseProcedure):
     """Defines the class for the calculate procedure"""
 
     def __init__(self,
-                 parallel: Union[str, ParallelOptions] = ParallelOptions.Single.value,
+                 parallel: str = ParallelOptions.Single.value,
                  calcSldDuringFit: bool = False,
                  resamPars: list[Union[int, float]] = [0.9, 50],
-                 display: Union[str, DisplayOptions] = DisplayOptions.Iter.value) -> None:
+                 display: str = DisplayOptions.Iter.value) -> None:
         
         # call the constructor of the parent class
         super().__init__(parallel = parallel,
@@ -328,10 +328,10 @@ class Simplex(BaseProcedure):
     """Defines the class for the simplex procedure"""
 
     def __init__(self,
-                 parallel: Union[str, ParallelOptions] = ParallelOptions.Single.value,
+                 parallel: str = ParallelOptions.Single.value,
                  calcSldDuringFit: bool = False,
                  resamPars: list[Union[int, float]] = [0.9, 50],
-                 display: Union[str, DisplayOptions] = DisplayOptions.Iter.value,
+                 display: str = DisplayOptions.Iter.value,
                  tolX: float = 1e-6,
                  tolFun: float = 1e-6,
                  maxFunEvals: int = 10000,
@@ -562,14 +562,14 @@ class DE(BaseProcedure):
     """Defines the class for the Differential Evolution procedure"""
 
     def __init__(self,
-                 parallel: Union[str, ParallelOptions] = ParallelOptions.Single.value,
+                 parallel: str = ParallelOptions.Single.value,
                  calcSldDuringFit: bool = False,
                  resamPars: list[Union[int, float]] = [0.9, 50],
-                 display: Union[str, DisplayOptions] = DisplayOptions.Iter.value,
+                 display: str = DisplayOptions.Iter.value,
                  populationSize: int = 20,
                  fWeight: float = 0.5,
                  crossoverProbability: float = 0.8,
-                 strategy: Union[int, StrategyOptions] = 4,
+                 strategy: int = StrategyOptions.RandomWithPerVectorDither.value,
                  targetValue: Union[int, float] = 1,
                  numGenerations: int = 500) -> None:
         
@@ -712,13 +712,13 @@ class DE(BaseProcedure):
         return self._strategy
 
     @strategy.setter
-    def strategy(self, value: Union[int, StrategyOptions]) -> None:
+    def strategy(self, value: int) -> None:
         """
         Sets the strategy property after validation.
 
         Parameters
         ----------
-        value : Union[int, StrategyOptions]
+        value : int
             The value to be set for the strategy property.
 
         Raises
@@ -816,10 +816,10 @@ class NS(BaseProcedure):
     """Defines the class for the  Nested Sampler procedure"""
 
     def __init__(self,
-                 parallel: Union[str, ParallelOptions] = ParallelOptions.Single.value,
+                 parallel: str = ParallelOptions.Single.value,
                  calcSldDuringFit: bool = False,
                  resamPars: list[Union[int, float]] = [0.9, 50],
-                 display: Union[str, DisplayOptions] = DisplayOptions.Iter.value,
+                 display: str = DisplayOptions.Iter.value,
                  Nlive: int = 150,
                  Nmcmc: Union[float, int] = 0,
                  propScale: float = 0.1,
@@ -1000,15 +1000,15 @@ class Dream(BaseProcedure):
     """Defines the class for the Dream procedure"""
 
     def __init__(self,
-                 parallel: Union[str, ParallelOptions] = ParallelOptions.Single.value,
+                 parallel: str = ParallelOptions.Single.value,
                  calcSldDuringFit: bool = False,
                  resamPars: list[Union[int, float]] = [0.9, 50],
-                 display: Union[str, DisplayOptions] = DisplayOptions.Iter.value,
+                 display: str = DisplayOptions.Iter.value,
                  nSamples: int = 50000,
                  nChains: int = 10,
                  jumpProb: float = 0.5,
                  pUnitGamma:float = 0.2,
-                 boundHandling: Union[str, BoundHandlingOptions] = BoundHandlingOptions.Fold.value) -> None:
+                 boundHandling: str = BoundHandlingOptions.Fold.value) -> None:
         
         # call the constructor of the parent class
         super().__init__(parallel=parallel,
@@ -1187,13 +1187,13 @@ class Dream(BaseProcedure):
         return self._boundHandling
 
     @boundHandling.setter
-    def boundHandling(self, value: Union[str, BoundHandlingOptions]) -> None:
+    def boundHandling(self, value: str) -> None:
         """
         Sets the boundHandling property after validation.
 
         Parameters
         ----------
-        value : float
+        value : str
             The value to be set for the boundHandling property.
 
         Raises
@@ -1217,7 +1217,7 @@ class Dream(BaseProcedure):
 class ControlsClass:
 
     def __init__(self,
-                 procedure: Union[str, Procedures] = Procedures.Calculate.value,
+                 procedure: str = Procedures.Calculate.value,
                  **properties) -> None:
         
         self._procedure = procedure
