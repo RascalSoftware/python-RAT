@@ -186,10 +186,10 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
                 name_diff = [(old, new) for (old, new) in zip(old_names, new_names) if old != new]
                 for (old_name, new_name) in name_diff:
                     with contextlib.suppress(KeyError):
-                        for element in getattr(self, model_names_used_in[class_list].attribute):
-                            for field in model_names_used_in[class_list].fields:
-                                if getattr(element, field) == old_name:
-                                    setattr(element, field, new_name)
+                        model_names_list = getattr(self, model_names_used_in[class_list].attribute)
+                        all_matches = model_names_list.get_all_matches(old_name)
+                        for (index, field) in all_matches:
+                            setattr(model_names_list[index], field, new_name)
         self._all_names = self.get_all_names()
         return self
 

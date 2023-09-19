@@ -217,6 +217,22 @@ class ClassList(collections.UserList):
         """
         return [getattr(model, self.name_field) for model in self.data if hasattr(model, self.name_field)]
 
+    def get_all_matches(self, value: Any) -> list[tuple]:
+        """Return a list of all (index, field) tuples where the value of the field is equal to the given value.
+
+        Parameters
+        ----------
+        value : str
+            The value we are searching for in the ClassList.
+
+        Returns
+        -------
+         : list [tuple]
+            A list of (index, field) tuples matching the given value.
+        """
+        return [(index, field) for index, element in enumerate(self.data) for field in vars(element)
+                if getattr(element, field) == value]
+
     def _validate_name_field(self, input_args: dict[str, Any]) -> None:
         """Raise a ValueError if the name_field attribute is passed as an object parameter, and its value is already
         used within the ClassList.

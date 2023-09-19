@@ -476,6 +476,17 @@ def test_get_names(class_list: 'ClassList', expected_names: list[str]) -> None:
     assert class_list.get_names() == expected_names
 
 
+@pytest.mark.parametrize(["class_list", "expected_matches"], [
+    (ClassList([InputAttributes(name='Alice'), InputAttributes(name='Bob')]), [(0, 'name')]),
+    (ClassList([InputAttributes(name='Alice'), InputAttributes(name='Bob', id='Alice')]), [(0, 'name'), (1, 'id')]),
+    (ClassList([InputAttributes(surname='Morgan'), InputAttributes(surname='Terwilliger')]), []),
+    (ClassList(InputAttributes()), []),
+])
+def test_get_all_matches(class_list: 'ClassList', expected_matches: list[tuple]) -> None:
+    """We should get a list of (index, field) tuples matching the given value in the ClassList."""
+    assert class_list.get_all_matches("Alice") == expected_matches
+
+
 @pytest.mark.parametrize("input_dict", [
     ({'name': 'Eve'}),
     ({'surname': 'Polastri'}),
