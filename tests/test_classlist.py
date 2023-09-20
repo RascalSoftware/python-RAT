@@ -7,7 +7,7 @@ from typing import Any, Union
 import warnings
 
 from RAT.classlist import ClassList
-from tests.utils import InputAttributes
+from tests.utils import InputAttributes, SubInputAttributes
 
 
 @pytest.fixture
@@ -59,7 +59,21 @@ class TestInitialisation(object):
         """
         class_list = ClassList(input_sequence)
         assert class_list.data == list(input_sequence)
-        assert isinstance(input_sequence[-1], class_list._class_handle)
+        for element in input_sequence:
+            assert isinstance(element, class_list._class_handle)
+
+    @pytest.mark.parametrize("input_sequence", [
+        ([InputAttributes(name='Alice'), SubInputAttributes(name='Bob')]),
+        ([SubInputAttributes(name='Alice'), InputAttributes(name='Bob')]),
+    ])
+    def test_input_sequence_subclass(self, input_sequence: Sequence[object]) -> None:
+        """For an input of a sequence containing objects of a class and its subclasses, the ClassList should be a list
+        equal to the input sequence, and _class_handle should be set to the type of the parent class.
+        """
+        class_list = ClassList(input_sequence)
+        assert class_list.data == list(input_sequence)
+        for element in input_sequence:
+            assert isinstance(element, class_list._class_handle)
 
     @pytest.mark.parametrize("empty_input", [([]), (())])
     def test_empty_input(self, empty_input: Sequence[object]) -> None:
@@ -190,9 +204,11 @@ def test_delitem_not_present(two_name_class_list: 'ClassList') -> None:
     (ClassList(InputAttributes(name='Eve'))),
     ([InputAttributes(name='Eve')]),
     (InputAttributes(name='Eve'),),
+    (InputAttributes(name='Eve')),
 ])
 def test_iadd(two_name_class_list: 'ClassList', added_list: Iterable, three_name_class_list: 'ClassList') -> None:
-    """We should be able to use the "+=" operator to add iterables to a ClassList."""
+    """We should be able to use the "+=" operator to add iterables to a ClassList. Individual objects should be wrapped
+    in a list before being added."""
     class_list = two_name_class_list
     class_list += added_list
     assert class_list == three_name_class_list
@@ -469,9 +485,11 @@ def test_index_not_present(two_name_class_list: 'ClassList', index_value: Union[
     (ClassList(InputAttributes(name='Eve'))),
     ([InputAttributes(name='Eve')]),
     (InputAttributes(name='Eve'),),
+    (InputAttributes(name='Eve')),
 ])
 def test_extend(two_name_class_list: 'ClassList', extended_list: Sequence, three_name_class_list: 'ClassList') -> None:
-    """We should be able to extend a ClassList using another ClassList or a sequence"""
+    """We should be able to extend a ClassList using another ClassList or a sequence. Individual objects should be
+    wrapped in a list before being added."""
     class_list = two_name_class_list
     class_list.extend(extended_list)
     assert class_list == three_name_class_list
@@ -593,3 +611,17 @@ def test__get_item_from_name_field(two_name_class_list: 'ClassList',
     If the value is not the name_field of an object defined in the ClassList, we should return the value.
     """
     assert two_name_class_list._get_item_from_name_field(value) == expected_output
+
+
+@pytest.mark.parametrize("input_list", [
+    ([InputAttributes(name='Alice')]),
+    ([InputAttributes(name='Alice'), SubInputAttributes(name='Bob')]),
+    ([SubInputAttributes(name='Alice'), InputAttributes(name='Bob')]),
+    ([SubInputAttributes(name='Alice'), SubInputAttributes(name='Bob'), InputAttributes(name='Eve')]),
+    ([InputAttributes(name='Alice'), dict(name='Bob')]),
+])
+def test_determine_class_handle(input_list: 'ClassList') -> None:
+    """The _class_handle for the ClassList should be the type that satisfies the condition "isinstance(element, type)"
+    for all elements in the ClassList
+    """
+    assert ClassList._determine_class_handle(input_list) == InputAttributes

@@ -11,3 +11,8 @@ class InputAttributes:
         if isinstance(other, InputAttributes):
             return self.__dict__ == other.__dict__
         return False
+
+
+class SubInputAttributes(InputAttributes):
+    """Trivial subclass of InputAttributes"""
+    pass
