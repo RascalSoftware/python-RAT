@@ -1,3 +1,4 @@
+import tabulate
 from typing import Union, Any
 from pydantic import BaseModel, Field, field_validator, model_validator
 from RAT.utils.enums import ParallelOptions, Procedures, DisplayOptions, BoundHandlingOptions, StrategyOptions
@@ -186,24 +187,26 @@ class ControlsClass:
                  **properties) -> None:
 
         if procedure == Procedures.Calculate:
-            self.controls = Calculate(**properties)
-                 
+            self.controls = Calculate(**properties)      
         elif procedure == Procedures.Simplex:
             self.controls = Simplex(**properties)
-        
         elif procedure == Procedures.DE:
             self.controls = DE(**properties)
-        
         elif procedure == Procedures.NS:
             self.controls = NS(**properties)
-        
         elif procedure == Procedures.Dream:
             self.controls = Dream(**properties)
-    
+
     @property
     def controls(self) -> Union[Calculate, Simplex, DE, NS, Dream]:
         return self._controls
-    
+
     @controls.setter
     def controls(self, value: Union[Calculate, Simplex, DE, NS, Dream]) -> None:
         self._controls = value
+
+    def __repr__(self) -> str:
+        properties = [["Property", "Value"]] +\
+            [[k, v] for k, v in self._controls.__dict__.items()] 
+        table = tabulate.tabulate(properties, headers="firstrow")
+        return table

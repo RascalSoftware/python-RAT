@@ -443,3 +443,84 @@ class TestControlsClass:
     def test_controls_class_return_type(self, procedure: Procedures, name: str) -> None:
         controls = ControlsClass(procedure)
         assert type(controls.controls).__name__ == name
+
+    def test_control_class_calculate_repr(self) -> None:
+        controls = ControlsClass()
+        table = controls.__repr__()
+        table_str = ("Property          Value\n"
+                     "----------------  ---------\n"
+                     "parallel          single\n"
+                     "calcSldDuringFit  False\n"
+                     "resamPars         [0.9, 50]\n"
+                     "display           iter\n"
+                     "procedure         calculate")
+        assert table == table_str
+
+    def test_control_class_simplex_repr(self) -> None:
+        controls = ControlsClass(procedure=Procedures.Simplex)
+        table = controls.__repr__()
+        table_str = ("Property          Value\n"
+                     "----------------  ---------\n"
+                     "parallel          single\n"
+                     "calcSldDuringFit  False\n"
+                     "resamPars         [0.9, 50]\n"
+                     "display           iter\n"
+                     "procedure         simplex\n"
+                     "tolX              1e-06\n"
+                     "tolFun            1e-06\n"
+                     "maxFunEvals       10000\n"
+                     "maxIter           1000\n"
+                     "updateFreq        -1\n"
+                     "updatePlotFreq    -1")
+        assert table == table_str
+
+    def test_control_class_de_repr(self) -> None:
+        controls = ControlsClass(procedure=Procedures.DE)
+        table = controls.__repr__()
+        table_str = ("Property              Value\n"
+                     "--------------------  -----------------------------------------\n"
+                     "parallel              single\n"
+                     "calcSldDuringFit      False\n"
+                     "resamPars             [0.9, 50]\n"
+                     "display               iter\n"
+                     "procedure             de\n"
+                     "populationSize        20\n"
+                     "fWeight               0.5\n"
+                     "crossoverProbability  0.8\n"
+                     "strategy              StrategyOptions.RandomWithPerVectorDither\n"
+                     "targetValue           1.0\n"
+                     "numGenerations        500")
+        assert table == table_str
+
+    def test_control_class_ns_repr(self) -> None:
+        controls = ControlsClass(procedure=Procedures.NS)
+        table = controls.__repr__()
+        table_str = ("Property          Value\n"
+                     "----------------  ---------\n"
+                     "parallel          single\n"
+                     "calcSldDuringFit  False\n"
+                     "resamPars         [0.9, 50]\n"
+                     "display           iter\n"
+                     "procedure         ns\n"
+                     "Nlive             150\n"
+                     "Nmcmc             0.0\n"
+                     "propScale         0.1\n"
+                     "nsTolerance       0.1")
+        assert table == table_str
+
+    def test_control_class_dream_repr(self) -> None:
+        controls = ControlsClass(procedure=Procedures.Dream)
+        table = controls.__repr__()
+        table_str = ("Property          Value\n"
+                     "----------------  ---------\n"
+                     "parallel          single\n"
+                     "calcSldDuringFit  False\n"
+                     "resamPars         [0.9, 50]\n"
+                     "display           iter\n"
+                     "procedure         dream\n"
+                     "nSamples          50000\n"
+                     "nChains           10\n"
+                     "jumpProb          0.5\n"
+                     "pUnitGamma        0.2\n"
+                     "boundHandling     fold")
+        assert table == table_str
