@@ -42,7 +42,7 @@ class ClassList(collections.UserList):
         # Set class to be used for this instance of the ClassList, checking that all elements of the input list are of
         # the same type and have unique values of the specified name_field
         if init_list:
-            self._class_handle = type(init_list[0])
+            self._class_handle = self._determine_class_handle(init_list)
             self._check_classes(init_list)
             self._check_unique_name_fields(init_list)
 
@@ -61,15 +61,15 @@ class ClassList(collections.UserList):
                 output = repr(self.data)
         return output
 
-    def __setitem__(self, index: int, set_dict: dict[str, Any]) -> None:
-        """Assign the values of an existing object's attributes using a dictionary."""
-        self._setitem(index, set_dict)
+    def __setitem__(self, index: int, item: 'RAT.models') -> None:
+        """Replace the object at an existing index of the ClassList."""
+        self._setitem(index, item)
 
-    def _setitem(self, index: int, set_dict: dict[str, Any]) -> None:
+    def _setitem(self, index: int, item: 'RAT.models') -> None:
         """Auxiliary routine of "__setitem__" used to enable wrapping."""
-        self._validate_name_field(set_dict)
-        for key, value in set_dict.items():
-            setattr(self.data[index], key, value)
+        self._check_classes(self + [item])
+        self._check_unique_name_fields(self + [item])
+        self.data[index] = item
 
     def __delitem__(self, index: int) -> None:
         """Delete an object from the list by index."""
@@ -85,8 +85,10 @@ class ClassList(collections.UserList):
 
     def _iadd(self, other: Sequence[object]) -> 'ClassList':
         """Auxiliary routine of "__iadd__" used to enable wrapping."""
+        if other and not (isinstance(other, Sequence) and not isinstance(other, str)):
+            other = [other]
         if not hasattr(self, '_class_handle'):
-            self._class_handle = type(other[0])
+            self._class_handle = self._determine_class_handle(self + other)
         self._check_classes(self + other)
         self._check_unique_name_fields(self + other)
         super().__iadd__(other)
@@ -201,11 +203,19 @@ class ClassList(collections.UserList):
 
     def extend(self, other: Sequence[object]) -> None:
         """Extend the ClassList by adding another sequence."""
+        if other and not (isinstance(other, Sequence) and not isinstance(other, str)):
+            other = [other]
         if not hasattr(self, '_class_handle'):
-            self._class_handle = type(other[0])
+            self._class_handle = self._determine_class_handle(self + other)
         self._check_classes(self + other)
         self._check_unique_name_fields(self + other)
         self.data.extend(other)
+
+    def set_fields(self, index: int, **kwargs) -> None:
+        """Assign the values of an existing object's attributes using keyword arguments."""
+        self._validate_name_field(kwargs)
+        for key, value in kwargs.items():
+            setattr(self.data[index], key, value)
 
     def get_names(self) -> list[str]:
         """Return a list of the values of the name_field attribute of each class object in the list.
@@ -302,3 +312,28 @@ class ClassList(collections.UserList):
             object with that value of the name_field attribute cannot be found.
         """
         return next((model for model in self.data if getattr(model, self.name_field) == value), value)
+
+    @staticmethod
+    def _determine_class_handle(input_list: Sequence[object]):
+        """When inputting a sequence of object to a ClassList, the _class_handle should be set as the type of the
+        element which satisfies "issubclass" for all of the other elements.
+
+        Parameters
+        ----------
+        input_list : Sequence [object]
+            A list of instances to populate the ClassList.
+
+        Returns
+        -------
+        class_handle : type
+            The type object of the element fulfilling the condition of satisfying "issubclass" for all of the other
+            elements.
+        """
+        for this_element in input_list:
+            if all([issubclass(type(instance), type(this_element)) for instance in input_list]):
+                class_handle = type(this_element)
+                break
+        else:
+            class_handle = type(input_list[0])
+
+        return class_handle

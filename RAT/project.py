@@ -170,7 +170,8 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
 
         # Wrap ClassList routines - when any of these routines are called, the wrapper will force revalidation of the
         # model, handle errors and reset previous values if necessary.
-        methods_to_wrap = ['_setitem', '_delitem', '_iadd', 'append', 'insert', 'pop', 'remove', 'clear', 'extend']
+        methods_to_wrap = ['_setitem', '_delitem', '_iadd', 'append', 'insert', 'pop', 'remove', 'clear', 'extend',
+                           'set_fields']
         for class_list in class_lists:
             attribute = getattr(self, class_list)
             for methodName in methods_to_wrap:

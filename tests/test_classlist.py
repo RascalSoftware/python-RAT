@@ -7,7 +7,7 @@ from typing import Any, Union
 import warnings
 
 from RAT.classlist import ClassList
-from tests.utils import InputAttributes
+from tests.utils import InputAttributes, SubInputAttributes
 
 
 @pytest.fixture
@@ -59,7 +59,21 @@ class TestInitialisation(object):
         """
         class_list = ClassList(input_sequence)
         assert class_list.data == list(input_sequence)
-        assert isinstance(input_sequence[-1], class_list._class_handle)
+        for element in input_sequence:
+            assert isinstance(element, class_list._class_handle)
+
+    @pytest.mark.parametrize("input_sequence", [
+        ([InputAttributes(name='Alice'), SubInputAttributes(name='Bob')]),
+        ([SubInputAttributes(name='Alice'), InputAttributes(name='Bob')]),
+    ])
+    def test_input_sequence_subclass(self, input_sequence: Sequence[object]) -> None:
+        """For an input of a sequence containing objects of a class and its subclasses, the ClassList should be a list
+        equal to the input sequence, and _class_handle should be set to the type of the parent class.
+        """
+        class_list = ClassList(input_sequence)
+        assert class_list.data == list(input_sequence)
+        for element in input_sequence:
+            assert isinstance(element, class_list._class_handle)
 
     @pytest.mark.parametrize("empty_input", [([]), (())])
     def test_empty_input(self, empty_input: Sequence[object]) -> None:
@@ -119,26 +133,33 @@ def test_repr_empty_classlist() -> None:
     assert repr(ClassList()) == repr([])
 
 
-@pytest.mark.parametrize(["new_values", "expected_classlist"], [
-    ({'name': 'Eve'}, ClassList([InputAttributes(name='Eve'), InputAttributes(name='Bob')])),
-    ({'name': 'John', 'surname': 'Luther'},
+@pytest.mark.parametrize(["new_item", "expected_classlist"], [
+    (InputAttributes(name='Eve'), ClassList([InputAttributes(name='Eve'), InputAttributes(name='Bob')])),
+    (InputAttributes(name='John', surname='Luther'),
      ClassList([InputAttributes(name='John', surname='Luther'), InputAttributes(name='Bob')])),
 ])
-def test_setitem(two_name_class_list: 'ClassList', new_values: dict[str, Any], expected_classlist: 'ClassList') -> None:
-    """We should be able to set values in an element of a ClassList using a dictionary."""
+def test_setitem(two_name_class_list: ClassList, new_item: InputAttributes, expected_classlist: ClassList) -> None:
+    """We should be able to set values in an element of a ClassList using a new object."""
     class_list = two_name_class_list
-    class_list[0] = new_values
+    class_list[0] = new_item
     assert class_list == expected_classlist
 
 
-@pytest.mark.parametrize("new_values", [
-    ({'name': 'Bob'}),
+@pytest.mark.parametrize("new_item", [
+    (InputAttributes(name='Bob')),
 ])
-def test_setitem_same_name_field(two_name_class_list: 'ClassList', new_values: dict[str, Any]) -> None:
+def test_setitem_same_name_field(two_name_class_list: 'ClassList', new_item: InputAttributes) -> None:
     """If we set the name_field of an object in the ClassList to one already defined, we should raise a ValueError."""
-    with pytest.raises(ValueError, match=f"Input arguments contain the {two_name_class_list.name_field} "
-                                         f"'{new_values[two_name_class_list.name_field]}', "
-                                         f"which is already specified in the ClassList"):
+    with pytest.raises(ValueError, match="Input list contains objects with the same value of the name attribute"):
+        two_name_class_list[0] = new_item
+
+
+@pytest.mark.parametrize("new_values", [
+    'Bob',
+])
+def test_setitem_different_classes(two_name_class_list: 'ClassList', new_values: dict[str, Any]) -> None:
+    """If we set the name_field of an object in the ClassList to one already defined, we should raise a ValueError."""
+    with pytest.raises(ValueError, match=f"Input list contains elements of type other than 'InputAttributes'"):
         two_name_class_list[0] = new_values
 
 
@@ -160,9 +181,11 @@ def test_delitem_not_present(two_name_class_list: 'ClassList') -> None:
     (ClassList(InputAttributes(name='Eve'))),
     ([InputAttributes(name='Eve')]),
     (InputAttributes(name='Eve'),),
+    (InputAttributes(name='Eve')),
 ])
 def test_iadd(two_name_class_list: 'ClassList', added_list: Iterable, three_name_class_list: 'ClassList') -> None:
-    """We should be able to use the "+=" operator to add iterables to a ClassList."""
+    """We should be able to use the "+=" operator to add iterables to a ClassList. Individual objects should be wrapped
+    in a list before being added."""
     class_list = two_name_class_list
     class_list += added_list
     assert class_list == three_name_class_list
@@ -439,9 +462,11 @@ def test_index_not_present(two_name_class_list: 'ClassList', index_value: Union[
     (ClassList(InputAttributes(name='Eve'))),
     ([InputAttributes(name='Eve')]),
     (InputAttributes(name='Eve'),),
+    (InputAttributes(name='Eve')),
 ])
 def test_extend(two_name_class_list: 'ClassList', extended_list: Sequence, three_name_class_list: 'ClassList') -> None:
-    """We should be able to extend a ClassList using another ClassList or a sequence"""
+    """We should be able to extend a ClassList using another ClassList or a sequence. Individual objects should be
+    wrapped in a list before being added."""
     class_list = two_name_class_list
     class_list.extend(extended_list)
     assert class_list == three_name_class_list
@@ -458,6 +483,30 @@ def test_extend_empty_classlist(extended_list: Sequence, one_name_class_list: 'C
     class_list.extend(extended_list)
     assert class_list == one_name_class_list
     assert isinstance(extended_list[-1], class_list._class_handle)
+
+
+@pytest.mark.parametrize(["new_values", "expected_classlist"], [
+    ({'name': 'Eve'}, ClassList([InputAttributes(name='Eve'), InputAttributes(name='Bob')])),
+    ({'name': 'John', 'surname': 'Luther'},
+     ClassList([InputAttributes(name='John', surname='Luther'), InputAttributes(name='Bob')])),
+])
+def test_set_fields(two_name_class_list: 'ClassList', new_values: dict[str, Any], expected_classlist: 'ClassList')\
+        -> None:
+    """We should be able to set field values in an element of a ClassList using keyword arguments."""
+    class_list = two_name_class_list
+    class_list.set_fields(0, **new_values)
+    assert class_list == expected_classlist
+
+
+@pytest.mark.parametrize("new_values", [
+    ({'name': 'Bob'}),
+])
+def test_set_fields_same_name_field(two_name_class_list: 'ClassList', new_values: dict[str, Any]) -> None:
+    """If we set the name_field of an object in the ClassList to one already defined, we should raise a ValueError."""
+    with pytest.raises(ValueError, match=f"Input arguments contain the {two_name_class_list.name_field} "
+                                         f"'{new_values[two_name_class_list.name_field]}', "
+                                         f"which is already specified in the ClassList"):
+        two_name_class_list.set_fields(0, **new_values)
 
 
 @pytest.mark.parametrize(["class_list", "expected_names"], [
@@ -563,3 +612,19 @@ def test__get_item_from_name_field(two_name_class_list: 'ClassList',
     If the value is not the name_field of an object defined in the ClassList, we should return the value.
     """
     assert two_name_class_list._get_item_from_name_field(value) == expected_output
+
+
+@pytest.mark.parametrize(["input_list", "expected_type"], [
+    ([InputAttributes(name='Alice')], InputAttributes),
+    ([InputAttributes(name='Alice'), SubInputAttributes(name='Bob')], InputAttributes),
+    ([SubInputAttributes(name='Alice'), InputAttributes(name='Bob')], InputAttributes),
+    ([SubInputAttributes(name='Alice'), SubInputAttributes(name='Bob')], SubInputAttributes),
+    ([SubInputAttributes(name='Alice'), SubInputAttributes(name='Bob'), InputAttributes(name='Eve')], InputAttributes),
+    ([InputAttributes(name='Alice'), dict(name='Bob')], InputAttributes),
+    ([dict(name='Alice'), InputAttributes(name='Bob')], dict),
+])
+def test_determine_class_handle(input_list: 'ClassList', expected_type: type) -> None:
+    """The _class_handle for the ClassList should be the type that satisfies the condition "isinstance(element, type)"
+    for all elements in the ClassList.
+    """
+    assert ClassList._determine_class_handle(input_list) == expected_type
