@@ -613,15 +613,17 @@ def test__get_item_from_name_field(two_name_class_list: 'ClassList',
     assert two_name_class_list._get_item_from_name_field(value) == expected_output
 
 
-@pytest.mark.parametrize("input_list", [
-    ([InputAttributes(name='Alice')]),
-    ([InputAttributes(name='Alice'), SubInputAttributes(name='Bob')]),
-    ([SubInputAttributes(name='Alice'), InputAttributes(name='Bob')]),
-    ([SubInputAttributes(name='Alice'), SubInputAttributes(name='Bob'), InputAttributes(name='Eve')]),
-    ([InputAttributes(name='Alice'), dict(name='Bob')]),
+@pytest.mark.parametrize(["input_list", "expected_type"], [
+    ([InputAttributes(name='Alice')], InputAttributes),
+    ([InputAttributes(name='Alice'), SubInputAttributes(name='Bob')], InputAttributes),
+    ([SubInputAttributes(name='Alice'), InputAttributes(name='Bob')], InputAttributes),
+    ([SubInputAttributes(name='Alice'), SubInputAttributes(name='Bob')], SubInputAttributes),
+    ([SubInputAttributes(name='Alice'), SubInputAttributes(name='Bob'), InputAttributes(name='Eve')], InputAttributes),
+    ([InputAttributes(name='Alice'), dict(name='Bob')], InputAttributes),
+    ([dict(name='Alice'), InputAttributes(name='Bob')], dict),
 ])
-def test_determine_class_handle(input_list: 'ClassList') -> None:
+def test_determine_class_handle(input_list: 'ClassList', expected_type: type) -> None:
     """The _class_handle for the ClassList should be the type that satisfies the condition "isinstance(element, type)"
-    for all elements in the ClassList
+    for all elements in the ClassList.
     """
-    assert ClassList._determine_class_handle(input_list) == InputAttributes
+    assert ClassList._determine_class_handle(input_list) == expected_type
