@@ -32,7 +32,7 @@ class DisplayOptions(StrEnum):
 
 class BoundHandlingOptions(StrEnum):
     """Defines the avaliable options for bound handling"""
-    No = 'no'
+    Off = 'off'
     Reflect = 'reflect'
     Bound = 'bound'
     Fold = 'fold'
