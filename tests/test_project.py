@@ -17,7 +17,7 @@ import RAT.project
 def test_project():
     """Add parameters to the default project, so each ClassList can be tested properly."""
     test_project = RAT.project.Project()
-    test_project.data[0] = {'data': np.array([[1, 1, 1]])}
+    test_project.data.set_fields(0, data=np.array([[1, 1, 1]]))
     test_project.parameters.append(name='Test SLD')
     test_project.custom_files.append(name='Test Custom File')
     test_project.layers.append(name='Test Layer', SLD='Test SLD')
@@ -161,7 +161,7 @@ def test_rename_models(test_project, model: str, field: str) -> None:
     """When renaming a model in the project, the new name should be recorded when that model is referred to elsewhere
     in the project.
     """
-    getattr(test_project, model)[-1] = {'name': 'New Name'}
+    getattr(test_project, model).set_fields(-1, name='New Name')
     attribute = RAT.project.model_names_used_in[model].attribute
     assert getattr(getattr(test_project, attribute)[-1], field) == 'New Name'
 
@@ -307,7 +307,7 @@ def test_wrap_set(test_project, class_list: str, field: str) -> None:
     orig_class_list = copy.deepcopy(test_attribute)
 
     with contextlib.redirect_stdout(io.StringIO()) as print_str:
-        test_attribute[0] = {field: 'undefined'}
+        test_attribute.set_fields(0, **{field: 'undefined'})
     assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "undefined" in '
                                     f'the "{field}" field of "{class_list}" must be defined in '
                                     f'"{RAT.project.values_defined_in[class_list+"."+field]}".\033[0m\n')

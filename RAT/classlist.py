@@ -61,22 +61,15 @@ class ClassList(collections.UserList):
                 output = repr(self.data)
         return output
 
-    def __setitem__(self, index: int, item: Union['RAT.models', dict[str, Any]]) -> None:
-        """Assign the values of an existing object's attributes using either a replacement object or a dictionary
-        containing key-value pairs.
-        """
+    def __setitem__(self, index: int, item: 'RAT.models') -> None:
+        """Replace the object at an existing index of the ClassList."""
         self._setitem(index, item)
 
-    def _setitem(self, index: int, item: Union['RAT.models', dict[str, Any]]) -> None:
+    def _setitem(self, index: int, item: 'RAT.models') -> None:
         """Auxiliary routine of "__setitem__" used to enable wrapping."""
-        if isinstance(item, dict):
-            self._validate_name_field(item)
-            for key, value in item.items():
-                setattr(self.data[index], key, value)
-        else:
-            self._check_classes(self + [item])
-            self._check_unique_name_fields(self + [item])
-            self.data[index] = item
+        self._check_classes(self + [item])
+        self._check_unique_name_fields(self + [item])
+        self.data[index] = item
 
     def __delitem__(self, index: int) -> None:
         """Delete an object from the list by index."""
@@ -217,6 +210,12 @@ class ClassList(collections.UserList):
         self._check_classes(self + other)
         self._check_unique_name_fields(self + other)
         self.data.extend(other)
+
+    def set_fields(self, index: int, **kwargs) -> None:
+        """Assign the values of an existing object's attributes using keyword arguments."""
+        self._validate_name_field(kwargs)
+        for key, value in kwargs.items():
+            setattr(self.data[index], key, value)
 
     def get_names(self) -> list[str]:
         """Return a list of the values of the name_field attribute of each class object in the list.
