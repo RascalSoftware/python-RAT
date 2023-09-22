@@ -1,6 +1,6 @@
 import tabulate
-from typing import Union, Any
-from pydantic import BaseModel, Field, field_validator, model_validator
+from typing import Union
+from pydantic import BaseModel, Field, field_validator
 from RAT.utils.enums import ParallelOptions, Procedures, DisplayOptions, BoundHandlingOptions, StrategyOptions
 
 
@@ -10,25 +10,16 @@ class BaseProcedure(BaseModel, validate_assignment = True, extra = 'forbid'):
     """
     parallel: ParallelOptions = ParallelOptions.Single
     calcSldDuringFit: bool = False
-    resamPars: list[Union[int, float]] = Field([0.9, 50], min_length = 2, max_length = 2)
+    resamPars: list[float] = Field([0.9, 50], min_length = 2, max_length = 2)
     display: DisplayOptions = DisplayOptions.Iter
 
     @field_validator("resamPars")
     def check_resamPars(cls, resamPars):
         if not 0 < resamPars[0] < 1:
             raise ValueError('resamPars[0] must be between 0 and 1')
-        if not 0 <= resamPars[1]:
+        if resamPars[1] <= 0:
             raise ValueError('resamPars[1] must be greater than or equal to 0')
         return resamPars
-
-    @classmethod
-    def verify_inputs(cls,
-                      data: dict[str, Any],
-                      expected_properties: list[str],
-                      msg: str) -> None:
-        if isinstance(data, dict) and data != {}:
-            if not all(x in expected_properties for x in data.keys()):
-                raise ValueError(msg)
 
 
 class Calculate(BaseProcedure, validate_assignment = True, extra = 'forbid'):
@@ -36,19 +27,6 @@ class Calculate(BaseProcedure, validate_assignment = True, extra = 'forbid'):
     Defines the class for the calculate procedure.
     """
     procedure: Procedures = Field(Procedures.Calculate, frozen = True)
-     
-    @model_validator(mode = 'before')
-    @classmethod
-    def verify_inputs(cls, data: dict[str, Any]) -> dict[str, Any]:
-        expected_properties = ['parallel',
-                               'calcSldDuringFit',
-                               'resamPars',
-                               'display',
-                               'procedure']
-        msg = ("Properties that can be set for calculate are"
-               " calcSLdDuringFit, display, parallel, resamPars")
-        super().verify_inputs(data, expected_properties, msg)
-        return data
 
 
 class Simplex(BaseProcedure, validate_assignment = True, extra = 'forbid'):
@@ -63,27 +41,6 @@ class Simplex(BaseProcedure, validate_assignment = True, extra = 'forbid'):
     updateFreq: int = -1
     updatePlotFreq: int = -1
 
-    @model_validator(mode = 'before')
-    @classmethod
-    def verify_inputs(self, data: dict[str, Any]) -> dict[str, Any]:
-        expected_properties = ['parallel',
-                               'calcSldDuringFit',
-                               'resamPars',
-                               'display',
-                               'procedure',
-                               'tolX',
-                               'tolFun',
-                               'maxFunEvals',
-                               'maxIter',
-                               'updateFreq',
-                               'updatePlotFreq']
-        msg = ("Properties that can be set for simplex are"
-               " calcSLdDuringFit, display, maxFunEvals, maxIter,"
-               " parallel, resamPars, tolFun, tolX, updateFreq, "
-               "updatePlotFreq")
-        super().verify_inputs(data, expected_properties, msg)
-        return data
-
 
 class DE(BaseProcedure, validate_assignment = True, extra = 'forbid'):
     """
@@ -94,29 +51,8 @@ class DE(BaseProcedure, validate_assignment = True, extra = 'forbid'):
     fWeight: float = 0.5
     crossoverProbability: float = Field(0.8, gt = 0, lt = 1)
     strategy: StrategyOptions = StrategyOptions.RandomWithPerVectorDither
-    targetValue: Union[int, float] = Field(1.0, ge = 1)
+    targetValue: float = Field(1.0, ge = 1)
     numGenerations: int = Field(500, ge = 1)
-
-    @model_validator(mode = 'before')
-    @classmethod
-    def verify_inputs(self, data: dict[str, Any]) -> dict[str, Any]:
-        expected_properties = ['parallel',
-                                'calcSldDuringFit',
-                                'resamPars',
-                                'display',
-                                'procedure',
-                                'populationSize',
-                                'fWeight',
-                                'crossoverProbability',
-                                'strategy',
-                                'targetValue',
-                                'numGenerations']
-        msg = ("Properties that can be set for de are "
-               "calcSLdDuringFit, crossoverProbability, display,"
-               " fWeight, numGenerations, parallel, populationSize,"
-               " resamPars, strategy, targetValue")
-        super().verify_inputs(data, expected_properties, msg)
-        return data
 
 
 class NS(BaseProcedure, validate_assignment = True, extra = 'forbid'):
@@ -125,27 +61,9 @@ class NS(BaseProcedure, validate_assignment = True, extra = 'forbid'):
     """
     procedure: Procedures = Field(Procedures.NS, frozen = True)
     Nlive: int = Field(150, ge = 1)
-    Nmcmc: Union[float, int] = Field(0.0, ge = 0)
+    Nmcmc: float = Field(0.0, ge = 0)
     propScale: float = Field(0.1, gt = 0, lt = 1)
-    nsTolerance: Union[float, int] = Field(0.1, ge = 0)
-
-    @model_validator(mode = 'before')
-    @classmethod
-    def verify_inputs(self, data: dict[str, Any]) -> dict[str, Any]:
-        expected_properties = ['parallel',
-                               'calcSldDuringFit',
-                               'resamPars',
-                               'display',
-                               'procedure',
-                               'Nlive',
-                               'Nmcmc',
-                               'propScale',
-                               'nsTolerance']
-        msg = ("Properties that can be set for ns are Nlive,"
-               " Nmcmc, calcSLdDuringFit, display, nsTolerance,"
-               " parallel, propScale, resamPars")
-        super().verify_inputs(data, expected_properties, msg)
-        return data
+    nsTolerance: float = Field(0.1, ge = 0)
 
 
 class Dream(BaseProcedure, validate_assignment = True, extra = 'forbid'):
@@ -158,26 +76,6 @@ class Dream(BaseProcedure, validate_assignment = True, extra = 'forbid'):
     jumpProb: float = Field(0.5, gt = 0, lt = 1)
     pUnitGamma:float = Field(0.2, gt = 0, lt = 1)
     boundHandling: BoundHandlingOptions = BoundHandlingOptions.Fold
-
-    @model_validator(mode = 'before')
-    @classmethod
-    def verify_inputs(self, data: dict[str, Any]) -> dict[str, Any]:
-        expected_properties = ['parallel',
-                               'calcSldDuringFit',
-                               'resamPars',
-                               'display',
-                               'procedure',
-                               'nSamples',
-                               'nChains',
-                               'jumpProb',
-                               'pUnitGamma',
-                               'boundHandling']
-        msg = ("Properties that can be set for dream are"
-               " boundHandling, calcSLdDuringFit, display, "
-               "jumpProb, nChains, nSamples, pUnitGamma, "
-               "parallel, resamPars")
-        super().verify_inputs(data, expected_properties, msg)
-        return data
 
 
 class ControlsClass:
