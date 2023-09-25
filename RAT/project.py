@@ -21,7 +21,6 @@ except ImportError:
 class CalcTypes(StrEnum):
     NonPolarised = 'non polarised'
     Domains = 'domains'
-    OilWater = 'oil water'
 
 
 class ModelTypes(StrEnum):
@@ -63,6 +62,8 @@ values_defined_in = {'backgrounds.value_1': 'background_parameters',
                      'resolutions.value_5': 'resolution_parameters',
                      'layers.thickness': 'parameters',
                      'layers.SLD': 'parameters',
+                     'layers.SLD_real': 'parameters',
+                     'layers.SLD_imaginary': 'parameters',
                      'layers.roughness': 'parameters',
                      'contrasts.data': 'data',
                      'contrasts.background': 'backgrounds',
@@ -77,7 +78,8 @@ model_names_used_in = {'background_parameters': AllFields('backgrounds', ['value
                                                                           'value_5']),
                        'resolution_parameters': AllFields('resolutions', ['value_1', 'value_2', 'value_3', 'value_4',
                                                                           'value_5']),
-                       'parameters': AllFields('layers', ['thickness', 'SLD', 'roughness']),
+                       'parameters': AllFields('layers', ['thickness', 'SLD', 'SLD_real', 'SLD_imaginary',
+                                                          'roughness']),
                        'data': AllFields('contrasts', ['data']),
                        'backgrounds': AllFields('contrasts', ['background']),
                        'bulk_in': AllFields('contrasts', ['nba']),
@@ -148,6 +150,10 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
     def check_class(cls, value: ClassList, info: FieldValidationInfo) -> ClassList:
         """Each of the data fields should be a ClassList of the appropriate model."""
         model_name = model_in_classlist[info.field_name]
+        # Correct model name if necessary
+        if info.field_name == 'layers' and info.data['absorption']:
+            model_name = 'AbsorptionLayer'
+
         model = getattr(RAT.models, model_name)
         assert all(isinstance(element, model) for element in value), \
             f'"{info.field_name}" ClassList contains objects other than "{model_name}"'
@@ -157,6 +163,13 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         """Initialises the class in the ClassLists for empty data fields, sets protected parameters, gets names of all
         defined parameters and wraps ClassList routines to control revalidation.
         """
+        layer_field = getattr(self, 'layers')
+        if not hasattr(layer_field, "_class_handle"):
+            if self.absorption:
+                setattr(layer_field, "_class_handle", getattr(RAT.models, 'AbsorptionLayer'))
+            else:
+                setattr(layer_field, "_class_handle", getattr(RAT.models, 'Layer'))
+
         for field_name, model in model_in_classlist.items():
             field = getattr(self, field_name)
             if not hasattr(field, "_class_handle"):
@@ -176,6 +189,26 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
             attribute = getattr(self, class_list)
             for methodName in methods_to_wrap:
                 setattr(attribute, methodName, self._classlist_wrapper(attribute, getattr(attribute, methodName)))
+
+    @model_validator(mode='after')
+    def set_absorption(self) -> 'Project':
+        """Apply the absorption setting to the project."""
+        if hasattr(self, 'layers'):
+            layer_list = []
+            handle = getattr(self.layers, '_class_handle').__name__
+            if self.absorption and handle == 'Layer':
+                for layer in self.layers:
+                    layer_list.append(RAT.models.AbsorptionLayer(**layer.model_dump()))
+                self.layers.data = layer_list
+                setattr(self.layers, '_class_handle', getattr(RAT.models, 'AbsorptionLayer'))
+            elif not self.absorption and handle == 'AbsorptionLayer':
+                for layer in self.layers:
+                    layer_params = layer.model_dump()
+                    del layer_params['SLD_imaginary']
+                    layer_list.append(RAT.models.Layer(**layer_params))
+                self.layers.data = layer_list
+                setattr(self.layers, '_class_handle', getattr(RAT.models, 'Layer'))
+        return self
 
     @model_validator(mode='after')
     def update_renamed_models(self) -> 'Project':
@@ -200,7 +233,8 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         value_fields = ['value_1', 'value_2', 'value_3', 'value_4', 'value_5']
         self.check_allowed_values('backgrounds', value_fields, self.background_parameters.get_names())
         self.check_allowed_values('resolutions', value_fields, self.resolution_parameters.get_names())
-        self.check_allowed_values('layers', ['thickness', 'SLD', 'roughness'], self.parameters.get_names())
+        self.check_allowed_values('layers', ['thickness', 'SLD', 'SLD_real', 'SLD_imaginary', 'roughness'],
+                                  self.parameters.get_names())
 
         self.check_allowed_values('contrasts', ['data'], self.data.get_names())
         self.check_allowed_values('contrasts', ['background'], self.backgrounds.get_names())
@@ -247,7 +281,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         class_list = getattr(self, attribute)
         for model in class_list:
             for field in field_list:
-                value = getattr(model, field)
+                value = getattr(model, field, '')
                 if value and value not in allowed_values:
                     raise ValueError(f'The value "{value}" in the "{field}" field of "{attribute}" must be defined in '
                                      f'"{values_defined_in[attribute + "." + field]}".')

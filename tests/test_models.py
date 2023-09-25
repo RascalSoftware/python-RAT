@@ -16,6 +16,7 @@ import RAT.models
     (RAT.models.Data, "Data"),
     (RAT.models.DomainContrast, "Domain Contrast"),
     (RAT.models.Layer, "Layer"),
+    (RAT.models.AbsorptionLayer, "Absorption Layer"),
     (RAT.models.Parameter, "Parameter"),
     (RAT.models.Resolution, "Resolution"),
 ])

@@ -24,6 +24,7 @@ custom_file_number = int_sequence()
 data_number = int_sequence()
 domain_contrast_number = int_sequence()
 layer_number = int_sequence()
+absorption_layer_number = int_sequence()
 parameter_number = int_sequence()
 resolution_number = int_sequence()
 
@@ -121,18 +122,29 @@ class DomainContrast(BaseModel, validate_assignment=True, extra='forbid'):
     model: list[str] = []
 
 
-class Layer(BaseModel, validate_assignment=True, extra='forbid'):
+class Layer(BaseModel, validate_assignment=True, extra='forbid', populate_by_name=True):
     """Combines parameters into defined layers."""
     name: str = Field(default_factory=lambda: 'New Layer ' + next(layer_number))
     thickness: str = ''
-    SLD: str = ''
+    SLD: str = Field('', validation_alias='SLD_real')
+    roughness: str = ''
+    hydration: str = ''
+    hydrate_with: Hydration = Hydration.BulkOut
+
+
+class AbsorptionLayer(BaseModel, validate_assignment=True, extra='forbid', populate_by_name=True):
+    """Combines parameters into defined layers including absorption terms."""
+    name: str = Field(default_factory=lambda: 'New Absorption Layer ' + next(absorption_layer_number))
+    thickness: str = ''
+    SLD_real: str = Field('', validation_alias='SLD')
+    SLD_imaginary: str = ''
     roughness: str = ''
     hydration: str = ''
     hydrate_with: Hydration = Hydration.BulkOut
 
 
 class Parameter(BaseModel, validate_assignment=True, extra='forbid'):
-    """Defines parameters needed to specify the model"""
+    """Defines parameters needed to specify the model."""
     name: str = Field(default_factory=lambda: 'New Parameter ' + next(parameter_number))
     min: float = 0.0
     value: float = 0.0

@@ -87,6 +87,15 @@ def test_classlists(test_project) -> None:
         assert class_list._class_handle.__name__ == value
 
 
+def test_classlists_specific_cases() -> None:
+    """The ClassLists in the "Project" model should contain instances of specific models given various non-default
+    options.
+    """
+    project = RAT.project.Project(absorption=True)
+    class_list = getattr(project, 'layers')
+    assert class_list._class_handle.__name__ == 'AbsorptionLayer'
+
+
 @pytest.mark.parametrize("input_model", [
     RAT.models.Background,
     RAT.models.Contrast,
@@ -101,6 +110,19 @@ def test_initialise_wrong_classes(input_model: Callable) -> None:
                                                        'failed, "parameters" ClassList contains objects other than '
                                                        '"Parameter"'):
         RAT.project.Project(parameters=ClassList(input_model()))
+
+
+@pytest.mark.parametrize(["input_model", "absorption", "actual_model_name"], [
+    (RAT.models.Layer, True, "AbsorptionLayer"),
+    (RAT.models.AbsorptionLayer, False, "Layer"),
+])
+def test_initialise_wrong_layers(input_model: Callable, absorption: bool, actual_model_name: str) -> None:
+    """If the "Project" model is initialised with the incorrect layer model given the value of absorption, we should
+    raise a ValidationError."""
+    with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\nlayers\n  Assertion failed, '
+                                                       f'"layers" ClassList contains objects other than '
+                                                       f'"{actual_model_name}"'):
+        RAT.project.Project(absorption=absorption, layers=ClassList(input_model()))
 
 
 @pytest.mark.parametrize(["field", "wrong_input_model"], [
@@ -118,6 +140,19 @@ def test_assign_wrong_classes(test_project, field: str, wrong_input_model: Calla
                                                        f'"{field}" ClassList contains objects other than '
                                                        f'"{RAT.project.model_in_classlist[field]}"'):
         setattr(test_project, field, ClassList(wrong_input_model()))
+
+
+@pytest.mark.parametrize(["wrong_input_model", "absorption", "actual_model_name"], [
+    (RAT.models.Layer, True, "AbsorptionLayer"),
+    (RAT.models.AbsorptionLayer, False, "Layer"),
+])
+def test_assign_wrong_layers(wrong_input_model: Callable, absorption: bool, actual_model_name: str) -> None:
+    """If we assign incorrect classes to the "Project" model, we should raise a ValidationError."""
+    project = RAT.project.Project(absorption=absorption)
+    with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\nlayers\n  Assertion failed, '
+                                                       f'"layers" ClassList contains objects other than '
+                                                       f'"{actual_model_name}"'):
+        setattr(project, 'layers', ClassList(wrong_input_model()))
 
 
 @pytest.mark.parametrize("field", [
@@ -144,6 +179,22 @@ def test_wrapped_routines(test_project) -> None:
         attribute = getattr(test_project, class_list)
         for methodName in wrapped_methods:
             assert hasattr(getattr(attribute, methodName), '__wrapped__')
+
+
+@pytest.mark.parametrize(["input_layer", "input_absorption", "new_layer_model"], [
+    (RAT.models.Layer, False, "AbsorptionLayer"),
+    (RAT.models.AbsorptionLayer, True, "Layer"),
+])
+def test_set_absorption(input_layer: Callable, input_absorption: bool, new_layer_model: str) -> None:
+    """When changing the value of the absorption option, the "layers" ClassList should switch to using the appropriate
+    Layer model.
+    """
+    test_project = RAT.project.Project(absorption=input_absorption, layers=ClassList(input_layer()))
+    test_project.absorption = not input_absorption
+
+    assert test_project.absorption is not input_absorption
+    assert type(test_project.layers[0]).__name__ == new_layer_model
+    assert test_project.layers._class_handle.__name__ == new_layer_model
 
 
 @pytest.mark.parametrize(["model", "field"], [
@@ -214,7 +265,24 @@ def test_allowed_layers(field: str) -> None:
     with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\n  Value error, The value '
                                                        f'"undefined" in the "{field}" field of "layers" must be '
                                                        f'defined in "parameters".'):
-        RAT.project.Project(layers=ClassList(test_layer))
+        RAT.project.Project(absorption=False, layers=ClassList(test_layer))
+
+
+@pytest.mark.parametrize("field", [
+    'thickness',
+    'SLD_real',
+    'SLD_imaginary',
+    'roughness',
+])
+def test_allowed_absorption_layers(field: str) -> None:
+    """If the "thickness", "SLD_real", "SLD_imaginary", or "roughness" fields of the AbsorptionLayer model are set to
+    values that are not specified in the parameters, we should raise a ValidationError.
+    """
+    test_layer = RAT.models.AbsorptionLayer(**{field: 'undefined'})
+    with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\n  Value error, The value '
+                                                       f'"undefined" in the "{field}" field of "layers" must be '
+                                                       f'defined in "parameters".'):
+        RAT.project.Project(absorption=True, layers=ClassList(test_layer))
 
 
 @pytest.mark.parametrize("field", [
@@ -267,6 +335,12 @@ def test_check_allowed_values(test_value: str) -> None:
     """We should not raise an error if string values are defined and on the list of allowed values."""
     test_project = RAT.project.Project.model_construct(backgrounds=ClassList(RAT.models.Background(value_1=test_value)))
     assert test_project.check_allowed_values("backgrounds", ["value_1"], ["Background Param 1"]) is None
+
+
+def test_check_allowed_values_undefined_field() -> None:
+    """We should not raise an error if a model field is currently undefined in the project."""
+    test_project = RAT.project.Project.model_construct(absorption=False)
+    assert test_project.check_allowed_values("layers", ["SLD_imaginary"], ["undefined"]) is None
 
 
 @pytest.mark.parametrize("test_value", [
