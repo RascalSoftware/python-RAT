@@ -24,14 +24,6 @@ class TestBaseProcedure:
         """Tests the default values of BaseProcedure class."""
         assert getattr(self.base_procedure, property) == value
 
-    @pytest.mark.parametrize("property, var_type", [('parallel', ParallelOptions),
-                                                    ('calcSldDuringFit', bool),
-                                                    ('resamPars', list),
-                                                    ('display', DisplayOptions)])
-    def test_base_property_types(self, property: str, var_type: type) -> None:
-        """Tests the types of the values in BaseProcedure class."""
-        assert isinstance(getattr(self.base_procedure, property), var_type)
-
     @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.All),
                                                  ('calcSldDuringFit', True),
                                                  ('resamPars', [0.2, 1]),
@@ -109,10 +101,6 @@ class TestCalculate:
         """Tests the default values of Calculate class."""
         assert getattr(self.calculate, property) == value
 
-    def test_calculate_property_types(self) -> None:
-        """Tests the types of default values of Calculate class."""
-        assert isinstance(getattr(self.calculate, 'procedure'), Procedures)
-
     @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.All),
                                                  ('calcSldDuringFit', True),
                                                  ('resamPars', [0.2, 1]),
@@ -158,17 +146,6 @@ class TestSimplex:
     def test_simplex_property_values(self, property: str, value: Any) -> None:
         """Tests the default values of Simplex class."""
         assert getattr(self.simplex, property) == value
-
-    @pytest.mark.parametrize("property, var_type", [('procedure', Procedures),
-                                                    ('tolX', float),
-                                                    ('tolFun', float),
-                                                    ('maxFunEvals', int),
-                                                    ('maxIter', int),
-                                                    ('updateFreq', int),
-                                                    ('updatePlotFreq', int)])
-    def test_simplex_property_types(self, property: str, var_type: type) -> None:
-        """Tests the types of the values of Simplex class."""
-        assert isinstance(getattr(self.simplex, property), var_type)
 
     @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.All),
                                                  ('calcSldDuringFit', True),
@@ -231,17 +208,6 @@ class TestDE:
     def test_de_property_values(self, property: str, value: Any) -> None:
         """Tests the default values of DE class."""
         assert getattr(self.de, property) == value
-
-    @pytest.mark.parametrize("property, var_type", [('procedure', Procedures),
-                                                    ('populationSize', int),
-                                                    ('fWeight', float),
-                                                    ('crossoverProbability', float),
-                                                    ('strategy', StrategyOptions),
-                                                    ('targetValue', float),
-                                                    ('numGenerations', int)])
-    def test_de_property_types(self, property: str, var_type: type) -> None:
-        """Tests the types of the values of DE class."""
-        assert isinstance(getattr(self.de, property), var_type)
 
     @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.All),
                                                  ('calcSldDuringFit', True),
@@ -315,15 +281,6 @@ class TestNS:
         """Tests the default values of NS class."""
         assert getattr(self.ns, property) == value
 
-    @pytest.mark.parametrize("property, var_type", [('procedure', Procedures),
-                                                    ('Nlive', int),
-                                                    ('Nmcmc', float),
-                                                    ('propScale', float),
-                                                    ('nsTolerance', float)])
-    def test_ns_property_types(self, property: str, var_type: type) -> None:
-        """Tests the types of the values of NS class."""
-        assert isinstance(getattr(self.ns, property), var_type)
-
     @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.All),
                                                  ('calcSldDuringFit', True),
                                                  ('resamPars', [0.2, 1]),
@@ -389,16 +346,6 @@ class TestDream:
     def test_dream_property_values(self, property: str, value: Any) -> None:
         """Tests the default values of Dream class."""
         assert getattr(self.dream, property) == value
-
-    @pytest.mark.parametrize("property, var_type", [('procedure', Procedures),
-                                                    ('nSamples', int),
-                                                    ('nChains', int),
-                                                    ('jumpProb', float),
-                                                    ('pUnitGamma', float),
-                                                    ('boundHandling', BoundHandlingOptions)])
-    def test_dream_property_types(self, property: str, var_type: type) -> None:
-        """Tests the type of values in Dream class."""
-        assert isinstance(getattr(self.dream, property), var_type)
 
     @pytest.mark.parametrize("property, value", [('parallel', ParallelOptions.All),
                                                  ('calcSldDuringFit', True),

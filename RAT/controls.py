@@ -17,7 +17,7 @@ class BaseProcedure(BaseModel, validate_assignment = True, extra = 'forbid'):
     def check_resamPars(cls, resamPars):
         if not 0 < resamPars[0] < 1:
             raise ValueError('resamPars[0] must be between 0 and 1')
-        if resamPars[1] <= 0:
+        if resamPars[1] < 0:
             raise ValueError('resamPars[1] must be greater than or equal to 0')
         return resamPars
 
