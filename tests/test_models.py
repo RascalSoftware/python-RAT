@@ -5,7 +5,6 @@ import pydantic
 import pytest
 from typing import Callable
 
-
 import RAT.models
 
 
@@ -56,6 +55,11 @@ class TestModels(object):
         test_model = model()
         with pytest.raises(pydantic.ValidationError, match='Input should be a valid string'):
             test_model.name = 1
+
+    def test_initialise_with_zero_length_name(self, model: Callable) -> None:
+        """When initialising a model with a zero length name, we should raise a ValidationError."""
+        with pytest.raises(pydantic.ValidationError, match='String should have at least 1 characters'):
+            model(name='')
 
     def test_initialise_with_extra_fields(self, model: Callable) -> None:
         """When initialising a model with unspecified fields, we should raise a ValidationError."""

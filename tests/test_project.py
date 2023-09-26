@@ -384,7 +384,7 @@ def test_wrap_set(test_project, class_list: str, field: str) -> None:
         test_attribute.set_fields(0, **{field: 'undefined'})
     assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "undefined" in '
                                     f'the "{field}" field of "{class_list}" must be defined in '
-                                    f'"{RAT.project.values_defined_in[class_list+"."+field]}".\033[0m\n')
+                                    f'"{RAT.project.values_defined_in[class_list + "." + field]}".\033[0m\n')
     # Ensure invalid model was not changed
     assert test_attribute == orig_class_list
 
