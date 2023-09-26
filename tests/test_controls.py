@@ -38,7 +38,7 @@ class TestBaseProcedure:
         """Tests the parallel setter validation in BaseProcedure class."""
         with pytest.raises(pydantic.ValidationError) as exp:
             setattr(self.base_procedure, 'parallel', var1)
-        assert exp.value.errors()[0]['msg'] == "Input should be 'single','points','contrasts' or 'all'"
+        assert exp.value.errors()[0]['msg'] == "Input should be 'single', 'points', 'contrasts' or 'all'"
         with pytest.raises(pydantic.ValidationError) as exp:
             setattr(self.base_procedure, 'parallel', var2)
         assert exp.value.errors()[0]['msg'] == "Input should be a valid string"
@@ -55,7 +55,7 @@ class TestBaseProcedure:
         """Tests the display setter validation in BaseProcedure class."""
         with pytest.raises(pydantic.ValidationError) as exp:
             setattr(self.base_procedure, 'display', var1)
-        assert exp.value.errors()[0]['msg'] == "Input should be 'off','iter','notify' or 'final'"
+        assert exp.value.errors()[0]['msg'] == "Input should be 'off', 'iter', 'notify' or 'final'"
         with pytest.raises(pydantic.ValidationError) as exp:
             setattr(self.base_procedure, 'display', var2)
         assert exp.value.errors()[0]['msg'] == "Input should be a valid string"
