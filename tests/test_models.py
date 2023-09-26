@@ -16,37 +16,48 @@ import RAT.models
     (RAT.models.Data, "Data"),
     (RAT.models.DomainContrast, "Domain Contrast"),
     (RAT.models.Layer, "Layer"),
-    (RAT.models.AbsorptionLayer, "Absorption Layer"),
     (RAT.models.Parameter, "Parameter"),
     (RAT.models.Resolution, "Resolution"),
 ])
+def test_default_names(model: Callable, model_name: str) -> None:
+    """When initialising multiple models without specifying a name, they should be given a default name with the
+    format: "New <model name> <integer>".
+    """
+    model_1 = model()
+    model_2 = model()
+    model_3 = model(name='Given Name')
+    model_4 = model()
+
+    assert model_1.name == "New " + model_name + " 1"
+    assert model_2.name == "New " + model_name + " 2"
+    assert model_3.name == "Given Name"
+    assert model_4.name == "New " + model_name + " 3"
+
+
+@pytest.mark.parametrize("model", [
+    RAT.models.Background,
+    RAT.models.Contrast,
+    RAT.models.CustomFile,
+    RAT.models.Data,
+    RAT.models.DomainContrast,
+    RAT.models.Layer,
+    RAT.models.AbsorptionLayer,
+    RAT.models.Parameter,
+    RAT.models.Resolution,
+])
 class TestModels(object):
-    def test_default_names(self, model: Callable, model_name: str) -> None:
-        """When initialising multiple models without specifying a name, they should be given a default name with the
-        format: "New <model name> <integer>".
-        """
-        model_1 = model()
-        model_2 = model()
-        model_3 = model(name='Given Name')
-        model_4 = model()
-
-        assert model_1.name == "New " + model_name + " 1"
-        assert model_2.name == "New " + model_name + " 2"
-        assert model_3.name == "Given Name"
-        assert model_4.name == "New " + model_name + " 3"
-
-    def test_initialise_with_wrong_type(self, model: Callable, model_name: str) -> None:
+    def test_initialise_with_wrong_type(self, model: Callable) -> None:
         """When initialising a model with the wrong type for the "name" field, we should raise a ValidationError."""
         with pytest.raises(pydantic.ValidationError, match='Input should be a valid string'):
             model(name=1)
 
-    def test_assignment_with_wrong_type(self, model: Callable, model_name: str) -> None:
+    def test_assignment_with_wrong_type(self, model: Callable) -> None:
         """When assigning the "name" field of a model with the wrong type, we should raise a ValidationError."""
         test_model = model()
         with pytest.raises(pydantic.ValidationError, match='Input should be a valid string'):
             test_model.name = 1
 
-    def test_initialise_with_extra_fields(self, model: Callable, model_name: str) -> None:
+    def test_initialise_with_extra_fields(self, model: Callable) -> None:
         """When initialising a model with unspecified fields, we should raise a ValidationError."""
         with pytest.raises(pydantic.ValidationError, match='Extra inputs are not permitted'):
             model(new_field=1)

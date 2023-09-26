@@ -5,7 +5,7 @@ import contextlib
 import copy
 import functools
 import numpy as np
-from pydantic import BaseModel, FieldValidationInfo, field_validator, model_validator, ValidationError
+from pydantic import BaseModel, ValidationInfo, field_validator, model_validator, ValidationError
 from typing import Any, Callable
 
 from RAT.classlist import ClassList
@@ -147,7 +147,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
                      'backgrounds', 'resolution_parameters', 'resolutions', 'custom_files', 'data', 'layers',
                      'contrasts')
     @classmethod
-    def check_class(cls, value: ClassList, info: FieldValidationInfo) -> ClassList:
+    def check_class(cls, value: ClassList, info: ValidationInfo) -> ClassList:
         """Each of the data fields should be a ClassList of the appropriate model."""
         model_name = model_in_classlist[info.field_name]
         # Correct model name if necessary

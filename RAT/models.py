@@ -1,7 +1,7 @@
 """The models module. Contains the pydantic models used by RAT to store project parameters."""
 
 import numpy as np
-from pydantic import BaseModel, Field, FieldValidationInfo, field_validator, model_validator
+from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
 
 try:
     from enum import StrEnum
@@ -24,7 +24,6 @@ custom_file_number = int_sequence()
 data_number = int_sequence()
 domain_contrast_number = int_sequence()
 layer_number = int_sequence()
-absorption_layer_number = int_sequence()
 parameter_number = int_sequence()
 resolution_number = int_sequence()
 
@@ -107,7 +106,7 @@ class Data(BaseModel, validate_assignment=True, extra='forbid', arbitrary_types_
 
     @field_validator('data_range', 'simulation_range')
     @classmethod
-    def check_list_elements(cls, limits: list[float], info: FieldValidationInfo) -> list[float]:
+    def check_list_elements(cls, limits: list[float], info: ValidationInfo) -> list[float]:
         """The data range and simulation range must contain exactly two parameters."""
         if len(limits) != 2:
             raise ValueError(f'{info.field_name} must contain exactly two values')
@@ -134,7 +133,7 @@ class Layer(BaseModel, validate_assignment=True, extra='forbid', populate_by_nam
 
 class AbsorptionLayer(BaseModel, validate_assignment=True, extra='forbid', populate_by_name=True):
     """Combines parameters into defined layers including absorption terms."""
-    name: str = Field(default_factory=lambda: 'New Absorption Layer ' + next(absorption_layer_number))
+    name: str = Field(default_factory=lambda: 'New Layer ' + next(layer_number))
     thickness: str = ''
     SLD_real: str = Field('', validation_alias='SLD')
     SLD_imaginary: str = ''
