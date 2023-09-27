@@ -213,16 +213,17 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
     @model_validator(mode='after')
     def update_renamed_models(self) -> 'Project':
         """When models defined in the ClassLists are renamed, we need to update that name elsewhere in the project."""
-        for class_list in class_lists:
+        for class_list in model_names_used_in.keys():
             old_names = self._all_names[class_list]
             new_names = getattr(self, class_list).get_names()
             if len(old_names) == len(new_names):
                 name_diff = [(old, new) for (old, new) in zip(old_names, new_names) if old != new]
                 for (old_name, new_name) in name_diff:
-                    with contextlib.suppress(KeyError):
-                        model_names_list = getattr(self, model_names_used_in[class_list].attribute)
-                        all_matches = model_names_list.get_all_matches(old_name)
-                        for (index, field) in all_matches:
+                    model_names_list = getattr(self, model_names_used_in[class_list].attribute)
+                    all_matches = model_names_list.get_all_matches(old_name)
+                    fields = model_names_used_in[class_list].fields
+                    for (index, field) in all_matches:
+                        if field in fields:
                             setattr(model_names_list[index], field, new_name)
         self._all_names = self.get_all_names()
         return self
