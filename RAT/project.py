@@ -147,14 +147,14 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
     custom_files: ClassList = ClassList()
     data: ClassList = ClassList(RAT.models.Data(name='Simulation'))
     layers: ClassList = ClassList()
-    domains_contrasts: ClassList = ClassList()
+    domain_contrasts: ClassList = ClassList()
     contrasts: ClassList = ClassList()
 
     _all_names: dict
 
     @field_validator('parameters', 'bulk_in', 'bulk_out', 'qz_shifts', 'scalefactors', 'background_parameters',
                      'backgrounds', 'resolution_parameters', 'resolutions', 'custom_files', 'data', 'layers',
-                     'contrasts')
+                     'domain_contrasts', 'contrasts')
     @classmethod
     def check_class(cls, value: ClassList, info: ValidationInfo) -> ClassList:
         """Each of the data fields should be a ClassList of the appropriate model."""
@@ -291,7 +291,6 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         self.check_allowed_values('layers', ['thickness', 'SLD', 'SLD_real', 'SLD_imaginary', 'roughness'],
                                   self.parameters.get_names())
 
-        self.check_allowed_values('domain_contrasts', ['model'], self.layers.get_names())
         self.check_allowed_values('contrasts', ['data'], self.data.get_names())
         self.check_allowed_values('contrasts', ['background'], self.backgrounds.get_names())
         self.check_allowed_values('contrasts', ['nba'], self.bulk_in.get_names())

@@ -91,17 +91,20 @@ def test_classlists_specific_cases() -> None:
     """The ClassLists in the "Project" model should contain instances of specific models given various non-default
     options.
     """
-    project = RAT.project.Project(absorption=True)
-    class_list = getattr(project, 'layers')
-    assert class_list._class_handle.__name__ == 'AbsorptionLayer'
+    project = RAT.project.Project(calc_type=RAT.project.CalcTypes.Domains, absorption=True)
+    assert project.layers._class_handle.__name__ == 'AbsorptionLayer'
+    assert project.contrasts._class_handle.__name__ == 'ContrastWithRatio'
 
 
 @pytest.mark.parametrize("input_model", [
     RAT.models.Background,
     RAT.models.Contrast,
+    RAT.models.ContrastWithRatio,
     RAT.models.CustomFile,
     RAT.models.Data,
+    RAT.models.DomainContrast,
     RAT.models.Layer,
+    RAT.models.AbsorptionLayer,
     RAT.models.Resolution,
 ])
 def test_initialise_wrong_classes(input_model: Callable) -> None:
@@ -118,19 +121,36 @@ def test_initialise_wrong_classes(input_model: Callable) -> None:
 ])
 def test_initialise_wrong_layers(input_model: Callable, absorption: bool, actual_model_name: str) -> None:
     """If the "Project" model is initialised with the incorrect layer model given the value of absorption, we should
-    raise a ValidationError."""
+    raise a ValidationError.
+    """
     with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\nlayers\n  Assertion failed, '
                                                        f'"layers" ClassList contains objects other than '
                                                        f'"{actual_model_name}"'):
         RAT.project.Project(absorption=absorption, layers=ClassList(input_model()))
 
 
+@pytest.mark.parametrize(["input_model", "calc_type", "actual_model_name"], [
+    (RAT.models.Contrast, RAT.project.CalcTypes.Domains, "ContrastWithRatio"),
+    (RAT.models.ContrastWithRatio, RAT.project.CalcTypes.NonPolarised, "Contrast"),
+])
+def test_initialise_wrong_contrasts(input_model: Callable, calc_type: 'RAT.project.CalcTypes', actual_model_name: str)\
+        -> None:
+    """If the "Project" model is initialised with the incorrect contrast model given the value of calc_type, we should
+    raise a ValidationError.
+    """
+    with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\ncontrasts\n  Assertion '
+                                                       f'failed, "contrasts" ClassList contains objects other than '
+                                                       f'"{actual_model_name}"'):
+        RAT.project.Project(calc_type=calc_type, contrasts=ClassList(input_model()))
+
+
 @pytest.mark.parametrize(["field", "wrong_input_model"], [
     ('backgrounds', RAT.models.Resolution),
     ('contrasts', RAT.models.Layer),
+    ('domain_contrasts', RAT.models.Parameter),
     ('custom_files', RAT.models.Data),
     ('data', RAT.models.Contrast),
-    ('layers', RAT.models.Parameter),
+    ('layers', RAT.models.DomainContrast),
     ('parameters', RAT.models.CustomFile),
     ('resolutions', RAT.models.Background),
 ])
@@ -153,6 +173,20 @@ def test_assign_wrong_layers(wrong_input_model: Callable, absorption: bool, actu
                                                        f'"layers" ClassList contains objects other than '
                                                        f'"{actual_model_name}"'):
         setattr(project, 'layers', ClassList(wrong_input_model()))
+
+
+@pytest.mark.parametrize(["wrong_input_model", "calc_type", "actual_model_name"], [
+    (RAT.models.Contrast, RAT.project.CalcTypes.Domains, "ContrastWithRatio"),
+    (RAT.models.ContrastWithRatio, RAT.project.CalcTypes.NonPolarised, "Contrast"),
+])
+def test_assign_wrong_contrasts(wrong_input_model: Callable, calc_type: 'RAT.project.CalcTypes',
+                                actual_model_name: str) -> None:
+    """If we assign incorrect classes to the "Project" model, we should raise a ValidationError."""
+    project = RAT.project.Project(calc_type=calc_type)
+    with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\ncontrasts\n  Assertion '
+                                                       f'failed, "contrasts" ClassList contains objects other than '
+                                                       f'"{actual_model_name}"'):
+        setattr(project, 'contrasts', ClassList(wrong_input_model()))
 
 
 @pytest.mark.parametrize("field", [
@@ -179,6 +213,45 @@ def test_wrapped_routines(test_project) -> None:
         attribute = getattr(test_project, class_list)
         for methodName in wrapped_methods:
             assert hasattr(getattr(attribute, methodName), '__wrapped__')
+
+
+def test_set_domain_ratios(test_project) -> None:
+    """If we are not running a domains calculation, the "domain_ratios" field of the model should always be empty."""
+    assert test_project.domain_ratios == []
+    test_project.domain_ratios.append(name='New Domain Ratio')
+    assert test_project.domain_ratios == []
+
+
+@pytest.mark.parametrize("project_parameters", [
+    ({'calc_type': RAT.project.CalcTypes.NonPolarised, 'model': RAT.project.ModelTypes.StandardLayers}),
+    ({'calc_type': RAT.project.CalcTypes.NonPolarised, 'model': RAT.project.ModelTypes.CustomLayers}),
+    ({'calc_type': RAT.project.CalcTypes.Domains, 'model': RAT.project.ModelTypes.StandardLayers}),
+])
+def test_set_domain_contrasts(project_parameters: dict) -> None:
+    """If we are not running a domains calculation with standard layers, the "domain_contrasts" field of the model
+    should always be empty.
+    """
+    test_project = RAT.project.Project(**project_parameters)
+    assert test_project.domain_contrasts == []
+    test_project.domain_ratios.append(name='New Domain Contrast')
+    assert test_project.domain_contrasts == []
+
+
+@pytest.mark.parametrize(["input_contrast", "input_calc_type", "new_calc_type", "new_contrast_model"], [
+    (RAT.models.Contrast, RAT.project.CalcTypes.NonPolarised, RAT.project.CalcTypes.Domains, "ContrastWithRatio"),
+    (RAT.models.ContrastWithRatio, RAT.project.CalcTypes.Domains, RAT.project.CalcTypes.NonPolarised, "Contrast"),
+])
+def test_set_calc_type(input_contrast: Callable, input_calc_type: 'RAT.project.CalcTypes',
+                       new_calc_type: 'RAT.project.CalcTypes', new_contrast_model: str) -> None:
+    """When changing the value of the calc_type option, the "contrasts" ClassList should switch to using the
+    appropriate Contrast model.
+    """
+    test_project = RAT.project.Project(calc_type=input_calc_type, contrasts=ClassList(input_contrast()))
+    test_project.calc_type = new_calc_type
+
+    assert test_project.calc_type is new_calc_type
+    assert type(test_project.contrasts[0]).__name__ == new_contrast_model
+    assert test_project.contrasts._class_handle.__name__ == new_contrast_model
 
 
 @pytest.mark.parametrize(["input_layer", "input_absorption", "new_layer_model"], [
@@ -224,6 +297,7 @@ def test_get_all_names(test_project) -> None:
                                             'bulk_out': ['SLD D2O'],
                                             'qz_shifts': ['Qz shift 1'],
                                             'scalefactors': ['Scalefactor 1'],
+                                            'domain_ratios': [],
                                             'background_parameters': ['Background Param 1'],
                                             'backgrounds': ['Background 1'],
                                             'resolution_parameters': ['Resolution Param 1'],
@@ -231,6 +305,7 @@ def test_get_all_names(test_project) -> None:
                                             'custom_files': ['Test Custom File'],
                                             'data': ['Simulation'],
                                             'layers': ['Test Layer'],
+                                            'domain_contrasts': [],
                                             'contrasts': ['Test Contrast']}
 
 
@@ -319,7 +394,27 @@ def test_allowed_contrasts(field: str, model_name: str) -> None:
     with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\n  Value error, The value '
                                                        f'"undefined" in the "{field}" field of "contrasts" must be '
                                                        f'defined in "{model_name}".'):
-        RAT.project.Project(contrasts=ClassList(test_contrast))
+        RAT.project.Project(calc_type=RAT.project.CalcTypes.NonPolarised, contrasts=ClassList(test_contrast))
+
+
+@pytest.mark.parametrize(["field", "model_name"], [
+    ('data', 'data'),
+    ('background', 'backgrounds'),
+    ('nba', 'bulk_in'),
+    ('nbs', 'bulk_out'),
+    ('scalefactor', 'scalefactors'),
+    ('resolution', 'resolutions'),
+    ('domain_ratio', 'domain_ratios'),
+])
+def test_allowed_contrasts_with_ratio(field: str, model_name: str) -> None:
+    """If the fields of the ContrastWithRatio model are set to values not specified in the other respective models of
+    the project, we should raise a ValidationError.
+    """
+    test_contrast = RAT.models.ContrastWithRatio(**{field: 'undefined'})
+    with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\n  Value error, The value '
+                                                       f'"undefined" in the "{field}" field of "contrasts" must be '
+                                                       f'defined in "{model_name}".'):
+        RAT.project.Project(calc_type=RAT.project.CalcTypes.Domains, contrasts=ClassList(test_contrast))
 
 
 def test_repr(default_project_repr: str) -> None:
