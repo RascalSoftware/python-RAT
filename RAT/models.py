@@ -76,6 +76,20 @@ class Contrast(BaseModel, validate_assignment=True, extra='forbid'):
     model: list[str] = []  # But how many strings? How to deal with this?
 
 
+class ContrastWithRatio(BaseModel, validate_assignment=True, extra='forbid'):
+    """Groups together all of the components of the model including domain terms."""
+    name: str = Field(default_factory=lambda: 'New Contrast ' + next(contrast_number), min_length=1)
+    data: str = ''
+    background: str = ''
+    nba: str = ''
+    nbs: str = ''
+    scalefactor: str = ''
+    resolution: str = ''
+    resample: bool = False
+    domain_ratio: str = ''
+    model: list[str] = []  # But how many strings? How to deal with this?
+
+
 class CustomFile(BaseModel, validate_assignment=True, extra='forbid'):
     """Defines the files containing functions to run when using custom models."""
     name: str = Field(default_factory=lambda: 'New Custom File ' + next(custom_file_number), min_length=1)

@@ -1,7 +1,6 @@
 """The project module. Defines and stores all the input data required for reflectivity calculations in RAT."""
 
 import collections
-import contextlib
 import copy
 import functools
 import numpy as np
@@ -40,6 +39,7 @@ model_in_classlist = {'parameters': 'Parameter',
                       'bulk_out': 'Parameter',
                       'qz_shifts': 'Parameter',
                       'scalefactors': 'Parameter',
+                      'domain_ratios': 'Parameter',
                       'background_parameters': 'Parameter',
                       'resolution_parameters': 'Parameter',
                       'backgrounds': 'Background',
@@ -47,6 +47,7 @@ model_in_classlist = {'parameters': 'Parameter',
                       'custom_files': 'CustomFile',
                       'data': 'Data',
                       'layers': 'Layer',
+                      'domain_contrasts': 'DomainContrast',
                       'contrasts': 'Contrast',
                       }
 
@@ -71,6 +72,7 @@ values_defined_in = {'backgrounds.value_1': 'background_parameters',
                      'contrasts.nbs': 'bulk_out',
                      'contrasts.scalefactor': 'scalefactors',
                      'contrasts.resolution': 'resolutions',
+                     'contrasts.domain_ratio': 'domain_ratios',
                      }
 
 AllFields = collections.namedtuple('AllFields', ['attribute', 'fields'])
@@ -85,11 +87,13 @@ model_names_used_in = {'background_parameters': AllFields('backgrounds', ['value
                        'bulk_in': AllFields('contrasts', ['nba']),
                        'bulk_out': AllFields('contrasts', ['nbs']),
                        'scalefactors': AllFields('contrasts', ['scalefactor']),
+                       'domain_ratios': AllFields('contrasts', ['domain_ratio']),
                        'resolutions': AllFields('contrasts', ['resolution']),
                        }
 
-class_lists = ['parameters', 'bulk_in', 'bulk_out', 'qz_shifts', 'scalefactors', 'background_parameters', 'backgrounds',
-               'resolution_parameters', 'resolutions', 'custom_files', 'data', 'layers', 'contrasts']
+class_lists = ['parameters', 'bulk_in', 'bulk_out', 'qz_shifts', 'scalefactors', 'domain_ratios',
+               'background_parameters', 'backgrounds', 'resolution_parameters', 'resolutions', 'custom_files', 'data',
+               'layers', 'domain_contrasts', 'contrasts']
 
 
 class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_types_allowed=True):
@@ -106,19 +110,23 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
 
     parameters: ClassList = ClassList()
 
-    bulk_in: ClassList = ClassList(RAT.models.Parameter(name='SLD Air', min=0, value=0, max=0, fit=False,
-                                                        prior_type=RAT.models.Priors.Uniform, mu=0, sigma=np.inf))
+    bulk_in: ClassList = ClassList(RAT.models.Parameter(name='SLD Air', min=0.0, value=0.0, max=0.0, fit=False,
+                                                        prior_type=RAT.models.Priors.Uniform, mu=0.0, sigma=np.inf))
 
     bulk_out: ClassList = ClassList(RAT.models.Parameter(name='SLD D2O', min=6.2e-6, value=6.35e-6, max=6.35e-6,
-                                                         fit=False, prior_type=RAT.models.Priors.Uniform, mu=0,
+                                                         fit=False, prior_type=RAT.models.Priors.Uniform, mu=0.0,
                                                          sigma=np.inf))
 
-    qz_shifts: ClassList = ClassList(RAT.models.Parameter(name='Qz shift 1', min=-1e-4, value=0, max=1e-4, fit=False,
-                                                          prior_type=RAT.models.Priors.Uniform, mu=0, sigma=np.inf))
+    qz_shifts: ClassList = ClassList(RAT.models.Parameter(name='Qz shift 1', min=-1e-4, value=0.0, max=1e-4, fit=False,
+                                                          prior_type=RAT.models.Priors.Uniform, mu=0.0, sigma=np.inf))
 
     scalefactors: ClassList = ClassList(RAT.models.Parameter(name='Scalefactor 1', min=0.02, value=0.23, max=0.25,
-                                                             fit=False, prior_type=RAT.models.Priors.Uniform, mu=0,
+                                                             fit=False, prior_type=RAT.models.Priors.Uniform, mu=0.0,
                                                              sigma=np.inf))
+
+    domain_ratios: ClassList = ClassList(RAT.models.Parameter(name='Domain Ratio 1', min=0.4, value=0.5, max=0.6,
+                                                              fit=False, prior_type=RAT.models.Priors.Uniform, mu=0.0,
+                                                              sigma=np.inf))
 
     background_parameters: ClassList = ClassList(RAT.models.Parameter(name='Background Param 1', min=1e-7, value=1e-6,
                                                                       max=1e-5, fit=False,
@@ -139,6 +147,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
     custom_files: ClassList = ClassList()
     data: ClassList = ClassList(RAT.models.Data(name='Simulation'))
     layers: ClassList = ClassList()
+    domains_contrasts: ClassList = ClassList()
     contrasts: ClassList = ClassList()
 
     _all_names: dict
@@ -153,6 +162,8 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         # Correct model name if necessary
         if info.field_name == 'layers' and info.data['absorption']:
             model_name = 'AbsorptionLayer'
+        if info.field_name == 'contrasts' and info.data['calc_type'] == CalcTypes.Domains:
+            model_name = 'ContrastWithRatio'
 
         model = getattr(RAT.models, model_name)
         assert all(isinstance(element, model) for element in value), \
@@ -170,6 +181,13 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
             else:
                 setattr(layer_field, "_class_handle", getattr(RAT.models, 'Layer'))
 
+        contrast_field = getattr(self, 'contrasts')
+        if not hasattr(contrast_field, "_class_handle"):
+            if self.calc_type == CalcTypes.Domains:
+                setattr(contrast_field, "_class_handle", getattr(RAT.models, 'ContrastWithRatio'))
+            else:
+                setattr(contrast_field, "_class_handle", getattr(RAT.models, 'Contrast'))
+
         for field_name, model in model_in_classlist.items():
             field = getattr(self, field_name)
             if not hasattr(field, "_class_handle"):
@@ -185,10 +203,46 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         # model, handle errors and reset previous values if necessary.
         methods_to_wrap = ['_setitem', '_delitem', '_iadd', 'append', 'insert', 'pop', 'remove', 'clear', 'extend',
                            'set_fields']
+
         for class_list in class_lists:
             attribute = getattr(self, class_list)
             for methodName in methods_to_wrap:
                 setattr(attribute, methodName, self._classlist_wrapper(attribute, getattr(attribute, methodName)))
+
+    @model_validator(mode='after')
+    def set_domain_ratios(self) -> 'Project':
+        """If we are not running a domains calculation, ensure the domain ratios component of the model is empty."""
+        if self.calc_type != CalcTypes.Domains:
+            self.domain_ratios.data = []
+        return self
+
+    @model_validator(mode='after')
+    def set_domain_contrasts(self) -> 'Project':
+        """If we are not running a domains calculation with standard layers, ensure the domain contrasts component of
+        the model is empty.
+        """
+        if not (self.calc_type == CalcTypes.Domains and self.model == ModelTypes.StandardLayers):
+            self.domain_contrasts.data = []
+        return self
+
+    @model_validator(mode='after')
+    def set_calc_type(self) -> 'Project':
+        """Apply the calc_type setting to the project."""
+        contrast_list = []
+        handle = getattr(self.contrasts, '_class_handle').__name__
+        if self.calc_type == CalcTypes.Domains and handle == 'Contrast':
+            for contrast in self.contrasts:
+                contrast_list.append(RAT.models.ContrastWithRatio(**contrast.model_dump()))
+            self.contrasts.data = contrast_list
+            setattr(self.contrasts, '_class_handle', getattr(RAT.models, 'ContrastWithRatio'))
+        elif self.calc_type != CalcTypes.Domains and handle == 'ContrastWithRatio':
+            for contrast in self.contrasts:
+                contrast_params = contrast.model_dump()
+                del contrast_params['domain_ratio']
+                contrast_list.append(RAT.models.Contrast(**contrast_params))
+            self.contrasts.data = contrast_list
+            setattr(self.contrasts, '_class_handle', getattr(RAT.models, 'Contrast'))
+        return self
 
     @model_validator(mode='after')
     def set_absorption(self) -> 'Project':
@@ -237,12 +291,14 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         self.check_allowed_values('layers', ['thickness', 'SLD', 'SLD_real', 'SLD_imaginary', 'roughness'],
                                   self.parameters.get_names())
 
+        self.check_allowed_values('domain_contrasts', ['model'], self.layers.get_names())
         self.check_allowed_values('contrasts', ['data'], self.data.get_names())
         self.check_allowed_values('contrasts', ['background'], self.backgrounds.get_names())
         self.check_allowed_values('contrasts', ['nba'], self.bulk_in.get_names())
         self.check_allowed_values('contrasts', ['nbs'], self.bulk_out.get_names())
         self.check_allowed_values('contrasts', ['scalefactor'], self.scalefactors.get_names())
         self.check_allowed_values('contrasts', ['resolution'], self.resolutions.get_names())
+        self.check_allowed_values('contrasts', ['domain_ratio'], self.domain_ratios.get_names())
         return self
 
     def __repr__(self):

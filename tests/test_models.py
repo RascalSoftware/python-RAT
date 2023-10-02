@@ -36,6 +36,7 @@ def test_default_names(model: Callable, model_name: str) -> None:
 @pytest.mark.parametrize("model", [
     RAT.models.Background,
     RAT.models.Contrast,
+    RAT.models.ContrastWithRatio,
     RAT.models.CustomFile,
     RAT.models.Data,
     RAT.models.DomainContrast,
