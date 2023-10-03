@@ -151,6 +151,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
     contrasts: ClassList = ClassList()
 
     _all_names: dict
+    _contrast_model_field: str
 
     @field_validator('parameters', 'bulk_in', 'bulk_out', 'qz_shifts', 'scalefactors', 'background_parameters',
                      'backgrounds', 'resolution_parameters', 'resolutions', 'custom_files', 'data', 'layers',
@@ -198,6 +199,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
                                                                 sigma=np.inf))
 
         self._all_names = self.get_all_names()
+        self._contrast_model_field = self.get_contrast_model_field()
 
         # Wrap ClassList routines - when any of these routines are called, the wrapper will force revalidation of the
         # model, handle errors and reset previous values if necessary.
@@ -242,6 +244,35 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
                 contrast_list.append(RAT.models.Contrast(**contrast_params))
             self.contrasts.data = contrast_list
             setattr(self.contrasts, '_class_handle', getattr(RAT.models, 'Contrast'))
+        return self
+
+    @model_validator(mode='after')
+    def set_contrast_model_field(self) -> 'Project':
+        """The contents of the "model" field of "contrasts" depend on the values of the "calc_type" and "model_type"
+        defined in the project. If they have changed, clear the contrast models.
+        """
+        model_field = self.get_contrast_model_field()
+        if model_field != self._contrast_model_field:
+            for contrast in self.contrasts:
+                contrast.model = []
+            self._contrast_model_field = model_field
+        return self
+
+    @model_validator(mode='after')
+    def check_contrast_model_length(self) -> 'Project':
+        """Given certain values of the "calc_type" and "model" defined in the project, the "model" field of "contrasts"
+        may be constrained in its length.
+        """
+        if self.model == ModelTypes.StandardLayers and self.calc_type == CalcTypes.Domains:
+            for contrast in self.contrasts:
+                if contrast.model and len(contrast.model) != 2:
+                    raise ValueError('For a standard layers domains calculation the "model" field of "contrasts" must '
+                                     'contain exactly two values.')
+        elif self.model != ModelTypes.StandardLayers:
+            for contrast in self.contrasts:
+                if len(contrast.model) > 1:
+                    raise ValueError('For a custom model calculation the "model" field of "contrasts" cannot contain '
+                                     'more than one value.')
         return self
 
     @model_validator(mode='after')
@@ -298,6 +329,9 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         self.check_allowed_values('contrasts', ['scalefactor'], self.scalefactors.get_names())
         self.check_allowed_values('contrasts', ['resolution'], self.resolutions.get_names())
         self.check_allowed_values('contrasts', ['domain_ratio'], self.domain_ratios.get_names())
+
+        self.check_contrast_model_allowed_values('contrasts', getattr(self, self._contrast_model_field).get_names())
+        self.check_contrast_model_allowed_values('domain_contrasts', self.layers.get_names())
         return self
 
     def __repr__(self):
@@ -341,6 +375,48 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
                 if value and value not in allowed_values:
                     raise ValueError(f'The value "{value}" in the "{field}" field of "{attribute}" must be defined in '
                                      f'"{values_defined_in[attribute + "." + field]}".')
+
+    def check_contrast_model_allowed_values(self, contrast_attribute: str, allowed_values: list[str]):
+        """The contents of the "model" field of "contrasts" and "domain_contrasts" must be defined elsewhere in the
+        project.
+
+        Parameters
+        ----------
+        contrast_attribute : str
+            The specific contrast attribute of Project being validated (either "contrasts" or "domain_contrasts").
+        allowed_values : list [str]
+            The list of allowed values for the model of the contrast_attribute.
+
+        Raises
+        ------
+        ValueError
+            Raised if any model in contrast_attribute has a value not specified in allowed_values.
+        """
+        model_field = 'layers'
+        if contrast_attribute == 'contrasts':
+            model_field = self._contrast_model_field
+        for contrast in getattr(self, contrast_attribute):
+            model_values = getattr(contrast, 'model')
+            if model_values and not all(value in allowed_values for value in model_values):
+                raise ValueError(f'The values: "{", ".join(str(i) for i in model_values)}" in the "model" field of '
+                                 f'"{contrast_attribute}" must be defined in "{model_field}".')
+
+    def get_contrast_model_field(self):
+        """Get the field used to define the contents of the "model" field in contrasts.
+
+        Returns
+        -------
+        model_field : str
+            The name of the field used to define the contrasts' model field.
+        """
+        if self.model == ModelTypes.StandardLayers:
+            if self.calc_type == CalcTypes.Domains:
+                model_field = 'domain_contrasts'
+            else:
+                model_field = 'layers'
+        else:
+            model_field = 'custom_files'
+        return model_field
 
     def _classlist_wrapper(self, class_list: 'ClassList', func: Callable):
         """Defines the function used to wrap around ClassList routines to force revalidation.

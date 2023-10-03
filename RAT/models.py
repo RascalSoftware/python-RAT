@@ -73,7 +73,7 @@ class Contrast(BaseModel, validate_assignment=True, extra='forbid'):
     scalefactor: str = ''
     resolution: str = ''
     resample: bool = False
-    model: list[str] = []  # But how many strings? How to deal with this?
+    model: list[str] = []
 
 
 class ContrastWithRatio(BaseModel, validate_assignment=True, extra='forbid'):
@@ -87,7 +87,7 @@ class ContrastWithRatio(BaseModel, validate_assignment=True, extra='forbid'):
     resolution: str = ''
     resample: bool = False
     domain_ratio: str = ''
-    model: list[str] = []  # But how many strings? How to deal with this?
+    model: list[str] = []
 
 
 class CustomFile(BaseModel, validate_assignment=True, extra='forbid'):
