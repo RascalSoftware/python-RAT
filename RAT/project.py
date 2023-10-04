@@ -377,7 +377,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
                 value = getattr(model, field, '')
                 if value and value not in allowed_values:
                     raise ValueError(f'The value "{value}" in the "{field}" field of "{attribute}" must be defined in '
-                                     f'"{values_defined_in[attribute + "." + field]}".')
+                                     f'"{values_defined_in[f"{attribute}.{field}"]}".')
 
     def check_contrast_model_allowed_values(self, contrast_attribute: str, allowed_values: list[str],
                                             allowed_field: str) -> None:

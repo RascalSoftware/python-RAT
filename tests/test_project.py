@@ -292,7 +292,7 @@ def test_check_contrast_model_length(test_project, input_model: 'RAT.project.Mod
     test_domain_ratios = ClassList(RAT.models.Parameter(name='Test Domain Ratio'))
     test_contrasts = ClassList(RAT.models.ContrastWithRatio(model=test_contrast_model))
     with pytest.raises(pydantic.ValidationError,
-                       match=f'1 validation error for Project\n  Value error, ' + error_message):
+                       match=f'1 validation error for Project\n  Value error, {error_message}'):
         RAT.project.Project(calc_type=RAT.project.CalcTypes.Domains, model=input_model,
                             domain_ratios=test_domain_ratios, contrasts=test_contrasts)
 
@@ -596,7 +596,7 @@ def test_wrap_set(test_project, class_list: str, field: str) -> None:
         test_attribute.set_fields(0, **{field: 'undefined'})
     assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "undefined" in '
                                     f'the "{field}" field of "{class_list}" must be defined in '
-                                    f'"{RAT.project.values_defined_in[class_list + "." + field]}".\033[0m\n')
+                                    f'"{RAT.project.values_defined_in[f"{class_list}.{field}"]}".\033[0m\n')
     # Ensure invalid model was not changed
     assert test_attribute == orig_class_list
 
@@ -682,7 +682,7 @@ def test_wrap_iadd(test_project, class_list: str, field: str) -> None:
         test_attribute += [input_model(**{field: 'undefined'})]
     assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "undefined" in '
                                     f'the "{field}" field of "{class_list}" must be defined in '
-                                    f'"{RAT.project.values_defined_in[class_list + "." + field]}".\033[0m\n')
+                                    f'"{RAT.project.values_defined_in[f"{class_list}.{field}"]}".\033[0m\n')
     # Ensure invalid model was not added
     assert test_attribute == orig_class_list
 
@@ -717,7 +717,7 @@ def test_wrap_append(test_project, class_list: str, field: str) -> None:
         test_attribute.append(input_model(**{field: 'undefined'}))
     assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "undefined" in '
                                     f'the "{field}" field of "{class_list}" must be defined in '
-                                    f'"{RAT.project.values_defined_in[class_list + "." + field]}".\033[0m\n')
+                                    f'"{RAT.project.values_defined_in[f"{class_list}.{field}"]}".\033[0m\n')
     # Ensure invalid model was not appended
     assert test_attribute == orig_class_list
 
@@ -752,7 +752,7 @@ def test_wrap_insert(test_project, class_list: str, field: str) -> None:
         test_attribute.insert(0, input_model(**{field: 'undefined'}))
     assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "undefined" in '
                                     f'the "{field}" field of "{class_list}" must be defined in '
-                                    f'"{RAT.project.values_defined_in[class_list + "." + field]}".\033[0m\n')
+                                    f'"{RAT.project.values_defined_in[f"{class_list}.{field}"]}".\033[0m\n')
     # Ensure invalid model was not inserted
     assert test_attribute == orig_class_list
 
@@ -968,6 +968,6 @@ def test_wrap_extend(test_project, class_list: str, field: str) -> None:
         test_attribute.extend([input_model(**{field: 'undefined'})])
     assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "undefined" in '
                                     f'the "{field}" field of "{class_list}" must be defined in '
-                                    f'"{RAT.project.values_defined_in[class_list + "." + field]}".\033[0m\n')
+                                    f'"{RAT.project.values_defined_in[f"{class_list}.{field}"]}".\033[0m\n')
     # Ensure invalid model was not appended
     assert test_attribute == orig_class_list

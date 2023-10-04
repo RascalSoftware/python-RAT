@@ -27,10 +27,10 @@ def test_default_names(model: Callable, model_name: str) -> None:
     model_3 = model(name='Given Name')
     model_4 = model()
 
-    assert model_1.name == "New " + model_name + " 1"
-    assert model_2.name == "New " + model_name + " 2"
+    assert model_1.name == f"New {model_name} 1"
+    assert model_2.name == f"New {model_name} 2"
     assert model_3.name == "Given Name"
-    assert model_4.name == "New " + model_name + " 3"
+    assert model_4.name == f"New {model_name} 3"
 
 
 @pytest.mark.parametrize("model", [
