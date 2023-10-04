@@ -133,7 +133,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
                                                                       prior_type=RAT.models.Priors.Uniform, mu=0,
                                                                       sigma=np.inf))
 
-    backgrounds: ClassList = ClassList(RAT.models.Background(name='Background 1', type=RAT.models.Types.Constant.value,
+    backgrounds: ClassList = ClassList(RAT.models.Background(name='Background 1', type=RAT.models.Types.Constant,
                                                              value_1='Background Param 1'))
 
     resolution_parameters: ClassList = ClassList(RAT.models.Parameter(name='Resolution Param 1', min=0.01, value=0.03,
@@ -141,7 +141,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
                                                                       prior_type=RAT.models.Priors.Uniform, mu=0,
                                                                       sigma=np.inf))
 
-    resolutions: ClassList = ClassList(RAT.models.Resolution(name='Resolution 1', type=RAT.models.Types.Constant.value,
+    resolutions: ClassList = ClassList(RAT.models.Resolution(name='Resolution 1', type=RAT.models.Types.Constant,
                                                              value_1='Resolution Param 1'))
 
     custom_files: ClassList = ClassList()
@@ -167,14 +167,16 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
             model_name = 'ContrastWithRatio'
 
         model = getattr(RAT.models, model_name)
-        assert all(isinstance(element, model) for element in value), \
-            f'"{info.field_name}" ClassList contains objects other than "{model_name}"'
+        if not all(isinstance(element, model) for element in value):
+            raise ValueError(f'"{info.field_name}" ClassList contains objects other than "{model_name}"')
         return value
 
     def model_post_init(self, __context: Any) -> None:
         """Initialises the class in the ClassLists for empty data fields, sets protected parameters, gets names of all
-        defined parameters and wraps ClassList routines to control revalidation.
+        defined parameters, determines the contents of the "model" field in contrasts, and wraps ClassList routines to
+        control revalidation.
         """
+        # Ensure all ClassLists have the correct _class_handle defined
         layer_field = getattr(self, 'layers')
         if not hasattr(layer_field, "_class_handle"):
             if self.absorption:
@@ -213,14 +215,14 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
 
     @model_validator(mode='after')
     def set_domain_ratios(self) -> 'Project':
-        """If we are not running a domains calculation, ensure the domain ratios component of the model is empty."""
+        """If we are not running a domains calculation, ensure the domain_ratios component of the model is empty."""
         if self.calc_type != CalcTypes.Domains:
             self.domain_ratios.data = []
         return self
 
     @model_validator(mode='after')
     def set_domain_contrasts(self) -> 'Project':
-        """If we are not running a domains calculation with standard layers, ensure the domain contrasts component of
+        """If we are not running a domains calculation with standard layers, ensure the domain_contrasts component of
         the model is empty.
         """
         if not (self.calc_type == CalcTypes.Domains and self.model == ModelTypes.StandardLayers):
@@ -330,8 +332,9 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         self.check_allowed_values('contrasts', ['resolution'], self.resolutions.get_names())
         self.check_allowed_values('contrasts', ['domain_ratio'], self.domain_ratios.get_names())
 
-        self.check_contrast_model_allowed_values('contrasts', getattr(self, self._contrast_model_field).get_names())
-        self.check_contrast_model_allowed_values('domain_contrasts', self.layers.get_names())
+        self.check_contrast_model_allowed_values('contrasts', getattr(self, self._contrast_model_field).get_names(),
+                                                 self._contrast_model_field)
+        self.check_contrast_model_allowed_values('domain_contrasts', self.layers.get_names(), 'layers')
         return self
 
     def __repr__(self):
@@ -376,7 +379,8 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
                     raise ValueError(f'The value "{value}" in the "{field}" field of "{attribute}" must be defined in '
                                      f'"{values_defined_in[attribute + "." + field]}".')
 
-    def check_contrast_model_allowed_values(self, contrast_attribute: str, allowed_values: list[str]):
+    def check_contrast_model_allowed_values(self, contrast_attribute: str, allowed_values: list[str],
+                                            allowed_field: str) -> None:
         """The contents of the "model" field of "contrasts" and "domain_contrasts" must be defined elsewhere in the
         project.
 
@@ -386,20 +390,20 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
             The specific contrast attribute of Project being validated (either "contrasts" or "domain_contrasts").
         allowed_values : list [str]
             The list of allowed values for the model of the contrast_attribute.
+        allowed_field : str
+            The name of the field in the project in which the allowed_values are defined.
 
         Raises
         ------
         ValueError
             Raised if any model in contrast_attribute has a value not specified in allowed_values.
         """
-        model_field = 'layers'
-        if contrast_attribute == 'contrasts':
-            model_field = self._contrast_model_field
-        for contrast in getattr(self, contrast_attribute):
+        class_list = getattr(self, contrast_attribute)
+        for contrast in class_list:
             model_values = getattr(contrast, 'model')
             if model_values and not all(value in allowed_values for value in model_values):
                 raise ValueError(f'The values: "{", ".join(str(i) for i in model_values)}" in the "model" field of '
-                                 f'"{contrast_attribute}" must be defined in "{model_field}".')
+                                 f'"{contrast_attribute}" must be defined in "{allowed_field}".')
 
     def get_contrast_model_field(self):
         """Get the field used to define the contents of the "model" field in contrasts.
