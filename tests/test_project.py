@@ -241,6 +241,18 @@ def test_set_domain_contrasts(project_parameters: dict) -> None:
     assert project.domain_contrasts == []
 
 
+@pytest.mark.parametrize("project_parameters", [
+    ({'model': RAT.project.ModelTypes.CustomLayers}),
+    ({'model': RAT.project.ModelTypes.CustomXY}),
+])
+def test_set_domain_contrasts(project_parameters: dict) -> None:
+    """If we are not using a standard layers model, the "layers" field of the model should always be empty."""
+    project = RAT.project.Project(**project_parameters)
+    assert project.layers == []
+    project.layers.append(name='New Layer')
+    assert project.layers == []
+
+
 @pytest.mark.parametrize(["input_calc_type", "input_contrast", "new_calc_type", "new_contrast_model"], [
     (RAT.project.CalcTypes.NonPolarised, RAT.models.Contrast, RAT.project.CalcTypes.Domains, "ContrastWithRatio"),
     (RAT.project.CalcTypes.Domains, RAT.models.ContrastWithRatio, RAT.project.CalcTypes.NonPolarised, "Contrast"),

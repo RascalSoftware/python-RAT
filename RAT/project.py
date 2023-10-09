@@ -196,8 +196,8 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
             if not hasattr(field, "_class_handle"):
                 setattr(field, "_class_handle", getattr(RAT.models, model))
 
-        self.parameters.insert(0, RAT.models.ProtectedParameter(name='Substrate Roughness', min=1, value=3, max=5,
-                                                                fit=True, prior_type=RAT.models.Priors.Uniform, mu=0,
+        self.parameters.insert(0, RAT.models.ProtectedParameter(name='Substrate Roughness', min=1.0, value=3.0, max=5.0,
+                                                                fit=True, prior_type=RAT.models.Priors.Uniform, mu=0.0,
                                                                 sigma=np.inf))
 
         self._all_names = self.get_all_names()
@@ -227,6 +227,13 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         """
         if not (self.calc_type == CalcTypes.Domains and self.model == ModelTypes.StandardLayers):
             self.domain_contrasts.data = []
+        return self
+
+    @model_validator(mode='after')
+    def set_layers(self) -> 'Project':
+        """If we are not using a standard layers model, ensure the layers component of the model is empty."""
+        if self.model != ModelTypes.StandardLayers:
+            self.layers.data = []
         return self
 
     @model_validator(mode='after')
@@ -280,21 +287,20 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
     @model_validator(mode='after')
     def set_absorption(self) -> 'Project':
         """Apply the absorption setting to the project."""
-        if hasattr(self, 'layers'):
-            layer_list = []
-            handle = getattr(self.layers, '_class_handle').__name__
-            if self.absorption and handle == 'Layer':
-                for layer in self.layers:
-                    layer_list.append(RAT.models.AbsorptionLayer(**layer.model_dump()))
-                self.layers.data = layer_list
-                setattr(self.layers, '_class_handle', getattr(RAT.models, 'AbsorptionLayer'))
-            elif not self.absorption and handle == 'AbsorptionLayer':
-                for layer in self.layers:
-                    layer_params = layer.model_dump()
-                    del layer_params['SLD_imaginary']
-                    layer_list.append(RAT.models.Layer(**layer_params))
-                self.layers.data = layer_list
-                setattr(self.layers, '_class_handle', getattr(RAT.models, 'Layer'))
+        layer_list = []
+        handle = getattr(self.layers, '_class_handle').__name__
+        if self.absorption and handle == 'Layer':
+            for layer in self.layers:
+                layer_list.append(RAT.models.AbsorptionLayer(**layer.model_dump()))
+            self.layers.data = layer_list
+            setattr(self.layers, '_class_handle', getattr(RAT.models, 'AbsorptionLayer'))
+        elif not self.absorption and handle == 'AbsorptionLayer':
+            for layer in self.layers:
+                layer_params = layer.model_dump()
+                del layer_params['SLD_imaginary']
+                layer_list.append(RAT.models.Layer(**layer_params))
+            self.layers.data = layer_list
+            setattr(self.layers, '_class_handle', getattr(RAT.models, 'Layer'))
         return self
 
     @model_validator(mode='after')
