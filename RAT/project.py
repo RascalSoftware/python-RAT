@@ -91,9 +91,10 @@ model_names_used_in = {'background_parameters': AllFields('backgrounds', ['value
                        'resolutions': AllFields('contrasts', ['resolution']),
                        }
 
-class_lists = ['parameters', 'bulk_in', 'bulk_out', 'qz_shifts', 'scalefactors', 'domain_ratios',
-               'background_parameters', 'backgrounds', 'resolution_parameters', 'resolutions', 'custom_files', 'data',
-               'layers', 'domain_contrasts', 'contrasts']
+parameter_class_lists = ['parameters', 'bulk_in', 'bulk_out', 'qz_shifts', 'scalefactors', 'domain_ratios',
+                         'background_parameters',  'resolution_parameters']
+class_lists = parameter_class_lists + ['backgrounds', 'resolutions', 'custom_files', 'data', 'layers',
+                                       'domain_contrasts', 'contrasts']
 
 
 class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_types_allowed=True):
@@ -152,6 +153,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
 
     _all_names: dict
     _contrast_model_field: str
+    _protected_parameters: dict
 
     @field_validator('parameters', 'bulk_in', 'bulk_out', 'qz_shifts', 'scalefactors', 'background_parameters',
                      'backgrounds', 'resolution_parameters', 'resolutions', 'custom_files', 'data', 'layers',
@@ -202,6 +204,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
 
         self._all_names = self.get_all_names()
         self._contrast_model_field = self.get_contrast_model_field()
+        self._protected_parameters = self.get_all_protected_parameters()
 
         # Wrap ClassList routines - when any of these routines are called, the wrapper will force revalidation of the
         # model, handle errors and reset previous values if necessary.
@@ -343,6 +346,20 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         self.check_contrast_model_allowed_values('domain_contrasts', self.layers.get_names(), 'layers')
         return self
 
+    @model_validator(mode='after')
+    def check_protected_parameters(self) -> 'Project':
+        """Protected parameters should not be deleted. If this is attempted, raise an error."""
+        for class_list in parameter_class_lists:
+            protected_parameters = [param.name for param in getattr(self, class_list)
+                                    if isinstance(param, RAT.models.ProtectedParameter)]
+            # All previously existing protected parameters should be present in new list
+            if not all(element in protected_parameters for element in self._protected_parameters[class_list]):
+                removed_params = [param for param in self._protected_parameters[class_list]
+                                  if param not in protected_parameters]
+                raise ValueError(f'Can\'t delete the protected parameters: {", ".join(str(i) for i in removed_params)}')
+        self._protected_parameters = self.get_all_protected_parameters()
+        return self
+
     def __repr__(self):
         output = ''
         for key, value in self.__dict__.items():
@@ -359,6 +376,12 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
     def get_all_names(self):
         """Record the names of all models defined in the project."""
         return {class_list: getattr(self, class_list).get_names() for class_list in class_lists}
+
+    def get_all_protected_parameters(self):
+        """Record the protected parameters defined in the project."""
+        return {class_list: [param.name for param in getattr(self, class_list)
+                             if isinstance(param, RAT.models.ProtectedParameter)]
+                for class_list in parameter_class_lists}
 
     def check_allowed_values(self, attribute: str, field_list: list[str], allowed_values: list[str]) -> None:
         """Check the values of the given fields in the given model are in the supplied list of allowed values.

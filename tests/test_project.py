@@ -325,6 +325,23 @@ def test_set_absorption(input_layer: Callable, input_absorption: bool, new_layer
     assert project.layers._class_handle.__name__ == new_layer_model
 
 
+@pytest.mark.parametrize("delete_operation", [
+    'project.parameters.__delitem__(0)',
+    'project.parameters.pop()',
+    'project.parameters.remove("Substrate Roughness")',
+    'project.parameters.clear()',
+])
+def test_check_protected_parameters(delete_operation) -> None:
+    """If we try to remove a protected parameter, we should raise an error."""
+    project = RAT.project.Project()
+    with contextlib.redirect_stdout(io.StringIO()) as print_str:
+        eval(delete_operation)
+    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, Can\'t delete the '
+                                    f'protected parameters: Substrate Roughness\033[0m\n')
+    # Ensure model was not deleted
+    assert project.parameters[0].name == 'Substrate Roughness'
+
+
 @pytest.mark.parametrize(["model", "field"], [
     ('background_parameters', 'value_1'),
     ('resolution_parameters', 'value_1'),
@@ -510,7 +527,22 @@ def test_get_all_names(test_project) -> None:
                                             'data': ['Simulation'],
                                             'layers': ['Test Layer'],
                                             'domain_contrasts': [],
-                                            'contrasts': ['Test Contrast']}
+                                            'contrasts': ['Test Contrast']
+                                            }
+
+
+def test_get_all_protected_parameters(test_project) -> None:
+    """We should be able to get the names of all the protected parameters defined in the project."""
+    assert test_project.get_all_protected_parameters() == {'parameters': ['Substrate Roughness'],
+                                                           'bulk_in': [],
+                                                           'bulk_out': [],
+                                                           'qz_shifts': [],
+                                                           'scalefactors': [],
+                                                           'domain_ratios': [],
+                                                           'background_parameters': [],
+                                                           'resolution_parameters': []
+                                                           }
+
 
 
 @pytest.mark.parametrize("test_value", [
