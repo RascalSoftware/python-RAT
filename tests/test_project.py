@@ -253,12 +253,13 @@ def test_set_domain_contrasts(project_parameters: dict) -> None:
     assert project.layers == []
 
 
-@pytest.mark.parametrize(["input_calc_type", "input_contrast", "new_calc_type", "new_contrast_model"], [
-    (RAT.project.CalcTypes.NonPolarised, RAT.models.Contrast, RAT.project.CalcTypes.Domains, "ContrastWithRatio"),
-    (RAT.project.CalcTypes.Domains, RAT.models.ContrastWithRatio, RAT.project.CalcTypes.NonPolarised, "Contrast"),
+@pytest.mark.parametrize(["input_calc_type", "input_contrast", "new_calc_type", "new_contrast_model",
+                          "num_domain_ratios"], [
+    (RAT.project.CalcTypes.NonPolarised, RAT.models.Contrast, RAT.project.CalcTypes.Domains, "ContrastWithRatio", 1),
+    (RAT.project.CalcTypes.Domains, RAT.models.ContrastWithRatio, RAT.project.CalcTypes.NonPolarised, "Contrast", 0),
 ])
 def test_set_calc_type(input_calc_type: 'RAT.project.CalcTypes', input_contrast: Callable,
-                       new_calc_type: 'RAT.project.CalcTypes', new_contrast_model: str) -> None:
+                       new_calc_type: 'RAT.project.CalcTypes', new_contrast_model: str, num_domain_ratios: int) -> None:
     """When changing the value of the calc_type option, the "contrasts" ClassList should switch to using the
     appropriate Contrast model.
     """
@@ -268,6 +269,7 @@ def test_set_calc_type(input_calc_type: 'RAT.project.CalcTypes', input_contrast:
     assert project.calc_type is new_calc_type
     assert type(project.contrasts[0]).__name__ == new_contrast_model
     assert project.contrasts._class_handle.__name__ == new_contrast_model
+    assert len(project.domain_ratios) == num_domain_ratios
 
 
 @pytest.mark.parametrize(["new_calc", "new_model", "expected_contrast_model"], [

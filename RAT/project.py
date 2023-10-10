@@ -248,6 +248,9 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
             for contrast in self.contrasts:
                 contrast_list.append(RAT.models.ContrastWithRatio(**contrast.model_dump()))
             self.contrasts.data = contrast_list
+            self.domain_ratios.data = [RAT.models.Parameter(name='Domain Ratio 1', min=0.4, value=0.5, max=0.6,
+                                                            fit=False, prior_type=RAT.models.Priors.Uniform, mu=0.0,
+                                                            sigma=np.inf)]
             setattr(self.contrasts, '_class_handle', getattr(RAT.models, 'ContrastWithRatio'))
         elif self.calc_type != CalcTypes.Domains and handle == 'ContrastWithRatio':
             for contrast in self.contrasts:
