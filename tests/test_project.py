@@ -76,7 +76,7 @@ def default_project_repr():
         'Data: ----------------------------------------------------------------------------------------------\n\n'
         '    name        data    data_range    simulation_range\n'
         '--  ----------  ------  ------------  ------------------\n'
-        ' 0  Simulation  []      []            [0.005, 0.7]\n\n')
+        ' 0  Simulation  []      []            []\n\n')
 
 
 def test_classlists(test_project) -> None:

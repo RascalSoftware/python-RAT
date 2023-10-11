@@ -2,6 +2,7 @@
 
 import numpy as np
 from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
+from typing import Any
 
 try:
     from enum import StrEnum
@@ -43,7 +44,6 @@ class Languages(StrEnum):
 class Priors(StrEnum):
     Uniform = 'uniform'
     Gaussian = 'gaussian'
-    Jeffreys = 'jeffreys'
 
 
 class Types(StrEnum):
@@ -102,8 +102,8 @@ class Data(BaseModel, validate_assignment=True, extra='forbid', arbitrary_types_
     """Defines the dataset required for each contrast."""
     name: str = Field(default_factory=lambda: 'New Data ' + next(data_number), min_length=1)
     data: np.ndarray[float] = np.empty([0, 3])
-    data_range: list[float] = []
-    simulation_range: list[float] = [0.005, 0.7]
+    data_range: list[float] = Field(default=[], min_length=2, max_length=2)
+    simulation_range: list[float] = Field(default=[], min_length=2, max_length=2)
 
     @field_validator('data')
     @classmethod
@@ -120,13 +120,40 @@ class Data(BaseModel, validate_assignment=True, extra='forbid', arbitrary_types_
 
     @field_validator('data_range', 'simulation_range')
     @classmethod
-    def check_list_elements(cls, limits: list[float], info: ValidationInfo) -> list[float]:
-        """The data range and simulation range must contain exactly two parameters."""
-        if len(limits) != 2:
-            raise ValueError(f'{info.field_name} must contain exactly two values')
+    def check_min_max(cls, limits: list[float], info: ValidationInfo) -> list[float]:
+        """The data range and simulation range maximum must be greater than the minimum."""
+        if limits[0] > limits[1]:
+            raise ValueError(f'{info.field_name} "min" value is greater than the "max" value')
         return limits
 
-    # Also need model validators for data range compared to data etc -- need more details.
+    def model_post_init(self, __context: Any) -> None:
+        """If the "data_range" and "simulation_range" fields are not set, but "data" is supplied, the ranges should be
+        set to the min and max values of the first column (assumed to be q) of the supplied data.
+        """
+        if len(self.data[:, 0]) > 0:
+            data_min = np.min(self.data[:, 0])
+            data_max = np.max(self.data[:, 0])
+            for field in ["data_range", "simulation_range"]:
+                if field not in self.model_fields_set:
+                    getattr(self, field).extend([data_min, data_max])
+
+    @model_validator(mode='after')
+    def check_ranges(self) -> 'Data':
+        """The limits of the "data_range" field must lie within the range of the supplied data, whilst the limits
+        of the "simulation_range" field must lie outside of the range of the supplied data.
+        """
+        if len(self.data[:, 0]) > 0:
+            data_min = np.min(self.data[:, 0])
+            data_max = np.max(self.data[:, 0])
+            if "data_range" in self.model_fields_set and (self.data_range[0] < data_min or
+                                                          self.data_range[1] > data_max):
+                raise ValueError(f'The data_range value of: {self.data_range} must lie within the min/max values of '
+                                 f'the data: [{data_min}, {data_max}]')
+            if "simulation_range" in self.model_fields_set and (self.simulation_range[0] > data_min or
+                                                                self.simulation_range[1] < data_max):
+                raise ValueError(f'The simulation_range value of: {self.simulation_range} must lie outside of the '
+                                 f'min/max values of the data: [{data_min}, {data_max}]')
+        return self
 
 
 class DomainContrast(BaseModel, validate_assignment=True, extra='forbid'):
