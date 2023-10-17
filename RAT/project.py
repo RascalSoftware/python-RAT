@@ -198,9 +198,16 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
             if not hasattr(field, "_class_handle"):
                 setattr(field, "_class_handle", getattr(RAT.models, model))
 
-        self.parameters.insert(0, RAT.models.ProtectedParameter(name='Substrate Roughness', min=1.0, value=3.0, max=5.0,
-                                                                fit=True, prior_type=RAT.models.Priors.Uniform, mu=0.0,
-                                                                sigma=np.inf))
+        if 'Substrate Roughness' not in self.parameters.get_names():
+            self.parameters.insert(0, RAT.models.ProtectedParameter(name='Substrate Roughness', min=1.0, value=3.0,
+                                                                    max=5.0, fit=True,
+                                                                    prior_type=RAT.models.Priors.Uniform, mu=0.0,
+                                                                    sigma=np.inf))
+        elif 'Substrate Roughness' not in self.get_all_protected_parameters().values():
+            # If substrate roughness is included as a standard parameter replace it with a protected parameter
+            substrate_roughness_values = self.parameters[self.parameters.index('Substrate Roughness')].model_dump()
+            self.parameters.remove('Substrate Roughness')
+            self.parameters.insert(0, RAT.models.ProtectedParameter(**substrate_roughness_values))
 
         self._all_names = self.get_all_names()
         self._contrast_model_field = self.get_contrast_model_field()
@@ -453,6 +460,46 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         else:
             model_field = 'custom_files'
         return model_field
+
+    def write_script(self, obj_name: str = 'problem', script: str = 'project_script.py'):
+        """Write a python script that can be run to reproduce this project object.
+
+        Parameters
+        ----------
+        obj_name : str, optional
+            The name given to the project object under construction (default is "problem").
+        script : str, optional
+            The filename of the generated script (default is "project_script.py").
+        """
+        # Need to ensure correct format for script name
+        file_parts = script.split('.')
+
+        try:
+            file_parts[1]
+        except IndexError:
+            script += '.py'
+        else:
+            if file_parts[1] != 'py':
+                raise ValueError('The script name provided to "write_script" must use the ".py" format')
+
+        indent = 4 * " "
+
+        with open(script, 'w') as f:
+
+            f.write('# THIS FILE IS GENERATED FROM RAT VIA THE "WRITE_SCRIPT" ROUTINE. IT IS NOT PART OF THE RAT CODE.'
+                    '\n\n')
+
+            # Need imports
+            f.write('import RAT\nfrom RAT.models import *\nfrom numpy import array, inf\n\n')
+
+            f.write(f"{obj_name} = RAT.Project(\n{indent}name='{self.name}', calc_type='{self.calc_type}',"
+                    f" model='{self.model}', geometry='{self.geometry}', absorption={self.absorption},\n")
+
+            for class_list in class_lists:
+                contents = getattr(self, class_list).data
+                if contents:
+                    f.write(f'{indent}{class_list}=RAT.ClassList({contents}),\n')
+            f.write(f'{indent})\n')
 
     def _classlist_wrapper(self, class_list: 'ClassList', func: Callable):
         """Defines the function used to wrap around ClassList routines to force revalidation.

@@ -3,6 +3,7 @@
 import contextlib
 import copy
 import io
+import unittest.mock as mock
 import numpy as np
 import pydantic
 import pytest
@@ -16,8 +17,7 @@ import RAT.project
 @pytest.fixture
 def test_project():
     """Add parameters to the default project, so each ClassList can be tested properly."""
-    test_project = RAT.project.Project()
-    test_project.data.set_fields(0, data=np.array([[1, 1, 1]]))
+    test_project = RAT.Project(data=RAT.ClassList([RAT.models.Data(name='Simulation', data=np.array([[1.0, 1.0, 1.0]]))]))
     test_project.parameters.append(name='Test SLD')
     test_project.custom_files.append(name='Test Custom File')
     test_project.layers.append(name='Test Layer', SLD='Test SLD')
@@ -78,6 +78,27 @@ def default_project_repr():
         '--  ----------  ------  ------------  ------------------\n'
         ' 0  Simulation  []      []            []\n\n')
 
+
+@pytest.fixture
+def test_project_script():
+    return [
+        mock.call('# THIS FILE IS GENERATED FROM RAT VIA THE "WRITE_SCRIPT" ROUTINE. IT IS NOT PART OF THE RAT CODE.\n\n'),
+        mock.call("import RAT\nfrom RAT.models import *\nfrom numpy import array, inf\n\n"),
+        mock.call("problem = RAT.Project(\n    name='', calc_type='non polarised', model='standard layers', geometry='air/substrate', absorption=False,\n"),
+        mock.call("    parameters=RAT.ClassList([ProtectedParameter(name='Substrate Roughness', min=1.0, value=3.0, max=5.0, fit=True, prior_type='uniform', mu=0.0, sigma=inf), Parameter(name='Test SLD', min=0.0, value=0.0, max=0.0, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"),
+        mock.call("    bulk_in=RAT.ClassList([Parameter(name='SLD Air', min=0.0, value=0.0, max=0.0, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"),
+        mock.call("    bulk_out=RAT.ClassList([Parameter(name='SLD D2O', min=6.2e-06, value=6.35e-06, max=6.35e-06, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"),
+        mock.call("    qz_shifts=RAT.ClassList([Parameter(name='Qz shift 1', min=-0.0001, value=0.0, max=0.0001, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"),
+        mock.call("    scalefactors=RAT.ClassList([Parameter(name='Scalefactor 1', min=0.02, value=0.23, max=0.25, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"),
+        mock.call("    background_parameters=RAT.ClassList([Parameter(name='Background Param 1', min=1e-07, value=1e-06, max=1e-05, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"),
+        mock.call("    resolution_parameters=RAT.ClassList([Parameter(name='Resolution Param 1', min=0.01, value=0.03, max=0.05, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"),
+        mock.call("    backgrounds=RAT.ClassList([Background(name='Background 1', type='constant', value_1='Background Param 1', value_2='', value_3='', value_4='', value_5='')]),\n"),
+        mock.call("    resolutions=RAT.ClassList([Resolution(name='Resolution 1', type='constant', value_1='Resolution Param 1', value_2='', value_3='', value_4='', value_5='')]),\n"),
+        mock.call("    custom_files=RAT.ClassList([CustomFile(name='Test Custom File', filename='', language='python', path='pwd')]),\n"),
+        mock.call("    data=RAT.ClassList([Data(name='Simulation', data=array([[1., 1., 1.]]), data_range=[1.0, 1.0], simulation_range=[1.0, 1.0])]),\n"),
+        mock.call("    layers=RAT.ClassList([Layer(name='Test Layer', thickness='', SLD='Test SLD', roughness='', hydration='', hydrate_with='bulk out')]),\n"),
+        mock.call("    contrasts=RAT.ClassList([Contrast(name='Test Contrast', data='Simulation', background='Background 1', nba='SLD Air', nbs='SLD D2O', scalefactor='Scalefactor 1', resolution='Resolution 1', resample=False, model=['Test Layer'])]),\n"),        mock.call("    )\n"),
+    ]
 
 def test_classlists(test_project) -> None:
     """The ClassLists in the "Project" model should contain instances of the models given by the dictionary
@@ -610,6 +631,16 @@ def test_get_contrast_model_field(input_calc: 'RAT.project.CalcTypes', input_mod
     """
     project = RAT.project.Project(calc_type=input_calc, model=input_model)
     assert project.get_contrast_model_field() == expected_field_name
+
+
+def test_write_script(test_project, test_project_script) -> None:
+    """Test the script we write to regenerate the project is as expected."""
+    mock_file = mock.mock_open()
+    with mock.patch('builtins.open', mock_file):
+        test_project.write_script()
+
+    # We check the calls to the write function as we do not return what we write
+    assert mock_file().write.call_args_list == test_project_script
 
 
 @pytest.mark.parametrize(["class_list", "field"], [
