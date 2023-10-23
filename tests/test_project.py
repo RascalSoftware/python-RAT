@@ -104,6 +104,13 @@ def test_project_script():
     )
 
 
+@pytest.fixture
+def temp_dir():
+    path = tempfile.mkdtemp()
+    yield path
+    shutil.rmtree(path)
+
+
 def test_classlists(test_project) -> None:
     """The ClassLists in the "Project" model should contain instances of the models given by the dictionary
     "model_in_classlist".
@@ -653,13 +660,12 @@ def test_get_contrast_model_field(input_calc: 'RAT.project.CalcTypes', input_mod
     "test_script.py",
     "test_script"
 ])
-def test_write_script(test_project, test_project_script, input_filename: str) -> None:
+def test_write_script(test_project, temp_dir, test_project_script, input_filename: str) -> None:
     """Test the script we write to regenerate the project is created and runs as expected."""
-    path = tempfile.mkdtemp(dir='.')
-    test_project.write_script('problem', os.path.join(path, input_filename))
+    test_project.write_script('problem', os.path.join(temp_dir, input_filename))
 
     # Test the file is written in the correct place
-    script_path = os.path.join(path, 'test_script.py')
+    script_path = os.path.join(temp_dir, 'test_script.py')
     assert os.path.isfile(script_path)
 
     # Test the contents of the file are as expected
@@ -674,8 +680,6 @@ def test_write_script(test_project, test_project_script, input_filename: str) ->
 
     for class_list in RAT.project.class_lists:
         assert getattr(new_project, class_list) == getattr(test_project, class_list)
-
-    shutil.rmtree(path)
 
 
 @pytest.mark.parametrize("extension", [
