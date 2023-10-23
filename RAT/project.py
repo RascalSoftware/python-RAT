@@ -4,6 +4,7 @@ import collections
 import copy
 import functools
 import numpy as np
+import os
 from pydantic import BaseModel, ValidationInfo, field_validator, model_validator, ValidationError
 from typing import Any, Callable
 
@@ -93,8 +94,8 @@ model_names_used_in = {'background_parameters': AllFields('backgrounds', ['value
 
 parameter_class_lists = ['parameters', 'bulk_in', 'bulk_out', 'qz_shifts', 'scalefactors', 'domain_ratios',
                          'background_parameters',  'resolution_parameters']
-class_lists = parameter_class_lists + ['backgrounds', 'resolutions', 'custom_files', 'data', 'layers',
-                                       'domain_contrasts', 'contrasts']
+class_lists = [*parameter_class_lists, 'backgrounds', 'resolutions', 'custom_files', 'data', 'layers',
+               'domain_contrasts', 'contrasts']
 
 
 class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_types_allowed=True):
@@ -469,18 +470,15 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         obj_name : str, optional
             The name given to the project object under construction (default is "problem").
         script : str, optional
-            The filename of the generated script (default is "project_script.py").
+            The filepath of the generated script (default is "project_script.py").
         """
         # Need to ensure correct format for script name
-        file_parts = script.split('.')
+        file_parts = os.path.splitext(script)
 
-        try:
-            file_parts[1]
-        except IndexError:
+        if not file_parts[1]:
             script += '.py'
-        else:
-            if file_parts[1] != 'py':
-                raise ValueError('The script name provided to "write_script" must use the ".py" format')
+        elif file_parts[1] != '.py':
+            raise ValueError('The script name provided to "write_script" must use the ".py" format')
 
         indent = 4 * " "
 

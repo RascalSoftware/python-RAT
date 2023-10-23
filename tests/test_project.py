@@ -6,8 +6,11 @@ import io
 import unittest.mock as mock
 import numpy as np
 import pydantic
+import os
 import pytest
+import shutil
 from typing import Callable
+import tempfile
 
 from RAT.classlist import ClassList
 import RAT.models
@@ -81,24 +84,26 @@ def default_project_repr():
 
 @pytest.fixture
 def test_project_script():
-    return [
-        mock.call('# THIS FILE IS GENERATED FROM RAT VIA THE "WRITE_SCRIPT" ROUTINE. IT IS NOT PART OF THE RAT CODE.\n\n'),
-        mock.call("import RAT\nfrom RAT.models import *\nfrom numpy import array, inf\n\n"),
-        mock.call("problem = RAT.Project(\n    name='', calc_type='non polarised', model='standard layers', geometry='air/substrate', absorption=False,\n"),
-        mock.call("    parameters=RAT.ClassList([ProtectedParameter(name='Substrate Roughness', min=1.0, value=3.0, max=5.0, fit=True, prior_type='uniform', mu=0.0, sigma=inf), Parameter(name='Test SLD', min=0.0, value=0.0, max=0.0, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"),
-        mock.call("    bulk_in=RAT.ClassList([Parameter(name='SLD Air', min=0.0, value=0.0, max=0.0, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"),
-        mock.call("    bulk_out=RAT.ClassList([Parameter(name='SLD D2O', min=6.2e-06, value=6.35e-06, max=6.35e-06, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"),
-        mock.call("    qz_shifts=RAT.ClassList([Parameter(name='Qz shift 1', min=-0.0001, value=0.0, max=0.0001, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"),
-        mock.call("    scalefactors=RAT.ClassList([Parameter(name='Scalefactor 1', min=0.02, value=0.23, max=0.25, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"),
-        mock.call("    background_parameters=RAT.ClassList([Parameter(name='Background Param 1', min=1e-07, value=1e-06, max=1e-05, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"),
-        mock.call("    resolution_parameters=RAT.ClassList([Parameter(name='Resolution Param 1', min=0.01, value=0.03, max=0.05, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"),
-        mock.call("    backgrounds=RAT.ClassList([Background(name='Background 1', type='constant', value_1='Background Param 1', value_2='', value_3='', value_4='', value_5='')]),\n"),
-        mock.call("    resolutions=RAT.ClassList([Resolution(name='Resolution 1', type='constant', value_1='Resolution Param 1', value_2='', value_3='', value_4='', value_5='')]),\n"),
-        mock.call("    custom_files=RAT.ClassList([CustomFile(name='Test Custom File', filename='', language='python', path='pwd')]),\n"),
-        mock.call("    data=RAT.ClassList([Data(name='Simulation', data=array([[1., 1., 1.]]), data_range=[1.0, 1.0], simulation_range=[1.0, 1.0])]),\n"),
-        mock.call("    layers=RAT.ClassList([Layer(name='Test Layer', thickness='', SLD='Test SLD', roughness='', hydration='', hydrate_with='bulk out')]),\n"),
-        mock.call("    contrasts=RAT.ClassList([Contrast(name='Test Contrast', data='Simulation', background='Background 1', nba='SLD Air', nbs='SLD D2O', scalefactor='Scalefactor 1', resolution='Resolution 1', resample=False, model=['Test Layer'])]),\n"),        mock.call("    )\n"),
-    ]
+    return (
+        "# THIS FILE IS GENERATED FROM RAT VIA THE \"WRITE_SCRIPT\" ROUTINE. IT IS NOT PART OF THE RAT CODE.\n\n"
+        "import RAT\nfrom RAT.models import *\nfrom numpy import array, inf\n\n"
+        "problem = RAT.Project(\n    name='', calc_type='non polarised', model='standard layers', geometry='air/substrate', absorption=False,\n"
+        "    parameters=RAT.ClassList([ProtectedParameter(name='Substrate Roughness', min=1.0, value=3.0, max=5.0, fit=True, prior_type='uniform', mu=0.0, sigma=inf), Parameter(name='Test SLD', min=0.0, value=0.0, max=0.0, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
+        "    bulk_in=RAT.ClassList([Parameter(name='SLD Air', min=0.0, value=0.0, max=0.0, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
+        "    bulk_out=RAT.ClassList([Parameter(name='SLD D2O', min=6.2e-06, value=6.35e-06, max=6.35e-06, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
+        "    qz_shifts=RAT.ClassList([Parameter(name='Qz shift 1', min=-0.0001, value=0.0, max=0.0001, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
+        "    scalefactors=RAT.ClassList([Parameter(name='Scalefactor 1', min=0.02, value=0.23, max=0.25, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
+        "    background_parameters=RAT.ClassList([Parameter(name='Background Param 1', min=1e-07, value=1e-06, max=1e-05, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
+        "    resolution_parameters=RAT.ClassList([Parameter(name='Resolution Param 1', min=0.01, value=0.03, max=0.05, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
+        "    backgrounds=RAT.ClassList([Background(name='Background 1', type='constant', value_1='Background Param 1', value_2='', value_3='', value_4='', value_5='')]),\n"
+        "    resolutions=RAT.ClassList([Resolution(name='Resolution 1', type='constant', value_1='Resolution Param 1', value_2='', value_3='', value_4='', value_5='')]),\n"
+        "    custom_files=RAT.ClassList([CustomFile(name='Test Custom File', filename='', language='python', path='pwd')]),\n"
+        "    data=RAT.ClassList([Data(name='Simulation', data=array([[1., 1., 1.]]), data_range=[1.0, 1.0], simulation_range=[1.0, 1.0])]),\n"
+        "    layers=RAT.ClassList([Layer(name='Test Layer', thickness='', SLD='Test SLD', roughness='', hydration='', hydrate_with='bulk out')]),\n"
+        "    contrasts=RAT.ClassList([Contrast(name='Test Contrast', data='Simulation', background='Background 1', nba='SLD Air', nbs='SLD D2O', scalefactor='Scalefactor 1', resolution='Resolution 1', resample=False, model=['Test Layer'])]),\n"
+        "    )\n"
+    )
+
 
 def test_classlists(test_project) -> None:
     """The ClassLists in the "Project" model should contain instances of the models given by the dictionary
@@ -164,6 +169,18 @@ def test_initialise_wrong_contrasts(input_model: Callable, calc_type: 'RAT.proje
                                                        f'"contrasts" ClassList contains objects other than '
                                                        f'"{actual_model_name}"'):
         RAT.project.Project(calc_type=calc_type, contrasts=ClassList(input_model()))
+
+
+@pytest.mark.parametrize("input_parameter", [
+    (RAT.models.Parameter(name='Test Parameter')),
+    (RAT.models.Parameter(name='Substrate Roughness')),
+])
+def test_initialise_without_substrate_roughness(input_parameter: Callable) -> None:
+    """If the "Project" model is initialised without "Substrate Roughness as a protected parameter, add it to the front
+    of the "parameters" ClassList.
+    """
+    project = RAT.project.Project(parameters=ClassList(RAT.models.Parameter(name='Substrate Roughness')))
+    assert project.parameters[0] == RAT.models.ProtectedParameter(name='Substrate Roughness')
 
 
 @pytest.mark.parametrize(["field", "wrong_input_model"], [
@@ -633,14 +650,45 @@ def test_get_contrast_model_field(input_calc: 'RAT.project.CalcTypes', input_mod
     assert project.get_contrast_model_field() == expected_field_name
 
 
-def test_write_script(test_project, test_project_script) -> None:
-    """Test the script we write to regenerate the project is as expected."""
-    mock_file = mock.mock_open()
-    with mock.patch('builtins.open', mock_file):
-        test_project.write_script()
+@pytest.mark.parametrize("input_filename", [
+    "test_script.py",
+    "test_script"
+])
+def test_write_script(test_project, test_project_script, input_filename: str) -> None:
+    """Test the script we write to regenerate the project is created and runs as expected."""
+    path = tempfile.mkdtemp(dir='.')
+    test_project.write_script('problem', os.path.join(path, input_filename))
 
-    # We check the calls to the write function as we do not return what we write
-    assert mock_file().write.call_args_list == test_project_script
+    # Test the file is written in the correct place
+    script_path = os.path.join(path, 'test_script.py')
+    assert os.path.isfile(script_path)
+
+    # Test the contents of the file are as expected
+    with open(script_path, 'r') as f:
+        script = f.read()
+
+    assert script == test_project_script
+
+    # Test we get the project object we expect when running the script
+    exec(script)
+    new_project = locals()['problem']
+
+    for class_list in RAT.project.class_lists:
+        assert getattr(new_project, class_list) == getattr(test_project, class_list)
+
+    shutil.rmtree(path)
+
+
+@pytest.mark.parametrize("extension", [
+    ".txt"
+    ".f90"
+    ".m"
+    ".pyc"
+])
+def test_write_script_wrong_extension(test_project, extension: str) -> None:
+    """If we try to write the script to anything other than a ".py" file, we raise a ValueError."""
+    with pytest.raises(ValueError, match='The script name provided to "write_script" must use the ".py" format'):
+        test_project.write_script('problem', 'test' + extension)
 
 
 @pytest.mark.parametrize(["class_list", "field"], [

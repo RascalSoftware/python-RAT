@@ -55,7 +55,13 @@ class Types(StrEnum):
 class RATModel(BaseModel):
     """A BaseModel where enums are represented by their value."""
     def __repr__(self):
-        return f'{self.__repr_name__()}({", ".join(repr(v) if a is None else f"{a}={v.value!r}" if isinstance(v, StrEnum) else f"{a}={v!r}" for a, v in self.__repr_args__())})'
+        fields_repr = (', '.join(repr(v) if a is None else
+                                 f'{a}={v.value!r}' if isinstance(v, StrEnum) else
+                                 f'{a}={v!r}'
+                                 for a, v in self.__repr_args__()
+                                 )
+                       )
+        return f'{self.__repr_name__()}({fields_repr})'
 
 
 class Background(RATModel, validate_assignment=True, extra='forbid'):
@@ -161,9 +167,35 @@ class Data(RATModel, validate_assignment=True, extra='forbid', arbitrary_types_a
                                  f'min/max values of the data: [{data_min}, {data_max}]')
         return self
 
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, BaseModel):
+            # When comparing instances of generic types for equality, as long as all field values are equal,
+            # only require their generic origin types to be equal, rather than exact type equality.
+            # This prevents headaches like MyGeneric(x=1) != MyGeneric[Any](x=1).
+            self_type = self.__pydantic_generic_metadata__['origin'] or self.__class__
+            other_type = other.__pydantic_generic_metadata__['origin'] or other.__class__
+
+            return (
+                    self_type == other_type
+                    and self.name == other.name
+                    and (self.data == other.data).all()
+                    and self.data_range == other.data_range
+                    and self.simulation_range == other.simulation_range
+                    and self.__pydantic_private__ == other.__pydantic_private__
+                    and self.__pydantic_extra__ == other.__pydantic_extra__
+            )
+        else:
+            return NotImplemented  # delegate to the other item in the comparison
+
     def __repr__(self):
         """Only include the name if the data is empty."""
-        return f'{self.__repr_name__()}({f"name={self.name!r}" if self.data.size == 0 else ", ".join(repr(v) if a is None else f"{a}={v!r}" for a, v in self.__repr_args__())})'
+        fields_repr = (f"name={self.name!r}" if self.data.size == 0 else
+                       ", ".join(repr(v) if a is None else
+                                 f"{a}={v!r}"
+                                 for a, v in self.__repr_args__()
+                                 )
+                       )
+        return f'{self.__repr_name__()}({fields_repr})'
 
 
 class DomainContrast(RATModel, validate_assignment=True, extra='forbid'):
