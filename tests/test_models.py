@@ -69,6 +69,13 @@ class TestModels(object):
             model(new_field=1)
 
 
+def test_data_eq() -> None:
+    """If we use the Data.__eq__ method with an object that is not a pydantic BaseModel, we should return
+    "NotImplemented".
+    """
+    assert RAT.models.Data().__eq__('data') == NotImplemented
+
+
 @pytest.mark.parametrize("input_data", [
     (np.array([[1.0, 1.0, 1.0]])),
 ])
