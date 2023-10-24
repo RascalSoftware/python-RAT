@@ -4,7 +4,7 @@
 import collections
 from collections.abc import Iterable, Sequence
 import contextlib
-import tabulate
+import prettytable
 from typing import Any, Union
 import warnings
 
@@ -55,8 +55,10 @@ class ClassList(collections.UserList):
             output = repr(self.data)
         else:
             if any(model.__dict__ for model in self.data):
-                table = [model.__dict__ for model in self.data]
-                output = tabulate.tabulate(table, headers='keys', showindex=True)
+                table = prettytable.PrettyTable()
+                table.field_names = ['index'] + [key.replace('_', ' ') for key in self.data[0].__dict__.keys()]
+                table.add_rows([[index] + list(model.__dict__.values()) for index, model in enumerate(self.data)])
+                output = table.get_string()
             else:
                 output = repr(self.data)
         return output

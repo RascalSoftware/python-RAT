@@ -23,6 +23,19 @@ def two_name_class_list():
 
 
 @pytest.fixture
+def two_name_class_list_table():
+    """The table representation of the ClassList defined in the "two_name_class_list" fixture."""
+    return(
+        '+-------+-------+\n'
+        '| index |  name |\n'
+        '+-------+-------+\n'
+        '|   0   | Alice |\n'
+        '|   1   |  Bob  |\n'
+        '+-------+-------+'
+    )
+
+
+@pytest.fixture
 def three_name_class_list():
     """A ClassList of InputAttributes, containing three elements with names defined."""
     return ClassList([InputAttributes(name='Alice'), InputAttributes(name='Bob'), InputAttributes(name='Eve')])
@@ -104,12 +117,9 @@ class TestInitialisation(object):
             ClassList(input_list, name_field=name_field)
 
 
-@pytest.mark.parametrize("expected_string", [
-    '    name\n--  ------\n 0  Alice\n 1  Bob',
-])
-def test_repr_table(two_name_class_list: 'ClassList', expected_string: str) -> None:
+def test_repr_table(two_name_class_list: 'ClassList', two_name_class_list_table: str) -> None:
     """For classes with the __dict__ attribute, we should be able to print the ClassList like a table."""
-    assert repr(two_name_class_list) == expected_string
+    assert repr(two_name_class_list) == two_name_class_list_table
 
 
 def test_repr_empty_table() -> None:
