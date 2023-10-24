@@ -4,6 +4,7 @@ import collections
 import copy
 import functools
 import numpy as np
+import os
 from pydantic import BaseModel, ValidationInfo, field_validator, model_validator, ValidationError
 from typing import Any, Callable
 
@@ -91,9 +92,10 @@ model_names_used_in = {'background_parameters': AllFields('backgrounds', ['value
                        'resolutions': AllFields('contrasts', ['resolution']),
                        }
 
-class_lists = ['parameters', 'bulk_in', 'bulk_out', 'qz_shifts', 'scalefactors', 'domain_ratios',
-               'background_parameters', 'backgrounds', 'resolution_parameters', 'resolutions', 'custom_files', 'data',
-               'layers', 'domain_contrasts', 'contrasts']
+parameter_class_lists = ['parameters', 'bulk_in', 'bulk_out', 'qz_shifts', 'scalefactors', 'domain_ratios',
+                         'background_parameters',  'resolution_parameters']
+class_lists = [*parameter_class_lists, 'backgrounds', 'resolutions', 'custom_files', 'data', 'layers',
+               'domain_contrasts', 'contrasts']
 
 
 class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_types_allowed=True):
@@ -152,6 +154,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
 
     _all_names: dict
     _contrast_model_field: str
+    _protected_parameters: dict
 
     @field_validator('parameters', 'bulk_in', 'bulk_out', 'qz_shifts', 'scalefactors', 'background_parameters',
                      'backgrounds', 'resolution_parameters', 'resolutions', 'custom_files', 'data', 'layers',
@@ -196,12 +199,20 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
             if not hasattr(field, "_class_handle"):
                 setattr(field, "_class_handle", getattr(RAT.models, model))
 
-        self.parameters.insert(0, RAT.models.ProtectedParameter(name='Substrate Roughness', min=1, value=3, max=5,
-                                                                fit=True, prior_type=RAT.models.Priors.Uniform, mu=0,
-                                                                sigma=np.inf))
+        if 'Substrate Roughness' not in self.parameters.get_names():
+            self.parameters.insert(0, RAT.models.ProtectedParameter(name='Substrate Roughness', min=1.0, value=3.0,
+                                                                    max=5.0, fit=True,
+                                                                    prior_type=RAT.models.Priors.Uniform, mu=0.0,
+                                                                    sigma=np.inf))
+        elif 'Substrate Roughness' not in self.get_all_protected_parameters().values():
+            # If substrate roughness is included as a standard parameter replace it with a protected parameter
+            substrate_roughness_values = self.parameters[self.parameters.index('Substrate Roughness')].model_dump()
+            self.parameters.remove('Substrate Roughness')
+            self.parameters.insert(0, RAT.models.ProtectedParameter(**substrate_roughness_values))
 
         self._all_names = self.get_all_names()
         self._contrast_model_field = self.get_contrast_model_field()
+        self._protected_parameters = self.get_all_protected_parameters()
 
         # Wrap ClassList routines - when any of these routines are called, the wrapper will force revalidation of the
         # model, handle errors and reset previous values if necessary.
@@ -230,6 +241,13 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         return self
 
     @model_validator(mode='after')
+    def set_layers(self) -> 'Project':
+        """If we are not using a standard layers model, ensure the layers component of the model is empty."""
+        if self.model != ModelTypes.StandardLayers:
+            self.layers.data = []
+        return self
+
+    @model_validator(mode='after')
     def set_calc_type(self) -> 'Project':
         """Apply the calc_type setting to the project."""
         contrast_list = []
@@ -238,6 +256,9 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
             for contrast in self.contrasts:
                 contrast_list.append(RAT.models.ContrastWithRatio(**contrast.model_dump()))
             self.contrasts.data = contrast_list
+            self.domain_ratios.data = [RAT.models.Parameter(name='Domain Ratio 1', min=0.4, value=0.5, max=0.6,
+                                                            fit=False, prior_type=RAT.models.Priors.Uniform, mu=0.0,
+                                                            sigma=np.inf)]
             setattr(self.contrasts, '_class_handle', getattr(RAT.models, 'ContrastWithRatio'))
         elif self.calc_type != CalcTypes.Domains and handle == 'ContrastWithRatio':
             for contrast in self.contrasts:
@@ -280,21 +301,20 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
     @model_validator(mode='after')
     def set_absorption(self) -> 'Project':
         """Apply the absorption setting to the project."""
-        if hasattr(self, 'layers'):
-            layer_list = []
-            handle = getattr(self.layers, '_class_handle').__name__
-            if self.absorption and handle == 'Layer':
-                for layer in self.layers:
-                    layer_list.append(RAT.models.AbsorptionLayer(**layer.model_dump()))
-                self.layers.data = layer_list
-                setattr(self.layers, '_class_handle', getattr(RAT.models, 'AbsorptionLayer'))
-            elif not self.absorption and handle == 'AbsorptionLayer':
-                for layer in self.layers:
-                    layer_params = layer.model_dump()
-                    del layer_params['SLD_imaginary']
-                    layer_list.append(RAT.models.Layer(**layer_params))
-                self.layers.data = layer_list
-                setattr(self.layers, '_class_handle', getattr(RAT.models, 'Layer'))
+        layer_list = []
+        handle = getattr(self.layers, '_class_handle').__name__
+        if self.absorption and handle == 'Layer':
+            for layer in self.layers:
+                layer_list.append(RAT.models.AbsorptionLayer(**layer.model_dump()))
+            self.layers.data = layer_list
+            setattr(self.layers, '_class_handle', getattr(RAT.models, 'AbsorptionLayer'))
+        elif not self.absorption and handle == 'AbsorptionLayer':
+            for layer in self.layers:
+                layer_params = layer.model_dump()
+                del layer_params['SLD_imaginary']
+                layer_list.append(RAT.models.Layer(**layer_params))
+            self.layers.data = layer_list
+            setattr(self.layers, '_class_handle', getattr(RAT.models, 'Layer'))
         return self
 
     @model_validator(mode='after')
@@ -337,6 +357,20 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         self.check_contrast_model_allowed_values('domain_contrasts', self.layers.get_names(), 'layers')
         return self
 
+    @model_validator(mode='after')
+    def check_protected_parameters(self) -> 'Project':
+        """Protected parameters should not be deleted. If this is attempted, raise an error."""
+        for class_list in parameter_class_lists:
+            protected_parameters = [param.name for param in getattr(self, class_list)
+                                    if isinstance(param, RAT.models.ProtectedParameter)]
+            # All previously existing protected parameters should be present in new list
+            if not all(element in protected_parameters for element in self._protected_parameters[class_list]):
+                removed_params = [param for param in self._protected_parameters[class_list]
+                                  if param not in protected_parameters]
+                raise ValueError(f'Can\'t delete the protected parameters: {", ".join(str(i) for i in removed_params)}')
+        self._protected_parameters = self.get_all_protected_parameters()
+        return self
+
     def __repr__(self):
         output = ''
         for key, value in self.__dict__.items():
@@ -353,6 +387,12 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
     def get_all_names(self):
         """Record the names of all models defined in the project."""
         return {class_list: getattr(self, class_list).get_names() for class_list in class_lists}
+
+    def get_all_protected_parameters(self):
+        """Record the protected parameters defined in the project."""
+        return {class_list: [param.name for param in getattr(self, class_list)
+                             if isinstance(param, RAT.models.ProtectedParameter)]
+                for class_list in parameter_class_lists}
 
     def check_allowed_values(self, attribute: str, field_list: list[str], allowed_values: list[str]) -> None:
         """Check the values of the given fields in the given model are in the supplied list of allowed values.
@@ -421,6 +461,43 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         else:
             model_field = 'custom_files'
         return model_field
+
+    def write_script(self, obj_name: str = 'problem', script: str = 'project_script.py'):
+        """Write a python script that can be run to reproduce this project object.
+
+        Parameters
+        ----------
+        obj_name : str, optional
+            The name given to the project object under construction (default is "problem").
+        script : str, optional
+            The filepath of the generated script (default is "project_script.py").
+        """
+        # Need to ensure correct format for script name
+        file_parts = os.path.splitext(script)
+
+        if not file_parts[1]:
+            script += '.py'
+        elif file_parts[1] != '.py':
+            raise ValueError('The script name provided to "write_script" must use the ".py" format')
+
+        indent = 4 * " "
+
+        with open(script, 'w') as f:
+
+            f.write('# THIS FILE IS GENERATED FROM RAT VIA THE "WRITE_SCRIPT" ROUTINE. IT IS NOT PART OF THE RAT CODE.'
+                    '\n\n')
+
+            # Need imports
+            f.write('import RAT\nfrom RAT.models import *\nfrom numpy import array, inf\n\n')
+
+            f.write(f"{obj_name} = RAT.Project(\n{indent}name='{self.name}', calc_type='{self.calc_type}',"
+                    f" model='{self.model}', geometry='{self.geometry}', absorption={self.absorption},\n")
+
+            for class_list in class_lists:
+                contents = getattr(self, class_list).data
+                if contents:
+                    f.write(f'{indent}{class_list}=RAT.ClassList({contents}),\n')
+            f.write(f'{indent})\n')
 
     def _classlist_wrapper(self, class_list: 'ClassList', func: Callable):
         """Defines the function used to wrap around ClassList routines to force revalidation.

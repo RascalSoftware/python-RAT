@@ -5,8 +5,11 @@ import copy
 import io
 import numpy as np
 import pydantic
+import os
 import pytest
+import shutil
 from typing import Callable
+import tempfile
 
 from RAT.classlist import ClassList
 import RAT.models
@@ -16,8 +19,7 @@ import RAT.project
 @pytest.fixture
 def test_project():
     """Add parameters to the default project, so each ClassList can be tested properly."""
-    test_project = RAT.project.Project()
-    test_project.data.set_fields(0, data=np.array([[1, 1, 1]]))
+    test_project = RAT.Project(data=RAT.ClassList([RAT.models.Data(name='Simulation', data=np.array([[1.0, 1.0, 1.0]]))]))
     test_project.parameters.append(name='Test SLD')
     test_project.custom_files.append(name='Test Custom File')
     test_project.layers.append(name='Test Layer', SLD='Test SLD')
@@ -76,7 +78,37 @@ def default_project_repr():
         'Data: ----------------------------------------------------------------------------------------------\n\n'
         '    name        data    data_range    simulation_range\n'
         '--  ----------  ------  ------------  ------------------\n'
-        ' 0  Simulation  []      []            [0.005, 0.7]\n\n')
+        ' 0  Simulation  []      []            []\n\n')
+
+
+@pytest.fixture
+def test_project_script():
+    return (
+        "# THIS FILE IS GENERATED FROM RAT VIA THE \"WRITE_SCRIPT\" ROUTINE. IT IS NOT PART OF THE RAT CODE.\n\n"
+        "import RAT\nfrom RAT.models import *\nfrom numpy import array, inf\n\n"
+        "problem = RAT.Project(\n    name='', calc_type='non polarised', model='standard layers', geometry='air/substrate', absorption=False,\n"
+        "    parameters=RAT.ClassList([ProtectedParameter(name='Substrate Roughness', min=1.0, value=3.0, max=5.0, fit=True, prior_type='uniform', mu=0.0, sigma=inf), Parameter(name='Test SLD', min=0.0, value=0.0, max=0.0, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
+        "    bulk_in=RAT.ClassList([Parameter(name='SLD Air', min=0.0, value=0.0, max=0.0, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
+        "    bulk_out=RAT.ClassList([Parameter(name='SLD D2O', min=6.2e-06, value=6.35e-06, max=6.35e-06, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
+        "    qz_shifts=RAT.ClassList([Parameter(name='Qz shift 1', min=-0.0001, value=0.0, max=0.0001, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
+        "    scalefactors=RAT.ClassList([Parameter(name='Scalefactor 1', min=0.02, value=0.23, max=0.25, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
+        "    background_parameters=RAT.ClassList([Parameter(name='Background Param 1', min=1e-07, value=1e-06, max=1e-05, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
+        "    resolution_parameters=RAT.ClassList([Parameter(name='Resolution Param 1', min=0.01, value=0.03, max=0.05, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
+        "    backgrounds=RAT.ClassList([Background(name='Background 1', type='constant', value_1='Background Param 1', value_2='', value_3='', value_4='', value_5='')]),\n"
+        "    resolutions=RAT.ClassList([Resolution(name='Resolution 1', type='constant', value_1='Resolution Param 1', value_2='', value_3='', value_4='', value_5='')]),\n"
+        "    custom_files=RAT.ClassList([CustomFile(name='Test Custom File', filename='', language='python', path='pwd')]),\n"
+        "    data=RAT.ClassList([Data(name='Simulation', data=array([[1., 1., 1.]]), data_range=[1.0, 1.0], simulation_range=[1.0, 1.0])]),\n"
+        "    layers=RAT.ClassList([Layer(name='Test Layer', thickness='', SLD='Test SLD', roughness='', hydration='', hydrate_with='bulk out')]),\n"
+        "    contrasts=RAT.ClassList([Contrast(name='Test Contrast', data='Simulation', background='Background 1', nba='SLD Air', nbs='SLD D2O', scalefactor='Scalefactor 1', resolution='Resolution 1', resample=False, model=['Test Layer'])]),\n"
+        "    )\n"
+    )
+
+
+@pytest.fixture
+def temp_dir():
+    path = tempfile.mkdtemp()
+    yield path
+    shutil.rmtree(path)
 
 
 def test_classlists(test_project) -> None:
@@ -143,6 +175,18 @@ def test_initialise_wrong_contrasts(input_model: Callable, calc_type: 'RAT.proje
                                                        f'"contrasts" ClassList contains objects other than '
                                                        f'"{actual_model_name}"'):
         RAT.project.Project(calc_type=calc_type, contrasts=ClassList(input_model()))
+
+
+@pytest.mark.parametrize("input_parameter", [
+    (RAT.models.Parameter(name='Test Parameter')),
+    (RAT.models.Parameter(name='Substrate Roughness')),
+])
+def test_initialise_without_substrate_roughness(input_parameter: Callable) -> None:
+    """If the "Project" model is initialised without "Substrate Roughness as a protected parameter, add it to the front
+    of the "parameters" ClassList.
+    """
+    project = RAT.project.Project(parameters=ClassList(RAT.models.Parameter(name='Substrate Roughness')))
+    assert project.parameters[0] == RAT.models.ProtectedParameter(name='Substrate Roughness')
 
 
 @pytest.mark.parametrize(["field", "wrong_input_model"], [
@@ -241,12 +285,25 @@ def test_set_domain_contrasts(project_parameters: dict) -> None:
     assert project.domain_contrasts == []
 
 
-@pytest.mark.parametrize(["input_calc_type", "input_contrast", "new_calc_type", "new_contrast_model"], [
-    (RAT.project.CalcTypes.NonPolarised, RAT.models.Contrast, RAT.project.CalcTypes.Domains, "ContrastWithRatio"),
-    (RAT.project.CalcTypes.Domains, RAT.models.ContrastWithRatio, RAT.project.CalcTypes.NonPolarised, "Contrast"),
+@pytest.mark.parametrize("project_parameters", [
+    ({'model': RAT.project.ModelTypes.CustomLayers}),
+    ({'model': RAT.project.ModelTypes.CustomXY}),
+])
+def test_set_domain_contrasts(project_parameters: dict) -> None:
+    """If we are not using a standard layers model, the "layers" field of the model should always be empty."""
+    project = RAT.project.Project(**project_parameters)
+    assert project.layers == []
+    project.layers.append(name='New Layer')
+    assert project.layers == []
+
+
+@pytest.mark.parametrize(["input_calc_type", "input_contrast", "new_calc_type", "new_contrast_model",
+                          "num_domain_ratios"], [
+    (RAT.project.CalcTypes.NonPolarised, RAT.models.Contrast, RAT.project.CalcTypes.Domains, "ContrastWithRatio", 1),
+    (RAT.project.CalcTypes.Domains, RAT.models.ContrastWithRatio, RAT.project.CalcTypes.NonPolarised, "Contrast", 0),
 ])
 def test_set_calc_type(input_calc_type: 'RAT.project.CalcTypes', input_contrast: Callable,
-                       new_calc_type: 'RAT.project.CalcTypes', new_contrast_model: str) -> None:
+                       new_calc_type: 'RAT.project.CalcTypes', new_contrast_model: str, num_domain_ratios: int) -> None:
     """When changing the value of the calc_type option, the "contrasts" ClassList should switch to using the
     appropriate Contrast model.
     """
@@ -256,6 +313,7 @@ def test_set_calc_type(input_calc_type: 'RAT.project.CalcTypes', input_contrast:
     assert project.calc_type is new_calc_type
     assert type(project.contrasts[0]).__name__ == new_contrast_model
     assert project.contrasts._class_handle.__name__ == new_contrast_model
+    assert len(project.domain_ratios) == num_domain_ratios
 
 
 @pytest.mark.parametrize(["new_calc", "new_model", "expected_contrast_model"], [
@@ -311,6 +369,23 @@ def test_set_absorption(input_layer: Callable, input_absorption: bool, new_layer
     assert project.absorption is not input_absorption
     assert type(project.layers[0]).__name__ == new_layer_model
     assert project.layers._class_handle.__name__ == new_layer_model
+
+
+@pytest.mark.parametrize("delete_operation", [
+    'project.parameters.__delitem__(0)',
+    'project.parameters.pop()',
+    'project.parameters.remove("Substrate Roughness")',
+    'project.parameters.clear()',
+])
+def test_check_protected_parameters(delete_operation) -> None:
+    """If we try to remove a protected parameter, we should raise an error."""
+    project = RAT.project.Project()
+    with contextlib.redirect_stdout(io.StringIO()) as print_str:
+        eval(delete_operation)
+    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, Can\'t delete the '
+                                    f'protected parameters: Substrate Roughness\033[0m\n')
+    # Ensure model was not deleted
+    assert project.parameters[0].name == 'Substrate Roughness'
 
 
 @pytest.mark.parametrize(["model", "field"], [
@@ -498,7 +573,22 @@ def test_get_all_names(test_project) -> None:
                                             'data': ['Simulation'],
                                             'layers': ['Test Layer'],
                                             'domain_contrasts': [],
-                                            'contrasts': ['Test Contrast']}
+                                            'contrasts': ['Test Contrast']
+                                            }
+
+
+def test_get_all_protected_parameters(test_project) -> None:
+    """We should be able to get the names of all the protected parameters defined in the project."""
+    assert test_project.get_all_protected_parameters() == {'parameters': ['Substrate Roughness'],
+                                                           'bulk_in': [],
+                                                           'bulk_out': [],
+                                                           'qz_shifts': [],
+                                                           'scalefactors': [],
+                                                           'domain_ratios': [],
+                                                           'background_parameters': [],
+                                                           'resolution_parameters': []
+                                                           }
+
 
 
 @pytest.mark.parametrize("test_value", [
@@ -566,6 +656,44 @@ def test_get_contrast_model_field(input_calc: 'RAT.project.CalcTypes', input_mod
     assert project.get_contrast_model_field() == expected_field_name
 
 
+@pytest.mark.parametrize("input_filename", [
+    "test_script.py",
+    "test_script"
+])
+def test_write_script(test_project, temp_dir, test_project_script, input_filename: str) -> None:
+    """Test the script we write to regenerate the project is created and runs as expected."""
+    test_project.write_script('problem', os.path.join(temp_dir, input_filename))
+
+    # Test the file is written in the correct place
+    script_path = os.path.join(temp_dir, 'test_script.py')
+    assert os.path.isfile(script_path)
+
+    # Test the contents of the file are as expected
+    with open(script_path, 'r') as f:
+        script = f.read()
+
+    assert script == test_project_script
+
+    # Test we get the project object we expect when running the script
+    exec(script)
+    new_project = locals()['problem']
+
+    for class_list in RAT.project.class_lists:
+        assert getattr(new_project, class_list) == getattr(test_project, class_list)
+
+
+@pytest.mark.parametrize("extension", [
+    ".txt"
+    ".f90"
+    ".m"
+    ".pyc"
+])
+def test_write_script_wrong_extension(test_project, extension: str) -> None:
+    """If we try to write the script to anything other than a ".py" file, we raise a ValueError."""
+    with pytest.raises(ValueError, match='The script name provided to "write_script" must use the ".py" format'):
+        test_project.write_script('problem', 'test' + extension)
+
+
 @pytest.mark.parametrize(["class_list", "field"], [
     ('backgrounds', 'value_1'),
     ('backgrounds', 'value_2'),
@@ -605,6 +733,7 @@ def test_wrap_set(test_project, class_list: str, field: str) -> None:
     ('background_parameters', 'Background Param 1', 'value_1'),
     ('resolution_parameters', 'Resolution Param 1', 'value_1'),
     ('parameters', 'Test SLD', 'SLD'),
+    ('data', 'Simulation', 'data'),
     ('backgrounds', 'Background 1', 'background'),
     ('bulk_in', 'SLD Air', 'nba'),
     ('bulk_out', 'SLD D2O', 'nbs'),
@@ -625,30 +754,6 @@ def test_wrap_del(test_project, class_list: str, parameter: str, field: str) -> 
                                     f'must be defined in "{class_list}".\033[0m\n')
     # Ensure model was not deleted
     assert test_attribute == orig_class_list
-
-
-@pytest.mark.parametrize(["class_list", "parameter", "field"], [
-    ('data', 'Simulation', 'data'),
-])
-def test_wrap_del_data(test_project, class_list: str, parameter: str, field: str) -> None:
-    """If we delete a Data model in a ClassList containing values defined elsewhere, we should raise a ValidationError.
-    """
-    test_attribute = getattr(test_project, class_list)
-    orig_class_list = copy.deepcopy(test_attribute)
-
-    index = test_attribute.index(parameter)
-    with contextlib.redirect_stdout(io.StringIO()) as print_str:
-        del test_attribute[index]
-    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "{parameter}" '
-                                    f'in the "{field}" field of '
-                                    f'"{RAT.project.model_names_used_in[class_list].attribute}" '
-                                    f'must be defined in "{class_list}".\033[0m\n')
-
-    # Ensure model was not deleted
-    assert test_attribute[index].name == orig_class_list[index].name
-    assert (test_attribute[index].data == orig_class_list[index].data).all()
-    assert test_attribute[index].data_range == orig_class_list[index].data_range
-    assert test_attribute[index].simulation_range == orig_class_list[index].simulation_range
 
 
 @pytest.mark.parametrize(["class_list", "field"], [
@@ -795,6 +900,7 @@ def test_wrap_insert_type_error(test_project, class_list: str, field: str) -> No
     ('background_parameters', 'Background Param 1', 'value_1'),
     ('resolution_parameters', 'Resolution Param 1', 'value_1'),
     ('parameters', 'Test SLD', 'SLD'),
+    ('data', 'Simulation', 'data'),
     ('backgrounds', 'Background 1', 'background'),
     ('bulk_in', 'SLD Air', 'nba'),
     ('bulk_out', 'SLD D2O', 'nbs'),
@@ -818,32 +924,10 @@ def test_wrap_pop(test_project, class_list: str, parameter: str, field: str) -> 
 
 
 @pytest.mark.parametrize(["class_list", "parameter", "field"], [
-    ('data', 'Simulation', 'data'),
-])
-def test_wrap_pop_data(test_project, class_list: str, parameter: str, field: str) -> None:
-    """If we pop a Data model in a ClassList containing values defined elsewhere, we should raise a ValidationError."""
-    test_attribute = getattr(test_project, class_list)
-    orig_class_list = copy.deepcopy(test_attribute)
-
-    index = test_attribute.index(parameter)
-    with contextlib.redirect_stdout(io.StringIO()) as print_str:
-        test_attribute.pop(index)
-    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "{parameter}" '
-                                    f'in the "{field}" field of '
-                                    f'"{RAT.project.model_names_used_in[class_list].attribute}" '
-                                    f'must be defined in "{class_list}".\033[0m\n')
-
-    # Ensure model was not popped
-    assert test_attribute[index].name == orig_class_list[index].name
-    assert (test_attribute[index].data == orig_class_list[index].data).all()
-    assert test_attribute[index].data_range == orig_class_list[index].data_range
-    assert test_attribute[index].simulation_range == orig_class_list[index].simulation_range
-
-
-@pytest.mark.parametrize(["class_list", "parameter", "field"], [
     ('background_parameters', 'Background Param 1', 'value_1'),
     ('resolution_parameters', 'Resolution Param 1', 'value_1'),
     ('parameters', 'Test SLD', 'SLD'),
+    ('data', 'Simulation', 'data'),
     ('backgrounds', 'Background 1', 'background'),
     ('bulk_in', 'SLD Air', 'nba'),
     ('bulk_out', 'SLD D2O', 'nbs'),
@@ -866,33 +950,10 @@ def test_wrap_remove(test_project, class_list: str, parameter: str, field: str) 
 
 
 @pytest.mark.parametrize(["class_list", "parameter", "field"], [
-    ('data', 'Simulation', 'data'),
-])
-def test_wrap_remove_data(test_project, class_list: str, parameter: str, field: str) -> None:
-    """If we remove a Data model in a ClassList containing values defined elsewhere, we should raise a ValidationError.
-    """
-    test_attribute = getattr(test_project, class_list)
-    orig_class_list = copy.deepcopy(test_attribute)
-    index = test_attribute.index(parameter)
-
-    with contextlib.redirect_stdout(io.StringIO()) as print_str:
-        test_attribute.remove(parameter)
-    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "{parameter}" '
-                                    f'in the "{field}" field of '
-                                    f'"{RAT.project.model_names_used_in[class_list].attribute}" '
-                                    f'must be defined in "{class_list}".\033[0m\n')
-
-    # Ensure model was not removed
-    assert test_attribute[index].name == orig_class_list[index].name
-    assert (test_attribute[index].data == orig_class_list[index].data).all()
-    assert test_attribute[index].data_range == orig_class_list[index].data_range
-    assert test_attribute[index].simulation_range == orig_class_list[index].simulation_range
-
-
-@pytest.mark.parametrize(["class_list", "parameter", "field"], [
     ('background_parameters', 'Background Param 1', 'value_1'),
     ('resolution_parameters', 'Resolution Param 1', 'value_1'),
     ('parameters', 'Test SLD', 'SLD'),
+    ('data', 'Simulation', 'data'),
     ('backgrounds', 'Background 1', 'background'),
     ('bulk_in', 'SLD Air', 'nba'),
     ('bulk_out', 'SLD D2O', 'nbs'),
@@ -912,29 +973,6 @@ def test_wrap_clear(test_project, class_list: str, parameter: str, field: str) -
                                     f'must be defined in "{class_list}".\033[0m\n')
     # Ensure list was not cleared
     assert test_attribute == orig_class_list
-
-
-@pytest.mark.parametrize(["class_list", "parameter", "field"], [
-    ('data', 'Simulation', 'data'),
-])
-def test_wrap_clear_data(test_project, class_list: str, parameter: str, field: str) -> None:
-    """If we clear a ClassList containing Data models with values defined elsewhere, we should raise a ValidationError.
-    """
-    test_attribute = getattr(test_project, class_list)
-    orig_class_list = copy.deepcopy(test_attribute)
-
-    with contextlib.redirect_stdout(io.StringIO()) as print_str:
-        test_attribute.clear()
-    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "{parameter}" '
-                                    f'in the "{field}" field of '
-                                    f'"{RAT.project.model_names_used_in[class_list].attribute}" '
-                                    f'must be defined in "{class_list}".\033[0m\n')
-    # Ensure list was not cleared
-    for index in range(len(test_attribute)):
-        assert test_attribute[index].name == orig_class_list[index].name
-        assert (test_attribute[index].data == orig_class_list[index].data).all()
-        assert test_attribute[index].data_range == orig_class_list[index].data_range
-        assert test_attribute[index].simulation_range == orig_class_list[index].simulation_range
 
 
 @pytest.mark.parametrize(["class_list", "field"], [

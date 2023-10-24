@@ -3,6 +3,7 @@
 import numpy as np
 import pydantic
 import pytest
+import re
 from typing import Callable
 
 import RAT.models
@@ -68,6 +69,13 @@ class TestModels(object):
             model(new_field=1)
 
 
+def test_data_eq() -> None:
+    """If we use the Data.__eq__ method with an object that is not a pydantic BaseModel, we should return
+    "NotImplemented".
+    """
+    assert RAT.models.Data().__eq__('data') == NotImplemented
+
+
 @pytest.mark.parametrize("input_data", [
     (np.array([[1.0, 1.0, 1.0]])),
 ])
@@ -123,8 +131,9 @@ def test_two_values_in_data_range(input_range: list[float]) -> None:
     """If the "data_range" field of the "Data" model contains more or less than two values, we should raise a
     ValidationError.
     """
-    with pytest.raises(pydantic.ValidationError, match='1 validation error for Data\ndata_range\n  Value error, '
-                                                       'data_range must contain exactly two values'):
+    with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Data\ndata_range\n  List should have '
+                                                       f'at {"least" if len(input_range) < 2 else "most"} 2 items '
+                                                       f'after validation, not {len(input_range)}'):
         RAT.models.Data(data_range=input_range)
 
 
@@ -137,12 +146,66 @@ def test_two_values_in_simulation_range(input_range: list[float]) -> None:
     """If the "simulation_range" field of the "Data" model contains more or less than two values, we should raise a
     ValidationError.
     """
-    with pytest.raises(pydantic.ValidationError, match='1 validation error for Data\nsimulation_range\n  Value error, '
-                                                       'simulation_range must contain exactly two values'):
+    with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Data\nsimulation_range\n  List should '
+                                                       f'have at {"least" if len(input_range) < 2 else "most"} 2 items '
+                                                       f'after validation, not {len(input_range)}'):
         RAT.models.Data(simulation_range=input_range)
 
 
-@pytest.mark.parametrize("minimum, value, maximum", [
+@pytest.mark.parametrize("field", [
+    'data_range',
+    'simulation_range'
+])
+def test_min_max_in_range(field: str) -> None:
+    """If the maximum value of the "data_range" or "simulation_range" fields of the "Data" model is greater than the
+    minimum value, we should raise a ValidationError.
+    """
+    with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Data\n{field}\n  Value error, {field} '
+                                                       f'"min" value is greater than the "max" value'):
+        RAT.models.Data(**{field: [1.0, 0.0]})
+
+
+def test_default_ranges() -> None:
+    """If "data" is specified but either the "data_range" or "simulation_range" fields are not, we set the ranges to
+    the minimum and maximum values of the first column of the data.
+    """
+    test_data = RAT.models.Data(data=np.array([[1.0, 0.0, 0.0], [3.0, 0.0, 0.0]]))
+    assert test_data.data_range == [1.0, 3.0]
+    assert test_data.simulation_range == [1.0, 3.0]
+
+
+@pytest.mark.parametrize("test_range", [
+    [0.0, 2.0],
+    [2.0, 4.0],
+    [0.0, 4.0],
+])
+def test_data_range(test_range) -> None:
+    """If "data" is specified but the "data_range" lies outside of the limits of the data we should raise a
+    ValidationError.
+    """
+    with pytest.raises(pydantic.ValidationError, match=re.escape(f'1 validation error for Data\n  Value error, The '
+                                                                 f'data_range value of: {test_range} must lie within '
+                                                                 f'the min/max values of the data: [1.0, 3.0]')):
+        RAT.models.Data(data=np.array([[1.0, 0.0, 0.0], [3.0, 0.0, 0.0]]), data_range=test_range)
+
+
+@pytest.mark.parametrize("test_range", [
+    [0.0, 2.0],
+    [2.0, 4.0],
+    [1.5, 2.5],
+])
+def test_simulation_range(test_range) -> None:
+    """If "data" is specified but the "simulation_range" lies within the limits of the data we should raise a
+    ValidationError.
+    """
+    with pytest.raises(pydantic.ValidationError, match=re.escape(f'1 validation error for Data\n  Value error, The '
+                                                                 f'simulation_range value of: {test_range} must lie '
+                                                                 f'outside of the min/max values of the data: '
+                                                                 f'[1.0, 3.0]')):
+        RAT.models.Data(data=np.array([[1.0, 0.0, 0.0], [3.0, 0.0, 0.0]]), simulation_range=test_range)
+
+
+@pytest.mark.parametrize(["minimum", "value", "maximum"], [
     (0.0, 2.0, 1.0),
     (0, 1, 0),
     (1, -1, 1),
