@@ -5,8 +5,9 @@ from typing import Union
 from RAT.utils.enums import ParallelOptions, Procedures, DisplayOptions, BoundHandlingOptions, StrategyOptions
 
 
-class BaseProcedure(BaseModel, validate_assignment=True, extra='forbid'):
+class BaseControls(BaseModel, validate_assignment=True, extra='forbid'):
     """Defines the base class with properties used in all five procedures."""
+    procedure: Procedures = Procedures.Calculate
     parallel: ParallelOptions = ParallelOptions.Single
     calcSldDuringFit: bool = False
     resamPars: list[float] = Field([0.9, 50], min_length=2, max_length=2)
@@ -21,13 +22,19 @@ class BaseProcedure(BaseModel, validate_assignment=True, extra='forbid'):
             raise ValueError('resamPars[1] must be greater than or equal to 0')
         return resamPars
 
+    def __repr__(self) -> str:
+        table = prettytable.PrettyTable()
+        table.field_names = ['Property', 'Value']
+        table.add_rows([[k, v] for k, v in self.__dict__.items()])
+        return table.get_string()
 
-class Calculate(BaseProcedure, validate_assignment=True, extra='forbid'):
+
+class Calculate(BaseControls, validate_assignment=True, extra='forbid'):
     """Defines the class for the calculate procedure."""
     procedure: Procedures = Field(Procedures.Calculate, frozen=True)
 
 
-class Simplex(BaseProcedure, validate_assignment=True, extra='forbid'):
+class Simplex(BaseControls, validate_assignment=True, extra='forbid'):
     """Defines the class for the simplex procedure."""
     procedure: Procedures = Field(Procedures.Simplex, frozen=True)
     tolX: float = Field(1.0e-6, gt=0.0)
@@ -38,7 +45,7 @@ class Simplex(BaseProcedure, validate_assignment=True, extra='forbid'):
     updatePlotFreq: int = -1
 
 
-class DE(BaseProcedure, validate_assignment=True, extra='forbid'):
+class DE(BaseControls, validate_assignment=True, extra='forbid'):
     """Defines the class for the Differential Evolution procedure."""
     procedure: Procedures = Field(Procedures.DE, frozen=True)
     populationSize: int = Field(20, ge=1)
@@ -49,7 +56,7 @@ class DE(BaseProcedure, validate_assignment=True, extra='forbid'):
     numGenerations: int = Field(500, ge=1)
 
 
-class NS(BaseProcedure, validate_assignment=True, extra='forbid'):
+class NS(BaseControls, validate_assignment=True, extra='forbid'):
     """Defines the class for the  Nested Sampler procedure."""
     procedure: Procedures = Field(Procedures.NS, frozen=True)
     Nlive: int = Field(150, ge=1)
@@ -58,7 +65,7 @@ class NS(BaseProcedure, validate_assignment=True, extra='forbid'):
     nsTolerance: float = Field(0.1, ge=0.0)
 
 
-class Dream(BaseProcedure, validate_assignment=True, extra='forbid'):
+class Dream(BaseControls, validate_assignment=True, extra='forbid'):
     """Defines the class for the Dream procedure."""
     procedure: Procedures = Field(Procedures.Dream, frozen=True)
     nSamples: int = Field(50000, ge=0)
@@ -68,33 +75,16 @@ class Dream(BaseProcedure, validate_assignment=True, extra='forbid'):
     boundHandling: BoundHandlingOptions = BoundHandlingOptions.Fold
 
 
-class Controls:
+def set_controls(procedure: Procedures = Procedures.Calculate, **properties)\
+        -> Union[Calculate, Simplex, DE, NS, Dream]:
 
-    def __init__(self,
-                 procedure: Procedures = Procedures.Calculate,
-                 **properties) -> None:
+    properties.update(procedure=procedure)
+    controls = {
+        Procedures.Calculate: Calculate(**properties),
+        Procedures.Simplex: Simplex(**properties),
+        Procedures.DE: DE(**properties),
+        Procedures.NS: NS(**properties),
+        Procedures.Dream: Dream(**properties)
+    }
 
-        if procedure == Procedures.Calculate:
-            self.controls = Calculate(**properties)      
-        elif procedure == Procedures.Simplex:
-            self.controls = Simplex(**properties)
-        elif procedure == Procedures.DE:
-            self.controls = DE(**properties)
-        elif procedure == Procedures.NS:
-            self.controls = NS(**properties)
-        elif procedure == Procedures.Dream:
-            self.controls = Dream(**properties)
-
-    @property
-    def controls(self) -> Union[Calculate, Simplex, DE, NS, Dream]:
-        return self._controls
-
-    @controls.setter
-    def controls(self, value: Union[Calculate, Simplex, DE, NS, Dream]) -> None:
-        self._controls = value
-
-    def __repr__(self) -> str:
-        table = prettytable.PrettyTable()
-        table.field_names = ['Property', 'Value']
-        table.add_rows([[k, v] for k, v in self._controls.__dict__.items()])
-        return table.get_string()
+    return controls[procedure]

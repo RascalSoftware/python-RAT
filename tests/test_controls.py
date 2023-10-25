@@ -1,18 +1,19 @@
-"""Tests for control and procedure classes"""
+"""Test the controls module."""
 
 import pytest
 import pydantic
 from typing import Union, Any
-from RAT.controls import BaseProcedure, Calculate, Simplex, DE, NS, Dream, Controls
+
+from RAT.controls import BaseControls, Calculate, Simplex, DE, NS, Dream
 from RAT.utils.enums import ParallelOptions, Procedures, DisplayOptions, BoundHandlingOptions, StrategyOptions
 
 
-class TestBaseProcedure:
-    """Tests the BaseProcedure class."""
+class TestBaseControls:
+    """Tests the BaseControls class."""
 
     @pytest.fixture(autouse=True)
     def setup_class(self):
-        self.base_procedure = BaseProcedure()
+        self.base_controls = BaseControls()
 
     @pytest.mark.parametrize("control_property, value", [
         ('parallel', ParallelOptions.Single),
@@ -22,7 +23,7 @@ class TestBaseProcedure:
     ])
     def test_base_property_values(self, control_property: str, value: Any) -> None:
         """Tests the default values of BaseProcedure class."""
-        assert getattr(self.base_procedure, control_property) == value
+        assert getattr(self.base_controls, control_property) == value
 
     @pytest.mark.parametrize("control_property, value", [
         ('parallel', ParallelOptions.All),
@@ -32,34 +33,34 @@ class TestBaseProcedure:
     ])
     def test_base_property_setters(self, control_property: str,  value: Any) -> None:
         """Tests the setters in BaseProcedure class."""
-        setattr(self.base_procedure, control_property, value)
-        assert getattr(self.base_procedure, control_property) == value
+        setattr(self.base_controls, control_property, value)
+        assert getattr(self.base_controls, control_property) == value
 
     @pytest.mark.parametrize("var1, var2", [('test', True), ('ALL', 1), ("Contrast", 3.0)])
     def test_base_parallel_validation(self, var1: str, var2: Any) -> None:
         """Tests the parallel setter validation in BaseProcedure class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.base_procedure, 'parallel', var1)
+            setattr(self.base_controls, 'parallel', var1)
         assert exp.value.errors()[0]['msg'] == "Input should be 'single', 'points', 'contrasts' or 'all'"
         with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.base_procedure, 'parallel', var2)
+            setattr(self.base_controls, 'parallel', var2)
         assert exp.value.errors()[0]['msg'] == "Input should be a valid string"
 
     @pytest.mark.parametrize("value", [5.0, 12])
     def test_base_calcSldDuringFit_validation(self, value: Union[int, float]) -> None:
         """Tests the calcSldDuringFit setter validation in BaseProcedure class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.base_procedure, 'calcSldDuringFit', value)
+            setattr(self.base_controls, 'calcSldDuringFit', value)
         assert exp.value.errors()[0]['msg'] == "Input should be a valid boolean, unable to interpret input"
 
     @pytest.mark.parametrize("var1, var2", [('test', True), ('iterate', 1), ("FINAL", 3.0)])
     def test_base_display_validation(self, var1: str, var2: Any) -> None:
         """Tests the display setter validation in BaseProcedure class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.base_procedure, 'display', var1)
+            setattr(self.base_controls, 'display', var1)
         assert exp.value.errors()[0]['msg'] == "Input should be 'off', 'iter', 'notify' or 'final'"
         with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.base_procedure, 'display', var2)
+            setattr(self.base_controls, 'display', var2)
         assert exp.value.errors()[0]['msg'] == "Input should be a valid string"
 
     @pytest.mark.parametrize("value, msg", [
@@ -69,7 +70,7 @@ class TestBaseProcedure:
     def test_base_resamPars_lenght_validation(self, value: list, msg: str) -> None:
         """Tests the resamPars setter length validation in BaseProcedure class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.base_procedure, 'resamPars', value)
+            setattr(self.base_controls, 'resamPars', value)
         assert exp.value.errors()[0]['msg'] == msg
 
     @pytest.mark.parametrize("value, msg", [
@@ -79,13 +80,13 @@ class TestBaseProcedure:
     def test_base_resamPars_value_validation(self, value: list, msg: str) -> None:
         """Tests the resamPars setter value validation in BaseProcedure class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.base_procedure, 'resamPars', value)
+            setattr(self.base_controls, 'resamPars', value)
         assert exp.value.errors()[0]['msg'] == msg
 
     def test_base_extra_property_error(self) -> None:
         """Tests the extra property setter in BaseProcedure class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.base_procedure, 'test', 1)
+            setattr(self.base_controls, 'test', 1)
         assert exp.value.errors()[0]['msg'] == "Object has no attribute 'test'"
 
 
@@ -129,6 +130,22 @@ class TestCalculate:
         with pytest.raises(pydantic.ValidationError) as exp:
             setattr(self.calculate, 'procedure', 'test')
         assert exp.value.errors()[0]['msg'] == "Field is frozen"
+
+    def test_repr(self) -> None:
+        """Tests the Calculate model __repr__."""
+        table = self.calculate.__repr__()
+        table_str = ("+------------------+-----------+\n"
+                     "|     Property     |   Value   |\n"
+                     "+------------------+-----------+\n"
+                     "|    procedure     | calculate |\n"
+                     "|     parallel     |   single  |\n"
+                     "| calcSldDuringFit |   False   |\n"
+                     "|    resamPars     | [0.9, 50] |\n"
+                     "|     display      |    iter   |\n"
+                     "+------------------+-----------+"
+                     )
+
+        assert table == table_str
 
 
 class TestSimplex:
@@ -195,6 +212,28 @@ class TestSimplex:
         with pytest.raises(pydantic.ValidationError) as exp:
             setattr(self.simplex, 'procedure', 'test')
         assert exp.value.errors()[0]['msg'] == "Field is frozen"
+
+    def test_repr(self) -> None:
+        """Tests the Simplex model __repr__."""
+        table = self.simplex.__repr__()
+        table_str = ("+------------------+-----------+\n"
+                     "|     Property     |   Value   |\n"
+                     "+------------------+-----------+\n"
+                     "|    procedure     |  simplex  |\n"
+                     "|     parallel     |   single  |\n"
+                     "| calcSldDuringFit |   False   |\n"
+                     "|    resamPars     | [0.9, 50] |\n"
+                     "|     display      |    iter   |\n"                     
+                     "|       tolX       |   1e-06   |\n"
+                     "|      tolFun      |   1e-06   |\n"
+                     "|   maxFunEvals    |   10000   |\n"
+                     "|     maxIter      |    1000   |\n"
+                     "|    updateFreq    |     -1    |\n"
+                     "|  updatePlotFreq  |     -1    |\n"
+                     "+------------------+-----------+"
+                     )
+
+        assert table == table_str
 
 
 class TestDE:
@@ -274,6 +313,28 @@ class TestDE:
             setattr(self.de, 'procedure', 'test')
         assert exp.value.errors()[0]['msg'] == "Field is frozen"
 
+    def test_repr(self) -> None:
+        """Tests the DE model __repr__."""
+        table = self.de.__repr__()
+        table_str = ("+----------------------+-------------------------------------------+\n"
+                     "|       Property       |                   Value                   |\n"
+                     "+----------------------+-------------------------------------------+\n"
+                     "|      procedure       |                     de                    |\n"
+                     "|       parallel       |                   single                  |\n"
+                     "|   calcSldDuringFit   |                   False                   |\n"
+                     "|      resamPars       |                 [0.9, 50]                 |\n"
+                     "|       display        |                    iter                   |\n"
+                     "|    populationSize    |                     20                    |\n"
+                     "|       fWeight        |                    0.5                    |\n"
+                     "| crossoverProbability |                    0.8                    |\n"
+                     "|       strategy       | StrategyOptions.RandomWithPerVectorDither |\n"
+                     "|     targetValue      |                    1.0                    |\n"
+                     "|    numGenerations    |                    500                    |\n"
+                     "+----------------------+-------------------------------------------+"
+                     )
+
+        assert table == table_str
+
 
 class TestNS:
     """Tests the NS class."""
@@ -342,6 +403,26 @@ class TestNS:
         with pytest.raises(pydantic.ValidationError) as exp:
             setattr(self.ns, 'procedure', 'test')
         assert exp.value.errors()[0]['msg'] == "Field is frozen"
+
+    def test_control_class_ns_repr(self) -> None:
+        """Tests the NS model __repr__."""
+        table = self.ns.__repr__()
+        table_str = ("+------------------+-----------+\n"
+                     "|     Property     |   Value   |\n"
+                     "+------------------+-----------+\n"
+                     "|    procedure     |     ns    |\n"
+                     "|     parallel     |   single  |\n"
+                     "| calcSldDuringFit |   False   |\n"
+                     "|    resamPars     | [0.9, 50] |\n"
+                     "|     display      |    iter   |\n"                     
+                     "|      Nlive       |    150    |\n"
+                     "|      Nmcmc       |    0.0    |\n"
+                     "|    propScale     |    0.1    |\n"
+                     "|   nsTolerance    |    0.1    |\n"
+                     "+------------------+-----------+"
+                     )
+
+        assert table == table_str
 
 
 class TestDream:
@@ -422,130 +503,17 @@ class TestDream:
             setattr(self.dream, 'procedure', 'test')
         assert exp.value.errors()[0]['msg'] == "Field is frozen"
 
-
-class TestControls:
-    """Tests the Controls class."""
-
-    @pytest.fixture(autouse=True)
-    def setup_class(self):
-        self.controls = Controls()
-
-    def test_controls_class_default_type(self) -> None:
-        """Tests the procedure is Calculate in Controls."""
-        assert type(self.controls.controls).__name__ == "Calculate"
-
-    def test_controls_class_properties(self) -> None:
-        """Tests the Controls class has control property."""
-        assert hasattr(self.controls, 'controls')
-
-    @pytest.mark.parametrize("procedure, name", [
-        (Procedures.Calculate, "Calculate"),
-        (Procedures.Simplex, "Simplex"),
-        (Procedures.DE, "DE"),
-        (Procedures.NS, "NS"),
-        (Procedures.Dream, "Dream")
-    ])
-    def test_controls_class_return_type(self, procedure: Procedures, name: str) -> None:
-        """Tests the Controls class is set to the correct procedure class."""
-        controls = Controls(procedure)
-        assert type(controls.controls).__name__ == name
-
-    def test_control_class_calculate_repr(self) -> None:
-        """Tests the __repr__ of Controls with Calculate procedure."""
-        controls = Controls()
-        table = controls.__repr__()
-        table_str = ("+------------------+-----------+\n"
-                     "|     Property     |   Value   |\n"
-                     "+------------------+-----------+\n"
-                     "|     parallel     |   single  |\n"
-                     "| calcSldDuringFit |   False   |\n"
-                     "|    resamPars     | [0.9, 50] |\n"
-                     "|     display      |    iter   |\n"
-                     "|    procedure     | calculate |\n"
-                     "+------------------+-----------+"
-                     )
-
-        assert table == table_str
-
-    def test_control_class_simplex_repr(self) -> None:
-        """Tests the __repr__ of Controls with Simplex procedure."""
-        controls = Controls(procedure=Procedures.Simplex)
-        table = controls.__repr__()
-        table_str = ("+------------------+-----------+\n"
-                     "|     Property     |   Value   |\n"
-                     "+------------------+-----------+\n"
-                     "|     parallel     |   single  |\n"
-                     "| calcSldDuringFit |   False   |\n"
-                     "|    resamPars     | [0.9, 50] |\n"
-                     "|     display      |    iter   |\n"
-                     "|    procedure     |  simplex  |\n"
-                     "|       tolX       |   1e-06   |\n"
-                     "|      tolFun      |   1e-06   |\n"
-                     "|   maxFunEvals    |   10000   |\n"
-                     "|     maxIter      |    1000   |\n"
-                     "|    updateFreq    |     -1    |\n"
-                     "|  updatePlotFreq  |     -1    |\n"
-                     "+------------------+-----------+"
-                     )
-
-        assert table == table_str
-
-    def test_control_class_de_repr(self) -> None:
-        """Tests the __repr__ of Controls with DE procedure."""
-        controls = Controls(procedure=Procedures.DE)
-        table = controls.__repr__()
-        table_str = ("+----------------------+-------------------------------------------+\n"
-                     "|       Property       |                   Value                   |\n"
-                     "+----------------------+-------------------------------------------+\n"
-                     "|       parallel       |                   single                  |\n"
-                     "|   calcSldDuringFit   |                   False                   |\n"
-                     "|      resamPars       |                 [0.9, 50]                 |\n"
-                     "|       display        |                    iter                   |\n"
-                     "|      procedure       |                     de                    |\n"
-                     "|    populationSize    |                     20                    |\n"
-                     "|       fWeight        |                    0.5                    |\n"
-                     "| crossoverProbability |                    0.8                    |\n"
-                     "|       strategy       | StrategyOptions.RandomWithPerVectorDither |\n"
-                     "|     targetValue      |                    1.0                    |\n"
-                     "|    numGenerations    |                    500                    |\n"
-                     "+----------------------+-------------------------------------------+"
-                     )
-
-        assert table == table_str
-
-    def test_control_class_ns_repr(self) -> None:
-        """Tests the __repr__ of Controls with NS procedure."""
-        controls = Controls(procedure=Procedures.NS)
-        table = controls.__repr__()
-        table_str = ("+------------------+-----------+\n"
-                     "|     Property     |   Value   |\n"
-                     "+------------------+-----------+\n"
-                     "|     parallel     |   single  |\n"
-                     "| calcSldDuringFit |   False   |\n"
-                     "|    resamPars     | [0.9, 50] |\n"
-                     "|     display      |    iter   |\n"
-                     "|    procedure     |     ns    |\n"
-                     "|      Nlive       |    150    |\n"
-                     "|      Nmcmc       |    0.0    |\n"
-                     "|    propScale     |    0.1    |\n"
-                     "|   nsTolerance    |    0.1    |\n"
-                     "+------------------+-----------+"
-                     )
-
-        assert table == table_str
-
     def test_control_class_dream_repr(self) -> None:
-        """Tests the __repr__ of Controls with Dream procedure."""
-        controls = Controls(procedure=Procedures.Dream)
-        table = controls.__repr__()
+        """Tests the Dream model __repr__."""
+        table = self.dream.__repr__()
         table_str = ("+------------------+-----------+\n"
                      "|     Property     |   Value   |\n"
                      "+------------------+-----------+\n"
+                     "|    procedure     |   dream   |\n"
                      "|     parallel     |   single  |\n"
                      "| calcSldDuringFit |   False   |\n"
                      "|    resamPars     | [0.9, 50] |\n"
-                     "|     display      |    iter   |\n"
-                     "|    procedure     |   dream   |\n"
+                     "|     display      |    iter   |\n"                     
                      "|     nSamples     |   50000   |\n"
                      "|     nChains      |     10    |\n"
                      "|     jumpProb     |    0.5    |\n"
