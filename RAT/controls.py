@@ -1,5 +1,5 @@
 import prettytable
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, ValidationError
 from typing import Literal, Union
 
 from RAT.utils.enums import ParallelOptions, Procedures, DisplayOptions, BoundHandlingOptions, StrategyOptions
@@ -52,7 +52,7 @@ class DE(Calculate, validate_assignment=True, extra='forbid'):
 
 
 class NS(Calculate, validate_assignment=True, extra='forbid'):
-    """Defines the additional fields for the  Nested Sampler procedure."""
+    """Defines the additional fields for the Nested Sampler procedure."""
     procedure: Literal[Procedures.NS] = Procedures.NS
     Nlive: int = Field(150, ge=1)
     Nmcmc: float = Field(0.0, ge=0.0)
@@ -73,13 +73,21 @@ class Dream(Calculate, validate_assignment=True, extra='forbid'):
 def set_controls(procedure: Procedures = Procedures.Calculate, **properties)\
         -> Union[Calculate, Simplex, DE, NS, Dream]:
     """Returns the appropriate controls model given the specified procedure."""
-    properties.update(procedure=procedure)
     controls = {
-        Procedures.Calculate: Calculate(**properties),
-        Procedures.Simplex: Simplex(**properties),
-        Procedures.DE: DE(**properties),
-        Procedures.NS: NS(**properties),
-        Procedures.Dream: Dream(**properties)
+        Procedures.Calculate: Calculate,
+        Procedures.Simplex: Simplex,
+        Procedures.DE: DE,
+        Procedures.NS: NS,
+        Procedures.Dream: Dream
     }
 
-    return controls[procedure]
+    try:
+        model = controls[procedure](**properties)
+    except KeyError:
+        members = list(Procedures.__members__.values())
+        allowed_values = ', '.join([repr(member.value) for member in members[:-1]]) + f' or {members[-1].value!r}'
+        raise ValueError(f'The controls procedure must be one of: {allowed_values}') from None
+    except ValidationError:
+        raise
+
+    return model

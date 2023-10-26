@@ -4,7 +4,7 @@ import pytest
 import pydantic
 from typing import Union, Any
 
-from RAT.controls import Calculate, Simplex, DE, NS, Dream
+from RAT.controls import Calculate, Simplex, DE, NS, Dream, set_controls
 from RAT.utils.enums import ParallelOptions, Procedures, DisplayOptions, BoundHandlingOptions, StrategyOptions
 
 
@@ -521,3 +521,28 @@ class TestDream:
                      )
 
         assert table == table_str
+
+@pytest.mark.parametrize(["procedure", "expected_model"], [
+    ('calculate', Calculate),
+    ('simplex', Simplex),
+    ('de', DE),
+    ('ns', NS),
+    ('dream', Dream)
+])
+def test_set_controls(procedure: Procedures, expected_model: Union[Calculate, Simplex, DE, NS, Dream]) -> None:
+    """Make sure we return the correct model given the value of procedure."""
+    controls_model = set_controls(procedure)
+    assert type(controls_model) == expected_model
+
+
+def test_set_controls_default_procedure() -> None:
+    """Make sure we return the default model when we call "set_controls" without specifying a procedure."""
+    controls_model = set_controls()
+    assert type(controls_model) == Calculate
+
+
+def test_set_controls_invalid_procedure() -> None:
+    """Make sure we return the default model when we call "set_controls" without specifying a procedure."""
+    with pytest.raises(ValueError, match="The controls procedure must be one of: 'calculate', 'simplex', 'de', 'ns' "
+                                         "or 'dream'"):
+        set_controls('invalid')
