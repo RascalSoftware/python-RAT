@@ -2,6 +2,7 @@ import prettytable
 from pydantic import BaseModel, Field, field_validator, ValidationError
 from typing import Literal, Union
 
+from RAT.utils.custom_errors import formatted_pydantic_error
 from RAT.utils.enums import ParallelOptions, Procedures, DisplayOptions, BoundHandlingOptions, StrategyOptions
 
 
@@ -73,6 +74,7 @@ class Dream(Calculate, validate_assignment=True, extra='forbid'):
 def set_controls(procedure: Procedures = Procedures.Calculate, **properties)\
         -> Union[Calculate, Simplex, DE, NS, Dream]:
     """Returns the appropriate controls model given the specified procedure."""
+    model = None
     controls = {
         Procedures.Calculate: Calculate,
         Procedures.Simplex: Simplex,
@@ -87,7 +89,12 @@ def set_controls(procedure: Procedures = Procedures.Calculate, **properties)\
         members = list(Procedures.__members__.values())
         allowed_values = ', '.join([repr(member.value) for member in members[:-1]]) + f' or {members[-1].value!r}'
         raise ValueError(f'The controls procedure must be one of: {allowed_values}') from None
-    except ValidationError:
-        raise
+    except ValidationError as exc:
+        custom_msgs = {'extra_forbidden': f'Extra inputs are not permitted. The fields for the {procedure} controls '
+                                          f'procedure are:\n    {", ".join(controls[procedure].model_fields.keys())}'
+                       }
+        error_string = formatted_pydantic_error(exc, custom_msgs)
+        # Use ANSI escape sequences to print error text in red
+        print('\033[31m' + error_string + '\033[0m')
 
     return model

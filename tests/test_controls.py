@@ -1,5 +1,7 @@
 """Test the controls module."""
 
+import contextlib
+import io
 import pytest
 import pydantic
 from typing import Union, Any
@@ -530,19 +532,39 @@ class TestDream:
     ('dream', Dream)
 ])
 def test_set_controls(procedure: Procedures, expected_model: Union[Calculate, Simplex, DE, NS, Dream]) -> None:
-    """Make sure we return the correct model given the value of procedure."""
+    """We should return the correct model given the value of procedure."""
     controls_model = set_controls(procedure)
     assert type(controls_model) == expected_model
 
 
 def test_set_controls_default_procedure() -> None:
-    """Make sure we return the default model when we call "set_controls" without specifying a procedure."""
+    """We should return the default model when we call "set_controls" without specifying a procedure."""
     controls_model = set_controls()
     assert type(controls_model) == Calculate
 
 
 def test_set_controls_invalid_procedure() -> None:
-    """Make sure we return the default model when we call "set_controls" without specifying a procedure."""
+    """We should return the default model when we call "set_controls" without specifying a procedure."""
     with pytest.raises(ValueError, match="The controls procedure must be one of: 'calculate', 'simplex', 'de', 'ns' "
                                          "or 'dream'"):
         set_controls('invalid')
+
+
+@pytest.mark.parametrize(["procedure", "expected_model"], [
+    ('calculate', Calculate),
+    ('simplex', Simplex),
+    ('de', DE),
+    ('ns', NS),
+    ('dream', Dream)
+])
+def test_set_controls_extra_fields(procedure: Procedures, expected_model: Union[Calculate, Simplex, DE, NS, Dream])\
+        -> None:
+    """If we provide extra fields to a controls model through "set_controls", we should print a formatted
+    ValidationError with a custom error message.
+    """
+    with contextlib.redirect_stdout(io.StringIO()) as print_str:
+        set_controls(procedure, extra_field='invalid')
+
+    assert print_str.getvalue() == (f'\033[31m1 validation error for {expected_model.__name__}\nextra_field\n  Extra '
+                                    f'inputs are not permitted. The fields for the {procedure} controls procedure '
+                                    f'are:\n    {", ".join(expected_model.model_fields.keys())}\033[0m\n')
