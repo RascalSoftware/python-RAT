@@ -1,6 +1,7 @@
 """Defines routines for custom error handling in RAT."""
 
 from pydantic import ValidationError
+import traceback
 
 
 def formatted_pydantic_error(error: ValidationError, custom_error_messages: dict[str, str] = None) -> str:
@@ -33,3 +34,11 @@ def formatted_pydantic_error(error: ValidationError, custom_error_messages: dict
         error_str += f'  {error_msg}'
 
     return error_str
+
+
+def formatted_traceback() -> str:
+    """Takes the traceback obtained from "traceback.format_exc()" and removes the exception message for pydantic
+    ValidationErrors.
+    """
+    traceback_string = traceback.format_exc()
+    return traceback_string.split('pydantic_core._pydantic_core.ValidationError:')[0]

@@ -1,8 +1,9 @@
+import logging
 import prettytable
 from pydantic import BaseModel, Field, field_validator, ValidationError
 from typing import Literal, Union
 
-from RAT.utils.custom_errors import formatted_pydantic_error
+from RAT.utils.custom_errors import formatted_pydantic_error, formatted_traceback
 from RAT.utils.enums import ParallelOptions, Procedures, DisplayOptions, BoundHandlingOptions, StrategyOptions
 
 
@@ -93,8 +94,9 @@ def set_controls(procedure: Procedures = Procedures.Calculate, **properties)\
         custom_msgs = {'extra_forbidden': f'Extra inputs are not permitted. The fields for the {procedure} controls '
                                           f'procedure are:\n    {", ".join(controls[procedure].model_fields.keys())}'
                        }
+        traceback_string = formatted_traceback()
         error_string = formatted_pydantic_error(exc, custom_msgs)
-        # Use ANSI escape sequences to print error text in red
-        print('\033[31m' + error_string + '\033[0m')
+        logger = logging.getLogger(__name__)
+        logger.error(traceback_string + error_string)
 
     return model

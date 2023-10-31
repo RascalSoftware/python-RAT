@@ -1,8 +1,6 @@
 """Test the project module."""
 
-import contextlib
 import copy
-import io
 import numpy as np
 import pydantic
 import os
@@ -397,13 +395,15 @@ def test_set_absorption(input_layer: Callable, input_absorption: bool, new_layer
     'project.parameters.remove("Substrate Roughness")',
     'project.parameters.clear()',
 ])
-def test_check_protected_parameters(delete_operation) -> None:
+def test_check_protected_parameters(caplog, delete_operation) -> None:
     """If we try to remove a protected parameter, we should raise an error."""
     project = RAT.project.Project()
-    with contextlib.redirect_stdout(io.StringIO()) as print_str:
-        eval(delete_operation)
-    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, Can\'t delete the '
-                                    f'protected parameters: Substrate Roughness\033[0m\n')
+    eval(delete_operation)
+
+    assert (f'1 validation error for Project\n  Value error, Can\'t delete the protected parameters: Substrate '
+            f'Roughness\n'
+            ) in caplog.text
+
     # Ensure model was not deleted
     assert project.parameters[0].name == 'Substrate Roughness'
 
@@ -735,16 +735,17 @@ def test_write_script_wrong_extension(test_project, extension: str) -> None:
     ('contrasts', 'scalefactor'),
     ('contrasts', 'resolution'),
 ])
-def test_wrap_set(test_project, class_list: str, field: str) -> None:
+def test_wrap_set(test_project, caplog, class_list: str, field: str) -> None:
     """If we set the field values of a model in a ClassList as undefined values, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
 
-    with contextlib.redirect_stdout(io.StringIO()) as print_str:
-        test_attribute.set_fields(0, **{field: 'undefined'})
-    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "undefined" in '
-                                    f'the "{field}" field of "{class_list}" must be defined in '
-                                    f'"{RAT.project.values_defined_in[f"{class_list}.{field}"]}".\033[0m\n')
+    test_attribute.set_fields(0, **{field: 'undefined'})
+
+    assert (f'1 validation error for Project\n  Value error, The value "undefined" in the "{field}" field of '
+            f'"{class_list}" must be defined in "{RAT.project.values_defined_in[f"{class_list}.{field}"]}".\n'
+            ) in caplog.text
+
     # Ensure invalid model was not changed
     assert test_attribute == orig_class_list
 
@@ -760,18 +761,18 @@ def test_wrap_set(test_project, class_list: str, field: str) -> None:
     ('scalefactors', 'Scalefactor 1', 'scalefactor'),
     ('resolutions', 'Resolution 1', 'resolution'),
 ])
-def test_wrap_del(test_project, class_list: str, parameter: str, field: str) -> None:
+def test_wrap_del(test_project, caplog, class_list: str, parameter: str, field: str) -> None:
     """If we delete a model in a ClassList containing values defined elsewhere, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
 
     index = test_attribute.index(parameter)
-    with contextlib.redirect_stdout(io.StringIO()) as print_str:
-        del test_attribute[index]
-    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "{parameter}" '
-                                    f'in the "{field}" field of '
-                                    f'"{RAT.project.model_names_used_in[class_list].attribute}" '
-                                    f'must be defined in "{class_list}".\033[0m\n')
+    del test_attribute[index]
+
+    assert (f'1 validation error for Project\n  Value error, The value "{parameter}" in the "{field}" field of '
+            f'"{RAT.project.model_names_used_in[class_list].attribute}" must be defined in "{class_list}".\n'
+            ) in caplog.text
+
     # Ensure model was not deleted
     assert test_attribute == orig_class_list
 
@@ -797,17 +798,18 @@ def test_wrap_del(test_project, class_list: str, parameter: str, field: str) -> 
     ('contrasts', 'scalefactor'),
     ('contrasts', 'resolution'),
 ])
-def test_wrap_iadd(test_project, class_list: str, field: str) -> None:
+def test_wrap_iadd(test_project, caplog, class_list: str, field: str) -> None:
     """If we add a model containing undefined values to a ClassList, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
     input_model = getattr(RAT.models, RAT.project.model_in_classlist[class_list])
 
-    with contextlib.redirect_stdout(io.StringIO()) as print_str:
-        test_attribute += [input_model(**{field: 'undefined'})]
-    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "undefined" in '
-                                    f'the "{field}" field of "{class_list}" must be defined in '
-                                    f'"{RAT.project.values_defined_in[f"{class_list}.{field}"]}".\033[0m\n')
+    test_attribute += [input_model(**{field: 'undefined'})]
+
+    assert (f'1 validation error for Project\n  Value error, The value "undefined" in the "{field}" field of '
+            f'"{class_list}" must be defined in "{RAT.project.values_defined_in[f"{class_list}.{field}"]}".\n'
+            ) in caplog.text
+
     # Ensure invalid model was not added
     assert test_attribute == orig_class_list
 
@@ -832,17 +834,18 @@ def test_wrap_iadd(test_project, class_list: str, field: str) -> None:
     ('contrasts', 'scalefactor'),
     ('contrasts', 'resolution'),
 ])
-def test_wrap_append(test_project, class_list: str, field: str) -> None:
+def test_wrap_append(test_project, caplog, class_list: str, field: str) -> None:
     """If we append a model containing undefined values to a ClassList, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
     input_model = getattr(RAT.models, RAT.project.model_in_classlist[class_list])
 
-    with contextlib.redirect_stdout(io.StringIO()) as print_str:
-        test_attribute.append(input_model(**{field: 'undefined'}))
-    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "undefined" in '
-                                    f'the "{field}" field of "{class_list}" must be defined in '
-                                    f'"{RAT.project.values_defined_in[f"{class_list}.{field}"]}".\033[0m\n')
+    test_attribute.append(input_model(**{field: 'undefined'}))
+
+    assert (f'1 validation error for Project\n  Value error, The value "undefined" in the "{field}" field of '
+            f'"{class_list}" must be defined in "{RAT.project.values_defined_in[f"{class_list}.{field}"]}".\n'
+            ) in caplog.text
+
     # Ensure invalid model was not appended
     assert test_attribute == orig_class_list
 
@@ -867,17 +870,17 @@ def test_wrap_append(test_project, class_list: str, field: str) -> None:
     ('contrasts', 'scalefactor'),
     ('contrasts', 'resolution'),
 ])
-def test_wrap_insert(test_project, class_list: str, field: str) -> None:
+def test_wrap_insert(test_project, caplog, class_list: str, field: str) -> None:
     """If we insert a model containing undefined values into a ClassList, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
     input_model = getattr(RAT.models, RAT.project.model_in_classlist[class_list])
 
-    with contextlib.redirect_stdout(io.StringIO()) as print_str:
-        test_attribute.insert(0, input_model(**{field: 'undefined'}))
-    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "undefined" in '
-                                    f'the "{field}" field of "{class_list}" must be defined in '
-                                    f'"{RAT.project.values_defined_in[f"{class_list}.{field}"]}".\033[0m\n')
+    test_attribute.insert(0, input_model(**{field: 'undefined'}))
+
+    assert (f'1 validation error for Project\n  Value error, The value "undefined" in the "{field}" field of '
+            f'"{class_list}" must be defined in "{RAT.project.values_defined_in[f"{class_list}.{field}"]}".\n')
+
     # Ensure invalid model was not inserted
     assert test_attribute == orig_class_list
 
@@ -927,18 +930,18 @@ def test_wrap_insert_type_error(test_project, class_list: str, field: str) -> No
     ('scalefactors', 'Scalefactor 1', 'scalefactor'),
     ('resolutions', 'Resolution 1', 'resolution'),
 ])
-def test_wrap_pop(test_project, class_list: str, parameter: str, field: str) -> None:
+def test_wrap_pop(test_project, caplog, class_list: str, parameter: str, field: str) -> None:
     """If we pop a model in a ClassList containing values defined elsewhere, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
 
     index = test_attribute.index(parameter)
-    with contextlib.redirect_stdout(io.StringIO()) as print_str:
-        test_attribute.pop(index)
-    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "{parameter}" '
-                                    f'in the "{field}" field of '
-                                    f'"{RAT.project.model_names_used_in[class_list].attribute}" '
-                                    f'must be defined in "{class_list}".\033[0m\n')
+    test_attribute.pop(index)
+
+    assert (f'1 validation error for Project\n  Value error, The value "{parameter}" in the "{field}" field of '
+            f'"{RAT.project.model_names_used_in[class_list].attribute}" must be defined in "{class_list}".\n'
+            ) in caplog.text
+
     # Ensure model was not popped
     assert test_attribute == orig_class_list
 
@@ -954,17 +957,17 @@ def test_wrap_pop(test_project, class_list: str, parameter: str, field: str) -> 
     ('scalefactors', 'Scalefactor 1', 'scalefactor'),
     ('resolutions', 'Resolution 1', 'resolution'),
 ])
-def test_wrap_remove(test_project, class_list: str, parameter: str, field: str) -> None:
+def test_wrap_remove(test_project, caplog, class_list: str, parameter: str, field: str) -> None:
     """If we remove a model in a ClassList containing values defined elsewhere, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
 
-    with contextlib.redirect_stdout(io.StringIO()) as print_str:
-        test_attribute.remove(parameter)
-    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "{parameter}" '
-                                    f'in the "{field}" field of '
-                                    f'"{RAT.project.model_names_used_in[class_list].attribute}" '
-                                    f'must be defined in "{class_list}".\033[0m\n')
+    test_attribute.remove(parameter)
+
+    assert (f'1 validation error for Project\n  Value error, The value "{parameter}" in the "{field}" field of '
+            f'"{RAT.project.model_names_used_in[class_list].attribute}" must be defined in "{class_list}".\n'
+            ) in caplog.text
+
     # Ensure model was not removed
     assert test_attribute == orig_class_list
 
@@ -980,17 +983,17 @@ def test_wrap_remove(test_project, class_list: str, parameter: str, field: str) 
     ('scalefactors', 'Scalefactor 1', 'scalefactor'),
     ('resolutions', 'Resolution 1', 'resolution'),
 ])
-def test_wrap_clear(test_project, class_list: str, parameter: str, field: str) -> None:
+def test_wrap_clear(test_project, caplog, class_list: str, parameter: str, field: str) -> None:
     """If we clear a ClassList containing models with values defined elsewhere, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
 
-    with contextlib.redirect_stdout(io.StringIO()) as print_str:
-        test_attribute.clear()
-    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "{parameter}" '
-                                    f'in the "{field}" field of '
-                                    f'"{RAT.project.model_names_used_in[class_list].attribute}" '
-                                    f'must be defined in "{class_list}".\033[0m\n')
+    test_attribute.clear()
+
+    assert (f'1 validation error for Project\n  Value error, The value "{parameter}" in the "{field}" field of '
+            f'"{RAT.project.model_names_used_in[class_list].attribute}" must be defined in "{class_list}".\n'
+            ) in caplog.text
+
     # Ensure list was not cleared
     assert test_attribute == orig_class_list
 
@@ -1016,16 +1019,17 @@ def test_wrap_clear(test_project, class_list: str, parameter: str, field: str) -
     ('contrasts', 'scalefactor'),
     ('contrasts', 'resolution'),
 ])
-def test_wrap_extend(test_project, class_list: str, field: str) -> None:
+def test_wrap_extend(test_project, caplog, class_list: str, field: str) -> None:
     """If we extend a ClassList with model containing undefined values, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
     input_model = getattr(RAT.models, RAT.project.model_in_classlist[class_list])
 
-    with contextlib.redirect_stdout(io.StringIO()) as print_str:
-        test_attribute.extend([input_model(**{field: 'undefined'})])
-    assert print_str.getvalue() == (f'\033[31m1 validation error for Project\n  Value error, The value "undefined" in '
-                                    f'the "{field}" field of "{class_list}" must be defined in '
-                                    f'"{RAT.project.values_defined_in[f"{class_list}.{field}"]}".\033[0m\n')
+    test_attribute.extend([input_model(**{field: 'undefined'})])
+
+    assert (f'1 validation error for Project\n  Value error, The value "undefined" in the "{field}" field of '
+            f'"{class_list}" must be defined in "{RAT.project.values_defined_in[f"{class_list}.{field}"]}".\n'
+            ) in caplog.text
+
     # Ensure invalid model was not appended
     assert test_attribute == orig_class_list

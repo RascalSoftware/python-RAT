@@ -3,6 +3,7 @@
 import collections
 import copy
 import functools
+import logging
 import numpy as np
 import os
 from pydantic import BaseModel, ValidationInfo, field_validator, model_validator, ValidationError
@@ -10,7 +11,7 @@ from typing import Any, Callable
 
 from RAT.classlist import ClassList
 import RAT.models
-from RAT.utils.custom_errors import formatted_pydantic_error
+from RAT.utils.custom_errors import formatted_pydantic_error, formatted_traceback
 
 try:
     from enum import StrEnum
@@ -524,11 +525,12 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
             try:
                 return_value = func(*args, **kwargs)
                 Project.model_validate(self)
-            except ValidationError as e:
+            except ValidationError as exc:
                 setattr(class_list, 'data', previous_state)
-                error_string = formatted_pydantic_error(e)
-                # Use ANSI escape sequences to print error text in red
-                print('\033[31m' + error_string + '\033[0m')
+                traceback_string = formatted_traceback()
+                error_string = formatted_pydantic_error(exc)
+                logger = logging.getLogger(__name__)
+                logger.error(traceback_string + error_string + '\n')
             except (TypeError, ValueError):
                 setattr(class_list, 'data', previous_state)
                 raise

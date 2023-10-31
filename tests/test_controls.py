@@ -1,7 +1,5 @@
 """Test the controls module."""
 
-import contextlib
-import io
 import pytest
 import pydantic
 from typing import Union, Any
@@ -557,14 +555,13 @@ def test_set_controls_invalid_procedure() -> None:
     ('ns', NS),
     ('dream', Dream)
 ])
-def test_set_controls_extra_fields(procedure: Procedures, expected_model: Union[Calculate, Simplex, DE, NS, Dream])\
+def test_set_controls_extra_fields(caplog, procedure: Procedures, expected_model: Union[Calculate, Simplex, DE, NS, Dream])\
         -> None:
     """If we provide extra fields to a controls model through "set_controls", we should print a formatted
     ValidationError with a custom error message.
     """
-    with contextlib.redirect_stdout(io.StringIO()) as print_str:
-        set_controls(procedure, extra_field='invalid')
+    set_controls(procedure, extra_field='invalid')
 
-    assert print_str.getvalue() == (f'\033[31m1 validation error for {expected_model.__name__}\nextra_field\n  Extra '
-                                    f'inputs are not permitted. The fields for the {procedure} controls procedure '
-                                    f'are:\n    {", ".join(expected_model.model_fields.keys())}\033[0m\n')
+    assert (f'1 validation error for {expected_model.__name__}\nextra_field\n  Extra inputs are not permitted. The '
+            f'fields for the {procedure} controls procedure are:\n    {", ".join(expected_model.model_fields.keys())}\n'
+            ) in caplog.text
