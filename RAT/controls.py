@@ -1,9 +1,7 @@
-import logging
 import prettytable
 from pydantic import BaseModel, Field, field_validator, ValidationError
 from typing import Literal, Union
 
-from RAT.utils.custom_errors import formatted_pydantic_error, formatted_traceback
 from RAT.utils.enums import ParallelOptions, Procedures, DisplayOptions, BoundHandlingOptions, StrategyOptions
 
 
@@ -75,7 +73,6 @@ class Dream(Calculate, validate_assignment=True, extra='forbid'):
 def set_controls(procedure: Procedures = Procedures.Calculate, **properties)\
         -> Union[Calculate, Simplex, DE, NS, Dream]:
     """Returns the appropriate controls model given the specified procedure."""
-    model = None
     controls = {
         Procedures.Calculate: Calculate,
         Procedures.Simplex: Simplex,
@@ -88,15 +85,9 @@ def set_controls(procedure: Procedures = Procedures.Calculate, **properties)\
         model = controls[procedure](**properties)
     except KeyError:
         members = list(Procedures.__members__.values())
-        allowed_values = ', '.join([repr(member.value) for member in members[:-1]]) + f' or {members[-1].value!r}'
+        allowed_values = f'{", ".join([repr(member.value) for member in members[:-1]])} or {members[-1].value!r}'
         raise ValueError(f'The controls procedure must be one of: {allowed_values}') from None
-    except ValidationError as exc:
-        custom_msgs = {'extra_forbidden': f'Extra inputs are not permitted. The fields for the {procedure} controls '
-                                          f'procedure are:\n    {", ".join(controls[procedure].model_fields.keys())}'
-                       }
-        traceback_string = formatted_traceback()
-        error_string = formatted_pydantic_error(exc, custom_msgs)
-        logger = logging.getLogger(__name__)
-        logger.error(traceback_string + error_string)
+    except ValidationError:
+        raise
 
     return model

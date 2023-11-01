@@ -525,13 +525,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
             try:
                 return_value = func(*args, **kwargs)
                 Project.model_validate(self)
-            except ValidationError as exc:
-                setattr(class_list, 'data', previous_state)
-                traceback_string = formatted_traceback()
-                error_string = formatted_pydantic_error(exc)
-                logger = logging.getLogger(__name__)
-                logger.error(traceback_string + error_string + '\n')
-            except (TypeError, ValueError):
+            except (TypeError, ValueError, ValidationError):
                 setattr(class_list, 'data', previous_state)
                 raise
             finally:
