@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field, field_validator, ValidationError
 from typing import Literal, Union
 
 from RAT.utils.enums import ParallelOptions, Procedures, DisplayOptions, BoundHandlingOptions, StrategyOptions
+from RAT.utils.custom_errors import custom_pydantic_validation_error
 
 
 class Calculate(BaseModel, validate_assignment=True, extra='forbid'):
@@ -87,7 +88,12 @@ def set_controls(procedure: Procedures = Procedures.Calculate, **properties)\
         members = list(Procedures.__members__.values())
         allowed_values = f'{", ".join([repr(member.value) for member in members[:-1]])} or {members[-1].value!r}'
         raise ValueError(f'The controls procedure must be one of: {allowed_values}') from None
-    except ValidationError:
-        raise
+    except ValidationError as exc:
+        custom_error_msgs = {'extra_forbidden': f'Extra inputs are not permitted. The fields for the {procedure}'
+                                                f' controls procedure are:\n    '
+                                                f'{", ".join(controls[procedure].model_fields.keys())}\n'
+                             }
+        custom_error_list = custom_pydantic_validation_error(exc.errors(), custom_error_msgs)
+        raise ValidationError.from_exception_data(exc.title, custom_error_list) from None
 
     return model

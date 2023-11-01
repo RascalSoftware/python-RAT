@@ -561,5 +561,7 @@ def test_set_controls_extra_fields(procedure: Procedures, expected_model: Union[
     ValidationError with a custom error message.
     """
     with pytest.raises(pydantic.ValidationError, match=f'1 validation error for {expected_model.__name__}\n'
-                                                       f'extra_field\n  Extra inputs are not permitted'):
+                                                       f'extra_field\n  Extra inputs are not permitted. The fields for '
+                                                       f'the {procedure} controls procedure are:\n    '
+                                                       f'{", ".join(expected_model.model_fields.keys())}\n'):
         set_controls(procedure, extra_field='invalid')

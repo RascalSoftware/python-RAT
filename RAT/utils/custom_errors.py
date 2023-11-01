@@ -1,44 +1,36 @@
 """Defines routines for custom error handling in RAT."""
-
-from pydantic import ValidationError
-import traceback
+import pydantic_core
 
 
-def formatted_pydantic_error(error: ValidationError, custom_error_messages: dict[str, str] = None) -> str:
-    """Write a custom string format for pydantic validation errors.
+def custom_pydantic_validation_error(error_list: list[pydantic_core.ErrorDetails], custom_errors: dict[str, str] = None
+                                     ) -> list[pydantic_core.ErrorDetails]:
+    """Run through the list of errors generated from a pydantic ValidationError, substituting the standard error for a
+    PydanticCustomError for a given set of error types.
+
+    For errors that do not have a custom error message defined, we redefine them using a PydanticCustomError to remove
+    the url from the error message.
 
     Parameters
     ----------
-    error : pydantic.ValidationError
-        A ValidationError produced by a pydantic model.
-    custom_error_messages: dict[str, str], optional
+    error_list : list[pydantic_core.ErrorDetails]
+        A list of errors produced by pydantic.ValidationError.errors().
+    custom_errors: dict[str, str], optional
         A dict of custom error messages for given error types.
 
     Returns
     -------
-    error_str : str
-        A string giving details of the ValidationError in a custom format.
+    new_error : list[pydantic_core.ErrorDetails]
+        A list of errors including PydanticCustomErrors in place of the error types in custom_errors.
     """
-    if custom_error_messages is None:
-        custom_error_messages = {}
-    num_errors = error.error_count()
-    error_str = f'{num_errors} validation error{"s"[:num_errors!=1]} for {error.title}'
+    if custom_errors is None:
+        custom_errors = {}
+    custom_error_list = []
+    for error in error_list:
+        if error['type'] in custom_errors:
+            RAT_custom_error = pydantic_core.PydanticCustomError(error['type'], custom_errors[error['type']])
+        else:
+            RAT_custom_error = pydantic_core.PydanticCustomError(error['type'], error['msg'])
+        error['type'] = RAT_custom_error
+        custom_error_list.append(error)
 
-    for this_error in error.errors():
-        error_type = this_error['type']
-        error_msg = custom_error_messages[error_type] if error_type in custom_error_messages else this_error["msg"]
-
-        error_str += '\n'
-        if this_error['loc']:
-            error_str += ' '.join(this_error['loc']) + '\n'
-        error_str += f'  {error_msg}'
-
-    return error_str
-
-
-def formatted_traceback() -> str:
-    """Takes the traceback obtained from "traceback.format_exc()" and removes the exception message for pydantic
-    ValidationErrors.
-    """
-    traceback_string = traceback.format_exc()
-    return traceback_string.split('pydantic_core._pydantic_core.ValidationError:')[0]
+    return custom_error_list

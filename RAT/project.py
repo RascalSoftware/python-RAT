@@ -3,7 +3,6 @@
 import collections
 import copy
 import functools
-import logging
 import numpy as np
 import os
 from pydantic import BaseModel, ValidationInfo, field_validator, model_validator, ValidationError
@@ -11,7 +10,7 @@ from typing import Any, Callable
 
 from RAT.classlist import ClassList
 import RAT.models
-from RAT.utils.custom_errors import formatted_pydantic_error, formatted_traceback
+from RAT.utils.custom_errors import custom_pydantic_validation_error
 
 try:
     from enum import StrEnum
@@ -525,7 +524,11 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
             try:
                 return_value = func(*args, **kwargs)
                 Project.model_validate(self)
-            except (TypeError, ValueError, ValidationError):
+            except ValidationError as exc:
+                setattr(class_list, 'data', previous_state)
+                custom_error_list = custom_pydantic_validation_error(exc.errors())
+                raise ValidationError.from_exception_data(exc.title, custom_error_list) from None
+            except (TypeError, ValueError):
                 setattr(class_list, 'data', previous_state)
                 raise
             finally:
