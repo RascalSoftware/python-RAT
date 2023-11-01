@@ -1,12 +1,14 @@
 import prettytable
-from pydantic import BaseModel, Field, field_validator
-from typing import Union
+from pydantic import BaseModel, Field, field_validator, ValidationError
+from typing import Literal, Union
 
 from RAT.utils.enums import ParallelOptions, Procedures, DisplayOptions, BoundHandlingOptions, StrategyOptions
+from RAT.utils.custom_errors import custom_pydantic_validation_error
 
 
-class BaseProcedure(BaseModel, validate_assignment=True, extra='forbid'):
-    """Defines the base class with properties used in all five procedures."""
+class Calculate(BaseModel, validate_assignment=True, extra='forbid'):
+    """Defines the class for the calculate procedure, which includes the properties used in all five procedures."""
+    procedure: Literal[Procedures.Calculate] = Procedures.Calculate
     parallel: ParallelOptions = ParallelOptions.Single
     calcSldDuringFit: bool = False
     resamPars: list[float] = Field([0.9, 50], min_length=2, max_length=2)
@@ -21,15 +23,16 @@ class BaseProcedure(BaseModel, validate_assignment=True, extra='forbid'):
             raise ValueError('resamPars[1] must be greater than or equal to 0')
         return resamPars
 
+    def __repr__(self) -> str:
+        table = prettytable.PrettyTable()
+        table.field_names = ['Property', 'Value']
+        table.add_rows([[k, v] for k, v in self.__dict__.items()])
+        return table.get_string()
 
-class Calculate(BaseProcedure, validate_assignment=True, extra='forbid'):
-    """Defines the class for the calculate procedure."""
-    procedure: Procedures = Field(Procedures.Calculate, frozen=True)
 
-
-class Simplex(BaseProcedure, validate_assignment=True, extra='forbid'):
-    """Defines the class for the simplex procedure."""
-    procedure: Procedures = Field(Procedures.Simplex, frozen=True)
+class Simplex(Calculate, validate_assignment=True, extra='forbid'):
+    """Defines the additional fields for the simplex procedure."""
+    procedure: Literal[Procedures.Simplex] = Procedures.Simplex
     tolX: float = Field(1.0e-6, gt=0.0)
     tolFun: float = Field(1.0e-6, gt=0.0)
     maxFunEvals: int = Field(10000, gt=0)
@@ -38,9 +41,9 @@ class Simplex(BaseProcedure, validate_assignment=True, extra='forbid'):
     updatePlotFreq: int = -1
 
 
-class DE(BaseProcedure, validate_assignment=True, extra='forbid'):
-    """Defines the class for the Differential Evolution procedure."""
-    procedure: Procedures = Field(Procedures.DE, frozen=True)
+class DE(Calculate, validate_assignment=True, extra='forbid'):
+    """Defines the additional fields for the Differential Evolution procedure."""
+    procedure: Literal[Procedures.DE] = Procedures.DE
     populationSize: int = Field(20, ge=1)
     fWeight: float = 0.5
     crossoverProbability: float = Field(0.8, gt=0.0, lt=1.0)
@@ -49,18 +52,18 @@ class DE(BaseProcedure, validate_assignment=True, extra='forbid'):
     numGenerations: int = Field(500, ge=1)
 
 
-class NS(BaseProcedure, validate_assignment=True, extra='forbid'):
-    """Defines the class for the  Nested Sampler procedure."""
-    procedure: Procedures = Field(Procedures.NS, frozen=True)
+class NS(Calculate, validate_assignment=True, extra='forbid'):
+    """Defines the additional fields for the Nested Sampler procedure."""
+    procedure: Literal[Procedures.NS] = Procedures.NS
     Nlive: int = Field(150, ge=1)
     Nmcmc: float = Field(0.0, ge=0.0)
     propScale: float = Field(0.1, gt=0.0, lt=1.0)
     nsTolerance: float = Field(0.1, ge=0.0)
 
 
-class Dream(BaseProcedure, validate_assignment=True, extra='forbid'):
-    """Defines the class for the Dream procedure."""
-    procedure: Procedures = Field(Procedures.Dream, frozen=True)
+class Dream(Calculate, validate_assignment=True, extra='forbid'):
+    """Defines the additional fields for the Dream procedure."""
+    procedure: Literal[Procedures.Dream] = Procedures.Dream
     nSamples: int = Field(50000, ge=0)
     nChains: int = Field(10, gt=0)
     jumpProb: float = Field(0.5, gt=0.0, lt=1.0)
@@ -68,33 +71,29 @@ class Dream(BaseProcedure, validate_assignment=True, extra='forbid'):
     boundHandling: BoundHandlingOptions = BoundHandlingOptions.Fold
 
 
-class Controls:
+def set_controls(procedure: Procedures = Procedures.Calculate, **properties)\
+        -> Union[Calculate, Simplex, DE, NS, Dream]:
+    """Returns the appropriate controls model given the specified procedure."""
+    controls = {
+        Procedures.Calculate: Calculate,
+        Procedures.Simplex: Simplex,
+        Procedures.DE: DE,
+        Procedures.NS: NS,
+        Procedures.Dream: Dream
+    }
 
-    def __init__(self,
-                 procedure: Procedures = Procedures.Calculate,
-                 **properties) -> None:
+    try:
+        model = controls[procedure](**properties)
+    except KeyError:
+        members = list(Procedures.__members__.values())
+        allowed_values = f'{", ".join([repr(member.value) for member in members[:-1]])} or {members[-1].value!r}'
+        raise ValueError(f'The controls procedure must be one of: {allowed_values}') from None
+    except ValidationError as exc:
+        custom_error_msgs = {'extra_forbidden': f'Extra inputs are not permitted. The fields for the {procedure}'
+                                                f' controls procedure are:\n    '
+                                                f'{", ".join(controls[procedure].model_fields.keys())}\n'
+                             }
+        custom_error_list = custom_pydantic_validation_error(exc.errors(), custom_error_msgs)
+        raise ValidationError.from_exception_data(exc.title, custom_error_list) from None
 
-        if procedure == Procedures.Calculate:
-            self.controls = Calculate(**properties)      
-        elif procedure == Procedures.Simplex:
-            self.controls = Simplex(**properties)
-        elif procedure == Procedures.DE:
-            self.controls = DE(**properties)
-        elif procedure == Procedures.NS:
-            self.controls = NS(**properties)
-        elif procedure == Procedures.Dream:
-            self.controls = Dream(**properties)
-
-    @property
-    def controls(self) -> Union[Calculate, Simplex, DE, NS, Dream]:
-        return self._controls
-
-    @controls.setter
-    def controls(self, value: Union[Calculate, Simplex, DE, NS, Dream]) -> None:
-        self._controls = value
-
-    def __repr__(self) -> str:
-        table = prettytable.PrettyTable()
-        table.field_names = ['Property', 'Value']
-        table.add_rows([[k, v] for k, v in self._controls.__dict__.items()])
-        return table.get_string()
+    return model
