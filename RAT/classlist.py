@@ -63,11 +63,11 @@ class ClassList(collections.UserList):
                 output = repr(self.data)
         return output
 
-    def __setitem__(self, index: int, item: 'RAT.models') -> None:
+    def __setitem__(self, index: int, item: object) -> None:
         """Replace the object at an existing index of the ClassList."""
         self._setitem(index, item)
 
-    def _setitem(self, index: int, item: 'RAT.models') -> None:
+    def _setitem(self, index: int, item: object) -> None:
         """Auxiliary routine of "__setitem__" used to enable wrapping."""
         self._check_classes(self + [item])
         self._check_unique_name_fields(self + [item])
@@ -171,7 +171,7 @@ class ClassList(collections.UserList):
             inserted into the ClassList and the keyword arguments are discarded.
         """
         if obj and kwargs:
-            warnings.warn('ClassList.insert() called with both object and keyword arguments. '
+            warnings.warn('ClassList.insert() called with both an object and keyword arguments. '
                           'The keyword arguments will be ignored.', SyntaxWarning)
         if obj:
             if not hasattr(self, '_class_handle'):

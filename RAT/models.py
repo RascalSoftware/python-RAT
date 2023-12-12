@@ -52,7 +52,7 @@ class Types(StrEnum):
     Function = 'function'
 
 
-class RATModel(BaseModel):
+class RATModel(BaseModel, validate_assignment=True, extra='forbid'):
     """A BaseModel where enums are represented by their value."""
     def __repr__(self):
         fields_repr = (', '.join(repr(v) if a is None else
@@ -64,7 +64,7 @@ class RATModel(BaseModel):
         return f'{self.__repr_name__()}({fields_repr})'
 
 
-class Background(RATModel, validate_assignment=True, extra='forbid'):
+class Background(RATModel):
     """Defines the Backgrounds in RAT."""
     name: str = Field(default_factory=lambda: 'New Background ' + next(background_number), min_length=1)
     type: Types = Types.Constant
@@ -75,7 +75,7 @@ class Background(RATModel, validate_assignment=True, extra='forbid'):
     value_5: str = ''
 
 
-class Contrast(RATModel, validate_assignment=True, extra='forbid'):
+class Contrast(RATModel):
     """Groups together all of the components of the model."""
     name: str = Field(default_factory=lambda: 'New Contrast ' + next(contrast_number), min_length=1)
     data: str = ''
@@ -88,7 +88,7 @@ class Contrast(RATModel, validate_assignment=True, extra='forbid'):
     model: list[str] = []
 
 
-class ContrastWithRatio(RATModel, validate_assignment=True, extra='forbid'):
+class ContrastWithRatio(RATModel):
     """Groups together all of the components of the model including domain terms."""
     name: str = Field(default_factory=lambda: 'New Contrast ' + next(contrast_number), min_length=1)
     data: str = ''
@@ -102,7 +102,7 @@ class ContrastWithRatio(RATModel, validate_assignment=True, extra='forbid'):
     model: list[str] = []
 
 
-class CustomFile(RATModel, validate_assignment=True, extra='forbid'):
+class CustomFile(RATModel):
     """Defines the files containing functions to run when using custom models."""
     name: str = Field(default_factory=lambda: 'New Custom File ' + next(custom_file_number), min_length=1)
     filename: str = ''
@@ -110,7 +110,7 @@ class CustomFile(RATModel, validate_assignment=True, extra='forbid'):
     path: str = 'pwd'  # Should later expand to find current file path
 
 
-class Data(RATModel, validate_assignment=True, extra='forbid', arbitrary_types_allowed=True):
+class Data(RATModel, arbitrary_types_allowed=True):
     """Defines the dataset required for each contrast."""
     name: str = Field(default_factory=lambda: 'New Data ' + next(data_number), min_length=1)
     data: np.ndarray[np.float64] = np.empty([0, 3])
@@ -198,13 +198,13 @@ class Data(RATModel, validate_assignment=True, extra='forbid', arbitrary_types_a
         return f'{self.__repr_name__()}({fields_repr})'
 
 
-class DomainContrast(RATModel, validate_assignment=True, extra='forbid'):
+class DomainContrast(RATModel):
     """Groups together the layers required for each domain."""
     name: str = Field(default_factory=lambda: 'New Domain Contrast ' + next(domain_contrast_number), min_length=1)
     model: list[str] = []
 
 
-class Layer(RATModel, validate_assignment=True, extra='forbid', populate_by_name=True):
+class Layer(RATModel, populate_by_name=True):
     """Combines parameters into defined layers."""
     name: str = Field(default_factory=lambda: 'New Layer ' + next(layer_number), min_length=1)
     thickness: str = ''
@@ -214,7 +214,7 @@ class Layer(RATModel, validate_assignment=True, extra='forbid', populate_by_name
     hydrate_with: Hydration = Hydration.BulkOut
 
 
-class AbsorptionLayer(RATModel, validate_assignment=True, extra='forbid', populate_by_name=True):
+class AbsorptionLayer(RATModel, populate_by_name=True):
     """Combines parameters into defined layers including absorption terms."""
     name: str = Field(default_factory=lambda: 'New Layer ' + next(layer_number), min_length=1)
     thickness: str = ''
@@ -225,7 +225,7 @@ class AbsorptionLayer(RATModel, validate_assignment=True, extra='forbid', popula
     hydrate_with: Hydration = Hydration.BulkOut
 
 
-class Parameter(RATModel, validate_assignment=True, extra='forbid'):
+class Parameter(RATModel):
     """Defines parameters needed to specify the model."""
     name: str = Field(default_factory=lambda: 'New Parameter ' + next(parameter_number), min_length=1)
     min: float = 0.0
@@ -244,12 +244,12 @@ class Parameter(RATModel, validate_assignment=True, extra='forbid'):
         return self
 
 
-class ProtectedParameter(Parameter, validate_assignment=True, extra='forbid'):
+class ProtectedParameter(Parameter):
     """A Parameter with a fixed name."""
     name: str = Field(frozen=True, min_length=1)
 
 
-class Resolution(RATModel, validate_assignment=True, extra='forbid'):
+class Resolution(RATModel):
     """Defines Resolutions in RAT."""
     name: str = Field(default_factory=lambda: 'New Resolution ' + next(resolution_number), min_length=1)
     type: Types = Types.Constant

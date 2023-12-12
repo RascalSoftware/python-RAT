@@ -30,7 +30,7 @@ class Calculate(BaseModel, validate_assignment=True, extra='forbid'):
         return table.get_string()
 
 
-class Simplex(Calculate, validate_assignment=True, extra='forbid'):
+class Simplex(Calculate):
     """Defines the additional fields for the simplex procedure."""
     procedure: Literal[Procedures.Simplex] = Procedures.Simplex
     tolX: float = Field(1.0e-6, gt=0.0)
@@ -41,7 +41,7 @@ class Simplex(Calculate, validate_assignment=True, extra='forbid'):
     updatePlotFreq: int = -1
 
 
-class DE(Calculate, validate_assignment=True, extra='forbid'):
+class DE(Calculate):
     """Defines the additional fields for the Differential Evolution procedure."""
     procedure: Literal[Procedures.DE] = Procedures.DE
     populationSize: int = Field(20, ge=1)
@@ -52,7 +52,7 @@ class DE(Calculate, validate_assignment=True, extra='forbid'):
     numGenerations: int = Field(500, ge=1)
 
 
-class NS(Calculate, validate_assignment=True, extra='forbid'):
+class NS(Calculate):
     """Defines the additional fields for the Nested Sampler procedure."""
     procedure: Literal[Procedures.NS] = Procedures.NS
     Nlive: int = Field(150, ge=1)
@@ -61,7 +61,7 @@ class NS(Calculate, validate_assignment=True, extra='forbid'):
     nsTolerance: float = Field(0.1, ge=0.0)
 
 
-class Dream(Calculate, validate_assignment=True, extra='forbid'):
+class Dream(Calculate):
     """Defines the additional fields for the Dream procedure."""
     procedure: Literal[Procedures.Dream] = Procedures.Dream
     nSamples: int = Field(50000, ge=0)
