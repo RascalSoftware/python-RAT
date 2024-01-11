@@ -21,8 +21,8 @@ def test_project():
     test_project.parameters.append(name='Test SLD')
     test_project.custom_files.append(name='Test Custom File')
     test_project.layers.append(name='Test Layer', SLD='Test SLD')
-    test_project.contrasts.append(name='Test Contrast', data='Simulation', background='Background 1', nba='SLD Air',
-                                  nbs='SLD D2O', scalefactor='Scalefactor 1', resolution='Resolution 1',
+    test_project.contrasts.append(name='Test Contrast', data='Simulation', background='Background 1', bulkIn='SLD Air',
+                                  bulkOut='SLD D2O', scalefactor='Scalefactor 1', resolution='Resolution 1',
                                   model=['Test Layer'])
     return test_project
 
@@ -31,7 +31,7 @@ def test_project():
 def default_project_repr():
     """A string of the output of repr() for a Project model with no parameters specified."""
     return(
-        'Calc Type: -----------------------------------------------------------------------------------------\n\n'
+        'Calculation: ---------------------------------------------------------------------------------------\n\n'
         'non polarised\n\n'
         'Model: ---------------------------------------------------------------------------------------------\n\n'
         'standard layers\n\n'
@@ -104,7 +104,7 @@ def test_project_script():
     return (
         "# THIS FILE IS GENERATED FROM RAT VIA THE \"WRITE_SCRIPT\" ROUTINE. IT IS NOT PART OF THE RAT CODE.\n\n"
         "import RAT\nfrom RAT.models import *\nfrom numpy import array, inf\n\n"
-        "problem = RAT.Project(\n    name='', calc_type='non polarised', model='standard layers', geometry='air/substrate', absorption=False,\n"
+        "problem = RAT.Project(\n    name='', calculation='non polarised', model='standard layers', geometry='air/substrate', absorption=False,\n"
         "    parameters=RAT.ClassList([ProtectedParameter(name='Substrate Roughness', min=1.0, value=3.0, max=5.0, fit=True, prior_type='uniform', mu=0.0, sigma=inf), Parameter(name='Test SLD', min=0.0, value=0.0, max=0.0, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
         "    bulk_in=RAT.ClassList([Parameter(name='SLD Air', min=0.0, value=0.0, max=0.0, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
         "    bulk_out=RAT.ClassList([Parameter(name='SLD D2O', min=6.2e-06, value=6.35e-06, max=6.35e-06, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
@@ -117,7 +117,7 @@ def test_project_script():
         "    custom_files=RAT.ClassList([CustomFile(name='Test Custom File', filename='', language='python', path='pwd')]),\n"
         "    data=RAT.ClassList([Data(name='Simulation', data=array([[1., 1., 1.]]), data_range=[1.0, 1.0], simulation_range=[1.0, 1.0])]),\n"
         "    layers=RAT.ClassList([Layer(name='Test Layer', thickness='', SLD='Test SLD', roughness='', hydration='', hydrate_with='bulk out')]),\n"
-        "    contrasts=RAT.ClassList([Contrast(name='Test Contrast', data='Simulation', background='Background 1', nba='SLD Air', nbs='SLD D2O', scalefactor='Scalefactor 1', resolution='Resolution 1', resample=False, model=['Test Layer'])]),\n"
+        "    contrasts=RAT.ClassList([Contrast(name='Test Contrast', data='Simulation', background='Background 1', bulkIn='SLD Air', bulkOut='SLD D2O', scalefactor='Scalefactor 1', resolution='Resolution 1', resample=False, model=['Test Layer'])]),\n"
         "    )\n"
     )
 
@@ -142,7 +142,7 @@ def test_classlists_specific_cases() -> None:
     """The ClassLists in the "Project" model should contain instances of specific models given various non-default
     options.
     """
-    project = RAT.project.Project(calc_type=RAT.project.CalcTypes.Domains, absorption=True)
+    project = RAT.project.Project(calculation=RAT.project.Calc.Domains, absorption=True)
     assert project.layers._class_handle.__name__ == 'AbsorptionLayer'
     assert project.contrasts._class_handle.__name__ == 'ContrastWithRatio'
 
@@ -180,19 +180,19 @@ def test_initialise_wrong_layers(input_model: Callable, absorption: bool, actual
         RAT.project.Project(absorption=absorption, layers=ClassList(input_model()))
 
 
-@pytest.mark.parametrize(["input_model", "calc_type", "actual_model_name"], [
-    (RAT.models.Contrast, RAT.project.CalcTypes.Domains, "ContrastWithRatio"),
-    (RAT.models.ContrastWithRatio, RAT.project.CalcTypes.NonPolarised, "Contrast"),
+@pytest.mark.parametrize(["input_model", "calculation", "actual_model_name"], [
+    (RAT.models.Contrast, RAT.project.Calc.Domains, "ContrastWithRatio"),
+    (RAT.models.ContrastWithRatio, RAT.project.Calc.NonPolarised, "Contrast"),
 ])
-def test_initialise_wrong_contrasts(input_model: Callable, calc_type: 'RAT.project.CalcTypes', actual_model_name: str)\
+def test_initialise_wrong_contrasts(input_model: Callable, calculation: 'RAT.project.Calc', actual_model_name: str)\
         -> None:
-    """If the "Project" model is initialised with the incorrect contrast model given the value of calc_type, we should
+    """If the "Project" model is initialised with the incorrect contrast model given the value of calculation, we should
     raise a ValidationError.
     """
     with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\ncontrasts\n  Value error, '
                                                        f'"contrasts" ClassList contains objects other than '
                                                        f'"{actual_model_name}"'):
-        RAT.project.Project(calc_type=calc_type, contrasts=ClassList(input_model()))
+        RAT.project.Project(calculation=calculation, contrasts=ClassList(input_model()))
 
 
 @pytest.mark.parametrize("input_parameter", [
@@ -238,14 +238,14 @@ def test_assign_wrong_layers(wrong_input_model: Callable, absorption: bool, actu
         setattr(project, 'layers', ClassList(wrong_input_model()))
 
 
-@pytest.mark.parametrize(["wrong_input_model", "calc_type", "actual_model_name"], [
-    (RAT.models.Contrast, RAT.project.CalcTypes.Domains, "ContrastWithRatio"),
-    (RAT.models.ContrastWithRatio, RAT.project.CalcTypes.NonPolarised, "Contrast"),
+@pytest.mark.parametrize(["wrong_input_model", "calculation", "actual_model_name"], [
+    (RAT.models.Contrast, RAT.project.Calc.Domains, "ContrastWithRatio"),
+    (RAT.models.ContrastWithRatio, RAT.project.Calc.NonPolarised, "Contrast"),
 ])
-def test_assign_wrong_contrasts(wrong_input_model: Callable, calc_type: 'RAT.project.CalcTypes',
+def test_assign_wrong_contrasts(wrong_input_model: Callable, calculation: 'RAT.project.Calc',
                                 actual_model_name: str) -> None:
     """If we assign incorrect classes to the "Project" model, we should raise a ValidationError."""
-    project = RAT.project.Project(calc_type=calc_type)
+    project = RAT.project.Project(calculation=calculation)
     with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\ncontrasts\n  Value error, '
                                                        f'"contrasts" ClassList contains objects other than '
                                                        f'"{actual_model_name}"'):
@@ -287,11 +287,11 @@ def test_set_domain_ratios(test_project) -> None:
 
 
 @pytest.mark.parametrize("project_parameters", [
-    ({'calc_type': RAT.project.CalcTypes.NonPolarised, 'model': RAT.project.ModelTypes.StandardLayers}),
-    ({'calc_type': RAT.project.CalcTypes.NonPolarised, 'model': RAT.project.ModelTypes.CustomLayers}),
-    ({'calc_type': RAT.project.CalcTypes.NonPolarised, 'model': RAT.project.ModelTypes.CustomXY}),
-    ({'calc_type': RAT.project.CalcTypes.Domains, 'model': RAT.project.ModelTypes.CustomLayers}),
-    ({'calc_type': RAT.project.CalcTypes.Domains, 'model': RAT.project.ModelTypes.CustomXY}),
+    ({'calculation': RAT.project.Calc.NonPolarised, 'model': RAT.project.Models.StandardLayers}),
+    ({'calculation': RAT.project.Calc.NonPolarised, 'model': RAT.project.Models.CustomLayers}),
+    ({'calculation': RAT.project.Calc.NonPolarised, 'model': RAT.project.Models.CustomXY}),
+    ({'calculation': RAT.project.Calc.Domains, 'model': RAT.project.Models.CustomLayers}),
+    ({'calculation': RAT.project.Calc.Domains, 'model': RAT.project.Models.CustomXY}),
 ])
 def test_set_domain_contrasts(project_parameters: dict) -> None:
     """If we are not running a domains calculation with standard layers, the "domain_contrasts" field of the model
@@ -304,8 +304,8 @@ def test_set_domain_contrasts(project_parameters: dict) -> None:
 
 
 @pytest.mark.parametrize("project_parameters", [
-    ({'model': RAT.project.ModelTypes.CustomLayers}),
-    ({'model': RAT.project.ModelTypes.CustomXY}),
+    ({'model': RAT.project.Models.CustomLayers}),
+    ({'model': RAT.project.Models.CustomXY}),
 ])
 def test_set_domain_contrasts(project_parameters: dict) -> None:
     """If we are not using a standard layers model, the "layers" field of the model should always be empty."""
@@ -315,52 +315,52 @@ def test_set_domain_contrasts(project_parameters: dict) -> None:
     assert project.layers == []
 
 
-@pytest.mark.parametrize(["input_calc_type", "input_contrast", "new_calc_type", "new_contrast_model",
+@pytest.mark.parametrize(["input_calculation", "input_contrast", "new_calculation", "new_contrast_model",
                           "num_domain_ratios"], [
-    (RAT.project.CalcTypes.NonPolarised, RAT.models.Contrast, RAT.project.CalcTypes.Domains, "ContrastWithRatio", 1),
-    (RAT.project.CalcTypes.Domains, RAT.models.ContrastWithRatio, RAT.project.CalcTypes.NonPolarised, "Contrast", 0),
+    (RAT.project.Calc.NonPolarised, RAT.models.Contrast, RAT.project.Calc.Domains, "ContrastWithRatio", 1),
+    (RAT.project.Calc.Domains, RAT.models.ContrastWithRatio, RAT.project.Calc.NonPolarised, "Contrast", 0),
 ])
-def test_set_calc_type(input_calc_type: 'RAT.project.CalcTypes', input_contrast: Callable,
-                       new_calc_type: 'RAT.project.CalcTypes', new_contrast_model: str, num_domain_ratios: int) -> None:
-    """When changing the value of the calc_type option, the "contrasts" ClassList should switch to using the
+def test_set_calculation(input_calculation: 'RAT.project.Calc', input_contrast: Callable,
+                       new_calculation: 'RAT.project.Calc', new_contrast_model: str, num_domain_ratios: int) -> None:
+    """When changing the value of the calculation option, the "contrasts" ClassList should switch to using the
     appropriate Contrast model.
     """
-    project = RAT.project.Project(calc_type=input_calc_type, contrasts=ClassList(input_contrast()))
-    project.calc_type = new_calc_type
+    project = RAT.project.Project(calculation=input_calculation, contrasts=ClassList(input_contrast()))
+    project.calculation = new_calculation
 
-    assert project.calc_type is new_calc_type
+    assert project.calculation is new_calculation
     assert type(project.contrasts[0]).__name__ == new_contrast_model
     assert project.contrasts._class_handle.__name__ == new_contrast_model
     assert len(project.domain_ratios) == num_domain_ratios
 
 
 @pytest.mark.parametrize(["new_calc", "new_model", "expected_contrast_model"], [
-    (RAT.project.CalcTypes.NonPolarised, RAT.project.ModelTypes.StandardLayers, ['Test Layer']),
-    (RAT.project.CalcTypes.NonPolarised, RAT.project.ModelTypes.CustomLayers, []),
-    (RAT.project.CalcTypes.NonPolarised, RAT.project.ModelTypes.CustomXY, []),
-    (RAT.project.CalcTypes.Domains, RAT.project.ModelTypes.StandardLayers, []),
-    (RAT.project.CalcTypes.Domains, RAT.project.ModelTypes.CustomLayers, []),
-    (RAT.project.CalcTypes.Domains, RAT.project.ModelTypes.CustomXY, []),
+    (RAT.project.Calc.NonPolarised, RAT.project.Models.StandardLayers, ['Test Layer']),
+    (RAT.project.Calc.NonPolarised, RAT.project.Models.CustomLayers, []),
+    (RAT.project.Calc.NonPolarised, RAT.project.Models.CustomXY, []),
+    (RAT.project.Calc.Domains, RAT.project.Models.StandardLayers, []),
+    (RAT.project.Calc.Domains, RAT.project.Models.CustomLayers, []),
+    (RAT.project.Calc.Domains, RAT.project.Models.CustomXY, []),
 ])
-def test_set_contrast_model_field(test_project, new_calc: 'RAT.project.CalcTypes', new_model: 'RAT.project.ModelTypes',
+def test_set_contrast_model_field(test_project, new_calc: 'RAT.project.Calc', new_model: 'RAT.project.Models',
                                   expected_contrast_model: list[str]) -> None:
-    """If we change the calc_type and model such that the values of the "model" field of the "contrasts" model come
+    """If we change the calculation and model such that the values of the "model" field of the "contrasts" model come
     from a different field of the project, we should clear the contrast "model" field.
     """
-    test_project.calc_type = new_calc
+    test_project.calculation = new_calc
     test_project.model = new_model
     assert test_project.contrasts[0].model == expected_contrast_model
 
 
 @pytest.mark.parametrize(["input_model", "test_contrast_model", "error_message"], [
-    (RAT.project.ModelTypes.StandardLayers, ['Test Domain Ratio'],
+    (RAT.project.Models.StandardLayers, ['Test Domain Ratio'],
      'For a standard layers domains calculation the "model" field of "contrasts" must contain exactly two values.'),
-    (RAT.project.ModelTypes.StandardLayers, ['Test Domain Ratio', 'Test Domain Ratio', 'Test Domain Ratio'],
+    (RAT.project.Models.StandardLayers, ['Test Domain Ratio', 'Test Domain Ratio', 'Test Domain Ratio'],
      'For a standard layers domains calculation the "model" field of "contrasts" must contain exactly two values.'),
-    (RAT.project.ModelTypes.CustomLayers, ['Test Custom File', 'Test Custom File'],
+    (RAT.project.Models.CustomLayers, ['Test Custom File', 'Test Custom File'],
      'For a custom model calculation the "model" field of "contrasts" cannot contain more than one value.'),
 ])
-def test_check_contrast_model_length(test_project, input_model: 'RAT.project.ModelTypes',
+def test_check_contrast_model_length(test_project, input_model: 'RAT.project.Models',
                                      test_contrast_model: list[str], error_message: str) -> None:
     """If we are not running a domains calculation with standard layers, the "domain_contrasts" field of the model
     should always be empty.
@@ -369,7 +369,7 @@ def test_check_contrast_model_length(test_project, input_model: 'RAT.project.Mod
     test_contrasts = ClassList(RAT.models.ContrastWithRatio(model=test_contrast_model))
     with pytest.raises(pydantic.ValidationError,
                        match=f'1 validation error for Project\n  Value error, {error_message}'):
-        RAT.project.Project(calc_type=RAT.project.CalcTypes.Domains, model=input_model,
+        RAT.project.Project(calculation=RAT.project.Calc.Domains, model=input_model,
                             domain_ratios=test_domain_ratios, contrasts=test_contrasts)
 
 
@@ -413,8 +413,8 @@ def test_check_protected_parameters(delete_operation) -> None:
     ('parameters', 'SLD'),
     ('data', 'data'),
     ('backgrounds', 'background'),
-    ('bulk_in', 'nba'),
-    ('bulk_out', 'nbs'),
+    ('bulk_in', 'bulkIn'),
+    ('bulk_out', 'bulkOut'),
     ('scalefactors', 'scalefactor'),
     ('resolutions', 'resolution'),
 ])
@@ -499,8 +499,8 @@ def test_allowed_resolutions(field: str) -> None:
 @pytest.mark.parametrize(["field", "model_name"], [
     ('data', 'data'),
     ('background', 'backgrounds'),
-    ('nba', 'bulk_in'),
-    ('nbs', 'bulk_out'),
+    ('bulkIn', 'bulk_in'),
+    ('bulkOut', 'bulk_out'),
     ('scalefactor', 'scalefactors'),
     ('resolution', 'resolutions'),
 ])
@@ -512,14 +512,14 @@ def test_allowed_contrasts(field: str, model_name: str) -> None:
     with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\n  Value error, The value '
                                                        f'"undefined" in the "{field}" field of "contrasts" must be '
                                                        f'defined in "{model_name}".'):
-        RAT.project.Project(calc_type=RAT.project.CalcTypes.NonPolarised, contrasts=ClassList(test_contrast))
+        RAT.project.Project(calculation=RAT.project.Calc.NonPolarised, contrasts=ClassList(test_contrast))
 
 
 @pytest.mark.parametrize(["field", "model_name"], [
     ('data', 'data'),
     ('background', 'backgrounds'),
-    ('nba', 'bulk_in'),
-    ('nbs', 'bulk_out'),
+    ('bulkIn', 'bulk_in'),
+    ('bulkOut', 'bulk_out'),
     ('scalefactor', 'scalefactors'),
     ('resolution', 'resolutions'),
     ('domain_ratio', 'domain_ratios'),
@@ -532,24 +532,24 @@ def test_allowed_contrasts_with_ratio(field: str, model_name: str) -> None:
     with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\n  Value error, The value '
                                                        f'"undefined" in the "{field}" field of "contrasts" must be '
                                                        f'defined in "{model_name}".'):
-        RAT.project.Project(calc_type=RAT.project.CalcTypes.Domains, contrasts=ClassList(test_contrast))
+        RAT.project.Project(calculation=RAT.project.Calc.Domains, contrasts=ClassList(test_contrast))
 
 
 @pytest.mark.parametrize(["input_calc", "input_model", "test_contrast", "field_name"], [
-    (RAT.project.CalcTypes.Domains, RAT.project.ModelTypes.StandardLayers,
+    (RAT.project.Calc.Domains, RAT.project.Models.StandardLayers,
      RAT.models.ContrastWithRatio(name='Test Contrast', model=['undefined', 'undefined']), 'domain_contrasts'),
-    (RAT.project.CalcTypes.Domains, RAT.project.ModelTypes.CustomLayers,
+    (RAT.project.Calc.Domains, RAT.project.Models.CustomLayers,
      RAT.models.ContrastWithRatio(name='Test Contrast', model=['undefined']), 'custom_files'),
-    (RAT.project.CalcTypes.Domains, RAT.project.ModelTypes.CustomXY,
+    (RAT.project.Calc.Domains, RAT.project.Models.CustomXY,
      RAT.models.ContrastWithRatio(name='Test Contrast', model=['undefined']), 'custom_files'),
-    (RAT.project.CalcTypes.NonPolarised, RAT.project.ModelTypes.StandardLayers,
+    (RAT.project.Calc.NonPolarised, RAT.project.Models.StandardLayers,
      RAT.models.Contrast(name='Test Contrast', model=['undefined', 'undefined', 'undefined']), 'layers'),
-    (RAT.project.CalcTypes.NonPolarised, RAT.project.ModelTypes.CustomLayers,
+    (RAT.project.Calc.NonPolarised, RAT.project.Models.CustomLayers,
      RAT.models.Contrast(name='Test Contrast', model=['undefined']), 'custom_files'),
-    (RAT.project.CalcTypes.NonPolarised, RAT.project.ModelTypes.CustomXY,
+    (RAT.project.Calc.NonPolarised, RAT.project.Models.CustomXY,
      RAT.models.Contrast(name='Test Contrast', model=['undefined']), 'custom_files'),
 ])
-def test_allowed_contrast_models(input_calc: 'RAT.project.CalcTypes', input_model: 'RAT.project.ModelTypes',
+def test_allowed_contrast_models(input_calc: 'RAT.project.Calc', input_model: 'RAT.project.Models',
                                  test_contrast: 'RAT.models', field_name: str) -> None:
     """If any value in the model field of the contrasts is set to a value not specified in the appropriate part of the
     project, we should raise a ValidationError.
@@ -557,7 +557,7 @@ def test_allowed_contrast_models(input_calc: 'RAT.project.CalcTypes', input_mode
     with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\n  Value error, The values: '
                                                        f'"{", ".join(test_contrast.model)}" in the "model" field of '
                                                        f'"contrasts" must be defined in "{field_name}".'):
-        RAT.project.Project(calc_type=input_calc, model=input_model, contrasts=ClassList(test_contrast))
+        RAT.project.Project(calculation=input_calc, model=input_model, contrasts=ClassList(test_contrast))
 
 
 def test_allowed_domain_contrast_models() -> None:
@@ -568,7 +568,7 @@ def test_allowed_domain_contrast_models() -> None:
     with pytest.raises(pydantic.ValidationError, match='1 validation error for Project\n  Value error, The values: '
                                                        '"undefined" in the "model" field of "domain_contrasts" must be '
                                                        'defined in "layers".'):
-        RAT.project.Project(calc_type=RAT.project.CalcTypes.Domains, domain_contrasts=ClassList(test_contrast))
+        RAT.project.Project(calculation=RAT.project.Calc.Domains, domain_contrasts=ClassList(test_contrast))
 
 
 def test_repr(default_project_repr: str) -> None:
@@ -659,19 +659,19 @@ def test_check_allowed_values_not_on_list(test_values: list[str]) -> None:
 
 
 @pytest.mark.parametrize(["input_calc", "input_model", "expected_field_name"], [
-    (RAT.project.CalcTypes.Domains, RAT.project.ModelTypes.StandardLayers, 'domain_contrasts'),
-    (RAT.project.CalcTypes.NonPolarised, RAT.project.ModelTypes.StandardLayers, 'layers'),
-    (RAT.project.CalcTypes.Domains, RAT.project.ModelTypes.CustomLayers, 'custom_files'),
-    (RAT.project.CalcTypes.NonPolarised, RAT.project.ModelTypes.CustomLayers, 'custom_files'),
-    (RAT.project.CalcTypes.Domains, RAT.project.ModelTypes.CustomXY, 'custom_files'),
-    (RAT.project.CalcTypes.NonPolarised, RAT.project.ModelTypes.CustomXY, 'custom_files'),
+    (RAT.project.Calc.Domains, RAT.project.Models.StandardLayers, 'domain_contrasts'),
+    (RAT.project.Calc.NonPolarised, RAT.project.Models.StandardLayers, 'layers'),
+    (RAT.project.Calc.Domains, RAT.project.Models.CustomLayers, 'custom_files'),
+    (RAT.project.Calc.NonPolarised, RAT.project.Models.CustomLayers, 'custom_files'),
+    (RAT.project.Calc.Domains, RAT.project.Models.CustomXY, 'custom_files'),
+    (RAT.project.Calc.NonPolarised, RAT.project.Models.CustomXY, 'custom_files'),
 ])
-def test_get_contrast_model_field(input_calc: 'RAT.project.CalcTypes', input_model: 'RAT.project.ModelTypes',
+def test_get_contrast_model_field(input_calc: 'RAT.project.Calc', input_model: 'RAT.project.Models',
                                   expected_field_name: str) -> None:
-    """Each combination of calc_type and model determines the field where the values of "model" field of "contrasts"
+    """Each combination of calculation and model determines the field where the values of "model" field of "contrasts"
     are defined.
     """
-    project = RAT.project.Project(calc_type=input_calc, model=input_model)
+    project = RAT.project.Project(calculation=input_calc, model=input_model)
     assert project.get_contrast_model_field() == expected_field_name
 
 
@@ -729,8 +729,8 @@ def test_write_script_wrong_extension(test_project, extension: str) -> None:
     ('layers', 'roughness'),
     ('contrasts', 'data'),
     ('contrasts', 'background'),
-    ('contrasts', 'nba'),
-    ('contrasts', 'nbs'),
+    ('contrasts', 'bulkIn'),
+    ('contrasts', 'bulkOut'),
     ('contrasts', 'scalefactor'),
     ('contrasts', 'resolution'),
 ])
@@ -755,8 +755,8 @@ def test_wrap_set(test_project, class_list: str, field: str) -> None:
     ('parameters', 'Test SLD', 'SLD'),
     ('data', 'Simulation', 'data'),
     ('backgrounds', 'Background 1', 'background'),
-    ('bulk_in', 'SLD Air', 'nba'),
-    ('bulk_out', 'SLD D2O', 'nbs'),
+    ('bulk_in', 'SLD Air', 'bulkIn'),
+    ('bulk_out', 'SLD D2O', 'bulkOut'),
     ('scalefactors', 'Scalefactor 1', 'scalefactor'),
     ('resolutions', 'Resolution 1', 'resolution'),
 ])
@@ -792,8 +792,8 @@ def test_wrap_del(test_project, class_list: str, parameter: str, field: str) -> 
     ('layers', 'roughness'),
     ('contrasts', 'data'),
     ('contrasts', 'background'),
-    ('contrasts', 'nba'),
-    ('contrasts', 'nbs'),
+    ('contrasts', 'bulkIn'),
+    ('contrasts', 'bulkOut'),
     ('contrasts', 'scalefactor'),
     ('contrasts', 'resolution'),
 ])
@@ -828,8 +828,8 @@ def test_wrap_iadd(test_project, class_list: str, field: str) -> None:
     ('layers', 'roughness'),
     ('contrasts', 'data'),
     ('contrasts', 'background'),
-    ('contrasts', 'nba'),
-    ('contrasts', 'nbs'),
+    ('contrasts', 'bulkIn'),
+    ('contrasts', 'bulkOut'),
     ('contrasts', 'scalefactor'),
     ('contrasts', 'resolution'),
 ])
@@ -864,8 +864,8 @@ def test_wrap_append(test_project, class_list: str, field: str) -> None:
     ('layers', 'roughness'),
     ('contrasts', 'data'),
     ('contrasts', 'background'),
-    ('contrasts', 'nba'),
-    ('contrasts', 'nbs'),
+    ('contrasts', 'bulkIn'),
+    ('contrasts', 'bulkOut'),
     ('contrasts', 'scalefactor'),
     ('contrasts', 'resolution'),
 ])
@@ -901,8 +901,8 @@ def test_wrap_insert(test_project, class_list: str, field: str) -> None:
     ('layers', 'roughness'),
     ('contrasts', 'data'),
     ('contrasts', 'background'),
-    ('contrasts', 'nba'),
-    ('contrasts', 'nbs'),
+    ('contrasts', 'bulkIn'),
+    ('contrasts', 'bulkOut'),
     ('contrasts', 'scalefactor'),
     ('contrasts', 'resolution'),
 ])
@@ -925,8 +925,8 @@ def test_wrap_insert_type_error(test_project, class_list: str, field: str) -> No
     ('parameters', 'Test SLD', 'SLD'),
     ('data', 'Simulation', 'data'),
     ('backgrounds', 'Background 1', 'background'),
-    ('bulk_in', 'SLD Air', 'nba'),
-    ('bulk_out', 'SLD D2O', 'nbs'),
+    ('bulk_in', 'SLD Air', 'bulkIn'),
+    ('bulk_out', 'SLD D2O', 'bulkOut'),
     ('scalefactors', 'Scalefactor 1', 'scalefactor'),
     ('resolutions', 'Resolution 1', 'resolution'),
 ])
@@ -952,8 +952,8 @@ def test_wrap_pop(test_project, class_list: str, parameter: str, field: str) -> 
     ('parameters', 'Test SLD', 'SLD'),
     ('data', 'Simulation', 'data'),
     ('backgrounds', 'Background 1', 'background'),
-    ('bulk_in', 'SLD Air', 'nba'),
-    ('bulk_out', 'SLD D2O', 'nbs'),
+    ('bulk_in', 'SLD Air', 'bulkIn'),
+    ('bulk_out', 'SLD D2O', 'bulkOut'),
     ('scalefactors', 'Scalefactor 1', 'scalefactor'),
     ('resolutions', 'Resolution 1', 'resolution'),
 ])
@@ -978,8 +978,8 @@ def test_wrap_remove(test_project, class_list: str, parameter: str, field: str) 
     ('parameters', 'Test SLD', 'SLD'),
     ('data', 'Simulation', 'data'),
     ('backgrounds', 'Background 1', 'background'),
-    ('bulk_in', 'SLD Air', 'nba'),
-    ('bulk_out', 'SLD D2O', 'nbs'),
+    ('bulk_in', 'SLD Air', 'bulkIn'),
+    ('bulk_out', 'SLD D2O', 'bulkOut'),
     ('scalefactors', 'Scalefactor 1', 'scalefactor'),
     ('resolutions', 'Resolution 1', 'resolution'),
 ])
@@ -1014,8 +1014,8 @@ def test_wrap_clear(test_project, class_list: str, parameter: str, field: str) -
     ('layers', 'roughness'),
     ('contrasts', 'data'),
     ('contrasts', 'background'),
-    ('contrasts', 'nba'),
-    ('contrasts', 'nbs'),
+    ('contrasts', 'bulkIn'),
+    ('contrasts', 'bulkOut'),
     ('contrasts', 'scalefactor'),
     ('contrasts', 'resolution'),
 ])

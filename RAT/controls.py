@@ -2,17 +2,17 @@ import prettytable
 from pydantic import BaseModel, Field, field_validator, ValidationError
 from typing import Literal, Union
 
-from RAT.utils.enums import ParallelOptions, Procedures, DisplayOptions, BoundHandlingOptions, StrategyOptions
+from RAT.utils.enums import Parallel, Procedures, Display, BoundHandling, Strategies
 from RAT.utils.custom_errors import custom_pydantic_validation_error
 
 
 class Calculate(BaseModel, validate_assignment=True, extra='forbid'):
     """Defines the class for the calculate procedure, which includes the properties used in all five procedures."""
     procedure: Literal[Procedures.Calculate] = Procedures.Calculate
-    parallel: ParallelOptions = ParallelOptions.Single
+    parallel: Parallel = Parallel.Single
     calcSldDuringFit: bool = False
     resamPars: list[float] = Field([0.9, 50], min_length=2, max_length=2)
-    display: DisplayOptions = DisplayOptions.Iter
+    display: Display = Display.Iter
 
     @field_validator("resamPars")
     @classmethod
@@ -47,7 +47,7 @@ class DE(Calculate):
     populationSize: int = Field(20, ge=1)
     fWeight: float = 0.5
     crossoverProbability: float = Field(0.8, gt=0.0, lt=1.0)
-    strategy: StrategyOptions = StrategyOptions.RandomWithPerVectorDither
+    strategy: Strategies = Strategies.RandomWithPerVectorDither
     targetValue: float = Field(1.0, ge=1.0)
     numGenerations: int = Field(500, ge=1)
 
@@ -68,7 +68,7 @@ class Dream(Calculate):
     nChains: int = Field(10, gt=0)
     jumpProbability: float = Field(0.5, gt=0.0, lt=1.0)
     pUnitGamma: float = Field(0.2, gt=0.0, lt=1.0)
-    boundHandling: BoundHandlingOptions = BoundHandlingOptions.Fold
+    boundHandling: BoundHandling = BoundHandling.Fold
     adaptPCR: bool = False
 
 

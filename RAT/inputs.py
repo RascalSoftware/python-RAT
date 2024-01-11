@@ -5,7 +5,7 @@ from typing import Union
 
 import RAT
 import RAT.project
-from RAT.utils.enums import ParallelOptions, Procedures, DisplayOptions, BoundHandlingOptions, StrategyOptions, CalcTypes, Geometries, ModelTypes
+from RAT.utils.enums import Parallel, Procedures, Display, BoundHandling, Strategies, Calc, Geometries, Models
 
 
 @dataclass
@@ -54,10 +54,10 @@ class FullControls:
     """The full set of controls parameters required for RATMain."""
     # All Procedures
     procedure: Procedures = Procedures.Calculate
-    parallel: ParallelOptions = ParallelOptions.Single
+    parallel: Parallel = Parallel.Single
     calcSldDuringFit: bool = False
     resamPars: list[float] = field(default_factory=list[0.9, 50.0])
-    display: DisplayOptions = DisplayOptions.Iter
+    display: Display = Display.Iter
     # Simplex
     tolX: float = 1.0e-6
     tolFun: float = 1.0e-6
@@ -69,7 +69,7 @@ class FullControls:
     populationSize: int = 20
     fWeight: float = 0.5
     crossoverProbability: float = 0.8
-    strategy: StrategyOptions = StrategyOptions.RandomWithPerVectorDither
+    strategy: Strategies = Strategies.RandomWithPerVectorDither
     targetValue: float = 1.0
     numGenerations: int = 500
     # NS
@@ -82,7 +82,7 @@ class FullControls:
     nChains: int = 10
     jumpProbability: float = 0.5
     pUnitGamma: float = 0.2
-    boundHandling: BoundHandlingOptions = BoundHandlingOptions.Fold
+    boundHandling: BoundHandling = BoundHandling.Fold
     checks: Checks = Checks()
 
 
@@ -90,8 +90,8 @@ class FullControls:
 class Problem:
     """The full set of problemDef parameters required for RATMain."""
     # General
-    TF: str = CalcTypes.NonPolarised.value
-    modelType: str = ModelTypes.StandardLayers.value
+    TF: str = Calc.NonPolarised.value
+    modelType: str = Models.StandardLayers.value
     geometry: str = Geometries.AirSubstrate.value
     useImaginary: bool = False
     # Parameter Values
@@ -188,15 +188,15 @@ def make_input(project: RAT.Project, controls: Union[RAT.controls.Calculate,
                           for class_list in RAT.project.parameter_class_lists
                           for param in getattr(project, class_list)]
 
-    if project.model == ModelTypes.CustomXY:
+    if project.model == Models.CustomXY:
         controls.calcSldDuringFit = True
 
     RAT_controls = FullControls(**{**controls.model_dump(), **asdict(checks)})
 
     # Set contrast parameters according to model type
-    if project.model == ModelTypes.StandardLayers:
+    if project.model == Models.StandardLayers:
         contrast_custom_files = [float('NaN')] * len(project.contrasts)
-        if project.calc_type == CalcTypes.Domains:
+        if project.calc_type == Calc.Domains:
             contrast_models = [[project.domain_contrasts.index(domain_contrast) for domain_contrast in contrast.model]
                                for contrast in project.contrasts]
         else:
@@ -222,7 +222,7 @@ def make_input(project: RAT.Project, controls: Union[RAT.controls.Calculate,
 
     # Set the values in the problem dataclass
     problem = Problem(
-        TF=project.calc_type,
+        TF=project.calculation,
         modelType=project.model,
         geometry=project.geometry,
         useImaginary=project.absorption,
@@ -286,7 +286,7 @@ def make_input(project: RAT.Project, controls: Union[RAT.controls.Calculate,
     cells.append(data_limits)
     cells.append(simulation_limits)
     cells.append([contrast_model if contrast_model else 0 for contrast_model in contrast_models])
-    cells.append(layer_details if project.model == ModelTypes.StandardLayers else [0])
+    cells.append(layer_details if project.model == Models.StandardLayers else [0])
     cells.append([param.name for param in project.parameters])
     cells.append([param.name for param in project.background_parameters])
     cells.append([param.name for param in project.scalefactors])

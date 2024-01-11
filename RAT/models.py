@@ -6,6 +6,10 @@ from typing import Any
 
 from RAT.utils.enums import Hydration, Languages, Priors, Types
 
+try:
+    from enum import StrEnum
+except ImportError:
+    from strenum import StrEnum
 
 def int_sequence():
     """Iterate through integers for use as model counters."""

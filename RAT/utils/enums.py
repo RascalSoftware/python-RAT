@@ -6,7 +6,7 @@ except ImportError:
 
 
 # Controls
-class ParallelOptions(StrEnum):
+class Parallel(StrEnum):
     """Defines the available options for parallelization"""
     Single = 'single'
     Points = 'points'
@@ -23,7 +23,7 @@ class Procedures(StrEnum):
     Dream = 'dream'
 
 
-class DisplayOptions(StrEnum):
+class Display(StrEnum):
     """Defines the available options for display"""
     Off = 'off'
     Iter = 'iter'
@@ -31,7 +31,7 @@ class DisplayOptions(StrEnum):
     Final = 'final'
 
 
-class BoundHandlingOptions(StrEnum):
+class BoundHandling(StrEnum):
     """Defines the available options for bound handling"""
     Off = 'off'
     Reflect = 'reflect'
@@ -39,8 +39,8 @@ class BoundHandlingOptions(StrEnum):
     Fold = 'fold'
 
 
-class StrategyOptions(Enum):
-    """Defines the avaliable options for strategies"""
+class Strategies(Enum):
+    """Defines the available options for strategies"""
     Random = 1
     LocalToBest = 2
     BestWithJitter = 3
@@ -74,7 +74,7 @@ class Types(StrEnum):
 
 
 # Project
-class CalcTypes(StrEnum):
+class Calc(StrEnum):
     NonPolarised = 'non polarised'
     Domains = 'domains'
 
@@ -84,7 +84,7 @@ class Geometries(StrEnum):
     SubstrateLiquid = 'substrate/liquid'
 
 
-class ModelTypes(StrEnum):
+class Models(StrEnum):
     CustomLayers = 'custom layers'
     CustomXY = 'custom xy'
     StandardLayers = 'standard layers'

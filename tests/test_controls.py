@@ -5,7 +5,7 @@ import pydantic
 from typing import Union, Any
 
 from RAT.controls import Calculate, Simplex, DE, NS, Dream, set_controls
-from RAT.utils.enums import ParallelOptions, Procedures, DisplayOptions, BoundHandlingOptions, StrategyOptions
+from RAT.utils.enums import Parallel, Procedures, Display, BoundHandling, Strategies
 
 
 class TestCalculate:
@@ -16,10 +16,10 @@ class TestCalculate:
         self.calculate = Calculate()
 
     @pytest.mark.parametrize("control_property, value", [
-        ('parallel', ParallelOptions.Single),
+        ('parallel', Parallel.Single),
         ('calcSldDuringFit', False),
         ('resamPars', [0.9, 50]),
-        ('display', DisplayOptions.Iter),
+        ('display', Display.Iter),
         ('procedure', Procedures.Calculate)
     ])
     def test_calculate_property_values(self, control_property: str, value: Any) -> None:
@@ -27,10 +27,10 @@ class TestCalculate:
         assert getattr(self.calculate, control_property) == value
 
     @pytest.mark.parametrize("control_property, value", [
-        ('parallel', ParallelOptions.All),
+        ('parallel', Parallel.All),
         ('calcSldDuringFit', True),
         ('resamPars', [0.2, 1]),
-        ('display', DisplayOptions.Notify)
+        ('display', Display.Notify)
     ])
     def test_calculate_property_setters(self, control_property: str,  value: Any) -> None:
         """Tests the setters of Calculate class."""
@@ -127,10 +127,10 @@ class TestSimplex:
         self.simplex = Simplex()
 
     @pytest.mark.parametrize("control_property, value", [
-        ('parallel', ParallelOptions.Single),
+        ('parallel', Parallel.Single),
         ('calcSldDuringFit', False),
         ('resamPars', [0.9, 50]),
-        ('display', DisplayOptions.Iter),
+        ('display', Display.Iter),
         ('procedure', Procedures.Simplex),
         ('tolX', 1e-6),
         ('tolFun', 1e-6),
@@ -144,10 +144,10 @@ class TestSimplex:
         assert getattr(self.simplex, control_property) == value
 
     @pytest.mark.parametrize("control_property, value", [
-        ('parallel', ParallelOptions.All),
+        ('parallel', Parallel.All),
         ('calcSldDuringFit', True),
         ('resamPars', [0.2, 1]),
-        ('display', DisplayOptions.Notify),
+        ('display', Display.Notify),
         ('tolX', 4e-6),
         ('tolFun', 3e-4),
         ('maxFunEvals', 100),
@@ -221,15 +221,15 @@ class TestDE:
         self.de = DE()
 
     @pytest.mark.parametrize("control_property, value", [
-        ('parallel', ParallelOptions.Single),
+        ('parallel', Parallel.Single),
         ('calcSldDuringFit', False),
         ('resamPars', [0.9, 50]),
-        ('display', DisplayOptions.Iter),
+        ('display', Display.Iter),
         ('procedure', Procedures.DE),
         ('populationSize', 20),
         ('fWeight', 0.5),
         ('crossoverProbability', 0.8),
-        ('strategy', StrategyOptions.RandomWithPerVectorDither),
+        ('strategy', Strategies.RandomWithPerVectorDither),
         ('targetValue', 1),
         ('numGenerations', 500)
     ])
@@ -238,14 +238,14 @@ class TestDE:
         assert getattr(self.de, control_property) == value
 
     @pytest.mark.parametrize("control_property, value", [
-        ('parallel', ParallelOptions.All),
+        ('parallel', Parallel.All),
         ('calcSldDuringFit', True),
         ('resamPars', [0.2, 1]),
-        ('display', DisplayOptions.Notify),
+        ('display', Display.Notify),
         ('populationSize', 20),
         ('fWeight', 0.3),
         ('crossoverProbability', 0.4),
-        ('strategy', StrategyOptions.BestWithJitter),
+        ('strategy', Strategies.BestWithJitter),
         ('targetValue', 2.0),
         ('numGenerations', 50)
     ])
@@ -301,21 +301,21 @@ class TestDE:
     def test_repr(self) -> None:
         """Tests the DE model __repr__."""
         table = self.de.__repr__()
-        table_str = ("+----------------------+-------------------------------------------+\n"
-                     "|       Property       |                   Value                   |\n"
-                     "+----------------------+-------------------------------------------+\n"
-                     "|      procedure       |                     de                    |\n"
-                     "|       parallel       |                   single                  |\n"
-                     "|   calcSldDuringFit   |                   False                   |\n"
-                     "|      resamPars       |                 [0.9, 50]                 |\n"
-                     "|       display        |                    iter                   |\n"
-                     "|    populationSize    |                     20                    |\n"
-                     "|       fWeight        |                    0.5                    |\n"
-                     "| crossoverProbability |                    0.8                    |\n"
-                     "|       strategy       | StrategyOptions.RandomWithPerVectorDither |\n"
-                     "|     targetValue      |                    1.0                    |\n"
-                     "|    numGenerations    |                    500                    |\n"
-                     "+----------------------+-------------------------------------------+"
+        table_str = ("+----------------------+--------------------------------------+\n"
+                     "|       Property       |                Value                 |\n"
+                     "+----------------------+--------------------------------------+\n"
+                     "|      procedure       |                  de                  |\n"
+                     "|       parallel       |                single                |\n"
+                     "|   calcSldDuringFit   |                False                 |\n"
+                     "|      resamPars       |              [0.9, 50]               |\n"
+                     "|       display        |                 iter                 |\n"
+                     "|    populationSize    |                  20                  |\n"
+                     "|       fWeight        |                 0.5                  |\n"
+                     "| crossoverProbability |                 0.8                  |\n"
+                     "|       strategy       | Strategies.RandomWithPerVectorDither |\n"
+                     "|     targetValue      |                 1.0                  |\n"
+                     "|    numGenerations    |                 500                  |\n"
+                     "+----------------------+--------------------------------------+"
                      )
 
         assert table == table_str
@@ -329,10 +329,10 @@ class TestNS:
         self.ns = NS()
 
     @pytest.mark.parametrize("control_property, value", [
-        ('parallel', ParallelOptions.Single),
+        ('parallel', Parallel.Single),
         ('calcSldDuringFit', False),
         ('resamPars', [0.9, 50]),
-        ('display', DisplayOptions.Iter),
+        ('display', Display.Iter),
         ('procedure', Procedures.NS),
         ('Nlive', 150),
         ('Nmcmc', 0),
@@ -344,10 +344,10 @@ class TestNS:
         assert getattr(self.ns, control_property) == value
 
     @pytest.mark.parametrize("control_property, value", [
-        ('parallel', ParallelOptions.All),
+        ('parallel', Parallel.All),
         ('calcSldDuringFit', True),
         ('resamPars', [0.2, 1]),
-        ('display', DisplayOptions.Notify),
+        ('display', Display.Notify),
         ('Nlive', 1500),
         ('Nmcmc', 1),
         ('propScale', 0.5),
@@ -426,31 +426,31 @@ class TestDream:
         self.dream = Dream()
 
     @pytest.mark.parametrize("control_property, value", [
-        ('parallel', ParallelOptions.Single),
+        ('parallel', Parallel.Single),
         ('calcSldDuringFit', False),
         ('resamPars', [0.9, 50]),
-        ('display', DisplayOptions.Iter),
+        ('display', Display.Iter),
         ('procedure', Procedures.Dream),
         ('nSamples', 50000),
         ('nChains', 10),
-        ('jumpProb', 0.5),
+        ('jumpProbability', 0.5),
         ('pUnitGamma', 0.2),
-        ('boundHandling', BoundHandlingOptions.Fold)
+        ('boundHandling', BoundHandling.Fold)
     ])
     def test_dream_property_values(self, control_property: str, value: Any) -> None:
         """Tests the default values of Dream class."""
         assert getattr(self.dream, control_property) == value
 
     @pytest.mark.parametrize("control_property, value", [
-        ('parallel', ParallelOptions.All),
+        ('parallel', Parallel.All),
         ('calcSldDuringFit', True),
         ('resamPars', [0.2, 1]),
-        ('display', DisplayOptions.Notify),
+        ('display', Display.Notify),
         ('nSamples', 500),
         ('nChains', 1000),
-        ('jumpProb', 0.7),
+        ('jumpProbability', 0.7),
         ('pUnitGamma', 0.3),
-        ('boundHandling', BoundHandlingOptions.Reflect)
+        ('boundHandling', BoundHandling.Reflect)
     ])
     def test_dream_property_setters(self, control_property: str,  value: Any) -> None:
         """Tests the setters in Dream class."""
@@ -458,13 +458,13 @@ class TestDream:
         assert getattr(self.dream, control_property) == value
 
     @pytest.mark.parametrize("control_property, value, msg", [
-        ('jumpProb', 0, "Input should be greater than 0"),
-        ('jumpProb', 2, "Input should be less than 1"),
+        ('jumpProbability', 0, "Input should be greater than 0"),
+        ('jumpProbability', 2, "Input should be less than 1"),
         ('pUnitGamma', -5, "Input should be greater than 0"),
         ('pUnitGamma', 20, "Input should be less than 1")
     ])
-    def test_dream_jumpProb_pUnitGamma_error(self, control_property: str, value: int, msg: str) -> None:
-        """Tests the jumpProb and pUnitGamma setter errors in Dream class."""
+    def test_dream_jumpProbability_pUnitGamma_error(self, control_property: str, value: int, msg: str) -> None:
+        """Tests the jumpProbability and pUnitGamma setter errors in Dream class."""
         with pytest.raises(pydantic.ValidationError) as exp:
             setattr(self.dream, control_property, value)
         assert exp.value.errors()[0]['msg'] == msg
@@ -514,9 +514,10 @@ class TestDream:
                      "|     display      |    iter   |\n"                     
                      "|     nSamples     |   50000   |\n"
                      "|     nChains      |     10    |\n"
-                     "|     jumpProb     |    0.5    |\n"
+                     "| jumpProbability  |    0.5    |\n"
                      "|    pUnitGamma    |    0.2    |\n"
                      "|  boundHandling   |    fold   |\n"
+                     "|     adaptPCR     |   False   |\n"
                      "+------------------+-----------+"
                      )
 
