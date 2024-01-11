@@ -9,11 +9,10 @@ from RAT.utils.dataclasses import Checks, Limits, Priors, Controls, Problem
 from RAT.utils.enums import Calc, Models
 
 
-def make_input(project: RAT.Project, controls: Union[RAT.controls.Calculate,
-                                                     RAT.controls.Simplex,
-                                                     RAT.controls.DE,
-                                                     RAT.controls.NS,
-                                                     RAT.controls.Dream]):# -> tuple[RAT.Project, list]:
+def make_input(project: RAT.Project, controls: Union[RAT.controls.Calculate, RAT.controls.Simplex, RAT.controls.DE,
+                                                     RAT.controls.NS, RAT.controls.Dream]
+               ) -> tuple[RAT.utils.dataclasses.Problem, list, RAT.utils.dataclasses.Limits,
+                          RAT.utils.dataclasses.Priors, RAT.utils.dataclasses.Controls]:
     """Constructs the inputs required for the compiled RAT code using the data defined in the input project and
     controls.
 
@@ -26,44 +25,39 @@ def make_input(project: RAT.Project, controls: Union[RAT.controls.Calculate,
 
     Returns
     -------
-    TBA
+    problem : RAT.utils.dataclasses.Problem
+        The problem input used in the compiled code
+    cells : list
+        The list of lists (cell arrays).
+    limits : RAT.utils.dataclasses.Limits
+        The limits.
+    priors : RAT.utils.dataclasses.Priors
+        The priors.
+    controls : RAT.utils.dataclasses.Controls
+        The controls object used in the compiled code.
     """
-
-
     # Need to convert project and controls to the format expected by RATMain
-
-    checks_field = {'parameters': 'fitParam',
-                    'bulk_in': 'fitBulkIn',
-                    'bulk_out': 'fitBulkOut',
-                    'qz_shifts': 'fitQzshifts',
-                    'scalefactors': 'fitScalefactor',
-                    'domain_ratios': 'fitDomainRatio',
-                    'background_parameters': 'fitBackgroundParam',
-                    'resolution_parameters': 'fitResolutionParam',
-                    }
-
-    priors_field = {'parameters': 'param',
-                    'bulk_in': 'bulkIn',
-                    'bulk_out': 'bulkOut',
-                    'qz_shifts': 'qzshift',
-                    'scalefactors': 'scalefactor',
-                    'domain_ratios': 'domainRatio',
-                    'background_parameters': 'backgroundParam',
-                    'resolution_parameters': 'resolutionParam',
-                    }
+    dataclass_field = {'parameters': 'param',
+                       'bulk_in': 'bulkIn',
+                       'bulk_out': 'bulkOut',
+                       'qz_shifts': 'qzshift',
+                       'scalefactors': 'scalefactor',
+                       'domain_ratios': 'domainRatio',
+                       'background_parameters': 'backgroundParam',
+                       'resolution_parameters': 'resolutionParam',
+                       }
 
     prior_id = {'uniform': 1, 'gaussian': 2, 'jeffreys': 3}
-    hydrate_id = {'bulk in': 1, 'bulk out': 2}
 
     checks = Checks()
     limits = Limits()
     priors = Priors()
 
     for class_list in RAT.project.parameter_class_lists:
-        setattr('checks', checks_field[class_list], [int(element.fit) for element in class_list])
-        setattr('limits', priors_field[class_list], [[element.min, element.max] for element in class_list])
-        setattr('priors', priors_field[class_list], [[element.name, element.prior_type, element.mu, element.sigma]
-                                                     for element in class_list])
+        setattr('checks', 'fit' + dataclass_field[class_list], [int(element.fit) for element in class_list])
+        setattr('limits', dataclass_field[class_list], [[element.min, element.max] for element in class_list])
+        setattr('priors', dataclass_field[class_list], [[element.name, element.prior_type, element.mu, element.sigma]
+                                                        for element in class_list])
 
     priors.priorNames = [param.name for class_list in RAT.project.parameter_class_lists
                          for param in getattr(project, class_list)]
@@ -74,36 +68,36 @@ def make_input(project: RAT.Project, controls: Union[RAT.controls.Calculate,
     if project.model == Models.CustomXY:
         controls.calcSldDuringFit = True
 
-    RAT_controls = Controls(**{**controls.model_dump(), **asdict(checks)})
+    input_controls = Controls(**{**controls.model_dump(), **asdict(checks)})
+
+    # Set the values in the problem dataclass
+    problem = make_problem(project)
+    cells = make_cells(project)
+
+    return problem, cells, limits, priors, input_controls
+
+
+def make_problem(project: RAT.Project) -> RAT.utils.dataclasses.Problem:
+    """Constructs the inputs required for the compiled RAT code using the data defined in the input project and
+    controls.
+
+    Parameters
+    ----------
+    project : RAT.Project
+        The input project.
+
+    Returns
+    -------
+    problem : RAT.utils.Problem
+        The problem object required for RATMain
+    """
 
     # Set contrast parameters according to model type
     if project.model == Models.StandardLayers:
         contrast_custom_files = [float('NaN')] * len(project.contrasts)
-        if project.calc_type == Calc.Domains:
-            contrast_models = [[project.domain_contrasts.index(domain_contrast) for domain_contrast in contrast.model]
-                               for contrast in project.contrasts]
-        else:
-            contrast_models = [[project.layers.index(layer) for layer in contrast.model]
-                               for contrast in project.contrasts]
     else:
-        contrast_models = [[]] * len(project.contrasts)
         contrast_custom_files = [project.custom_files.index(contrast.model) for contrast in project.contrasts]
 
-    layer_details = []
-    for layer in project.layers:
-
-        layer_params = [project.parameters.index(attribute) for attribute in layer.model_fields[1:-2]]
-        layer_params.append(project.parameters.index(layer.hydration) if layer.hydration else float('NaN'))
-        layer_params.append(hydrate_id[layer.hydrate_with])
-
-        layer_details.append(layer_params)
-
-    # file_list = []
-    # for file in project.custom_files:
-
-
-
-    # Set the values in the problem dataclass
     problem = Problem(
         TF=project.calculation,
         modelType=project.model,
@@ -142,9 +136,49 @@ def make_input(project: RAT.Project, controls: Union[RAT.controls.Calculate,
                      for param in getattr(project, class_list) if not param.fit],
     )
 
-    # OK, the cells are up next. Note that the order has been hard--coded into RAT
-    cells = []
+    return problem
 
+
+def make_cells(project: RAT.Project) -> list:
+    """Constructs the inputs required for the compiled RAT code using the data defined in the input project and
+    controls.
+
+    Note that the order of the inputs has been hard--coded into the compiled RAT code.
+
+    Parameters
+    ----------
+    project : RAT.Project
+        The input project.
+
+    Returns
+    -------
+    cells : list
+        The list of lists (cell arrays) required for RATMain.
+    """
+    hydrate_id = {'bulk in': 1, 'bulk out': 2}
+
+    # Set contrast parameters according to model type
+    if project.model == Models.StandardLayers:
+        if project.calc_type == Calc.Domains:
+            contrast_models = [[project.domain_contrasts.index(domain_contrast) for domain_contrast in contrast.model]
+                               for contrast in project.contrasts]
+        else:
+            contrast_models = [[project.layers.index(layer) for layer in contrast.model]
+                               for contrast in project.contrasts]
+    else:
+        contrast_models = [[]] * len(project.contrasts)
+
+    # Get details of defined layers
+    layer_details = []
+    for layer in project.layers:
+
+        layer_params = [project.parameters.index(attribute) for attribute in layer.model_fields[1:-2]]
+        layer_params.append(project.parameters.index(layer.hydration) if layer.hydration else float('NaN'))
+        layer_params.append(hydrate_id[layer.hydrate_with])
+
+        layer_details.append(layer_params)
+
+    # Find contrast data in project.data classlist
     all_data = []
     data_limits = []
     simulation_limits = []
@@ -162,8 +196,8 @@ def make_input(project: RAT.Project, controls: Union[RAT.controls.Calculate,
             data_limits.append([0, 0])
             simulation_limits.append([0, 0])
 
-
-    # . . . and populate the list of cells here
+    # Populate the list of cells
+    cells = []
     cells.append([[0, 1]] * len(project.contrasts))  # This is marked as "to do" in RAT
     cells.append(all_data)
     cells.append(data_limits)
@@ -193,4 +227,4 @@ def make_input(project: RAT.Project, controls: Union[RAT.controls.Calculate,
 
     cells.append([param.name for param in project.domain_ratios])
 
-    return problem, cells, limits, priors, RAT_controls
+    return cells
