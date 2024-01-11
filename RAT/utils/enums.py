@@ -5,8 +5,9 @@ except ImportError:
     from strenum import StrEnum
 
 
+# Controls
 class ParallelOptions(StrEnum):
-    """Defines the avaliable options for parallelization"""
+    """Defines the available options for parallelization"""
     Single = 'single'
     Points = 'points'
     Contrasts = 'contrasts'
@@ -14,7 +15,7 @@ class ParallelOptions(StrEnum):
 
 
 class Procedures(StrEnum):
-    """Defines the avaliable options for procedures"""
+    """Defines the available options for procedures"""
     Calculate = 'calculate'
     Simplex = 'simplex'
     DE = 'de'
@@ -23,7 +24,7 @@ class Procedures(StrEnum):
 
 
 class DisplayOptions(StrEnum):
-    """Defines the avaliable options for display"""
+    """Defines the available options for display"""
     Off = 'off'
     Iter = 'iter'
     Notify = 'notify'
@@ -31,7 +32,7 @@ class DisplayOptions(StrEnum):
 
 
 class BoundHandlingOptions(StrEnum):
-    """Defines the avaliable options for bound handling"""
+    """Defines the available options for bound handling"""
     Off = 'off'
     Reflect = 'reflect'
     Bound = 'bound'
@@ -46,3 +47,44 @@ class StrategyOptions(Enum):
     RandomWithPerVectorDither = 4
     RandomWithPerGenerationDither = 5
     RandomEitherOrAlgorithm = 6
+
+
+# Models
+class Hydration(StrEnum):
+    None_ = 'none'
+    BulkIn = 'bulk in'
+    BulkOut = 'bulk out'
+    Oil = 'oil'
+
+
+class Languages(StrEnum):
+    Python = 'python'
+    Matlab = 'matlab'
+
+
+class Priors(StrEnum):
+    Uniform = 'uniform'
+    Gaussian = 'gaussian'
+
+
+class Types(StrEnum):
+    Constant = 'constant'
+    Data = 'data'
+    Function = 'function'
+
+
+# Project
+class CalcTypes(StrEnum):
+    NonPolarised = 'non polarised'
+    Domains = 'domains'
+
+
+class Geometries(StrEnum):
+    AirSubstrate = 'air/substrate'
+    SubstrateLiquid = 'substrate/liquid'
+
+
+class ModelTypes(StrEnum):
+    CustomLayers = 'custom layers'
+    CustomXY = 'custom xy'
+    StandardLayers = 'standard layers'

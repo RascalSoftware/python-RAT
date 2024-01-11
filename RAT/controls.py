@@ -66,9 +66,10 @@ class Dream(Calculate):
     procedure: Literal[Procedures.Dream] = Procedures.Dream
     nSamples: int = Field(50000, ge=0)
     nChains: int = Field(10, gt=0)
-    jumpProb: float = Field(0.5, gt=0.0, lt=1.0)
+    jumpProbability: float = Field(0.5, gt=0.0, lt=1.0)
     pUnitGamma: float = Field(0.2, gt=0.0, lt=1.0)
     boundHandling: BoundHandlingOptions = BoundHandlingOptions.Fold
+    adaptPCR: bool = False
 
 
 def set_controls(procedure: Procedures = Procedures.Calculate, **properties)\

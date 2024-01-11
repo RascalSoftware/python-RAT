@@ -4,10 +4,7 @@ import numpy as np
 from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
 from typing import Any
 
-try:
-    from enum import StrEnum
-except ImportError:
-    from strenum import StrEnum
+from RAT.utils.enums import Hydration, Languages, Priors, Types
 
 
 def int_sequence():
@@ -27,29 +24,6 @@ domain_contrast_number = int_sequence()
 layer_number = int_sequence()
 parameter_number = int_sequence()
 resolution_number = int_sequence()
-
-
-class Hydration(StrEnum):
-    None_ = 'none'
-    BulkIn = 'bulk in'
-    BulkOut = 'bulk out'
-    Oil = 'oil'
-
-
-class Languages(StrEnum):
-    Python = 'python'
-    Matlab = 'matlab'
-
-
-class Priors(StrEnum):
-    Uniform = 'uniform'
-    Gaussian = 'gaussian'
-
-
-class Types(StrEnum):
-    Constant = 'constant'
-    Data = 'data'
-    Function = 'function'
 
 
 class RATModel(BaseModel, validate_assignment=True, extra='forbid'):
@@ -80,8 +54,8 @@ class Contrast(RATModel):
     name: str = Field(default_factory=lambda: 'New Contrast ' + next(contrast_number), min_length=1)
     data: str = ''
     background: str = ''
-    nba: str = ''
-    nbs: str = ''
+    bulkIn: str = ''
+    bulkOut: str = ''
     scalefactor: str = ''
     resolution: str = ''
     resample: bool = False
@@ -93,8 +67,8 @@ class ContrastWithRatio(RATModel):
     name: str = Field(default_factory=lambda: 'New Contrast ' + next(contrast_number), min_length=1)
     data: str = ''
     background: str = ''
-    nba: str = ''
-    nbs: str = ''
+    bulkIn: str = ''
+    bulkOut: str = ''
     scalefactor: str = ''
     resolution: str = ''
     resample: bool = False

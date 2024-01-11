@@ -11,27 +11,7 @@ from typing import Any, Callable
 from RAT.classlist import ClassList
 import RAT.models
 from RAT.utils.custom_errors import custom_pydantic_validation_error
-
-try:
-    from enum import StrEnum
-except ImportError:
-    from strenum import StrEnum
-
-
-class CalcTypes(StrEnum):
-    NonPolarised = 'non polarised'
-    Domains = 'domains'
-
-
-class ModelTypes(StrEnum):
-    CustomLayers = 'custom layers'
-    CustomXY = 'custom xy'
-    StandardLayers = 'standard layers'
-
-
-class Geometries(StrEnum):
-    AirSubstrate = 'air/substrate'
-    SubstrateLiquid = 'substrate/liquid'
+from RAT.utils.enums import CalcTypes, Geometries, ModelTypes
 
 
 # Map project fields to pydantic models
