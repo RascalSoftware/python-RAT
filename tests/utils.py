@@ -1,3 +1,5 @@
+import collections
+import math
 from typing import Any
 
 
@@ -16,3 +18,12 @@ class InputAttributes:
 class SubInputAttributes(InputAttributes):
     """Trivial subclass of InputAttributes"""
     pass
+
+
+class NaNList(collections.UserList):
+    """Defines a list where NaNs are defined as equal."""
+
+    def __eq__(self, other: Any) -> bool:
+        return(self.data == other or
+               ['NaN' if math.isnan(el) else el for el in self] == ['NaN' if math.isnan(el) else el for el in other]
+               )
