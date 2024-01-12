@@ -193,15 +193,18 @@ class ClassList(collections.UserList):
 
     def count(self, item: Union[object, str]) -> int:
         """Return the number of times an object appears in the ClassList using either the object itself or its
-        name_field value."""
+        name_field value.
+        """
         item = self._get_item_from_name_field(item)
         return self.data.count(item)
 
-    def index(self, item: Union[object, str], *args) -> int:
+    def index(self, item: Union[object, str], offset: int = 0, *args) -> int:
         """Return the index of a particular object in the ClassList using either the object itself or its
-        name_field value."""
+        name_field value. If an offset is specified, add this value to the index. This is used to account for one-based
+        indexing.
+        """
         item = self._get_item_from_name_field(item)
-        return self.data.index(item, *args)
+        return self.data.index(item, *args) + offset
 
     def extend(self, other: Sequence[object]) -> None:
         """Extend the ClassList by adding another sequence."""

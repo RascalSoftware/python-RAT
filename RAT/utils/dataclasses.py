@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, field
 from RAT.utils.enums import Parallel, Procedures, Display, BoundHandling, Strategies, Calc, Geometries, Models
+from typing import Union
 
 
 @dataclass
@@ -108,7 +109,7 @@ class Problem:
     contrastBackgrounds: list[int] = field(default_factory=list)
     contrastBackgroundsType: list[int] = field(default_factory=list)
     contrastResolutions: list[int] = field(default_factory=list)
-    contrastCustomFiles: list[int] = field(default_factory=list)
+    contrastCustomFiles: list[Union[int, float]] = field(default_factory=list)
     resample: list[int] = field(default_factory=list)
     dataPresent: list[int] = field(default_factory=list)
     oilChiDataPresent: list[int] = field(default_factory=list)

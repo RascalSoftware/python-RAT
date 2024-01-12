@@ -457,6 +457,17 @@ def test_index(two_name_class_list: 'ClassList', index_value: Union[object, str]
     assert two_name_class_list.index(index_value) == expected_index
 
 
+@pytest.mark.parametrize(["index_value", "offset", "expected_index"], [
+    ('Bob', 1, 2),
+    (InputAttributes(name='Bob'), -3, -2),
+])
+def test_index_offset(two_name_class_list: 'ClassList', index_value: Union[object, str], offset: int,
+                      expected_index: int) -> None:
+    """We should be able to find the index of an object in the ClassList either by its name_field value or by
+    specifying the object itself. When using an offset, the value of the index should be shifted accordingly.
+    """
+    assert two_name_class_list.index(index_value, offset) == expected_index
+
 @pytest.mark.parametrize("index_value", [
     'Eve',
     (InputAttributes(name='Eve')),

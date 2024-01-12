@@ -96,7 +96,7 @@ def make_problem(project: RAT.Project) -> RAT.utils.dataclasses.Problem:
     if project.model == Models.StandardLayers:
         contrast_custom_files = [float('NaN')] * len(project.contrasts)
     else:
-        contrast_custom_files = [project.custom_files.index(contrast.model) for contrast in project.contrasts]
+        contrast_custom_files = [project.custom_files.index(contrast.model, 1) for contrast in project.contrasts]
 
     problem = Problem(
         TF=project.calculation,
@@ -111,14 +111,15 @@ def make_problem(project: RAT.Project) -> RAT.utils.dataclasses.Problem:
         domainRatio=[param.value for param in project.domain_ratios],
         backgroundParams=[param.value for param in project.background_parameters],
         resolutionParams=[param.value for param in project.resolution_parameters],
-        contrastBulkIns=[project.bulk_in.index(contrast.bulkIn) for contrast in project.contrasts],
-        contrastBulkOuts=[project.bulk_out.index(contrast.bulkOut) for contrast in project.contrasts],
+        contrastBulkIns=[project.bulk_in.index(contrast.bulkIn, 1) for contrast in project.contrasts],
+        contrastBulkOuts=[project.bulk_out.index(contrast.bulkOut, 1) for contrast in project.contrasts],
         contrastQzshifts=[],  # This is marked as "to do" in RAT
-        contrastScalefactors=[project.scalefactors.index(contrast.scalefactor) for contrast in project.contrasts],
-        contrastDomainRatios=[project.domain_ratios.index(contrast.domain_ratio) for contrast in project.contrasts],
-        contrastBackgrounds=[project.backgrounds.index(contrast.background) for contrast in project.contrasts],
+        contrastScalefactors=[project.scalefactors.index(contrast.scalefactor, 1) for contrast in project.contrasts],
+        contrastDomainRatios=[project.domain_ratios.index(contrast.domain_ratio, 1) for contrast in project.contrasts
+                              if hasattr(contrast, 'domain_ratio')],
+        contrastBackgrounds=[project.backgrounds.index(contrast.background, 1) for contrast in project.contrasts],
         contrastBackgroundsType=[],
-        contrastResolutions=[project.resolutions.index(contrast.resolution) for contrast in project.contrasts],
+        contrastResolutions=[project.resolutions.index(contrast.resolution, 1) for contrast in project.contrasts],
         contrastCustomFiles=contrast_custom_files,
         resample=[contrast.resample for contrast in project.contrasts],
         dataPresent=[1 if contrast.data else 0 for contrast in project.contrasts],
@@ -128,11 +129,11 @@ def make_problem(project: RAT.Project) -> RAT.utils.dataclasses.Problem:
         numberOfDomainContrasts=len(project.domain_contrasts),
         fitParams=[param.value for class_list in RAT.project.parameter_class_lists
                    for param in getattr(project, class_list) if param.fit],
-        fitLimits=[param.limits for class_list in RAT.project.parameter_class_lists
+        fitLimits=[[param.min, param.max] for class_list in RAT.project.parameter_class_lists
                    for param in getattr(project, class_list) if param.fit],
         otherParams=[param.value for class_list in RAT.project.parameter_class_lists
                      for param in getattr(project, class_list) if not param.fit],
-        otherLimits=[param.limits for class_list in RAT.project.parameter_class_lists
+        otherLimits=[[param.min, param.max] for class_list in RAT.project.parameter_class_lists
                      for param in getattr(project, class_list) if not param.fit],
     )
 
@@ -160,10 +161,10 @@ def make_cells(project: RAT.Project) -> list:
     # Set contrast parameters according to model type
     if project.model == Models.StandardLayers:
         if project.calc_type == Calc.Domains:
-            contrast_models = [[project.domain_contrasts.index(domain_contrast) for domain_contrast in contrast.model]
+            contrast_models = [[project.domain_contrasts.index(domain_contrast, 1) for domain_contrast in contrast.model]
                                for contrast in project.contrasts]
         else:
-            contrast_models = [[project.layers.index(layer) for layer in contrast.model]
+            contrast_models = [[project.layers.index(layer, 1) for layer in contrast.model]
                                for contrast in project.contrasts]
     else:
         contrast_models = [[]] * len(project.contrasts)
@@ -172,8 +173,8 @@ def make_cells(project: RAT.Project) -> list:
     layer_details = []
     for layer in project.layers:
 
-        layer_params = [project.parameters.index(attribute) for attribute in layer.model_fields[1:-2]]
-        layer_params.append(project.parameters.index(layer.hydration) if layer.hydration else float('NaN'))
+        layer_params = [project.parameters.index(attribute, 1) for attribute in layer.model_fields[1:-2]]
+        layer_params.append(project.parameters.index(layer.hydration, 1) if layer.hydration else float('NaN'))
         layer_params.append(hydrate_id[layer.hydrate_with])
 
         layer_details.append(layer_params)
@@ -220,7 +221,7 @@ def make_cells(project: RAT.Project) -> list:
     cells.append([[0, 0, 0]] * len(project.contrasts))  # Placeholder for oil chi data
     cells.append([[0, 1]] * len(project.domain_contrasts))  # This is marked as "to do" in RAT
 
-    domain_contrast_models = [[project.layers.index(layer) for layer in domain_contrast.model]
+    domain_contrast_models = [[project.layers.index(layer, 1) for layer in domain_contrast.model]
                               for domain_contrast in project.domain_contrasts]
     cells.append([domain_contrast_model if domain_contrast_model else 0
                   for domain_contrast_model in domain_contrast_models])
