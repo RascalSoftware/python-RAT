@@ -20,7 +20,7 @@ namespace RAT
 {
   void groupLayersMod(const ::coder::array<real_T, 2U> &allLayers, real_T
                       allRoughs, const char_T geometry_data[], const int32_T
-                      geometry_size[2], real_T nbair, real_T nbsubs, ::coder::
+                      geometry_size[2], real_T bulkIns, real_T bulkOuts, ::coder::
                       array<real_T, 2U> &outLayers, real_T *outSsubs)
   {
     ::coder::array<real_T, 2U> layers;
@@ -30,35 +30,26 @@ namespace RAT
     int32_T loop_ub;
     uint32_T unnamed_idx_0;
 
-    // Arrange layers according to geometry and apply any coverage correction.
+    //  Arrange layers according to geometry and apply any coverage correction. The paratt calculation proceeds through the
+    //  z,rho,rough stack, and the parameter 'ssub' in callParatt is the final roughness encountered.
+    //
+    //  * For air liquid 'ssub' is therefore the substrate roughness.
+    //  * For solid liquid, the substrate roughness is the first roughness encountered, and 'ssub' is then the roughness of the outermost layer
     //
     //  USAGE::
     //
-    //      [outLayers, outSsubs] = groupLayersMod(allLayers,allRoughs,numberOfContrasts,geometry,nbairs,nbsubs)
+    //      [outLayers, outSsubs] = groupLayersMod(allLayers,allRoughs,geometry,bulkIns,bulkOuts)
     //
     //  INPUTS:
-    //
-    //      * allLayers =         cell array, one for each contrast. Each cell is the list of layer values for each contrast.
-    //      * allRoughs =         Double of substrate roughness for each contrast.
-    //      * numberOfContrasts = double.
-    //      * geometry =          'Air / Liquid (or solid)' or 'Solid / Liquid'
-    //      * nbairs =            vector of nbair values.
-    //      * nbsubs =            vector of nbsub values.
-    //
-    //      The paratt calculation procedds through the
-    //      z,rho,rough stack, and the parameter 'ssub' in
-    //      callParatt is the final roughness encountered.
-    //
-    //      * For air liquid 'ssub' is therefore the substrate roughness.
-    //
-    //      * For solid liquid, the substrate roughness is the first roughness encountered, and 'ssub' is then the roughness of the outermost layer
+    //      * allLayers: cell array, one for each contrast. Each cell is the list of layer values for each contrast.
+    //      * allRoughs:  Double of substrate roughness for each contrast.
+    //      * geometry: 'Air / Liquid (or solid)' or 'Solid / Liquid'
+    //      * bulkIns: vector of bulkIn values.
+    //      * bulkOuts: vector of bulkOut values.
     //
     //  Outputs:
-    //
-    //      * outLayers = cell array of layers param values for each contrast.
-    //
-    //      * outSsubs =  vector of substrate roughness values.
-    //
+    //      * outLayers: cell array of layers param values for each contrast.
+    //      * outSsubs: vector of substrate roughness values.
     // outLayers = cell(1,numberOfContrasts);
     // outSsubs = zeros(1,numberOfContrasts);
     // for i = 1:numberOfContrasts
@@ -74,7 +65,7 @@ namespace RAT
     }
 
     if ((allLayers.size(0) != 0) && (allLayers.size(1) != 0)) {
-      if (coder::internal::i_strcmp(geometry_data, geometry_size)) {
+      if (coder::internal::q_strcmp(geometry_data, geometry_size)) {
         layers.set_size(allLayers.size(0), allLayers.size(1));
         loop_ub = allLayers.size(1);
         b_loop_ub = allLayers.size(0);
@@ -149,9 +140,9 @@ namespace RAT
           if (!std::isnan(this_pcw)) {
             real_T d;
             if (allLayers[j + allLayers.size(0) * 4] == 1.0) {
-              d = nbair;
+              d = bulkIns;
             } else {
-              d = nbsubs;
+              d = bulkOuts;
             }
 
             layers[j + layers.size(0)] = d * (this_pcw / 100.0) + (1.0 -

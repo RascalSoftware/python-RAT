@@ -16,9 +16,7 @@
 #include "sum.h"
 #include "unsafeSxfun.h"
 #include "coder_array.h"
-#include <pybind11/pybind11.h>
 
-namespace py = pybind11;
 // Function Definitions
 namespace RAT
 {
@@ -40,8 +38,7 @@ namespace RAT
     //      thisFit = allFits{i};
     b_thisData[0] = thisData.size(0);
     b_thisData[1] = 1.0;
-    N = coder::internal::b_maximum(b_thisData);
-    
+    N = coder::internal::maximum(b_thisData);
     if (N <= P) {
       N = P + 1.0;
     }

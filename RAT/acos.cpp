@@ -79,10 +79,10 @@ namespace RAT
           } else {
             v.re = x->re + 1.0;
             v.im = x->im;
-            b_sqrt(&v);
+            d_sqrt(&v);
             u.re = 1.0 - x->re;
             u.im = 0.0 - x->im;
-            b_sqrt(&u);
+            d_sqrt(&u);
             d = complexTimes(v.re, -v.im, u.re, u.im);
             b_asinh(&d);
             x->re = 2.0 * rt_atan2d_snf(u.re, v.re);

@@ -5,7 +5,7 @@
 //
 // rt_defines.h
 //
-// Code generation for function 'reflectivityCalculation'
+// Code generation for function 'RATMain'
 //
 #ifndef RT_DEFINES_H
 #define RT_DEFINES_H

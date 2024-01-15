@@ -42,7 +42,7 @@
 
 // Function Declarations
 extern int32_T main(int32_T argc, char **argv);
-extern void main_reflectivityCalculation();
+extern void main_RATMain();
 
 #endif
 

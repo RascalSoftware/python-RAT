@@ -19,17 +19,17 @@
 // Function Declarations
 namespace RAT
 {
-  void b_callReflectivity(real_T nbairs, real_T nbsubs, const real_T
-    simLimits_data[], const real_T repeatLayers[2], const ::coder::array<real_T,
-    2U> &this_data, ::coder::array<real_T, 2U> &layers, real_T ssubs, real_T res,
-    boolean_T useImaginary, ::coder::array<real_T, 2U> &reflectivity, ::coder::
-    array<real_T, 2U> &Simulation);
-  void callReflectivity(real_T nbairs, real_T nbsubs, const real_T
-                        simLimits_data[], const real_T repeatLayers[2], const ::
-                        coder::array<real_T, 2U> &this_data, ::coder::array<
-                        real_T, 2U> &layers, real_T ssubs, real_T res, boolean_T
+  void b_callReflectivity(real_T bulkIns, real_T bulkOuts, const real_T
+    simLimits[2], const real_T repeatLayers[2], const ::coder::array<real_T, 2U>
+    &thisData, ::coder::array<real_T, 2U> &layers, real_T ssubs, real_T
+    resolution, boolean_T useImaginary, ::coder::array<real_T, 2U> &reflectivity,
+    ::coder::array<real_T, 2U> &simulation);
+  void callReflectivity(real_T bulkIns, real_T bulkOuts, const real_T simLimits
+                        [2], const real_T repeatLayers[2], const ::coder::array<
+                        real_T, 2U> &thisData, ::coder::array<real_T, 2U>
+                        &layers, real_T ssubs, real_T resolution, boolean_T
                         useImaginary, ::coder::array<real_T, 2U> &reflectivity, ::
-                        coder::array<real_T, 2U> &Simulation);
+                        coder::array<real_T, 2U> &simulation);
 }
 
 #endif

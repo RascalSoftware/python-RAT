@@ -10,7 +10,7 @@
 
 // Include files
 #include "sqrt.h"
-#include "reflectivityCalculation_rtwutil.h"
+#include "RATMain_rtwutil.h"
 #include "rt_nonfinite.h"
 #include <cmath>
 
@@ -23,7 +23,7 @@ namespace RAT
     {
       namespace scalar
       {
-        void b_sqrt(creal_T *x)
+        void d_sqrt(creal_T *x)
         {
           real_T absxi;
           real_T absxr;

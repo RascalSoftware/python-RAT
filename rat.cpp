@@ -1,45 +1,153 @@
 /*<%
-cfg['include_dirs'] = ['D:/Anaconda/lib/site-packages/pybind11/include']
 import glob
-cfg['sources'] = glob.glob('RAT/*.cpp')
+cfg['sources'] = [*glob.glob('RAT/*.cpp'), *glob.glob('RAT/*.c')]
 cfg['parallel'] = True
 setup_pybind11(cfg)
 %>*/
 
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
-#include "RAT/reflectivityCalculation.h"
-#include "RAT/reflectivityCalculation_types.h"
+#include "RAT/RATMain.h"
+#include "RAT/RATMain_initialize.h"
+#include "RAT/RATMain_terminate.h"
+#include "RAT/RATMain_types.h"
 
 namespace py = pybind11;
 
 
+struct Predlims
+{
+    py::list refPredInts;
+    py::list sldPredInts;
+    py::list refXdata;
+    py::list sldXdata;
+    py::array_t<real_T> sampleChi; 
+};
+
+struct BestFitsMean
+{
+    py::list ref;
+    py::list sld;
+    real_T chi;
+    py::list data;
+};
+
+struct ParConfInts
+{
+    py::array_t<real_T> par95;
+    py::array_t<real_T> par65;
+    py::array_t<real_T> mean;
+};
+
+struct NestOutput
+{
+    real_T logZ;
+    py::array_t<real_T> nestSamples;
+    py::array_t<real_T> postSamples;
+};
+
+struct DREAMPars
+{
+    real_T d;
+    real_T N;
+    real_T T;
+    boolean_T parallel;
+    real_T CPU;
+    real_T lambda;
+    real_T pUnitGamma;
+    real_T nCR;
+    real_T delta;
+    real_T steps;
+    real_T zeta;
+    std::string outlier;
+    boolean_T adaptPCR;
+    real_T thinning;
+    real_T epsilon;
+    boolean_T ABC;
+    boolean_T IO;
+    boolean_T modout;
+    boolean_T restart;
+    boolean_T save;
+    py::array_t<real_T> R;
+};
+
+struct MeasInfo
+{
+    real_T Y;
+    real_T N;
+};
+
+struct DreamOutput
+{
+    py::array_t<real_T> outlier;
+    real_T runtime;
+    DREAMPars DREAMPar;
+    MeasInfo Meas_info;
+    real_T iteration;
+    real_T iloc;
+    real_T fx;
+    py::array_t<real_T> AR;
+    py::array_t<real_T> R_stat;
+    py::array_t<real_T> CR;
+};
+
+struct BayesOutput
+{
+    py::array_t<real_T> allChains;
+    DreamOutput dreamOutput;
+    NestOutput nestOutput;
+};
+
+struct BayesResults
+{
+    BestFitsMean bestFitsMean;
+    Predlims predlims;
+    ParConfInts parConfInts;
+    py::array_t<real_T> bestPars;
+    BayesOutput bayesRes;
+    py::array_t<real_T> chain;
+};
+
+struct Priors
+{
+    py::list param;
+    py::list backgroundParam;
+    py::list resolutionParam;
+    py::list bulkIn;
+    py::list bulkOut;
+    py::list qzshift;
+    py::list scalefactor;
+    py::list domainRatio;
+    py::list priorNames;
+    py::array_t<real_T> priorValues;
+};
+
 struct Checks {
-    py::array_t<real_T> params_fitYesNo;
-    py::array_t<real_T> backs_fitYesNo;
-    py::array_t<real_T> shifts_fitYesNo;
-    py::array_t<real_T> scales_fitYesNo;
-    py::array_t<real_T> nbairs_fitYesNo;
-    py::array_t<real_T> nbsubs_fitYesNo;
-    py::array_t<real_T> resol_fitYesNo;
-    py::array_t<real_T> domainRatio_fitYesNo;
+    py::array_t<real_T> fitParam;
+    py::array_t<real_T> fitBackgroundParam;
+    py::array_t<real_T> fitQzshift;
+    py::array_t<real_T> fitScalefactor;
+    py::array_t<real_T> fitBulkIn;
+    py::array_t<real_T> fitBulkOut;
+    py::array_t<real_T> fitResolutionParam;
+    py::array_t<real_T> fitDomainRatio;
 };
 
 struct Calculation
 {
-    py::array_t<real_T> all_chis;
-    real_T sum_chi;
+    py::array_t<real_T> allChis;
+    real_T sumChi;
 };
 
 struct OutputProblem
 {
     py::array_t<real_T> ssubs;
-    py::array_t<real_T> backgrounds;
-    py::array_t<real_T> qshifts;
+    py::array_t<real_T> backgroundParams;
+    py::array_t<real_T> qzshifts;
     py::array_t<real_T> scalefactors;
-    py::array_t<real_T> nbairs;
-    py::array_t<real_T> nbsubs;
-    py::array_t<real_T> resolutions;
+    py::array_t<real_T> bulkIn;
+    py::array_t<real_T> bulkOut;
+    py::array_t<real_T> resolutionParams;
     Calculation calculations {};
     py::array_t<real_T> allSubRough;
     py::array_t<real_T>  resample;
@@ -55,13 +163,13 @@ struct OutputResult {
 };
 
 struct Limits {
-    py::array_t<real_T> params;
-    py::array_t<real_T> backs;
-    py::array_t<real_T> scales;
-    py::array_t<real_T> shifts;
-    py::array_t<real_T> nba;
-    py::array_t<real_T> nbs;
-    py::array_t<real_T> res;
+    py::array_t<real_T> param;
+    py::array_t<real_T> backgroundParam;
+    py::array_t<real_T> scalefactor;
+    py::array_t<real_T> qzshift;
+    py::array_t<real_T> bulkIn;
+    py::array_t<real_T> bulkOut;
+    py::array_t<real_T> resolutionParam;
     py::array_t<real_T> domainRatio;
 };
 
@@ -89,8 +197,8 @@ struct Cells {
 };
 
 struct ProblemDefinition {
-    py::array_t<real_T> contrastBacks;
-    py::array_t<real_T> contrastBacksType;
+    py::array_t<real_T> contrastBackgrounds;
+    py::array_t<real_T> contrastBackgroundsType;
     std::string TF {};
     py::array_t<real_T> resample;
     py::array_t<real_T> dataPresent;
@@ -98,17 +206,17 @@ struct ProblemDefinition {
     real_T numberOfContrasts;
     std::string geometry {};
     bool useImaginary {};
-    py::array_t<real_T> contrastShifts;
-    py::array_t<real_T> contrastScales;
-    py::array_t<real_T> contrastNbas;
-    py::array_t<real_T> contrastNbss;
-    py::array_t<real_T> contrastRes;
-    py::array_t<real_T> backs;
-    py::array_t<real_T> shifts;
-    py::array_t<real_T> sf;
-    py::array_t<real_T> nba;
-    py::array_t<real_T> nbs;
-    py::array_t<real_T> res;
+    py::array_t<real_T> contrastQzshifts;
+    py::array_t<real_T> contrastScalefactors;
+    py::array_t<real_T> contrastBulkIns;
+    py::array_t<real_T> contrastBulkOuts;
+    py::array_t<real_T> contrastResolutions;
+    py::array_t<real_T> backgroundParams;
+    py::array_t<real_T> qzshifts;
+    py::array_t<real_T> scalefactors;
+    py::array_t<real_T> bulkIn;
+    py::array_t<real_T> bulkOut;
+    py::array_t<real_T> resolutionParams;
     py::array_t<real_T> params;
     real_T numberOfLayers {};
     std::string modelType {};
@@ -116,16 +224,15 @@ struct ProblemDefinition {
     py::array_t<real_T> contrastDomainRatios;
     py::array_t<real_T> domainRatio;
     real_T numberOfDomainContrasts {};
-    py::array_t<real_T> domainContrastCustomFiles;
-    py::array_t<real_T> fitpars;
-    py::array_t<real_T> otherpars;
-    py::array_t<real_T> fitconstr;
-    py::array_t<real_T> otherconstr;
+    py::array_t<real_T> fitParams;
+    py::array_t<real_T> otherParams;
+    py::array_t<real_T> fitLimits;
+    py::array_t<real_T> otherLimits;
 };
 
 struct Control {
-    std::string para {};
-    std::string proc {};
+    std::string parallel {};
+    std::string procedure {};
     std::string display {};
     real_T tolX {};
     real_T tolFun {};
@@ -133,23 +240,24 @@ struct Control {
     real_T maxIter {};
     real_T populationSize {};
     real_T fWeight {};
-    real_T F_CR {};
-    real_T VTR {};
-    real_T numGen {};
+    real_T crossoverProbability {};
+    real_T targetValue {};
+    real_T numGenerations {};
     real_T strategy {};
     real_T Nlive {};
-    real_T nmcmc {};
+    real_T Nmcmc {};
     real_T propScale {};
     real_T nsTolerance {};
-    real_T calcSld {};
+    boolean_T calcSldDuringFit {};
     py::array_t<real_T> resamPars;
     real_T updateFreq {};
     real_T updatePlotFreq {};
     real_T nSamples {};
     real_T nChains {};
-    real_T lambda {};
+    real_T jumpProbability {};
     real_T pUnitGamma {};
     std::string boundHandling {};
+    boolean_T adaptPCR;
     Checks checks {};
 };
 
@@ -159,9 +267,17 @@ void string_to_rat_array(std::string value, char_T result_data[], int32_T result
     result_size[0] = 1;
     result_size[1] = value.length();
 
-    // Loop over the array to initialize each element.
     for (int32_T idx1{0}; idx1 < value.length(); idx1++) {
         result_data[idx1] = value[idx1];
+    }
+}
+
+void string_to_rat_char_array(std::string value, coder::array<char_T, 2U>& result)
+{
+    result.set_size(1, value.length());
+
+    for (int32_T idx{0}; idx < value.length(); idx++) {
+        result[idx] = value[idx];
     }
 }
 
@@ -178,7 +294,6 @@ coder::array<real_T, 2U> py_array_to_rat_1d_array(py::array_t<real_T> value)
         throw std::runtime_error("Number of dimensions must be 1");
 
     result.set_size(1, buffer_info.shape[0]);
-    // Loop over the array to initialize each element.
     for (int32_T idx0{0}; idx0 < buffer_info.shape[0]; idx0++) {
         result[idx0] = value.at(idx0);
     }
@@ -186,29 +301,28 @@ coder::array<real_T, 2U> py_array_to_rat_1d_array(py::array_t<real_T> value)
     return result;
 }
 
-coder::bounded_array<real_T, 2U, 2U> py_array_to_rat_bounded_array2(py::array_t<real_T> value)
-{
-    coder::bounded_array<real_T, 2U, 2U> result {};
+// coder::bounded_array<real_T, 2U, 2U> py_array_to_rat_bounded_array2(py::array_t<real_T> value)
+// {
+//     coder::bounded_array<real_T, 2U, 2U> result {};
 
-    py::buffer_info buffer_info = value.request();
+//     py::buffer_info buffer_info = value.request();
     
-    if (buffer_info.size == 0)
-        return result;
+//     if (buffer_info.size == 0)
+//         return result;
     
-    if (buffer_info.ndim != 1)
-        throw std::runtime_error("Number of dimensions must be 1");
+//     if (buffer_info.ndim != 1)
+//         throw std::runtime_error("Number of dimensions must be 1");
 
-    result.size[0] = 1;
-    result.size[1] = buffer_info.shape[0];
-    // Loop over the array to initialize each element.
-    for (int32_T idx0{0}; idx0 < buffer_info.shape[0]; idx0++) {
-        result.data[idx0] = value.at(idx0);
-    }
+//     result.size[0] = 1;
+//     result.size[1] = buffer_info.shape[0];
+//     for (int32_T idx0{0}; idx0 < buffer_info.shape[0]; idx0++) {
+//         result.data[idx0] = value.at(idx0);
+//     }
 
-    return result;
-}
+//     return result;
+// }
 
-coder::bounded_array<real_T, 10U, 2U> py_array_to_rat_bounded_array1(py::array_t<real_T> value)
+coder::bounded_array<real_T, 10U, 2U> py_array_to_rat_bounded_array(py::array_t<real_T> value)
 {
     coder::bounded_array<real_T, 10U, 2U> result {};
 
@@ -222,7 +336,6 @@ coder::bounded_array<real_T, 10U, 2U> py_array_to_rat_bounded_array1(py::array_t
     
     result.size[0] = 1;
     result.size[1] = buffer_info.shape[0];
-    // Loop over the array to initialize each element.
     for (int32_T idx0{0}; idx0 < buffer_info.shape[0]; idx0++) {
         result.data[idx0] = value.at(idx0);
     }
@@ -245,12 +358,47 @@ coder::array<real_T, 2U> py_array_to_rat_2d_array(py::array_t<real_T> value)
     result.set_size(buffer_info.shape[0], buffer_info.shape[1]);
     
     int32_T idx {0};
-    // Loop over the array to initialize each element.
     for (int32_T idx0{0}; idx0 < buffer_info.shape[0]; idx0++) {
         for (int32_T idx1{0}; idx1 < buffer_info.shape[1]; idx1++) {
             idx  = idx0 + result.size(0) * idx1;  
             result[idx] = value.at(idx0, idx1);
         }
+    }
+
+    return result;
+}
+
+coder::array<RAT::cell_0, 1U> py_array_to_unboundedx1_cell_0(py::list values)
+{
+    coder::array<RAT::cell_0, 1U> result;
+    result.set_size(values.size());
+    int32_T idx {0};
+    for (py::handle list: values)
+    { 
+        py::list value = py::cast<py::list>(list);
+        if (py::len(list) != 4)
+            throw std::runtime_error("Number of dimensions for each row must be 4");
+        string_to_rat_char_array(value[0].cast<std::string>(), result[idx].f1);
+        string_to_rat_char_array(value[1].cast<std::string>(), result[idx].f2);
+        result[idx].f3 = value[2].cast<real_T>();
+        result[idx].f4 = value[3].cast<real_T>();
+        idx++;
+    }
+
+    return result;
+}
+
+coder::array<RAT::cell_wrap_1, 1U> py_array_to_unboundedx1_cell_1(py::list values)
+{
+    coder::array<RAT::cell_wrap_1, 1U> result;
+    result.set_size(values.size());
+    int32_T idx {0};
+    for (py::handle list: values)
+    { 
+        std::string value = py::cast<std::string>(list);
+        //TODO: validate dimension
+        string_to_rat_char_array(value, result[idx].f1); 
+        idx++;
     }
 
     return result;
@@ -270,33 +418,32 @@ RAT::struct0_T create_struct0_T(const ProblemDefinition& problem)
     string_to_rat_array(problem.geometry, problem_struct.geometry.data, problem_struct.geometry.size);
     string_to_rat_array(problem.TF, problem_struct.TF.data, problem_struct.TF.size);
     
-    problem_struct.contrastBacks = py_array_to_rat_1d_array(problem.contrastBacks);
-    problem_struct.contrastBacksType = py_array_to_rat_1d_array(problem.contrastBacksType);
+    problem_struct.contrastBackgrounds = py_array_to_rat_1d_array(problem.contrastBackgrounds);
+    problem_struct.contrastBackgroundsType = py_array_to_rat_1d_array(problem.contrastBackgroundsType);
     problem_struct.resample = py_array_to_rat_1d_array(problem.resample);
     problem_struct.dataPresent = py_array_to_rat_1d_array(problem.dataPresent);
     problem_struct.oilChiDataPresent = py_array_to_rat_1d_array(problem.oilChiDataPresent);
-    problem_struct.contrastShifts = py_array_to_rat_1d_array(problem.contrastShifts);
-    problem_struct.contrastScales = py_array_to_rat_1d_array(problem.contrastScales);
-    problem_struct.contrastNbas = py_array_to_rat_1d_array(problem.contrastNbas);
-    problem_struct.contrastNbss = py_array_to_rat_1d_array(problem.contrastNbss);
-    problem_struct.contrastRes = py_array_to_rat_1d_array(problem.contrastRes);
-    problem_struct.backs = py_array_to_rat_1d_array(problem.backs);
-    problem_struct.shifts = py_array_to_rat_1d_array(problem.shifts);
-    problem_struct.sf = py_array_to_rat_1d_array(problem.sf);
-    problem_struct.nba = py_array_to_rat_1d_array(problem.nba);
-    problem_struct.nbs = py_array_to_rat_1d_array(problem.nbs);
-    problem_struct.res = py_array_to_rat_1d_array(problem.res);
+    problem_struct.contrastQzshifts = py_array_to_rat_1d_array(problem.contrastQzshifts);
+    problem_struct.contrastScalefactors = py_array_to_rat_1d_array(problem.contrastScalefactors);
+    problem_struct.contrastBulkIns = py_array_to_rat_1d_array(problem.contrastBulkIns);
+    problem_struct.contrastBulkOuts = py_array_to_rat_1d_array(problem.contrastBulkOuts);
+    problem_struct.contrastResolutions = py_array_to_rat_1d_array(problem.contrastResolutions);
+    problem_struct.backgroundParams = py_array_to_rat_1d_array(problem.backgroundParams);
+    problem_struct.qzshifts = py_array_to_rat_1d_array(problem.qzshifts);
+    problem_struct.scalefactors = py_array_to_rat_1d_array(problem.scalefactors);
+    problem_struct.bulkIn = py_array_to_rat_1d_array(problem.bulkIn);
+    problem_struct.bulkOut = py_array_to_rat_1d_array(problem.bulkOut);
+    problem_struct.resolutionParams = py_array_to_rat_1d_array(problem.resolutionParams);
     problem_struct.params = py_array_to_rat_1d_array(problem.params);
 
     problem_struct.contrastCustomFiles = py_array_to_rat_1d_array(problem.contrastCustomFiles);
     problem_struct.contrastDomainRatios = py_array_to_rat_1d_array(problem.contrastDomainRatios);
     problem_struct.domainRatio = py_array_to_rat_1d_array(problem.domainRatio);
-    problem_struct.domainContrastCustomFiles = py_array_to_rat_1d_array(problem.domainContrastCustomFiles);
 
-    problem_struct.fitpars =  py_array_to_rat_1d_array(problem.fitpars);
-    problem_struct.otherpars =  py_array_to_rat_1d_array(problem.otherpars);
-    problem_struct.fitconstr =  py_array_to_rat_2d_array(problem.fitconstr);
-    problem_struct.otherconstr =  py_array_to_rat_2d_array(problem.otherconstr);
+    problem_struct.fitParams =  py_array_to_rat_1d_array(problem.fitParams);
+    problem_struct.otherParams =  py_array_to_rat_1d_array(problem.otherParams);
+    problem_struct.fitLimits =  py_array_to_rat_2d_array(problem.fitLimits);
+    problem_struct.otherLimits =  py_array_to_rat_2d_array(problem.otherLimits);
 
     return problem_struct;
 }
@@ -304,13 +451,13 @@ RAT::struct0_T create_struct0_T(const ProblemDefinition& problem)
 RAT::struct1_T create_struct1_T(const Limits& limits)
 {
     RAT::struct1_T limits_struct;
-    limits_struct.params = py_array_to_rat_2d_array(limits.params);
-    limits_struct.backs = py_array_to_rat_2d_array(limits.backs);
-    limits_struct.shifts = py_array_to_rat_2d_array(limits.shifts);
-    limits_struct.scales = py_array_to_rat_2d_array(limits.scales);
-    limits_struct.nba = py_array_to_rat_2d_array(limits.nba);
-    limits_struct.nbs = py_array_to_rat_2d_array(limits.nbs);
-    limits_struct.res = py_array_to_rat_2d_array(limits.res);
+    limits_struct.param = py_array_to_rat_2d_array(limits.param);
+    limits_struct.backgroundParam = py_array_to_rat_2d_array(limits.backgroundParam);
+    limits_struct.qzshift = py_array_to_rat_2d_array(limits.qzshift);
+    limits_struct.scalefactor = py_array_to_rat_2d_array(limits.scalefactor);
+    limits_struct.bulkIn = py_array_to_rat_2d_array(limits.bulkIn);
+    limits_struct.bulkOut = py_array_to_rat_2d_array(limits.bulkOut);
+    limits_struct.resolutionParam = py_array_to_rat_2d_array(limits.resolutionParam);
     limits_struct.domainRatio = py_array_to_rat_2d_array(limits.domainRatio);
     
     return limits_struct;
@@ -319,47 +466,33 @@ RAT::struct1_T create_struct1_T(const Limits& limits)
 RAT::struct3_T create_struct3_T(const Checks& checks)
 {
     RAT::struct3_T checks_struct;
-    checks_struct.params_fitYesNo = py_array_to_rat_1d_array(checks.params_fitYesNo);
-    checks_struct.backs_fitYesNo = py_array_to_rat_1d_array(checks.backs_fitYesNo);
-    checks_struct.shifts_fitYesNo = py_array_to_rat_1d_array(checks.shifts_fitYesNo);
-    checks_struct.scales_fitYesNo = py_array_to_rat_1d_array(checks.scales_fitYesNo);
-    checks_struct.nbairs_fitYesNo = py_array_to_rat_1d_array(checks.nbairs_fitYesNo);
-    checks_struct.nbsubs_fitYesNo = py_array_to_rat_1d_array(checks.nbsubs_fitYesNo);
-    checks_struct.resol_fitYesNo = py_array_to_rat_1d_array(checks.resol_fitYesNo);
-    checks_struct.domainRatio_fitYesNo = py_array_to_rat_1d_array(checks.domainRatio_fitYesNo);
+    checks_struct.fitParam = py_array_to_rat_1d_array(checks.fitParam);
+    checks_struct.fitBackgroundParam = py_array_to_rat_1d_array(checks.fitBackgroundParam);
+    checks_struct.fitQzshift = py_array_to_rat_1d_array(checks.fitQzshift);
+    checks_struct.fitScalefactor = py_array_to_rat_1d_array(checks.fitScalefactor);
+    checks_struct.fitBulkIn = py_array_to_rat_1d_array(checks.fitBulkIn);
+    checks_struct.fitBulkOut = py_array_to_rat_1d_array(checks.fitBulkOut);
+    checks_struct.fitResolutionParam = py_array_to_rat_1d_array(checks.fitResolutionParam);
+    checks_struct.fitDomainRatio = py_array_to_rat_1d_array(checks.fitDomainRatio);
     
     return checks_struct;
 }
 
-coder::array<RAT::cell_wrap_0, 2U> py_array_to_rat_cell_wrap_0(py::list values)
+RAT::struct4_T create_struct4_T(const Priors& priors)
 {
-    coder::array<RAT::cell_wrap_0, 2U> result;
-    result.set_size(1, values.size());
-    int32_T idx {0};
-    for (py::handle array: values)
-    { 
-        py::array_t<real_T> casted_array = py::cast<py::array>(array);
-        result[idx].f1[0] = casted_array.at(0);
-        result[idx].f1[1] = casted_array.at(1);
-        idx++;
-    }
-
-    return result;
-}
-
-coder::array<RAT::cell_wrap_1, 2U> py_array_to_rat_cell_wrap_1(py::list values)
-{
-    coder::array<RAT::cell_wrap_1, 2U> result;
-    result.set_size(1, values.size());
-    int32_T idx {0};
-    for (py::handle array: values)
-    { 
-        py::array_t<real_T> casted_array = py::cast<py::array>(array);
-        result[idx].f1 = py_array_to_rat_2d_array(casted_array);
-        idx++;
-    }
-
-    return result;
+    RAT::struct4_T priors_struct;
+    priors_struct.param = py_array_to_unboundedx1_cell_0(priors.param);
+    priors_struct.backgroundParam = py_array_to_unboundedx1_cell_0(priors.backgroundParam);
+    priors_struct.resolutionParam = py_array_to_unboundedx1_cell_0(priors.resolutionParam);
+    priors_struct.qzshift = py_array_to_unboundedx1_cell_0(priors.qzshift);
+    priors_struct.scalefactor = py_array_to_unboundedx1_cell_0(priors.scalefactor);
+    priors_struct.bulkIn = py_array_to_unboundedx1_cell_0(priors.bulkIn);
+    priors_struct.bulkOut = py_array_to_unboundedx1_cell_0(priors.bulkOut);
+    priors_struct.domainRatio = py_array_to_unboundedx1_cell_0(priors.domainRatio);
+    priors_struct.priorNames = py_array_to_unboundedx1_cell_1(priors.priorNames);
+    priors_struct.priorValues = py_array_to_rat_2d_array(priors.priorValues);
+    
+    return priors_struct;
 }
 
 coder::array<RAT::cell_wrap_2, 2U> py_array_to_rat_cell_wrap_2(py::list values)
@@ -370,7 +503,8 @@ coder::array<RAT::cell_wrap_2, 2U> py_array_to_rat_cell_wrap_2(py::list values)
     for (py::handle array: values)
     { 
         py::array_t<real_T> casted_array = py::cast<py::array>(array);
-        result[idx].f1 = py_array_to_rat_bounded_array2(casted_array);
+        result[idx].f1[0] = casted_array.at(0);
+        result[idx].f1[1] = casted_array.at(1);
         idx++;
     }
 
@@ -385,7 +519,21 @@ coder::array<RAT::cell_wrap_3, 2U> py_array_to_rat_cell_wrap_3(py::list values)
     for (py::handle array: values)
     { 
         py::array_t<real_T> casted_array = py::cast<py::array>(array);
-        RAT::cell_wrap_3 temp;
+        result[idx].f1 = py_array_to_rat_2d_array(casted_array);
+        idx++;
+    }
+
+    return result;
+}
+
+coder::array<RAT::cell_wrap_4, 2U> py_array_to_rat_cell_wrap_4(py::list values)
+{
+    coder::array<RAT::cell_wrap_4, 2U> result;
+    result.set_size(1, values.size());
+    int32_T idx {0};
+    for (py::handle array: values)
+    { 
+        py::array_t<real_T> casted_array = py::cast<py::array>(array);
         result[idx].f1 = py_array_to_rat_1d_array(casted_array);
         idx++;
     }
@@ -393,30 +541,15 @@ coder::array<RAT::cell_wrap_3, 2U> py_array_to_rat_cell_wrap_3(py::list values)
     return result;
 }
 
-coder::array<RAT::cell_wrap_4, 1U> py_array_to_rat_cell_wrap_4(py::list values)
+coder::array<RAT::cell_wrap_5, 1U> py_array_to_rat_cell_wrap_5(py::list values)
 {
-    coder::array<RAT::cell_wrap_4, 1U> result;
+    coder::array<RAT::cell_wrap_5, 1U> result;
     result.set_size(values.size());
     int32_T idx {0};
     for (py::handle array: values)
     { 
         py::array_t<real_T> casted_array = py::cast<py::array>(array);
-        result[idx].f1 = py_array_to_rat_bounded_array1(casted_array);
-        idx++;
-    }
-
-    return result;
-}
-
-coder::array<RAT::cell_wrap_5, 2U> py_array_to_rat_cell_wrap_5(py::list values)
-{
-    coder::array<RAT::cell_wrap_5, 2U> result;
-    result.set_size(1, values.size());
-    int32_T idx {0};
-    for (py::handle array: values)
-    { 
-        std::string name = py::cast<std::string>(array);
-        string_to_rat_array(name, result[idx].f1.data, result[idx].f1.size);
+        result[idx].f1 = py_array_to_rat_bounded_array(casted_array);
         idx++;
     }
 
@@ -438,50 +571,28 @@ coder::array<RAT::cell_wrap_6, 2U> py_array_to_rat_cell_wrap_6(py::list values)
     return result;
 }
 
-coder::array<RAT::cell_wrap_7, 2U> py_array_to_rat_cell_wrap_7(py::list values)
+RAT::cell_7 create_cell_7(const Cells& cells)
 {
-    coder::array<RAT::cell_wrap_7, 2U> result;
-    result.set_size(1, values.size());
-    int32_T idx {0};
-    for (py::handle value: values)
-    { 
-        py::list casted_array = py::cast<py::list>(value);
-        
-        int32_T idx1 {0};
-        for (py::handle array: casted_array)
-        { 
-            std::string name = py::cast<std::string>(array);
-            string_to_rat_array(name, result[idx].f1[idx1].f1.data, result[idx].f1[idx1].f1.size);
-            idx1++;
-        }
-        idx++;
-    }
-
-    return result;
-}
-
-RAT::cell_8 create_cell_8(const Cells& cells)
-{
-    RAT::cell_8 cells_struct;
-    cells_struct.f1 = py_array_to_rat_cell_wrap_0(cells.f1);
-    cells_struct.f2 = py_array_to_rat_cell_wrap_1(cells.f2);
-    cells_struct.f3 = py_array_to_rat_cell_wrap_0(cells.f3);
+    RAT::cell_7 cells_struct;
+    cells_struct.f1 = py_array_to_rat_cell_wrap_2(cells.f1);
+    cells_struct.f2 = py_array_to_rat_cell_wrap_3(cells.f2);
+    cells_struct.f3 = py_array_to_rat_cell_wrap_2(cells.f3);
     cells_struct.f4 = py_array_to_rat_cell_wrap_2(cells.f4);
-    cells_struct.f5 = py_array_to_rat_cell_wrap_3(cells.f5);
-    cells_struct.f6 = py_array_to_rat_cell_wrap_4(cells.f6);
-    cells_struct.f7 = py_array_to_rat_cell_wrap_5(cells.f7);
+    cells_struct.f5 = py_array_to_rat_cell_wrap_4(cells.f5);
+    cells_struct.f6 = py_array_to_rat_cell_wrap_5(cells.f6);
+    cells_struct.f7 = py_array_to_rat_cell_wrap_6(cells.f7);
     cells_struct.f8 = py_array_to_rat_cell_wrap_6(cells.f8);
     cells_struct.f9 = py_array_to_rat_cell_wrap_6(cells.f9);
     cells_struct.f10 = py_array_to_rat_cell_wrap_6(cells.f10);
     cells_struct.f11 = py_array_to_rat_cell_wrap_6(cells.f11);
     cells_struct.f12 = py_array_to_rat_cell_wrap_6(cells.f12);
     cells_struct.f13 = py_array_to_rat_cell_wrap_6(cells.f13);
-    cells_struct.f14 = py_array_to_rat_cell_wrap_7(cells.f14);
-    cells_struct.f15 = py_array_to_rat_cell_wrap_5(cells.f15);
-    cells_struct.f16 = py_array_to_rat_cell_wrap_5(cells.f16);
-    cells_struct.f17 = py_array_to_rat_cell_wrap_1(cells.f17);
-    cells_struct.f18 = py_array_to_rat_cell_wrap_0(cells.f18);
-    cells_struct.f19 = py_array_to_rat_cell_wrap_3(cells.f19);
+    cells_struct.f14 = py_array_to_rat_cell_wrap_6(cells.f14);
+    cells_struct.f15 = py_array_to_rat_cell_wrap_6(cells.f15);
+    cells_struct.f16 = py_array_to_rat_cell_wrap_6(cells.f16);
+    cells_struct.f17 = py_array_to_rat_cell_wrap_3(cells.f17);
+    cells_struct.f18 = py_array_to_rat_cell_wrap_2(cells.f18);
+    cells_struct.f19 = py_array_to_rat_cell_wrap_4(cells.f19);
     cells_struct.f20 = py_array_to_rat_cell_wrap_6(cells.f20);
 
     return cells_struct;
@@ -495,80 +606,171 @@ RAT::struct2_T create_struct2_T(const Control& control)
     control_struct.maxIter = control.maxIter;
     control_struct.populationSize = control.populationSize;
     control_struct.fWeight = control.fWeight;
-    control_struct.F_CR = control.F_CR;
-    control_struct.VTR = control.VTR;
-    control_struct.numGen = control.numGen;
+    control_struct.crossoverProbability = control.crossoverProbability;
+    control_struct.targetValue = control.targetValue;
+    control_struct.numGenerations = control.numGenerations;
     control_struct.strategy = control.strategy;
     control_struct.Nlive = control.Nlive;
-    control_struct.nmcmc = control.nmcmc;
+    control_struct.Nmcmc = control.Nmcmc;
     control_struct.propScale = control.propScale;
     control_struct.nsTolerance = control.nsTolerance;
-    control_struct.calcSld = control.calcSld;
+    control_struct.calcSldDuringFit = control.calcSldDuringFit;
     control_struct.updateFreq = control.updateFreq;
     control_struct.updatePlotFreq = control.updatePlotFreq;
     control_struct.nSamples = control.nSamples;
     control_struct.nChains = control.nChains;
-    control_struct.lambda = control.lambda;
+    control_struct.jumpProbability = control.jumpProbability;
     control_struct.pUnitGamma = control.pUnitGamma;
-    string_to_rat_array(control.para, control_struct.para.data, control_struct.para.size);
-    string_to_rat_array(control.proc, control_struct.proc.data, control_struct.proc.size);
+    string_to_rat_array(control.parallel, control_struct.parallel.data, control_struct.parallel.size);
+    string_to_rat_array(control.procedure, control_struct.procedure.data, control_struct.procedure.size);
     string_to_rat_array(control.display, control_struct.display.data, control_struct.display.size);
     control_struct.tolX = control.tolX;
     control_struct.resamPars[0] = control.resamPars.at(0);
     control_struct.resamPars[1] = control.resamPars.at(1);
     string_to_rat_array(control.boundHandling, control_struct.boundHandling.data, control_struct.boundHandling.size);
+    control_struct.adaptPCR = control.adaptPCR;
     control_struct.checks = create_struct3_T(control.checks);
 
     return control_struct;
 }
 
-py::tuple reflectivityCalculation(const ProblemDefinition& problem_def, const Cells& cells, const Limits& limits, const Control& control)
+py::array_t<real_T> rat_array_1d_to_py_array(coder::array<real_T, 2U> array)
 {
-    RAT::struct0_T problem_def_struct = create_struct0_T(problem_def);
-    RAT::cell_8 cells_struct = create_cell_8(cells);
-    RAT::struct1_T limits_struct = create_struct1_T(limits);
-    RAT::struct2_T control_struct = create_struct2_T(control);
+    auto size = (array.size(0) > 1) ?  array.size(0) : array.size(1);
+    auto result_array = py::array_t<real_T>(size);
+    std::memcpy(result_array.request().ptr, array.data(), result_array.nbytes());
 
-    RAT::cell_11 result;
-    RAT::struct4_T problem;
+    return result_array;
+}
 
-    // Call the entry-point 'reflectivityCalculation'.
-    RAT::reflectivityCalculation(&problem_def_struct, &cells_struct, &limits_struct, &control_struct, &problem, &result);
-    
+py::array_t<real_T> rat_array_2d_to_py_array(coder::array<real_T, 2U> array)
+{
+    auto result_array = py::array_t<real_T, py::array::f_style>({array.size(0), array.size(1)});
+    std::memcpy(result_array.request().ptr, array.data(), result_array.nbytes());
+
+    return result_array;
+}
+
+py::list result_to_list(const RAT::cell_wrap_9 results[])
+{
+    py::list outer_list_1;
+    for (int32_T idx0{0}; idx0 < results[0].f1.size(0); idx0++) {
+        py::list inner_list;
+        for (int32_T idx1{0}; idx1 < results[0].f1.size(1); idx1++) {
+            auto tmp = results[0].f1[idx0 +  results[0].f1.size(0) * idx1];
+            auto array = py::array_t<real_T, py::array::f_style>({tmp.f1.size(0), tmp.f1.size(1)});
+            std::memcpy(array.request().ptr, tmp.f1.data(), array.nbytes());
+            inner_list.append(array);       
+        }
+        outer_list_1.append(inner_list);
+    }
+
+    py::list outer_list_2;
+    for (int32_T idx0{0}; idx0 < results[1].f1.size(0); idx0++) {
+        py::list inner_list;
+        for (int32_T idx1{0}; idx1 < results[1].f1.size(1); idx1++) {
+            auto tmp = results[1].f1[idx0 +  results[1].f1.size(0) * idx1];
+            auto array = py::array_t<real_T, py::array::f_style>({tmp.f1.size(0), tmp.f1.size(1)});
+            std::memcpy(array.request().ptr, tmp.f1.data(), array.nbytes());
+            inner_list.append(array);
+        }
+        outer_list_2.append(inner_list);
+    }
+
+    py::list outer_list_3;
+    for (int32_T idx0{0}; idx0 < results[2].f1.size(0); idx0++) {
+        py::list inner_list;
+        for (int32_T idx1{0}; idx1 < results[2].f1.size(1); idx1++) {
+            auto tmp = results[2].f1[idx0 +  results[2].f1.size(0) * idx1];
+            auto array = py::array_t<real_T, py::array::f_style>({tmp.f1.size(0), tmp.f1.size(1)});
+            std::memcpy(array.request().ptr, tmp.f1.data(), array.nbytes());
+            inner_list.append(array);
+        }
+        outer_list_3.append(inner_list);
+    }
+
+    py::list outer_list_4;
+    for (int32_T idx0{0}; idx0 < results[3].f1.size(0); idx0++) {
+        py::list inner_list;
+        for (int32_T idx1{0}; idx1 < results[3].f1.size(1); idx1++) {
+            auto tmp = results[3].f1[idx0 +  results[3].f1.size(0) * idx1];
+            auto array = py::array_t<real_T, py::array::f_style>({tmp.f1.size(0), tmp.f1.size(1)});
+            std::memcpy(array.request().ptr, tmp.f1.data(), array.nbytes());
+            inner_list.append(array);
+        }
+        outer_list_4.append(inner_list);
+    }
+
+    py::list outer_list_5;
+    for (int32_T idx0{0}; idx0 < results[4].f1.size(0); idx0++) {
+        py::list inner_list;
+        for (int32_T idx1{0}; idx1 < results[4].f1.size(1); idx1++) {
+            auto tmp = results[4].f1[idx0 +  results[4].f1.size(0) * idx1];
+            auto array = py::array_t<real_T, py::array::f_style>({tmp.f1.size(0), tmp.f1.size(1)});
+            std::memcpy(array.request().ptr, tmp.f1.data(), array.nbytes());
+            inner_list.append(array);
+        }
+        outer_list_5.append(inner_list);
+    }
+
+    py::list outer_list_6;
+    for (int32_T idx0{0}; idx0 < results[5].f1.size(0); idx0++) {
+        py::list inner_list;
+        for (int32_T idx1{0}; idx1 < results[5].f1.size(1); idx1++) {
+            auto tmp = results[5].f1[idx0 +  results[5].f1.size(0) * idx1];
+            auto array = py::array_t<real_T, py::array::f_style>({tmp.f1.size(0), tmp.f1.size(1)});
+            std::memcpy(array.request().ptr, tmp.f1.data(), array.nbytes());
+            inner_list.append(array);
+        }
+        outer_list_6.append(inner_list);
+    }
+    py::list output_result;
+    output_result.append(outer_list_1);
+    output_result.append(outer_list_2);
+    output_result.append(outer_list_3);
+    output_result.append(outer_list_4);
+    output_result.append(outer_list_5);
+    output_result.append(outer_list_6);
+
+    return output_result;
+}
+
+OutputProblem struct6_T_to_OutputProblem(const RAT::struct6_T problem)
+{
     // Copy problem to output
     OutputProblem output_problem;
     output_problem.ssubs = py::array_t<real_T>(problem.ssubs.size(0));
     auto buffer = output_problem.ssubs.request();
     std::memcpy(buffer.ptr, problem.ssubs.data(), output_problem.ssubs.size()*sizeof(real_T));
 
-    output_problem.backgrounds = py::array_t<real_T>(problem.backgrounds.size(0));
-    buffer = output_problem.backgrounds.request();
-    std::memcpy(buffer.ptr, problem.backgrounds.data(), output_problem.backgrounds.size()*sizeof(real_T));
+    output_problem.backgroundParams = py::array_t<real_T>(problem.backgroundParams.size(0));
+    buffer = output_problem.backgroundParams.request();
+    std::memcpy(buffer.ptr, problem.backgroundParams.data(), output_problem.backgroundParams.size()*sizeof(real_T));
 
-    output_problem.qshifts = py::array_t<real_T>(problem.qshifts.size(0));
-    buffer = output_problem.qshifts.request();
-    std::memcpy(buffer.ptr, problem.qshifts.data(), output_problem.qshifts.size()*sizeof(real_T));
+    output_problem.qzshifts = py::array_t<real_T>(problem.qzshifts.size(0));
+    buffer = output_problem.qzshifts.request();
+    std::memcpy(buffer.ptr, problem.qzshifts.data(), output_problem.qzshifts.size()*sizeof(real_T));
 
     output_problem.scalefactors = py::array_t<real_T>(problem.scalefactors.size(0));
     buffer = output_problem.scalefactors.request();
     std::memcpy(buffer.ptr, problem.scalefactors.data(), output_problem.scalefactors.size()*sizeof(real_T));
 
-    output_problem.nbairs = py::array_t<real_T>(problem.nbairs.size(0));
-    buffer = output_problem.nbairs.request();
-    std::memcpy(buffer.ptr, problem.nbairs.data(), output_problem.nbairs.size()*sizeof(real_T));
+    output_problem.bulkIn = py::array_t<real_T>(problem.bulkIn.size(0));
+    buffer = output_problem.bulkIn.request();
+    std::memcpy(buffer.ptr, problem.bulkIn.data(), output_problem.bulkIn.size()*sizeof(real_T));
 
-    output_problem.nbsubs = py::array_t<real_T>(problem.nbsubs.size(0));
-    buffer = output_problem.nbsubs.request();
-    std::memcpy(buffer.ptr, problem.nbsubs.data(), output_problem.nbsubs.size()*sizeof(real_T));
+    output_problem.bulkOut = py::array_t<real_T>(problem.bulkOut.size(0));
+    buffer = output_problem.bulkOut.request();
+    std::memcpy(buffer.ptr, problem.bulkOut.data(), output_problem.bulkOut.size()*sizeof(real_T));
 
-    output_problem.resolutions = py::array_t<real_T>(problem.resolutions.size(0));
-    buffer = output_problem.resolutions.request();
-    std::memcpy(buffer.ptr, problem.resolutions.data(), output_problem.resolutions.size()*sizeof(real_T));
+    output_problem.resolutionParams = py::array_t<real_T>(problem.resolutionParams.size(0));
+    buffer = output_problem.resolutionParams.request();
+    std::memcpy(buffer.ptr, problem.resolutionParams.data(), output_problem.resolutionParams.size()*sizeof(real_T));
 
-    output_problem.calculations.sum_chi = problem.calculations.sum_chi;
-    output_problem.calculations.all_chis = py::array_t<real_T>(problem.calculations.all_chis.size(0));
-    buffer = output_problem.calculations.all_chis.request();
-    std::memcpy(buffer.ptr, problem.calculations.all_chis.data(), output_problem.calculations.all_chis.size()*sizeof(real_T));
+    output_problem.calculations.sumChi = problem.calculations.sumChi;
+    output_problem.calculations.allChis = py::array_t<real_T>(problem.calculations.allChis.size(0));
+    buffer = output_problem.calculations.allChis.request();
+    std::memcpy(buffer.ptr, problem.calculations.allChis.data(), output_problem.calculations.allChis.size()*sizeof(real_T));
 
     output_problem.allSubRough = py::array_t<real_T>(problem.allSubRough.size(0));
     buffer = output_problem.allSubRough.request();
@@ -578,63 +780,302 @@ py::tuple reflectivityCalculation(const ProblemDefinition& problem_def, const Ce
     buffer = output_problem.resample.request();
     std::memcpy(buffer.ptr, problem.resample.data(), output_problem.resample.size()*sizeof(real_T));
 
-    // Copy result to output
-    OutputResult output_result;
-
-    for (int32_T idx{0}; idx < result.f1.size(0); idx++) {
-        auto array = py::array_t<real_T, py::array::f_style>({result.f1[idx].f1.size(0), result.f1[idx].f1.size(1)});
-        std::memcpy(array.request().ptr, result.f1[idx].f1.data(), array.nbytes());
-        output_result.f1.append(array);
-    }
-
-    for (int32_T idx{0}; idx < result.f2.size(0); idx++) {
-        auto array = py::array_t<real_T, py::array::f_style>({result.f2[idx].f1.size(0), result.f2[idx].f1.size(1)});
-        std::memcpy(array.request().ptr, result.f2[idx].f1.data(), array.nbytes());
-        output_result.f2.append(array);
-    }
-
-    for (int32_T idx{0}; idx < result.f3.size(0); idx++) {
-        auto array = py::array_t<real_T, py::array::f_style>({result.f3[idx].f1.size(0), result.f3[idx].f1.size(1)});
-        std::memcpy(array.request().ptr, result.f3[idx].f1.data(), array.nbytes());
-        output_result.f3.append(array);
-    }
-
-    for (int32_T idx{0}; idx < result.f4.size(0); idx++) {
-        auto array = py::array_t<real_T, py::array::f_style>({result.f4[idx].f1.size(0), result.f4[idx].f1.size(1)});
-        std::memcpy(array.request().ptr, result.f4[idx].f1.data(), array.nbytes());
-        output_result.f4.append(array);
-    }
-
-    for (int32_T idx{0}; idx < result.f5.size(0); idx++) {
-        auto array = py::array_t<real_T, py::array::f_style>({result.f5[idx].f1.size(0), result.f5[idx].f1.size(1)});
-        std::memcpy(array.request().ptr, result.f5[idx].f1.data(), array.nbytes());
-        output_result.f5.append(array);
-    }
-
-    for (int32_T idx{0}; idx < result.f6.size(0); idx++) {
-        auto array = py::array_t<real_T, py::array::f_style>({result.f6[idx].f1.size(0), result.f6[idx].f1.size(1)});
-        std::memcpy(array.request().ptr, result.f6[idx].f1.data(), array.nbytes());
-        output_result.f6.append(array);
-    }
-
-    return py::make_tuple(output_problem, output_result);
+    return output_problem;
 }
 
+ProblemDefinition struct5_T_to_ProblemDefinition(const RAT::struct5_T problem)
+{
+    ProblemDefinition problem_def;
+    
+    problem_def.useImaginary = problem.useImaginary;
+    
+    problem_def.numberOfLayers = problem.numberOfLayers;
+    problem_def.numberOfDomainContrasts = problem.numberOfDomainContrasts;
+    problem_def.numberOfContrasts = problem.numberOfContrasts;
+
+    problem_def.modelType.resize(problem.modelType.size[1]);
+    memcpy(&problem_def.modelType[0], problem.modelType.data, problem.modelType.size[1]);
+    problem_def.geometry.resize(problem.geometry.size[1]);
+    memcpy(&problem_def.geometry[0], problem.geometry.data, problem.geometry.size[1]);
+    problem_def.TF.resize(problem.TF.size[1]);
+    memcpy(&problem_def.TF[0], problem.TF.data, problem.TF.size[1]);
+    
+    problem_def.contrastBackgrounds = rat_array_1d_to_py_array(problem.contrastBackgrounds);
+    problem_def.contrastBackgroundsType = rat_array_1d_to_py_array(problem.contrastBackgroundsType);
+    problem_def.resample = rat_array_1d_to_py_array(problem.resample);
+    problem_def.dataPresent = rat_array_1d_to_py_array(problem.dataPresent);
+    problem_def.oilChiDataPresent = rat_array_1d_to_py_array(problem.oilChiDataPresent);
+    problem_def.contrastQzshifts = rat_array_1d_to_py_array(problem.contrastQzshifts);
+    problem_def.contrastScalefactors = rat_array_1d_to_py_array(problem.contrastScalefactors);
+    problem_def.contrastBulkIns = rat_array_1d_to_py_array(problem.contrastBulkIns);
+    problem_def.contrastBulkOuts = rat_array_1d_to_py_array(problem.contrastBulkOuts);
+    problem_def.contrastResolutions = rat_array_1d_to_py_array(problem.contrastResolutions);
+    problem_def.backgroundParams = rat_array_1d_to_py_array(problem.backgroundParams);
+    problem_def.qzshifts = rat_array_1d_to_py_array(problem.qzshifts);
+    problem_def.scalefactors = rat_array_1d_to_py_array(problem.scalefactors);
+    problem_def.bulkIn = rat_array_1d_to_py_array(problem.bulkIn);
+    problem_def.bulkOut = rat_array_1d_to_py_array(problem.bulkOut);
+    problem_def.resolutionParams = rat_array_1d_to_py_array(problem.resolutionParams);
+    problem_def.params = rat_array_1d_to_py_array(problem.params);
+
+    problem_def.contrastCustomFiles = rat_array_1d_to_py_array(problem.contrastCustomFiles);
+    problem_def.contrastDomainRatios = rat_array_1d_to_py_array(problem.contrastDomainRatios);
+    problem_def.domainRatio = rat_array_1d_to_py_array(problem.domainRatio);
+
+    problem_def.fitParams =  rat_array_1d_to_py_array(problem.fitParams);
+    problem_def.otherParams =  rat_array_1d_to_py_array(problem.otherParams);
+    problem_def.fitLimits =  rat_array_2d_to_py_array(problem.fitLimits);
+    problem_def.otherLimits =  rat_array_2d_to_py_array(problem.otherLimits);
+
+    return problem_def;
+}
+
+py::list rat_cell_wrap_8_to_py_list(const coder::array<RAT::cell_wrap_8, 1U>& values)
+{
+    py::list result;
+    
+    for (int32_T idx0{0}; idx0 < values.size(0); idx0++) {
+        result.append(rat_array_2d_to_py_array(values[idx0].f1));
+    }
+
+    return result;
+}
+
+py::list rat_cell_wrap_8_2d_to_py_list(const coder::array<RAT::cell_wrap_8, 2U>& values)
+{
+    py::list result;
+    int32_T idx {0};
+    for (int32_T idx0{0}; idx0 < values.size(0); idx0++) {
+        py::list inner;
+        for (int32_T idx1{0}; idx1 < values.size(1); idx1++) {
+            idx  = idx0 + values.size(0) * idx1;  
+            inner.append(rat_array_2d_to_py_array(values[idx].f1));
+        }
+        result.append(inner);
+    }
+
+    return result;
+}
+
+template <class T>
+py::array_t<real_T> bounded_array_to_py_array(const T& array)
+{
+    auto result_array = py::array_t<real_T, py::array::f_style>({array.size[0], array.size[1]});
+    std::memcpy(result_array.request().ptr, array.data, result_array.nbytes());
+    
+    return result_array;
+}
+
+py::array_t<real_T> rat_array_3d_to_py_array(coder::array<real_T, 3U> array)
+{
+    auto result_array = py::array_t<real_T, py::array::f_style>({array.size(0), array.size(1), array.size(2)});
+    std::memcpy(result_array.request().ptr, array.data(), result_array.nbytes());
+
+    return result_array;
+}
+
+BayesResults struct8_T_to_BayesResults(const RAT::struct8_T results)
+{
+    BayesResults bayesResults;
+
+    bayesResults.bestPars = rat_array_2d_to_py_array(results.bestPars);
+    bayesResults.chain = rat_array_2d_to_py_array(results.chain);
+
+    bayesResults.bestFitsMean.ref = rat_cell_wrap_8_to_py_list(results.bestFitsMean.ref);
+    bayesResults.bestFitsMean.sld = rat_cell_wrap_8_2d_to_py_list(results.bestFitsMean.sld);
+    bayesResults.bestFitsMean.chi = results.bestFitsMean.chi;
+    bayesResults.bestFitsMean.data = rat_cell_wrap_8_to_py_list(results.bestFitsMean.data);
+
+    bayesResults.predlims.refPredInts = rat_cell_wrap_8_to_py_list(results.predlims.refPredInts);
+    bayesResults.predlims.sldPredInts = rat_cell_wrap_8_to_py_list(results.predlims.sldPredInts);
+    bayesResults.predlims.refXdata = rat_cell_wrap_8_to_py_list(results.predlims.refXdata);
+    bayesResults.predlims.sldXdata = rat_cell_wrap_8_2d_to_py_list(results.predlims.sldXdata);
+    bayesResults.predlims.sampleChi = bounded_array_to_py_array<coder::bounded_array<real_T, 1000U, 1U>>(results.predlims.sampleChi);
+
+    bayesResults.parConfInts.par95 = rat_array_2d_to_py_array(results.parConfInts.par95);
+    bayesResults.parConfInts.par65 = rat_array_2d_to_py_array(results.parConfInts.par65);
+    bayesResults.parConfInts.mean = rat_array_2d_to_py_array(results.parConfInts.mean);
+
+    bayesResults.bayesRes.allChains = rat_array_3d_to_py_array(results.bayesRes.allChains);
+
+    bayesResults.bayesRes.nestOutput.logZ = results.bayesRes.nestOutput.LogZ;
+    bayesResults.bayesRes.nestOutput.nestSamples = rat_array_2d_to_py_array(results.bayesRes.nestOutput.nestSamples);
+    bayesResults.bayesRes.nestOutput.postSamples = rat_array_2d_to_py_array(results.bayesRes.nestOutput.postSamples);
+
+    bayesResults.bayesRes.dreamOutput.runtime = results.bayesRes.dreamOutput.RunTime;
+    bayesResults.bayesRes.dreamOutput.iteration = results.bayesRes.dreamOutput.iteration;
+    bayesResults.bayesRes.dreamOutput.iloc = results.bayesRes.dreamOutput.iloc;
+    bayesResults.bayesRes.dreamOutput.fx = results.bayesRes.dreamOutput.fx;
+    bayesResults.bayesRes.dreamOutput.R_stat = rat_array_2d_to_py_array(results.bayesRes.dreamOutput.R_stat);
+    bayesResults.bayesRes.dreamOutput.CR = rat_array_2d_to_py_array(results.bayesRes.dreamOutput.CR);
+    bayesResults.bayesRes.dreamOutput.AR = bounded_array_to_py_array<coder::bounded_array<real_T, 2000U, 2U>>(results.bayesRes.dreamOutput.AR);
+    bayesResults.bayesRes.dreamOutput.outlier = bounded_array_to_py_array<coder::bounded_array<real_T, 2000U, 2U>>(results.bayesRes.dreamOutput.outlier);
+
+    bayesResults.bayesRes.dreamOutput.Meas_info.Y = results.bayesRes.dreamOutput.Meas_info.Y;
+    bayesResults.bayesRes.dreamOutput.Meas_info.N = results.bayesRes.dreamOutput.Meas_info.N;
+
+    bayesResults.bayesRes.dreamOutput.DREAMPar.d = results.bayesRes.dreamOutput.DREAMPar.d;
+    bayesResults.bayesRes.dreamOutput.DREAMPar.N = results.bayesRes.dreamOutput.DREAMPar.N;
+    bayesResults.bayesRes.dreamOutput.DREAMPar.T = results.bayesRes.dreamOutput.DREAMPar.T;
+    bayesResults.bayesRes.dreamOutput.DREAMPar.parallel = results.bayesRes.dreamOutput.DREAMPar.parallel;
+    bayesResults.bayesRes.dreamOutput.DREAMPar.CPU = results.bayesRes.dreamOutput.DREAMPar.CPU;
+    bayesResults.bayesRes.dreamOutput.DREAMPar.lambda = results.bayesRes.dreamOutput.DREAMPar.lambda;
+    bayesResults.bayesRes.dreamOutput.DREAMPar.pUnitGamma = results.bayesRes.dreamOutput.DREAMPar.pUnitGamma;
+    bayesResults.bayesRes.dreamOutput.DREAMPar.nCR = results.bayesRes.dreamOutput.DREAMPar.nCR;
+    bayesResults.bayesRes.dreamOutput.DREAMPar.delta = results.bayesRes.dreamOutput.DREAMPar.delta;
+    bayesResults.bayesRes.dreamOutput.DREAMPar.steps = results.bayesRes.dreamOutput.DREAMPar.steps;
+    bayesResults.bayesRes.dreamOutput.DREAMPar.zeta = results.bayesRes.dreamOutput.DREAMPar.zeta;
+    bayesResults.bayesRes.dreamOutput.DREAMPar.outlier = std::string(results.bayesRes.dreamOutput.DREAMPar.outlier);
+    bayesResults.bayesRes.dreamOutput.DREAMPar.adaptPCR = results.bayesRes.dreamOutput.DREAMPar.adaptPCR;
+    bayesResults.bayesRes.dreamOutput.DREAMPar.thinning = results.bayesRes.dreamOutput.DREAMPar.thinning;
+    bayesResults.bayesRes.dreamOutput.DREAMPar.epsilon = results.bayesRes.dreamOutput.DREAMPar.epsilon;
+    bayesResults.bayesRes.dreamOutput.DREAMPar.ABC = results.bayesRes.dreamOutput.DREAMPar.ABC;
+    bayesResults.bayesRes.dreamOutput.DREAMPar.IO = results.bayesRes.dreamOutput.DREAMPar.IO;
+    bayesResults.bayesRes.dreamOutput.DREAMPar.modout = results.bayesRes.dreamOutput.DREAMPar.modout;
+    bayesResults.bayesRes.dreamOutput.DREAMPar.restart = results.bayesRes.dreamOutput.DREAMPar.restart;
+    bayesResults.bayesRes.dreamOutput.DREAMPar.save = results.bayesRes.dreamOutput.DREAMPar.save;
+    bayesResults.bayesRes.dreamOutput.DREAMPar.R = rat_array_2d_to_py_array(results.bayesRes.dreamOutput.DREAMPar.R);
+
+    return bayesResults;
+}
+
+py::tuple RATMain(const ProblemDefinition& problem_def, const Cells& cells, const Limits& limits, const Control& control, 
+                                  const Priors& priors)
+{
+    RAT::struct0_T problem_def_struct = create_struct0_T(problem_def);
+    RAT::cell_7 cells_struct = create_cell_7(cells);
+    RAT::struct1_T limits_struct = create_struct1_T(limits);
+    RAT::struct2_T control_struct = create_struct2_T(control);
+    RAT::struct4_T priors_struct = create_struct4_T(priors);
+
+    RAT::struct5_T outProblemDef;
+    RAT::cell_wrap_9 results[6];
+    RAT::struct6_T problem;
+    RAT::struct8_T bayesResults;
+
+    // Call the entry-point
+    RAT::RATMain(&problem_def_struct, &cells_struct, &limits_struct, &control_struct,
+                 &priors_struct, &outProblemDef, &problem, results, &bayesResults);
+    
+    // Copy result to output
+    return py::make_tuple(struct5_T_to_ProblemDefinition(outProblemDef),
+                          struct6_T_to_OutputProblem(problem), result_to_list(results), 
+                          struct8_T_to_BayesResults(bayesResults));
+}
+
+class Module
+{
+public:
+    Module() 
+    {
+        RAT::RATMain_initialize();
+    }
+    ~Module()
+    {
+        RAT::RATMain_terminate();
+    }
+};
+
 PYBIND11_MODULE(rat, m) {
+    static Module module;
+    py::class_<Predlims>(m, "Predlims")
+        .def(py::init<>())
+        .def_readwrite("refPredInts", &Predlims::refPredInts)
+        .def_readwrite("sldPredInts", &Predlims::sldPredInts)
+        .def_readwrite("refXdata", &Predlims::refXdata)
+        .def_readwrite("sldXdata", &Predlims::sldXdata)
+        .def_readwrite("sampleChi", &Predlims::sampleChi);
+
+    py::class_<BestFitsMean>(m, "BestFitsMean")
+        .def(py::init<>())
+        .def_readwrite("ref", &BestFitsMean::ref)
+        .def_readwrite("sld", &BestFitsMean::sld)
+        .def_readwrite("chi", &BestFitsMean::chi)
+        .def_readwrite("data", &BestFitsMean::data);    
+
+    py::class_<ParConfInts>(m, "ParConfInts")
+        .def(py::init<>())
+        .def_readwrite("par95", &ParConfInts::par95)
+        .def_readwrite("par65", &ParConfInts::par65)
+        .def_readwrite("mean", &ParConfInts::mean);
+
+    py::class_<MeasInfo>(m, "MeasInfo")
+        .def(py::init<>())
+        .def_readwrite("Y", &MeasInfo::Y)
+        .def_readwrite("N", &MeasInfo::N);
+
+    py::class_<DREAMPars>(m, "DREAMPars")
+        .def(py::init<>())
+        .def_readwrite("d", &DREAMPars::d)
+        .def_readwrite("N", &DREAMPars::N)
+        .def_readwrite("T", &DREAMPars::T)
+        .def_readwrite("parallel", &DREAMPars::parallel)
+        .def_readwrite("CPU", &DREAMPars::CPU)
+        .def_readwrite("lambda_", &DREAMPars::lambda)
+        .def_readwrite("pUnitGamma", &DREAMPars::pUnitGamma)
+        .def_readwrite("nCR", &DREAMPars::nCR)
+        .def_readwrite("delta", &DREAMPars::delta)
+        .def_readwrite("steps", &DREAMPars::steps)
+        .def_readwrite("zeta", &DREAMPars::zeta)
+        .def_readwrite("outlier", &DREAMPars::outlier)
+        .def_readwrite("adaptPCR", &DREAMPars::adaptPCR)
+        .def_readwrite("thinning", &DREAMPars::thinning)
+        .def_readwrite("epsilon", &DREAMPars::epsilon)
+        .def_readwrite("ABC", &DREAMPars::ABC)
+        .def_readwrite("IO", &DREAMPars::IO)
+        .def_readwrite("modout", &DREAMPars::modout)
+        .def_readwrite("restart", &DREAMPars::restart)
+        .def_readwrite("save", &DREAMPars::save)
+        .def_readwrite("R", &DREAMPars::R);
+
+    py::class_<NestOutput>(m, "NestOutput")
+        .def(py::init<>())
+        .def_readwrite("logZ", &NestOutput::logZ)
+        .def_readwrite("nestSamples", &NestOutput::nestSamples)
+        .def_readwrite("postSamples", &NestOutput::postSamples);
+
+    py::class_<DreamOutput>(m, "DreamOutput")
+        .def(py::init<>())
+        .def_readwrite("outlier", &DreamOutput::outlier)
+        .def_readwrite("runtime", &DreamOutput::runtime)
+        .def_readwrite("DREAMPar", &DreamOutput::DREAMPar)
+        .def_readwrite("Meas_info", &DreamOutput::Meas_info)
+        .def_readwrite("iteration", &DreamOutput::iteration)
+        .def_readwrite("iloc", &DreamOutput::iloc)
+        .def_readwrite("fx", &DreamOutput::fx)
+        .def_readwrite("AR", &DreamOutput::AR)
+        .def_readwrite("R_stat", &DreamOutput::R_stat)
+        .def_readwrite("CR", &DreamOutput::CR);
+
+    py::class_<BayesOutput>(m, "BayesOutput")
+        .def(py::init<>())
+        .def_readwrite("allChains", &BayesOutput::allChains)
+        .def_readwrite("dreamOutput", &BayesOutput::dreamOutput)
+        .def_readwrite("nestOutput", &BayesOutput::nestOutput);
+
+    py::class_<BayesResults>(m, "BayesResults")
+        .def(py::init<>())
+        .def_readwrite("bestFitsMean", &BayesResults::bestFitsMean)
+        .def_readwrite("predlims", &BayesResults::predlims)
+        .def_readwrite("parConfInts", &BayesResults::parConfInts)
+        .def_readwrite("bestPars", &BayesResults::bestPars)
+        .def_readwrite("bayesRes", &BayesResults::bayesRes)
+        .def_readwrite("chain", &BayesResults::chain);
+
     py::class_<Calculation>(m, "Calculation")
         .def(py::init<>())
-        .def_readwrite("all_chis", &Calculation::all_chis)
-        .def_readwrite("sum_chi", &Calculation::sum_chi);
+        .def_readwrite("allChis", &Calculation::allChis)
+        .def_readwrite("sumChi", &Calculation::sumChi);
 
     py::class_<OutputProblem>(m, "OutputProblem")
         .def(py::init<>())
         .def_readwrite("ssubs", &OutputProblem::ssubs)
-        .def_readwrite("backgrounds", &OutputProblem::backgrounds)
-        .def_readwrite("qshifts", &OutputProblem::qshifts)
+        .def_readwrite("backgroundParams", &OutputProblem::backgroundParams)
+        .def_readwrite("qzshifts", &OutputProblem::qzshifts)
         .def_readwrite("scalefactors", &OutputProblem::scalefactors)
-        .def_readwrite("nbairs", &OutputProblem::nbairs)
-        .def_readwrite("nbsubs", &OutputProblem::nbsubs)
-        .def_readwrite("resolutions", &OutputProblem::resolutions)
+        .def_readwrite("bulkIn", &OutputProblem::bulkIn)
+        .def_readwrite("bulkOut", &OutputProblem::bulkOut)
+        .def_readwrite("resolutionParams", &OutputProblem::resolutionParams)
         .def_readwrite("calculations", &OutputProblem::calculations)
         .def_readwrite("allSubRough", &OutputProblem::allSubRough)
         .def_readwrite("resample", &OutputProblem::resample);
@@ -650,25 +1091,37 @@ PYBIND11_MODULE(rat, m) {
 
     py::class_<Checks>(m, "Checks")
         .def(py::init<>())
-        .def_readwrite("params_fitYesNo", &Checks::params_fitYesNo)
-        .def_readwrite("backs_fitYesNo", &Checks::backs_fitYesNo)
-        .def_readwrite("shifts_fitYesNo", &Checks::shifts_fitYesNo)
-        .def_readwrite("scales_fitYesNo", &Checks::scales_fitYesNo)
-        .def_readwrite("nbairs_fitYesNo", &Checks::nbairs_fitYesNo)
-        .def_readwrite("nbsubs_fitYesNo", &Checks::nbsubs_fitYesNo)
-        .def_readwrite("resol_fitYesNo", &Checks::resol_fitYesNo)
-        .def_readwrite("domainRatio_fitYesNo", &Checks::domainRatio_fitYesNo);
+        .def_readwrite("fitParam", &Checks::fitParam)
+        .def_readwrite("fitBackgroundParam", &Checks::fitBackgroundParam)
+        .def_readwrite("fitQzshift", &Checks::fitQzshift)
+        .def_readwrite("fitScalefactor", &Checks::fitScalefactor)
+        .def_readwrite("fitBulkIn", &Checks::fitBulkIn)
+        .def_readwrite("fitBulkOut", &Checks::fitBulkOut)
+        .def_readwrite("fitResolutionParam", &Checks::fitResolutionParam)
+        .def_readwrite("fitDomainRatio", &Checks::fitDomainRatio);
 
     py::class_<Limits>(m, "Limits")
         .def(py::init<>())
-        .def_readwrite("params", &Limits::params)
-        .def_readwrite("backs", &Limits::backs)
-        .def_readwrite("shifts", &Limits::shifts)
-        .def_readwrite("scales", &Limits::scales)
-        .def_readwrite("nba", &Limits::nba)
-        .def_readwrite("nbs", &Limits::nbs)
-        .def_readwrite("res", &Limits::res)
+        .def_readwrite("param", &Limits::param)
+        .def_readwrite("backgroundParam", &Limits::backgroundParam)
+        .def_readwrite("qzshift", &Limits::qzshift)
+        .def_readwrite("scalefactor", &Limits::scalefactor)
+        .def_readwrite("bulkIn", &Limits::bulkIn)
+        .def_readwrite("bulkOut", &Limits::bulkOut)
+        .def_readwrite("resolutionParam", &Limits::resolutionParam)
         .def_readwrite("domainRatio", &Limits::domainRatio);
+
+    py::class_<Priors>(m, "Priors")
+        .def(py::init<>())
+        .def_readwrite("param", &Priors::param)
+        .def_readwrite("backgroundParam", &Priors::backgroundParam)
+        .def_readwrite("qzshift", &Priors::qzshift)
+        .def_readwrite("scalefactor", &Priors::scalefactor)
+        .def_readwrite("bulkIn", &Priors::bulkIn)
+        .def_readwrite("bulkOut", &Priors::bulkOut)
+        .def_readwrite("resolutionParam", &Priors::resolutionParam)
+        .def_readwrite("priorNames", &Priors::priorNames)
+        .def_readwrite("priorValues", &Priors::priorValues);
 
     py::class_<Cells>(m, "Cells")
         .def(py::init<>())
@@ -695,8 +1148,8 @@ PYBIND11_MODULE(rat, m) {
 
     py::class_<Control>(m, "Control")
         .def(py::init<>())
-        .def_readwrite("para", &Control::para)
-        .def_readwrite("proc", &Control::proc)
+        .def_readwrite("parallel", &Control::parallel)
+        .def_readwrite("procedure", &Control::procedure)
         .def_readwrite("display", &Control::display)
         .def_readwrite("tolX", &Control::tolX)
         .def_readwrite("tolFun", &Control::tolFun)
@@ -704,29 +1157,30 @@ PYBIND11_MODULE(rat, m) {
         .def_readwrite("maxIter", &Control::maxIter)
         .def_readwrite("populationSize", &Control::populationSize)
         .def_readwrite("fWeight", &Control::fWeight)  
-        .def_readwrite("F_CR", &Control::F_CR)  
-        .def_readwrite("VTR", &Control::VTR)
-        .def_readwrite("numGen", &Control::numGen)
+        .def_readwrite("crossoverProbability", &Control::crossoverProbability)  
+        .def_readwrite("targetValue", &Control::targetValue)
+        .def_readwrite("numGenerations", &Control::numGenerations)
         .def_readwrite("strategy", &Control::strategy)
         .def_readwrite("Nlive", &Control::Nlive)
-        .def_readwrite("nmcmc", &Control::nmcmc)
+        .def_readwrite("Nmcmc", &Control::Nmcmc)
         .def_readwrite("propScale", &Control::propScale)
         .def_readwrite("nsTolerance", &Control::nsTolerance)
-        .def_readwrite("calcSld", &Control::calcSld)
+        .def_readwrite("calcSldDuringFit", &Control::calcSldDuringFit)
         .def_readwrite("resamPars", &Control::resamPars)
         .def_readwrite("updateFreq", &Control::updateFreq)
         .def_readwrite("updatePlotFreq", &Control::updatePlotFreq)
         .def_readwrite("nSamples", &Control::nSamples)
         .def_readwrite("nChains", &Control::nChains)
-        .def_readwrite("lambda", &Control::lambda)
+        .def_readwrite("jumpProbability", &Control::jumpProbability)
         .def_readwrite("pUnitGamma", &Control::pUnitGamma)
         .def_readwrite("boundHandling", &Control::boundHandling)
+        .def_readwrite("adaptPCR", &Control::adaptPCR)
         .def_readwrite("checks", &Control::checks);
 
     py::class_<ProblemDefinition>(m, "ProblemDefinition")
         .def(py::init<>())
-        .def_readwrite("contrastBacks", &ProblemDefinition::contrastBacks)
-        .def_readwrite("contrastBacksType", &ProblemDefinition::contrastBacksType)
+        .def_readwrite("contrastBackgrounds", &ProblemDefinition::contrastBackgrounds)
+        .def_readwrite("contrastBackgroundsType", &ProblemDefinition::contrastBackgroundsType)
         .def_readwrite("TF", &ProblemDefinition::TF)
         .def_readwrite("resample", &ProblemDefinition::resample)
         .def_readwrite("dataPresent", &ProblemDefinition::dataPresent)
@@ -734,17 +1188,17 @@ PYBIND11_MODULE(rat, m) {
         .def_readwrite("numberOfContrasts", &ProblemDefinition::numberOfContrasts)
         .def_readwrite("geometry", &ProblemDefinition::geometry)
         .def_readwrite("useImaginary", &ProblemDefinition::useImaginary)  
-        .def_readwrite("contrastShifts", &ProblemDefinition::contrastShifts)  
-        .def_readwrite("contrastScales", &ProblemDefinition::contrastScales)
-        .def_readwrite("contrastNbas", &ProblemDefinition::contrastNbas)
-        .def_readwrite("contrastNbss", &ProblemDefinition::contrastNbss)
-        .def_readwrite("contrastRes", &ProblemDefinition::contrastRes)
-        .def_readwrite("backs", &ProblemDefinition::backs)
-        .def_readwrite("shifts", &ProblemDefinition::shifts)
-        .def_readwrite("sf", &ProblemDefinition::sf)
-        .def_readwrite("nba", &ProblemDefinition::nba)
-        .def_readwrite("nbs", &ProblemDefinition::nbs)
-        .def_readwrite("res", &ProblemDefinition::res)
+        .def_readwrite("contrastQzshifts", &ProblemDefinition::contrastQzshifts)  
+        .def_readwrite("contrastScalefactors", &ProblemDefinition::contrastScalefactors)
+        .def_readwrite("contrastBulkIns", &ProblemDefinition::contrastBulkIns)
+        .def_readwrite("contrastBulkOuts", &ProblemDefinition::contrastBulkOuts)
+        .def_readwrite("contrastResolutions", &ProblemDefinition::contrastResolutions)
+        .def_readwrite("backgroundParams", &ProblemDefinition::backgroundParams)
+        .def_readwrite("qzshifts", &ProblemDefinition::qzshifts)
+        .def_readwrite("scalefactors", &ProblemDefinition::scalefactors)
+        .def_readwrite("bulkIn", &ProblemDefinition::bulkIn)
+        .def_readwrite("bulkOut", &ProblemDefinition::bulkOut)
+        .def_readwrite("resolutionParams", &ProblemDefinition::resolutionParams)
         .def_readwrite("params", &ProblemDefinition::params)
         .def_readwrite("numberOfLayers", &ProblemDefinition::numberOfLayers)
         .def_readwrite("modelType", &ProblemDefinition::modelType)
@@ -752,11 +1206,10 @@ PYBIND11_MODULE(rat, m) {
         .def_readwrite("contrastDomainRatios", &ProblemDefinition::contrastDomainRatios)
         .def_readwrite("domainRatio", &ProblemDefinition::domainRatio)
         .def_readwrite("numberOfDomainContrasts", &ProblemDefinition::numberOfDomainContrasts)
-        .def_readwrite("domainContrastCustomFiles", &ProblemDefinition::domainContrastCustomFiles)
-        .def_readwrite("fitpars", &ProblemDefinition::fitpars)
-        .def_readwrite("otherpars", &ProblemDefinition::otherpars)
-        .def_readwrite("fitconstr", &ProblemDefinition::fitconstr)
-        .def_readwrite("otherconstr", &ProblemDefinition::otherconstr);
+        .def_readwrite("fitParams", &ProblemDefinition::fitParams)
+        .def_readwrite("otherParams", &ProblemDefinition::otherParams)
+        .def_readwrite("fitLimits", &ProblemDefinition::fitLimits)
+        .def_readwrite("otherLimits", &ProblemDefinition::otherLimits);
 
-    m.def("reflectivityCalculation", &reflectivityCalculation, "A demo for Python RAT");
+    m.def("RATMain", &RATMain, "A demo for Python RAT");
 }

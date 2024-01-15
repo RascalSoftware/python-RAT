@@ -34,6 +34,20 @@ namespace RAT
         return p;
       }
 
+      boolean_T c_relop(real_T a, real_T b)
+      {
+        boolean_T p;
+        if (std::isnan(b)) {
+          p = !std::isnan(a);
+        } else if (std::isnan(a)) {
+          p = false;
+        } else {
+          p = (a < b);
+        }
+
+        return p;
+      }
+
       boolean_T relop(real_T a, real_T b)
       {
         boolean_T p;

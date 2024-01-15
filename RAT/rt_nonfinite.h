@@ -5,7 +5,7 @@
 //
 // rt_nonfinite.h
 //
-// Code generation for function 'reflectivityCalculation'
+// Code generation for function 'RATMain'
 //
 #ifndef RT_NONFINITE_H
 #define RT_NONFINITE_H

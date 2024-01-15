@@ -21,9 +21,9 @@
 // Function Definitions
 namespace RAT
 {
-  void makeSLDProfileXY(real_T nbair, real_T nbsub, real_T ssub, const ::coder::
-                        array<real_T, 2U> &layers, real_T numberOfLayers, real_T
-                        nrepeats, ::coder::array<real_T, 2U> &out)
+  void makeSLDProfileXY(real_T bulkIn, real_T bulkOut, real_T ssub, const ::
+                        coder::array<real_T, 2U> &layers, real_T numberOfLayers,
+                        real_T nrepeats, ::coder::array<real_T, 2U> &out)
   {
     ::coder::array<real_T, 2U> Lays;
     ::coder::array<real_T, 2U> SLD;
@@ -38,9 +38,9 @@ namespace RAT
     int32_T i;
     int32_T loop_ub;
     if (numberOfLayers > 0.0) {
-      real_T b;
       real_T lastBoxEdge;
       real_T nextLayRough;
+      real_T subsBoxCen_tmp;
       int32_T i1;
       b_layers.set_size(layers.size(0));
       loop_ub = layers.size(0);
@@ -48,23 +48,23 @@ namespace RAT
         b_layers[i] = layers[i];
       }
 
-      b = coder::sum(b_layers) * nrepeats + 150.0;
-      if (std::isnan(b)) {
+      subsBoxCen_tmp = coder::sum(b_layers) * nrepeats + 150.0;
+      if (std::isnan(subsBoxCen_tmp)) {
         x.set_size(1, 1);
         x[0] = rtNaN;
-      } else if (b < 0.0) {
+      } else if (subsBoxCen_tmp < 0.0) {
         x.set_size(1, 0);
       } else {
-        x.set_size(1, static_cast<int32_T>(b) + 1);
-        loop_ub = static_cast<int32_T>(b);
+        x.set_size(1, static_cast<int32_T>(subsBoxCen_tmp) + 1);
+        loop_ub = static_cast<int32_T>(subsBoxCen_tmp);
         for (i = 0; i <= loop_ub; i++) {
           x[i] = i;
         }
       }
 
-      b = numberOfLayers * nrepeats;
-      Lays.set_size(x.size(1), static_cast<int32_T>(b + 2.0));
-      loop_ub = static_cast<int32_T>(b + 2.0);
+      subsBoxCen_tmp = numberOfLayers * nrepeats;
+      Lays.set_size(x.size(1), static_cast<int32_T>(subsBoxCen_tmp + 2.0));
+      loop_ub = static_cast<int32_T>(subsBoxCen_tmp + 2.0);
       for (i = 0; i < loop_ub; i++) {
         b_loop_ub = x.size(1);
         for (i1 = 0; i1 < b_loop_ub; i1++) {
@@ -73,7 +73,7 @@ namespace RAT
       }
 
       nextLayRough = layers[layers.size(0) * 2];
-      asymconvstep(x, 100.0, 0.0, nextLayRough, nextLayRough, nbair, airBox);
+      asymconvstep(x, 100.0, 0.0, nextLayRough, nextLayRough, bulkIn, airBox);
       lastBoxEdge = 50.0;
       i = static_cast<int32_T>(nrepeats);
       for (int32_T n{0}; n < i; n++) {
@@ -109,16 +109,18 @@ namespace RAT
 
       // layers(end,3);
       asymconvstep(x, (x[x.size(1) - 1] - lastBoxEdge) * 2.0, x[x.size(1) - 1],
-                   nextLayRough, ssub, nbsub, r1);
+                   nextLayRough, ssub, bulkOut, r1);
       loop_ub = Lays.size(0);
       for (i = 0; i < loop_ub; i++) {
-        Lays[i + Lays.size(0) * (static_cast<int32_T>(b + 1.0) - 1)] = r1[i];
+        Lays[i + Lays.size(0) * (static_cast<int32_T>(subsBoxCen_tmp + 1.0) - 1)]
+          = r1[i];
       }
 
       // plot(x,Lays(:,(numberOfLayers*nrepeats)+1))
       loop_ub = Lays.size(0);
       for (i = 0; i < loop_ub; i++) {
-        Lays[i + Lays.size(0) * (static_cast<int32_T>(b + 2.0) - 1)] = airBox[i];
+        Lays[i + Lays.size(0) * (static_cast<int32_T>(subsBoxCen_tmp + 2.0) - 1)]
+          = airBox[i];
       }
 
       // plot(x,Lays(:,(numberOfLayers*nrepeats)+2))
@@ -129,26 +131,27 @@ namespace RAT
         SLD[i] = b_SLD[i];
       }
     } else {
-      real_T tmp_data[101];
-      real_T widths;
+      real_T subsBoxCen_tmp;
       x.set_size(1, 101);
       r.set_size(1, 101);
       for (i = 0; i < 101; i++) {
         x[i] = i;
-        tmp_data[i] = i;
         r[i] = i;
       }
 
-      widths = coder::internal::maximum(tmp_data);
-      asymconvstep(r, widths, 0.0, ssub, ssub, nbair, r1);
+      subsBoxCen_tmp = coder::internal::maximum(r);
       r.set_size(1, 101);
       for (i = 0; i < 101; i++) {
-        tmp_data[i] = i;
         r[i] = i;
       }
 
-      asymconvstep(r, widths, coder::internal::maximum(tmp_data), ssub, ssub,
-                   nbsub, r2);
+      asymconvstep(r, subsBoxCen_tmp, 0.0, ssub, ssub, bulkIn, r1);
+      r.set_size(1, 101);
+      for (i = 0; i < 101; i++) {
+        r[i] = i;
+      }
+
+      asymconvstep(r, subsBoxCen_tmp, subsBoxCen_tmp, ssub, ssub, bulkOut, r2);
       SLD.set_size(1, r1.size(1));
       loop_ub = r1.size(1);
       for (i = 0; i < loop_ub; i++) {
@@ -186,9 +189,9 @@ namespace RAT
     int32_T i;
     int32_T loop_ub;
     if (numberOfLayers > 0.0) {
-      real_T b;
       real_T lastBoxEdge;
       real_T nextLayRough;
+      real_T subsBoxCen_tmp;
       int32_T i1;
       b_layers.set_size(layers.size(0));
       loop_ub = layers.size(0);
@@ -196,23 +199,23 @@ namespace RAT
         b_layers[i] = layers[i];
       }
 
-      b = coder::sum(b_layers) * nrepeats + 150.0;
-      if (std::isnan(b)) {
+      subsBoxCen_tmp = coder::sum(b_layers) * nrepeats + 150.0;
+      if (std::isnan(subsBoxCen_tmp)) {
         x.set_size(1, 1);
         x[0] = rtNaN;
-      } else if (b < 0.0) {
+      } else if (subsBoxCen_tmp < 0.0) {
         x.set_size(1, 0);
       } else {
-        x.set_size(1, static_cast<int32_T>(b) + 1);
-        loop_ub = static_cast<int32_T>(b);
+        x.set_size(1, static_cast<int32_T>(subsBoxCen_tmp) + 1);
+        loop_ub = static_cast<int32_T>(subsBoxCen_tmp);
         for (i = 0; i <= loop_ub; i++) {
           x[i] = i;
         }
       }
 
-      b = numberOfLayers * nrepeats;
-      Lays.set_size(x.size(1), static_cast<int32_T>(b + 2.0));
-      loop_ub = static_cast<int32_T>(b + 2.0);
+      subsBoxCen_tmp = numberOfLayers * nrepeats;
+      Lays.set_size(x.size(1), static_cast<int32_T>(subsBoxCen_tmp + 2.0));
+      loop_ub = static_cast<int32_T>(subsBoxCen_tmp + 2.0);
       for (i = 0; i < loop_ub; i++) {
         b_loop_ub = x.size(1);
         for (i1 = 0; i1 < b_loop_ub; i1++) {
@@ -260,13 +263,15 @@ namespace RAT
                    nextLayRough, ssub, r1);
       loop_ub = Lays.size(0);
       for (i = 0; i < loop_ub; i++) {
-        Lays[i + Lays.size(0) * (static_cast<int32_T>(b + 1.0) - 1)] = r1[i];
+        Lays[i + Lays.size(0) * (static_cast<int32_T>(subsBoxCen_tmp + 1.0) - 1)]
+          = r1[i];
       }
 
       // plot(x,Lays(:,(numberOfLayers*nrepeats)+1))
       loop_ub = Lays.size(0);
       for (i = 0; i < loop_ub; i++) {
-        Lays[i + Lays.size(0) * (static_cast<int32_T>(b + 2.0) - 1)] = airBox[i];
+        Lays[i + Lays.size(0) * (static_cast<int32_T>(subsBoxCen_tmp + 2.0) - 1)]
+          = airBox[i];
       }
 
       // plot(x,Lays(:,(numberOfLayers*nrepeats)+2))
@@ -277,25 +282,27 @@ namespace RAT
         SLD[i] = b_SLD[i];
       }
     } else {
-      real_T tmp_data[101];
-      real_T widths;
+      real_T subsBoxCen_tmp;
       x.set_size(1, 101);
       r.set_size(1, 101);
       for (i = 0; i < 101; i++) {
         x[i] = i;
-        tmp_data[i] = i;
         r[i] = i;
       }
 
-      widths = coder::internal::maximum(tmp_data);
-      asymconvstep(r, widths, 0.0, ssub, ssub, r1);
+      subsBoxCen_tmp = coder::internal::maximum(r);
       r.set_size(1, 101);
       for (i = 0; i < 101; i++) {
-        tmp_data[i] = i;
         r[i] = i;
       }
 
-      asymconvstep(r, widths, coder::internal::maximum(tmp_data), ssub, ssub, r2);
+      asymconvstep(r, subsBoxCen_tmp, 0.0, ssub, ssub, r1);
+      r.set_size(1, 101);
+      for (i = 0; i < 101; i++) {
+        r[i] = i;
+      }
+
+      asymconvstep(r, subsBoxCen_tmp, subsBoxCen_tmp, ssub, ssub, r2);
       SLD.set_size(1, r1.size(1));
       loop_ub = r1.size(1);
       for (i = 0; i < loop_ub; i++) {

@@ -5,7 +5,7 @@
 //
 // rtGetInf.h
 //
-// Code generation for function 'reflectivityCalculation'
+// Code generation for function 'RATMain'
 //
 #ifndef RTGETINF_H
 #define RTGETINF_H

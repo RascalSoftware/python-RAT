@@ -1,0 +1,36 @@
+//
+// Non-Degree Granting Education License -- for use at non-degree
+// granting, nonprofit, education, and research organizations only. Not
+// for commercial or industrial use.
+//
+// callCppFunction.h
+//
+// Code generation for function 'callCppFunction'
+//
+#ifndef CALLCPPFUNCTION_H
+#define CALLCPPFUNCTION_H
+
+// Include files
+#include "rtwtypes.h"
+#include "coder_array.h"
+#include <cstddef>
+#include <cstdlib>
+
+// Function Declarations
+namespace RAT
+{
+  void b_callCppFunction(::coder::array<real_T, 2U> &params, real_T bulkIn,
+    real_T bulkOut, real_T contrast, const char_T pointer_data[], const int32_T
+    pointer_size[2], ::coder::array<real_T, 2U> &output, real_T *subRough);
+  void c_callCppFunction(::coder::array<real_T, 2U> &params, real_T bulkIn,
+    real_T bulkOut, real_T contrast, const char_T pointer_data[], const int32_T
+    pointer_size[2], ::coder::array<real_T, 2U> &output, real_T *subRough);
+  void callCppFunction(::coder::array<real_T, 2U> &params, real_T bulkIn, real_T
+                       bulkOut, real_T contrast, const char_T pointer_data[],
+                       const int32_T pointer_size[2], ::coder::array<real_T, 2U>
+                       &output, real_T *subRough);
+}
+
+#endif
+
+// End of code generation (callCppFunction.h)

@@ -24,7 +24,7 @@ namespace RAT
     {
       namespace scalar
       {
-        void b_sqrt(creal_T *x);
+        void d_sqrt(creal_T *x);
       }
     }
   }

@@ -10,18 +10,17 @@
 
 // Include files
 #include "allocateLayersForContrast.h"
+#include "RATMain_types.h"
 #include "length.h"
 #include "nullAssignment.h"
-#include "reflectivityCalculation_internal_types.h"
 #include "rt_nonfinite.h"
 #include "coder_array.h"
-#include "coder_bounded_array.h"
 
 // Function Definitions
 namespace RAT
 {
   void allocateLayersForContrast(const ::coder::array<real_T, 2U>
-    &contrastLayers, const ::coder::array<cell_wrap_20, 2U>
+    &contrastLayers, const ::coder::array<cell_wrap_24, 2U>
     &outParameterisedLayers, boolean_T useImaginary, real_T
     thisContrastLayers_data[], int32_T thisContrastLayers_size[2])
   {
@@ -69,11 +68,11 @@ namespace RAT
         //              thisLayer = [thisLayer(1) compSLD thisLayer(4:end)];
         //          end
         n = outParameterisedLayers[static_cast<int32_T>(contrastLayers[b_i]) - 1]
-          .f1.size[1];
+          .f1.size(1);
         for (int32_T i1{0}; i1 < n; i1++) {
           thisContrastLayers_data[b_i + thisContrastLayers_size[0] * i1] =
             outParameterisedLayers[static_cast<int32_T>(contrastLayers[b_i]) - 1]
-            .f1.data[i1];
+            .f1[i1];
         }
       } else {
         coder::internal::nullAssignment(thisContrastLayers_data,

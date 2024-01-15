@@ -20,8 +20,8 @@
 namespace RAT
 {
   void applyBackgroundCorrection(::coder::array<real_T, 2U> &reflect, ::coder::
-    array<real_T, 2U> &Simul, ::coder::array<real_T, 2U> &shifted_dat, real_T
-    backg, real_T backsType);
+    array<real_T, 2U> &simul, ::coder::array<real_T, 2U> &shiftedData, real_T
+    backgroundParams, real_T contrastBackgroundsType);
 }
 
 #endif

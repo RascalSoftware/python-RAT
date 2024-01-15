@@ -17,9 +17,9 @@
 // Function Definitions
 namespace RAT
 {
-  void makeSLDProfiles(real_T nbair, real_T nbsub, const ::coder::array<real_T,
-                       2U> &sld, real_T ssub, const real_T repeats[2], ::coder::
-                       array<real_T, 2U> &sldProfile)
+  void makeSLDProfiles(real_T bulkIn, real_T bulkOut, const ::coder::array<
+                       real_T, 2U> &sld, real_T ssub, const real_T repeats[2], ::
+                       coder::array<real_T, 2U> &sldProfile)
   {
     real_T d;
     if (repeats[0] == 0.0) {
@@ -28,7 +28,7 @@ namespace RAT
       d = repeats[1];
     }
 
-    makeSLDProfileXY(nbair, nbsub, ssub, sld, static_cast<real_T>(sld.size(0)),
+    makeSLDProfileXY(bulkIn, bulkOut, ssub, sld, static_cast<real_T>(sld.size(0)),
                      d, sldProfile);
   }
 

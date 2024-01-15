@@ -5,7 +5,7 @@
 //
 // rtGetNaN.h
 //
-// Code generation for function 'reflectivityCalculation'
+// Code generation for function 'RATMain'
 //
 #ifndef RTGETNAN_H
 #define RTGETNAN_H

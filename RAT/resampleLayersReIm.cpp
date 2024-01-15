@@ -10,17 +10,18 @@
 
 // Include files
 #include "resampleLayersReIm.h"
+#include "RATMain_internal_types.h"
+#include "RATMain_rtwutil.h"
+#include "RATMain_types.h"
 #include "adaptive.h"
 #include "interp1.h"
-#include "reflectivityCalculation_internal_types.h"
 #include "rt_nonfinite.h"
 #include "coder_array.h"
-#include <algorithm>
 
 // Function Definitions
 namespace RAT
 {
-  void resampleLayersReIm(const ::coder::array<real_T, 2U> &sldProfile, const ::
+  void b_resampleLayersReIm(const ::coder::array<real_T, 2U> &sldProfile, const ::
     coder::array<real_T, 2U> &sldProfileIm, const real_T resamPars[2], ::coder::
     array<real_T, 2U> &newSLD)
   {
@@ -28,7 +29,7 @@ namespace RAT
     ::coder::array<real_T, 1U> b_sldProfileIm;
     ::coder::array<real_T, 1U> c_sldProfileIm;
     ::coder::array<real_T, 1U> newYIm;
-    cell_24 expl_temp;
+    cell_27 expl_temp;
     real_T b_sldProfile[2];
     int32_T i;
     int32_T loop_ub;
@@ -104,21 +105,22 @@ namespace RAT
     }
   }
 
-  void resampleLayersReIm(const real_T sldProfile_data[], const int32_T
-    sldProfile_size[2], const real_T sldProfileIm_data[], const int32_T
-    sldProfileIm_size[2], const real_T resamPars[2], ::coder::array<real_T, 2U>
-    &newSLD)
+  void c_resampleLayersReIm(const ::coder::array<real_T, 2U> &sldProfile, const ::
+    coder::array<real_T, 2U> &sldProfileIm, const real_T resamPars[2], ::coder::
+    array<real_T, 2U> &newSLD)
   {
     ::coder::array<real_T, 1U> b_expl_temp;
-    ::coder::array<real_T, 1U> d_sldProfileIm_data;
-    ::coder::array<real_T, 1U> e_sldProfileIm_data;
+    ::coder::array<real_T, 1U> b_sldProfileIm_data;
     ::coder::array<real_T, 1U> newYIm;
-    cell_24 expl_temp;
-    real_T b_sldProfileIm_data[1000];
-    real_T c_sldProfileIm_data[1000];
-    real_T sldProfile[2];
+    ::coder::array<real_T, 1U> sldProfileIm_data;
+    RATMainTLS *RATMainTLSThread;
+    cell_27 expl_temp;
+    real_T b_sldProfile[2];
+    int32_T b_sldProfileIm_size;
     int32_T i;
     int32_T loop_ub;
+    int32_T sldProfileIm_size;
+    RATMainTLSThread = emlrtGetThreadStackData();
 
     //  Resample the SLD profile. In this case we have an imaginary SLD also, and
     //  so we resample that onto the same points as the real one..
@@ -128,22 +130,24 @@ namespace RAT
     //  Keep points and minangle as constants for now
     //  will fix later
     // newX = linspace(xstart,xend,100);
-    sldProfile[0] = sldProfile_data[0];
-    sldProfile[1] = sldProfile_data[sldProfile_size[0] - 1];
-    adaptive(sldProfile_data, sldProfile_size, sldProfile, resamPars[0] *
-             3.1415926535897931, resamPars[1], &expl_temp);
+    b_sldProfile[0] = sldProfile[0];
+    b_sldProfile[1] = sldProfile[sldProfile.size(0) - 1];
+    b_adaptive(sldProfile, b_sldProfile, resamPars[0] * 3.1415926535897931,
+               resamPars[1], &expl_temp);
 
     //  Now interpolate the imaginary profile so that it is on the same x points
     //  as the resampled real one....
-    loop_ub = sldProfileIm_size[0];
-    if (loop_ub - 1 >= 0) {
-      std::copy(&sldProfileIm_data[0], &sldProfileIm_data[loop_ub],
-                &b_sldProfileIm_data[0]);
+    sldProfileIm_size = sldProfileIm.size(0);
+    loop_ub = sldProfileIm.size(0);
+    for (i = 0; i < loop_ub; i++) {
+      RATMainTLSThread->f2.sldProfileIm_data[i] = sldProfileIm[i];
     }
 
-    loop_ub = sldProfileIm_size[0];
+    b_sldProfileIm_size = sldProfileIm.size(0);
+    loop_ub = sldProfileIm.size(0);
     for (i = 0; i < loop_ub; i++) {
-      c_sldProfileIm_data[i] = sldProfileIm_data[i + sldProfileIm_size[0]];
+      RATMainTLSThread->f2.b_sldProfileIm_data[i] = sldProfileIm[i +
+        sldProfileIm.size(0)];
     }
 
     b_expl_temp.set_size(expl_temp.f1.size(0));
@@ -152,14 +156,17 @@ namespace RAT
       b_expl_temp[i] = expl_temp.f1[i];
     }
 
-    d_sldProfileIm_data.set(&b_sldProfileIm_data[0], sldProfileIm_size[0]);
-    e_sldProfileIm_data.set(&c_sldProfileIm_data[0], sldProfileIm_size[0]);
-    coder::interp1(d_sldProfileIm_data, e_sldProfileIm_data, b_expl_temp, newYIm);
+    sldProfileIm_data.set(&RATMainTLSThread->f2.sldProfileIm_data[0],
+                          sldProfileIm_size);
+    b_sldProfileIm_data.set(&RATMainTLSThread->f2.b_sldProfileIm_data[0],
+      b_sldProfileIm_size);
+    coder::interp1(sldProfileIm_data, b_sldProfileIm_data, b_expl_temp, newYIm);
     newSLD.set_size(expl_temp.f1.size(0) - 1, 4);
     loop_ub = expl_temp.f1.size(0) - 1;
     for (i = 0; i < 4; i++) {
-      for (int32_T i1{0}; i1 < loop_ub; i1++) {
-        newSLD[i1 + newSLD.size(0) * i] = 0.0;
+      for (sldProfileIm_size = 0; sldProfileIm_size < loop_ub; sldProfileIm_size
+           ++) {
+        newSLD[sldProfileIm_size + newSLD.size(0) * i] = 0.0;
       }
     }
 

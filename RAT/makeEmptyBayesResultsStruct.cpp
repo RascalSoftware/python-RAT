@@ -1,0 +1,646 @@
+//
+// Non-Degree Granting Education License -- for use at non-degree
+// granting, nonprofit, education, and research organizations only. Not
+// for commercial or industrial use.
+//
+// makeEmptyBayesResultsStruct.cpp
+//
+// Code generation for function 'makeEmptyBayesResultsStruct'
+//
+
+// Include files
+#include "makeEmptyBayesResultsStruct.h"
+#include "RATMain_internal_types.h"
+#include "RATMain_types.h"
+#include "rt_nonfinite.h"
+#include "structConstructorHelper.h"
+#include "coder_array.h"
+#include "coder_bounded_array.h"
+
+// Function Declarations
+namespace RAT
+{
+  static void cast(const ::coder::array<real_T, 2U> &t3_outlier, const
+                   struct14_T *t3_DREAMPar, const struct15_T t3_Meas_info, const
+                   ::coder::array<real_T, 2U> &t3_AR, const ::coder::array<
+                   real_T, 2U> &t3_R_stat, const ::coder::array<real_T, 2U>
+                   &t3_CR, struct13_T *r);
+  static void cast(const real_T t1_par95_data[], const int32_T t1_par95_size[2],
+                   const real_T t1_par65_data[], const int32_T t1_par65_size[2],
+                   const real_T t1_mean_data[], const int32_T t1_mean_size[2], ::
+                   coder::array<real_T, 2U> &t2_par95, ::coder::array<real_T, 2U>
+                   &t2_par65, ::coder::array<real_T, 2U> &t2_mean);
+}
+
+// Function Definitions
+namespace RAT
+{
+  static void cast(const ::coder::array<real_T, 2U> &t3_outlier, const
+                   struct14_T *t3_DREAMPar, const struct15_T t3_Meas_info, const
+                   ::coder::array<real_T, 2U> &t3_AR, const ::coder::array<
+                   real_T, 2U> &t3_R_stat, const ::coder::array<real_T, 2U>
+                   &t3_CR, struct13_T *r)
+  {
+    int32_T b_loop_ub;
+    int32_T loop_ub;
+    r->outlier.size[0] = t3_outlier.size(0);
+    r->outlier.size[1] = t3_outlier.size(1);
+    loop_ub = t3_outlier.size(1);
+    for (int32_T i{0}; i < loop_ub; i++) {
+      b_loop_ub = t3_outlier.size(0);
+      for (int32_T i1{0}; i1 < b_loop_ub; i1++) {
+        r->outlier.data[i1 + r->outlier.size[0] * i] = t3_outlier[i1 +
+          t3_outlier.size(0) * i];
+      }
+    }
+
+    r->RunTime = 100.0;
+    r->DREAMPar = *t3_DREAMPar;
+    r->Meas_info = t3_Meas_info;
+    r->iteration = 0.0;
+    r->iloc = 0.0;
+    r->fx = 0.0;
+    r->AR.size[0] = t3_AR.size(0);
+    r->AR.size[1] = t3_AR.size(1);
+    loop_ub = t3_AR.size(1);
+    for (int32_T i{0}; i < loop_ub; i++) {
+      b_loop_ub = t3_AR.size(0);
+      for (int32_T i1{0}; i1 < b_loop_ub; i1++) {
+        r->AR.data[i1 + r->AR.size[0] * i] = t3_AR[i1 + t3_AR.size(0) * i];
+      }
+    }
+
+    r->R_stat.set_size(t3_R_stat.size(0), t3_R_stat.size(1));
+    loop_ub = t3_R_stat.size(1);
+    for (int32_T i{0}; i < loop_ub; i++) {
+      b_loop_ub = t3_R_stat.size(0);
+      for (int32_T i1{0}; i1 < b_loop_ub; i1++) {
+        r->R_stat[i1 + r->R_stat.size(0) * i] = t3_R_stat[i1 + t3_R_stat.size(0)
+          * i];
+      }
+    }
+
+    r->CR.set_size(t3_CR.size(0), t3_CR.size(1));
+    loop_ub = t3_CR.size(1);
+    for (int32_T i{0}; i < loop_ub; i++) {
+      b_loop_ub = t3_CR.size(0);
+      for (int32_T i1{0}; i1 < b_loop_ub; i1++) {
+        r->CR[i1 + r->CR.size(0) * i] = t3_CR[i1 + t3_CR.size(0) * i];
+      }
+    }
+  }
+
+  static void cast(const real_T t1_par95_data[], const int32_T t1_par95_size[2],
+                   const real_T t1_par65_data[], const int32_T t1_par65_size[2],
+                   const real_T t1_mean_data[], const int32_T t1_mean_size[2], ::
+                   coder::array<real_T, 2U> &t2_par95, ::coder::array<real_T, 2U>
+                   &t2_par65, ::coder::array<real_T, 2U> &t2_mean)
+  {
+    int32_T loop_ub;
+    t2_par95.set_size(2, t1_par95_size[1]);
+    loop_ub = t1_par95_size[1];
+    for (int32_T i{0}; i < loop_ub; i++) {
+      t2_par95[2 * i] = t1_par95_data[2 * i];
+      t2_par95[2 * i + 1] = t1_par95_data[2 * i + 1];
+    }
+
+    t2_par65.set_size(2, t1_par65_size[1]);
+    loop_ub = t1_par65_size[1];
+    for (int32_T i{0}; i < loop_ub; i++) {
+      t2_par65[2 * i] = t1_par65_data[2 * i];
+      t2_par65[2 * i + 1] = t1_par65_data[2 * i + 1];
+    }
+
+    t2_mean.set_size(1, t1_mean_size[1]);
+    loop_ub = t1_mean_size[1];
+    for (int32_T i{0}; i < loop_ub; i++) {
+      t2_mean[i] = t1_mean_data[i];
+    }
+  }
+
+  void b_makeEmptyBayesResultsStruct(real_T nContrasts, boolean_T isDomains, ::
+    coder::array<cell_wrap_8, 1U> &bayesResults_bestFitsMean_ref, ::coder::array<
+    cell_wrap_8, 2U> &bayesResults_bestFitsMean_sld, real_T
+    *bayesResults_bestFitsMean_chi, ::coder::array<cell_wrap_8, 1U>
+    &bayesResults_bestFitsMean_data, ::coder::array<cell_wrap_8, 1U>
+    &bayesResults_predlims_refPredInts, ::coder::array<cell_wrap_8, 1U>
+    &bayesResults_predlims_sldPredInts, ::coder::array<cell_wrap_8, 1U>
+    &bayesResults_predlims_refXdata, ::coder::array<cell_wrap_8, 2U>
+    &bayesResults_predlims_sldXdata, real_T
+    bayesResults_predlims_sampleChi_data[], int32_T
+    *bayesResults_predlims_sampleChi_size, ::coder::array<real_T, 2U>
+    &bayesResults_parConfInts_par95, ::coder::array<real_T, 2U>
+    &bayesResults_parConfInts_par65, ::coder::array<real_T, 2U>
+    &bayesResults_parConfInts_mean, ::coder::array<real_T, 2U>
+    &bayesResults_bestPars, c_struct_T *bayesResults_bayesRes, ::coder::array<
+    real_T, 2U> &bayesResults_chain)
+  {
+    ::coder::array<cell_wrap_8, 2U> b_f1;
+    ::coder::array<cell_wrap_8, 2U> g_f1;
+    ::coder::array<cell_wrap_8, 1U> c_f1;
+    ::coder::array<cell_wrap_8, 1U> d_f1;
+    ::coder::array<cell_wrap_8, 1U> e_f1;
+    ::coder::array<cell_wrap_8, 1U> f1;
+    ::coder::array<cell_wrap_8, 1U> f_f1;
+    ::coder::array<real_T, 2U> t6_AR;
+    ::coder::array<real_T, 2U> t6_CR;
+    ::coder::array<real_T, 2U> t6_R_stat;
+    ::coder::array<real_T, 2U> t6_outlier;
+    ::coder::array<real_T, 1U> h_f1;
+    cell_wrap_15 r;
+    cell_wrap_15 r2;
+    cell_wrap_15 r3;
+    cell_wrap_17 r4;
+    cell_wrap_9 r1;
+    struct14_T expl_temp;
+    struct15_T b_expl_temp;
+    real_T t7_par65_data[2000];
+    real_T t7_par95_data[2000];
+    real_T t7_mean_data[1000];
+    int32_T t7_mean_size[2];
+    int32_T t7_par65_size[2];
+    int32_T t7_par95_size[2];
+    int32_T i;
+
+    //  A function to make an empty container to hold the results of bayes
+    //  calculations. The struct has the following format:
+    //
+    //  nPar = number of fitted parameters
+    //  nContrasts = number of contrasts
+    //
+    //  bayesResults =
+    //
+    //    struct with fields:
+    //
+    //      bestFitsMean: [1×1 struct]
+    //          predlims: [1×1 struct]
+    //       parConfInts: [1×1 struct]
+    //          bestPars: [1xnPars double]
+    //          bayesRes: [1×1 struct]
+    //             chain: [1000000xnPars double]
+    //  -----------------------------------------------------------
+    //  Make the individual structs....
+    //  (1) bayesResults.bestFitsMean
+    i = static_cast<int32_T>(nContrasts);
+    f1.set_size(i);
+    for (int32_T b_i{0}; b_i < i; b_i++) {
+      f1[b_i].f1.set_size(1, 3);
+      f1[b_i].f1[0] = 1.0;
+      f1[b_i].f1[f1[b_i].f1.size(0)] = 1.0;
+      f1[b_i].f1[f1[b_i].f1.size(0) * 2] = 1.0;
+    }
+
+    if (isDomains) {
+      b_f1.set_size(i, 2);
+      for (int32_T b_i{0}; b_i < i; b_i++) {
+        b_f1[b_i].f1.set_size(2, 2);
+        b_f1[b_i + b_f1.size(0)].f1.set_size(2, 2);
+        b_f1[b_i].f1[0] = 1.0;
+        b_f1[b_i + b_f1.size(0)].f1[0] = 1.0;
+        b_f1[b_i].f1[1] = 1.0;
+        b_f1[b_i + b_f1.size(0)].f1[1] = 1.0;
+        b_f1[b_i].f1[b_f1[b_i].f1.size(0)] = 1.0;
+        b_f1[b_i + b_f1.size(0)].f1[b_f1[b_i + b_f1.size(0)].f1.size(0)] = 1.0;
+        b_f1[b_i].f1[b_f1[b_i].f1.size(0) + 1] = 1.0;
+        b_f1[b_i + b_f1.size(0)].f1[b_f1[b_i + b_f1.size(0)].f1.size(0) + 1] =
+          1.0;
+      }
+    } else {
+      b_f1.set_size(i, 1);
+      for (int32_T b_i{0}; b_i < i; b_i++) {
+        b_f1[b_i].f1.set_size(1, 2);
+        b_f1[b_i].f1[0] = 1.0;
+        b_f1[b_i].f1[b_f1[b_i].f1.size(0)] = 1.0;
+      }
+    }
+
+    c_f1.set_size(i);
+
+    //  --------------------------------------------------------------------
+    //  (2) bayesResults.predlims
+    d_f1.set_size(i);
+    e_f1.set_size(i);
+    f_f1.set_size(i);
+    for (int32_T b_i{0}; b_i < i; b_i++) {
+      c_f1[b_i].f1.set_size(1, 3);
+      c_f1[b_i].f1[0] = 1.0;
+      c_f1[b_i].f1[c_f1[b_i].f1.size(0)] = 1.0;
+      c_f1[b_i].f1[c_f1[b_i].f1.size(0) * 2] = 1.0;
+      d_f1[b_i].f1.set_size(1, 3);
+      d_f1[b_i].f1[0] = 1.0;
+      d_f1[b_i].f1[d_f1[b_i].f1.size(0)] = 1.0;
+      d_f1[b_i].f1[d_f1[b_i].f1.size(0) * 2] = 1.0;
+      e_f1[b_i].f1.set_size(1, 3);
+      e_f1[b_i].f1[0] = 1.0;
+      e_f1[b_i].f1[e_f1[b_i].f1.size(0)] = 1.0;
+      e_f1[b_i].f1[e_f1[b_i].f1.size(0) * 2] = 1.0;
+      f_f1[b_i].f1.set_size(1, 3);
+      f_f1[b_i].f1[0] = 1.0;
+      f_f1[b_i].f1[f_f1[b_i].f1.size(0)] = 1.0;
+      f_f1[b_i].f1[f_f1[b_i].f1.size(0) * 2] = 1.0;
+    }
+
+    if (isDomains) {
+      g_f1.set_size(i, 2);
+      for (int32_T b_i{0}; b_i < i; b_i++) {
+        g_f1[b_i].f1.set_size(2, 3);
+        g_f1[b_i + g_f1.size(0)].f1.set_size(2, 3);
+        for (int32_T i1{0}; i1 < 3; i1++) {
+          g_f1[b_i].f1[g_f1[b_i].f1.size(0) * i1] = 1.0;
+          g_f1[b_i + g_f1.size(0)].f1[g_f1[b_i + g_f1.size(0)].f1.size(0) * i1] =
+            1.0;
+          g_f1[b_i].f1[g_f1[b_i].f1.size(0) * i1 + 1] = 1.0;
+          g_f1[b_i + g_f1.size(0)].f1[g_f1[b_i + g_f1.size(0)].f1.size(0) * i1 +
+            1] = 1.0;
+        }
+      }
+    } else {
+      g_f1.set_size(i, 1);
+      for (int32_T b_i{0}; b_i < i; b_i++) {
+        g_f1[b_i].f1.set_size(1, 3);
+        g_f1[b_i].f1[0] = 1.0;
+        g_f1[b_i].f1[g_f1[b_i].f1.size(0)] = 1.0;
+        g_f1[b_i].f1[g_f1[b_i].f1.size(0) * 2] = 1.0;
+      }
+    }
+
+    //  ------------------------------------------------------------------
+    //  (3) bayesResults.parConfInts
+    t7_par95_size[0] = 2;
+    t7_par95_size[1] = 1;
+    t7_par65_size[0] = 2;
+    t7_par65_size[1] = 1;
+    t7_mean_size[0] = 1;
+    t7_mean_size[1] = 1;
+    t7_mean_data[0] = 0.0;
+
+    //  -------------------------------------------------------------------
+    //  (4) bayesResults.bestPars
+    //  -------------------------------------------------------------------
+    //  (5) bayesResults.bayesRes
+    t6_outlier.set_size(1, 2);
+    t6_AR.set_size(1, 2);
+    t6_R_stat.set_size(1, 2);
+    t6_CR.set_size(1, 2);
+
+    //  Nested Sampler
+    t7_par95_data[0] = 0.0;
+    t7_par65_data[0] = 0.0;
+    t6_outlier[0] = 1.0;
+    t6_AR[0] = 0.0;
+    t6_R_stat[0] = 0.0;
+    t6_CR[0] = 0.0;
+    t7_par95_data[1] = 0.0;
+    t7_par65_data[1] = 0.0;
+    t6_outlier[t6_outlier.size(0)] = 1.0;
+    t6_AR[t6_AR.size(0)] = 0.0;
+    t6_R_stat[t6_R_stat.size(0)] = 0.0;
+    t6_CR[t6_CR.size(0)] = 0.0;
+    expl_temp.R.set_size(1, 1);
+    expl_temp.R[0] = 0.0;
+    expl_temp.save = false;
+    expl_temp.restart = false;
+    expl_temp.modout = false;
+    expl_temp.IO = false;
+    expl_temp.ABC = false;
+    expl_temp.epsilon = 0.025;
+    expl_temp.thinning = 1.0;
+    expl_temp.adaptPCR = false;
+    expl_temp.outlier[0] = 'i';
+    expl_temp.outlier[1] = 'q';
+    expl_temp.outlier[2] = 'r';
+    expl_temp.zeta = 1.0E-12;
+    expl_temp.steps = 50.0;
+    expl_temp.delta = 3.0;
+    expl_temp.nCR = 3.0;
+    expl_temp.pUnitGamma = 0.2;
+    expl_temp.lambda = 0.5;
+    expl_temp.CPU = 1.0;
+    expl_temp.parallel = false;
+    expl_temp.T = 1000.0;
+    expl_temp.N = 10.0;
+    expl_temp.d = 17.0;
+    b_expl_temp.N = 0.0;
+    b_expl_temp.Y = 0.0;
+    cast(t6_outlier, &expl_temp, b_expl_temp, t6_AR, t6_R_stat, t6_CR,
+         &bayesResults_bayesRes->dreamOutput);
+
+    //  ------------------------------------------------------------------
+    //  (6) chain
+    //  -------------------------------------------------------------------
+    //  Make the final structure...
+    r.f1 = f1;
+    r1.f1 = b_f1;
+    r2.f1 = c_f1;
+    coder::internal::structConstructorHelper(&r, &r1, &r2,
+      bayesResults_bestFitsMean_ref, bayesResults_bestFitsMean_sld,
+      bayesResults_bestFitsMean_chi, bayesResults_bestFitsMean_data);
+    h_f1.set_size(1);
+    h_f1[0] = 0.0;
+    r.f1 = d_f1;
+    r2.f1 = e_f1;
+    r3.f1 = f_f1;
+    r1.f1 = g_f1;
+    r4.f1 = h_f1;
+    coder::internal::structConstructorHelper(&r, &r2, &r3, &r1, &r4,
+      bayesResults_predlims_refPredInts, bayesResults_predlims_sldPredInts,
+      bayesResults_predlims_refXdata, bayesResults_predlims_sldXdata,
+      bayesResults_predlims_sampleChi_data, bayesResults_predlims_sampleChi_size);
+    cast(t7_par95_data, t7_par95_size, t7_par65_data, t7_par65_size,
+         t7_mean_data, t7_mean_size, bayesResults_parConfInts_par95,
+         bayesResults_parConfInts_par65, bayesResults_parConfInts_mean);
+    bayesResults_bestPars.set_size(1, 1);
+    bayesResults_bestPars[0] = 1.0;
+    bayesResults_bayesRes->allChains.set_size(1, 3, 1);
+    for (i = 0; i < 3; i++) {
+      bayesResults_bayesRes->allChains[bayesResults_bayesRes->allChains.size(0) *
+        i] = 1.0;
+    }
+
+    bayesResults_bayesRes->nestOutput.LogZ = 0.0;
+    bayesResults_bayesRes->nestOutput.nestSamples.size[0] = 1;
+    bayesResults_bayesRes->nestOutput.nestSamples.size[1] = 2;
+    bayesResults_bayesRes->nestOutput.postSamples.size[0] = 1;
+    bayesResults_bayesRes->nestOutput.postSamples.size[1] = 2;
+    bayesResults_chain.set_size(1, 2);
+    bayesResults_bayesRes->nestOutput.nestSamples.data[0] = 0.0;
+    bayesResults_bayesRes->nestOutput.postSamples.data[0] = 0.0;
+    bayesResults_chain[0] = 0.0;
+    bayesResults_bayesRes->nestOutput.nestSamples.data[1] = 0.0;
+    bayesResults_bayesRes->nestOutput.postSamples.data[1] = 0.0;
+    bayesResults_chain[bayesResults_chain.size(0)] = 0.0;
+  }
+
+  void makeEmptyBayesResultsStruct(real_T nContrasts, boolean_T isDomains,
+    real_T nChains, ::coder::array<cell_wrap_8, 1U>
+    &bayesResults_bestFitsMean_ref, ::coder::array<cell_wrap_8, 2U>
+    &bayesResults_bestFitsMean_sld, real_T *bayesResults_bestFitsMean_chi, ::
+    coder::array<cell_wrap_8, 1U> &bayesResults_bestFitsMean_data, ::coder::
+    array<cell_wrap_8, 1U> &bayesResults_predlims_refPredInts, ::coder::array<
+    cell_wrap_8, 1U> &bayesResults_predlims_sldPredInts, ::coder::array<
+    cell_wrap_8, 1U> &bayesResults_predlims_refXdata, ::coder::array<cell_wrap_8,
+    2U> &bayesResults_predlims_sldXdata, real_T
+    bayesResults_predlims_sampleChi_data[], int32_T
+    *bayesResults_predlims_sampleChi_size, ::coder::array<real_T, 2U>
+    &bayesResults_parConfInts_par95, ::coder::array<real_T, 2U>
+    &bayesResults_parConfInts_par65, ::coder::array<real_T, 2U>
+    &bayesResults_parConfInts_mean, ::coder::array<real_T, 2U>
+    &bayesResults_bestPars, c_struct_T *bayesResults_bayesRes, ::coder::array<
+    real_T, 2U> &bayesResults_chain)
+  {
+    ::coder::array<cell_wrap_8, 2U> b_f1;
+    ::coder::array<cell_wrap_8, 2U> g_f1;
+    ::coder::array<cell_wrap_8, 1U> c_f1;
+    ::coder::array<cell_wrap_8, 1U> d_f1;
+    ::coder::array<cell_wrap_8, 1U> e_f1;
+    ::coder::array<cell_wrap_8, 1U> f1;
+    ::coder::array<cell_wrap_8, 1U> f_f1;
+    ::coder::array<real_T, 2U> t16_AR;
+    ::coder::array<real_T, 2U> t16_CR;
+    ::coder::array<real_T, 2U> t16_R_stat;
+    ::coder::array<real_T, 2U> t16_outlier;
+    ::coder::array<real_T, 1U> h_f1;
+    ::coder::array<int8_T, 2U> t16_DREAMPar_R;
+    cell_wrap_15 r;
+    cell_wrap_15 r2;
+    cell_wrap_15 r3;
+    cell_wrap_17 r4;
+    cell_wrap_9 r1;
+    struct14_T expl_temp;
+    struct15_T b_expl_temp;
+    real_T t17_par65_data[2000];
+    real_T t17_par95_data[2000];
+    real_T t17_mean_data[1000];
+    int32_T t17_mean_size[2];
+    int32_T t17_par65_size[2];
+    int32_T t17_par95_size[2];
+    int32_T i;
+    int32_T loop_ub_tmp;
+
+    //  A function to make an empty container to hold the results of bayes
+    //  calculations. The struct has the following format:
+    //
+    //  nPar = number of fitted parameters
+    //  nContrasts = number of contrasts
+    //
+    //  bayesResults =
+    //
+    //    struct with fields:
+    //
+    //      bestFitsMean: [1×1 struct]
+    //          predlims: [1×1 struct]
+    //       parConfInts: [1×1 struct]
+    //          bestPars: [1xnPars double]
+    //          bayesRes: [1×1 struct]
+    //             chain: [1000000xnPars double]
+    //  -----------------------------------------------------------
+    //  Make the individual structs....
+    //  (1) bayesResults.bestFitsMean
+    i = static_cast<int32_T>(nContrasts);
+    f1.set_size(i);
+    for (int32_T b_i{0}; b_i < i; b_i++) {
+      f1[b_i].f1.set_size(1, 3);
+      f1[b_i].f1[0] = 1.0;
+      f1[b_i].f1[f1[b_i].f1.size(0)] = 1.0;
+      f1[b_i].f1[f1[b_i].f1.size(0) * 2] = 1.0;
+    }
+
+    if (isDomains) {
+      b_f1.set_size(i, 2);
+      for (int32_T b_i{0}; b_i < i; b_i++) {
+        b_f1[b_i].f1.set_size(2, 2);
+        b_f1[b_i + b_f1.size(0)].f1.set_size(2, 2);
+        b_f1[b_i].f1[0] = 1.0;
+        b_f1[b_i + b_f1.size(0)].f1[0] = 1.0;
+        b_f1[b_i].f1[1] = 1.0;
+        b_f1[b_i + b_f1.size(0)].f1[1] = 1.0;
+        b_f1[b_i].f1[b_f1[b_i].f1.size(0)] = 1.0;
+        b_f1[b_i + b_f1.size(0)].f1[b_f1[b_i + b_f1.size(0)].f1.size(0)] = 1.0;
+        b_f1[b_i].f1[b_f1[b_i].f1.size(0) + 1] = 1.0;
+        b_f1[b_i + b_f1.size(0)].f1[b_f1[b_i + b_f1.size(0)].f1.size(0) + 1] =
+          1.0;
+      }
+    } else {
+      b_f1.set_size(i, 1);
+      for (int32_T b_i{0}; b_i < i; b_i++) {
+        b_f1[b_i].f1.set_size(1, 2);
+        b_f1[b_i].f1[0] = 1.0;
+        b_f1[b_i].f1[b_f1[b_i].f1.size(0)] = 1.0;
+      }
+    }
+
+    c_f1.set_size(i);
+
+    //  --------------------------------------------------------------------
+    //  (2) bayesResults.predlims
+    d_f1.set_size(i);
+    e_f1.set_size(i);
+    f_f1.set_size(i);
+    for (int32_T b_i{0}; b_i < i; b_i++) {
+      c_f1[b_i].f1.set_size(1, 3);
+      c_f1[b_i].f1[0] = 1.0;
+      c_f1[b_i].f1[c_f1[b_i].f1.size(0)] = 1.0;
+      c_f1[b_i].f1[c_f1[b_i].f1.size(0) * 2] = 1.0;
+      d_f1[b_i].f1.set_size(1, 3);
+      d_f1[b_i].f1[0] = 1.0;
+      d_f1[b_i].f1[d_f1[b_i].f1.size(0)] = 1.0;
+      d_f1[b_i].f1[d_f1[b_i].f1.size(0) * 2] = 1.0;
+      e_f1[b_i].f1.set_size(1, 3);
+      e_f1[b_i].f1[0] = 1.0;
+      e_f1[b_i].f1[e_f1[b_i].f1.size(0)] = 1.0;
+      e_f1[b_i].f1[e_f1[b_i].f1.size(0) * 2] = 1.0;
+      f_f1[b_i].f1.set_size(1, 3);
+      f_f1[b_i].f1[0] = 1.0;
+      f_f1[b_i].f1[f_f1[b_i].f1.size(0)] = 1.0;
+      f_f1[b_i].f1[f_f1[b_i].f1.size(0) * 2] = 1.0;
+    }
+
+    if (isDomains) {
+      g_f1.set_size(i, 2);
+      for (int32_T b_i{0}; b_i < i; b_i++) {
+        g_f1[b_i].f1.set_size(2, 3);
+        g_f1[b_i + g_f1.size(0)].f1.set_size(2, 3);
+        for (int32_T i1{0}; i1 < 3; i1++) {
+          g_f1[b_i].f1[g_f1[b_i].f1.size(0) * i1] = 1.0;
+          g_f1[b_i + g_f1.size(0)].f1[g_f1[b_i + g_f1.size(0)].f1.size(0) * i1] =
+            1.0;
+          g_f1[b_i].f1[g_f1[b_i].f1.size(0) * i1 + 1] = 1.0;
+          g_f1[b_i + g_f1.size(0)].f1[g_f1[b_i + g_f1.size(0)].f1.size(0) * i1 +
+            1] = 1.0;
+        }
+      }
+    } else {
+      g_f1.set_size(i, 1);
+      for (int32_T b_i{0}; b_i < i; b_i++) {
+        g_f1[b_i].f1.set_size(1, 3);
+        g_f1[b_i].f1[0] = 1.0;
+        g_f1[b_i].f1[g_f1[b_i].f1.size(0)] = 1.0;
+        g_f1[b_i].f1[g_f1[b_i].f1.size(0) * 2] = 1.0;
+      }
+    }
+
+    //  ------------------------------------------------------------------
+    //  (3) bayesResults.parConfInts
+    t17_par95_size[0] = 2;
+    t17_par95_size[1] = 1;
+    t17_par65_size[0] = 2;
+    t17_par65_size[1] = 1;
+    t17_mean_size[0] = 1;
+    t17_mean_size[1] = 1;
+    t17_mean_data[0] = 0.0;
+
+    //  -------------------------------------------------------------------
+    //  (4) bayesResults.bestPars
+    //  -------------------------------------------------------------------
+    //  (5) bayesResults.bayesRes
+    t16_outlier.set_size(1, 2);
+    t17_par95_data[0] = 0.0;
+    t17_par65_data[0] = 0.0;
+    t16_outlier[0] = 1.0;
+    t17_par95_data[1] = 0.0;
+    t17_par65_data[1] = 0.0;
+    t16_outlier[t16_outlier.size(0)] = 1.0;
+    loop_ub_tmp = static_cast<int32_T>(nChains);
+    t16_DREAMPar_R.set_size(loop_ub_tmp, loop_ub_tmp);
+    for (i = 0; i < loop_ub_tmp; i++) {
+      for (int32_T i1{0}; i1 < loop_ub_tmp; i1++) {
+        t16_DREAMPar_R[i1 + t16_DREAMPar_R.size(0) * i] = 0;
+      }
+    }
+
+    t16_AR.set_size(1, 2);
+    t16_R_stat.set_size(1, 2);
+    t16_CR.set_size(1, 2);
+
+    //  Nested Sampler
+    t16_AR[0] = 0.0;
+    t16_R_stat[0] = 0.0;
+    t16_CR[0] = 0.0;
+    t16_AR[t16_AR.size(0)] = 0.0;
+    t16_R_stat[t16_R_stat.size(0)] = 0.0;
+    t16_CR[t16_CR.size(0)] = 0.0;
+    expl_temp.R.set_size(t16_DREAMPar_R.size(0), t16_DREAMPar_R.size(1));
+    loop_ub_tmp = t16_DREAMPar_R.size(1);
+    for (i = 0; i < loop_ub_tmp; i++) {
+      int32_T loop_ub;
+      loop_ub = t16_DREAMPar_R.size(0);
+      for (int32_T i1{0}; i1 < loop_ub; i1++) {
+        expl_temp.R[i1 + expl_temp.R.size(0) * i] = 0.0;
+      }
+    }
+
+    expl_temp.save = false;
+    expl_temp.restart = false;
+    expl_temp.modout = false;
+    expl_temp.IO = false;
+    expl_temp.ABC = false;
+    expl_temp.epsilon = 0.025;
+    expl_temp.thinning = 1.0;
+    expl_temp.adaptPCR = false;
+    expl_temp.outlier[0] = 'i';
+    expl_temp.outlier[1] = 'q';
+    expl_temp.outlier[2] = 'r';
+    expl_temp.zeta = 1.0E-12;
+    expl_temp.steps = 50.0;
+    expl_temp.delta = 3.0;
+    expl_temp.nCR = 3.0;
+    expl_temp.pUnitGamma = 0.2;
+    expl_temp.lambda = 0.5;
+    expl_temp.CPU = 1.0;
+    expl_temp.parallel = false;
+    expl_temp.T = 1000.0;
+    expl_temp.N = 10.0;
+    expl_temp.d = 17.0;
+    b_expl_temp.N = 0.0;
+    b_expl_temp.Y = 0.0;
+    cast(t16_outlier, &expl_temp, b_expl_temp, t16_AR, t16_R_stat, t16_CR,
+         &bayesResults_bayesRes->dreamOutput);
+
+    //  ------------------------------------------------------------------
+    //  (6) chain
+    //  -------------------------------------------------------------------
+    //  Make the final structure...
+    r.f1 = f1;
+    r1.f1 = b_f1;
+    r2.f1 = c_f1;
+    coder::internal::structConstructorHelper(&r, &r1, &r2,
+      bayesResults_bestFitsMean_ref, bayesResults_bestFitsMean_sld,
+      bayesResults_bestFitsMean_chi, bayesResults_bestFitsMean_data);
+    h_f1.set_size(1);
+    h_f1[0] = 0.0;
+    r.f1 = d_f1;
+    r2.f1 = e_f1;
+    r3.f1 = f_f1;
+    r1.f1 = g_f1;
+    r4.f1 = h_f1;
+    coder::internal::structConstructorHelper(&r, &r2, &r3, &r1, &r4,
+      bayesResults_predlims_refPredInts, bayesResults_predlims_sldPredInts,
+      bayesResults_predlims_refXdata, bayesResults_predlims_sldXdata,
+      bayesResults_predlims_sampleChi_data, bayesResults_predlims_sampleChi_size);
+    cast(t17_par95_data, t17_par95_size, t17_par65_data, t17_par65_size,
+         t17_mean_data, t17_mean_size, bayesResults_parConfInts_par95,
+         bayesResults_parConfInts_par65, bayesResults_parConfInts_mean);
+    bayesResults_bestPars.set_size(1, 1);
+    bayesResults_bestPars[0] = 1.0;
+    bayesResults_bayesRes->allChains.set_size(1, 3, 1);
+    for (i = 0; i < 3; i++) {
+      bayesResults_bayesRes->allChains[bayesResults_bayesRes->allChains.size(0) *
+        i] = 1.0;
+    }
+
+    bayesResults_bayesRes->nestOutput.LogZ = 0.0;
+    bayesResults_bayesRes->nestOutput.nestSamples.size[0] = 1;
+    bayesResults_bayesRes->nestOutput.nestSamples.size[1] = 2;
+    bayesResults_bayesRes->nestOutput.postSamples.size[0] = 1;
+    bayesResults_bayesRes->nestOutput.postSamples.size[1] = 2;
+    bayesResults_chain.set_size(1, 2);
+    bayesResults_bayesRes->nestOutput.nestSamples.data[0] = 0.0;
+    bayesResults_bayesRes->nestOutput.postSamples.data[0] = 0.0;
+    bayesResults_chain[0] = 0.0;
+    bayesResults_bayesRes->nestOutput.nestSamples.data[1] = 0.0;
+    bayesResults_bayesRes->nestOutput.postSamples.data[1] = 0.0;
+    bayesResults_chain[bayesResults_chain.size(0)] = 0.0;
+  }
+}
+
+// End of code generation (makeEmptyBayesResultsStruct.cpp)

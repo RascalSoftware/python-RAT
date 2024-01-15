@@ -19,13 +19,16 @@
 // Function Declarations
 namespace RAT
 {
-  void backSort(real_T cBacks, real_T cShifts, real_T cScales, real_T cNbas,
-                real_T cNbss, real_T cRes, const ::coder::array<real_T, 2U>
-                &backs, const ::coder::array<real_T, 2U> &shifts, const ::coder::
-                array<real_T, 2U> &sf, const ::coder::array<real_T, 2U> &nba,
-                const ::coder::array<real_T, 2U> &nbs, const ::coder::array<
-                real_T, 2U> &res, real_T *backg, real_T *qshift, real_T *b_sf,
-                real_T *b_nba, real_T *b_nbs, real_T *resol);
+  void backSort(real_T contrastBackgrounds, real_T contrastQzshifts, real_T
+                contrastScalefactors, real_T contrastBulkIns, real_T
+                contrastBulkOuts, real_T contrastResolutions, const ::coder::
+                array<real_T, 2U> &backgroundParams, const ::coder::array<real_T,
+                2U> &qzshifts, const ::coder::array<real_T, 2U> &scalefactors,
+                const ::coder::array<real_T, 2U> &bulkIn, const ::coder::array<
+                real_T, 2U> &bulkOut, const ::coder::array<real_T, 2U>
+                &resolutionParams, real_T *outBackgroundParam, real_T
+                *outQzshift, real_T *outScalefactor, real_T *outBulkIn, real_T
+                *outBulkOut, real_T *outResolutionParam);
 }
 
 #endif

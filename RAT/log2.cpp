@@ -11,6 +11,7 @@
 // Include files
 #include "log2.h"
 #include "rt_nonfinite.h"
+#include "coder_array.h"
 #include <cmath>
 
 // Function Definitions
@@ -18,6 +19,20 @@ namespace RAT
 {
   namespace coder
   {
+    void b_log2(const ::coder::array<real_T, 1U> &x, ::coder::array<real_T, 1U>
+                &f, ::coder::array<real_T, 1U> &e)
+    {
+      f.set_size(x.size(0));
+      e.set_size(x.size(0));
+      if (x.size(0) != 0) {
+        int32_T i;
+        i = x.size(0);
+        for (int32_T k{0}; k < i; k++) {
+          b_log2(x[k], &f[k], &e[k]);
+        }
+      }
+    }
+
     void b_log2(real_T x, real_T *f, real_T *e)
     {
       int32_T eint;

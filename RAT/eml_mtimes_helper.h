@@ -19,6 +19,12 @@
 // Function Declarations
 namespace RAT
 {
+  void binary_expand_op(real_T in1_data[], int32_T in1_size[2], const ::coder::
+                        array<real_T, 2U> &in2, const ::coder::array<real_T, 2U>
+                        &in3, int32_T in4, const ::coder::array<real_T, 2U> &in5);
+  void binary_expand_op(::coder::array<creal_T, 2U> &in1, const ::coder::array<
+                        real_T, 2U> &in2, const ::coder::array<creal_T, 1U> &in3,
+                        const ::coder::array<creal_T, 2U> &in4);
   void binary_expand_op(::coder::array<real_T, 2U> &in1, real_T in2, const ::
                         coder::array<real_T, 2U> &in3, const ::coder::array<
                         real_T, 2U> &in4);
@@ -27,6 +33,9 @@ namespace RAT
   void binary_expand_op(::coder::array<real_T, 2U> &in1, const ::coder::array<
                         real_T, 2U> &in3, const ::coder::array<int32_T, 1U> &in4,
                         const ::coder::array<int32_T, 1U> &in5);
+  void c_binary_expand_op(real_T in1_data[], int32_T in1_size[2], const ::coder::
+    array<real_T, 2U> &in2, const ::coder::array<real_T, 2U> &in3, int32_T in4,
+    const ::coder::array<real_T, 2U> &in5);
 }
 
 #endif

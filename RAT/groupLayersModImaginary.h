@@ -21,7 +21,7 @@ namespace RAT
 {
   void groupLayersModImaginary(const ::coder::array<real_T, 2U> &allLayers,
     real_T allRoughs, const char_T geometry_data[], const int32_T geometry_size
-    [2], real_T nbair, real_T nbsubs, ::coder::array<real_T, 2U> &outLayers,
+    [2], real_T bulkIns, real_T bulkOuts, ::coder::array<real_T, 2U> &outLayers,
     real_T *outSsubs);
 }
 

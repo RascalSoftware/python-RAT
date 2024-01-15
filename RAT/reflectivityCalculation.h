@@ -11,17 +11,26 @@
 #define REFLECTIVITYCALCULATION_H
 
 // Include files
-#include "reflectivityCalculation_types.h"
 #include "rtwtypes.h"
 #include <cstddef>
 #include <cstdlib>
 
+// Type Declarations
+namespace RAT
+{
+  struct struct5_T;
+  struct cell_14;
+  struct struct2_T;
+  struct struct_T;
+  struct cell_13;
+}
+
 // Function Declarations
 namespace RAT
 {
-  extern void reflectivityCalculation(const struct0_T *problemDef, const cell_8 *
-    problemDefCells, const struct1_T *problemDefLimits, const struct2_T
-    *controls, struct4_T *problem, cell_11 *result);
+  void reflectivityCalculation(const struct5_T *problemDef, const cell_14
+    *problemDefCells, const struct2_T *controls, struct_T *problem, cell_13
+    *result);
 }
 
 #endif

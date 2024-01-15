@@ -19,10 +19,9 @@
 // Function Declarations
 namespace RAT
 {
-  void shiftData(real_T scalefac, real_T horshift, real_T dataPresent, ::coder::
+  void shiftData(real_T scalefactor, real_T qzshift, real_T dataPresent, ::coder::
                  array<real_T, 2U> &data, const real_T dataLimits[2], const
-                 real_T simLimits_data[], ::coder::array<real_T, 2U>
-                 &shifted_data);
+                 real_T simLimits[2], ::coder::array<real_T, 2U> &shiftedData);
 }
 
 #endif

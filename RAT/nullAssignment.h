@@ -12,6 +12,7 @@
 
 // Include files
 #include "rtwtypes.h"
+#include "coder_array.h"
 #include <cstddef>
 #include <cstdlib>
 
@@ -22,6 +23,8 @@ namespace RAT
   {
     namespace internal
     {
+      void nullAssignment(::coder::array<real_T, 2U> &x, const ::coder::array<
+                          int32_T, 2U> &idx);
       void nullAssignment(real_T x_data[], int32_T x_size[2]);
     }
   }

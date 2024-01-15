@@ -18,18 +18,15 @@
 #include "rt_nonfinite.h"
 #include "coder_array.h"
 #include <cmath>
-#include <pybind11/pybind11.h>
-
-namespace py = pybind11;
 
 // Function Definitions
 namespace RAT
 {
-  void b_callReflectivity(real_T nbairs, real_T nbsubs, const real_T
-    simLimits_data[], const real_T repeatLayers[2], const ::coder::array<real_T,
-    2U> &this_data, ::coder::array<real_T, 2U> &layers, real_T ssubs, real_T res,
-    boolean_T useImaginary, ::coder::array<real_T, 2U> &reflectivity, ::coder::
-    array<real_T, 2U> &Simulation)
+  void b_callReflectivity(real_T bulkIns, real_T bulkOuts, const real_T
+    simLimits[2], const real_T repeatLayers[2], const ::coder::array<real_T, 2U>
+    &thisData, ::coder::array<real_T, 2U> &layers, real_T ssubs, real_T
+    resolution, boolean_T useImaginary, ::coder::array<real_T, 2U> &reflectivity,
+    ::coder::array<real_T, 2U> &simulation)
   {
     ::coder::array<creal_T, 1U> slds;
     ::coder::array<real_T, 2U> firstSection;
@@ -44,10 +41,10 @@ namespace RAT
     real_T nLayersTot;
     real_T nRepeats;
     real_T step;
-    int32_T b_nLayersTot;
     int32_T i;
     int32_T i1;
     int32_T loop_ub;
+    int32_T loop_ub_tmp;
     uint32_T layerCount;
     uint32_T splits_idx_1;
     if (repeatLayers[0] != 0.0) {
@@ -61,7 +58,7 @@ namespace RAT
       //  No layers defined. Make a zeros dummy zero layer
       layers.set_size(1, 3);
       layers[0] = 0.0;
-      layers[layers.size(0)] = nbairs;
+      layers[layers.size(0)] = bulkIns;
       layers[layers.size(0) * 2] = 0.0;
     }
 
@@ -69,23 +66,23 @@ namespace RAT
     nLayersTot = static_cast<real_T>(layers.size(0)) * nRepeats + 2.0;
 
     //  Make arrays for thick, sld, rough
-    b_nLayersTot = static_cast<int32_T>(nLayersTot);
-    thicks.set_size(b_nLayersTot);
-    roughs.set_size(b_nLayersTot);
-    for (i = 0; i < b_nLayersTot; i++) {
+    loop_ub_tmp = static_cast<int32_T>(nLayersTot);
+    thicks.set_size(loop_ub_tmp);
+    roughs.set_size(loop_ub_tmp);
+    for (i = 0; i < loop_ub_tmp; i++) {
       thicks[i] = 0.0;
       roughs[i] = 0.0;
     }
 
     if (useImaginary) {
-      slds.set_size(b_nLayersTot);
-      for (i = 0; i < b_nLayersTot; i++) {
+      slds.set_size(loop_ub_tmp);
+      for (i = 0; i < loop_ub_tmp; i++) {
         slds[i].re = 0.0;
         slds[i].im = 0.0;
       }
     } else {
-      slds.set_size(b_nLayersTot);
-      for (i = 0; i < b_nLayersTot; i++) {
+      slds.set_size(loop_ub_tmp);
+      for (i = 0; i < loop_ub_tmp; i++) {
         slds[i].re = 0.0;
         slds[i].im = 0.0;
       }
@@ -98,19 +95,19 @@ namespace RAT
       i1 = layers.size(0);
       for (int32_T n{0}; n < i1; n++) {
         if (!useImaginary) {
-          b_nLayersTot = static_cast<int32_T>(layerCount + static_cast<uint32_T>
+          loop_ub_tmp = static_cast<int32_T>(layerCount + static_cast<uint32_T>
             (n)) - 1;
-          thicks[b_nLayersTot] = layers[n];
-          slds[b_nLayersTot].re = layers[n + layers.size(0)];
-          slds[b_nLayersTot].im = 0.0;
-          roughs[b_nLayersTot] = layers[n + layers.size(0) * 2];
+          thicks[loop_ub_tmp] = layers[n];
+          slds[loop_ub_tmp].re = layers[n + layers.size(0)];
+          slds[loop_ub_tmp].im = 0.0;
+          roughs[loop_ub_tmp] = layers[n + layers.size(0) * 2];
         } else {
-          b_nLayersTot = static_cast<int32_T>(layerCount + static_cast<uint32_T>
+          loop_ub_tmp = static_cast<int32_T>(layerCount + static_cast<uint32_T>
             (n)) - 1;
-          thicks[b_nLayersTot] = layers[n];
-          slds[b_nLayersTot].re = layers[n + layers.size(0)];
-          slds[b_nLayersTot].im = layers[n + layers.size(0) * 2];
-          roughs[b_nLayersTot] = layers[n + layers.size(0) * 3];
+          thicks[loop_ub_tmp] = layers[n];
+          slds[loop_ub_tmp].re = layers[n + layers.size(0)];
+          slds[loop_ub_tmp].im = layers[n + layers.size(0) * 2];
+          roughs[loop_ub_tmp] = layers[n + layers.size(0) * 3];
         }
       }
 
@@ -118,101 +115,101 @@ namespace RAT
     }
 
     //  Add the air and substrate parameters
-    slds[0].re = nbairs;
+    slds[0].re = bulkIns;
     slds[0].im = 0.0;
-    slds[slds.size(0) - 1].re = nbsubs;
+    slds[slds.size(0) - 1].re = bulkOuts;
     slds[slds.size(0) - 1].im = 0.0;
     roughs[roughs.size(0) - 1] = ssubs;
-    if (simLimits_data[0] < this_data[0]) {
-      step = this_data[1] - this_data[0];
-      b = this_data[0] - step;
+    if (simLimits[0] < thisData[0]) {
+      step = thisData[1] - thisData[0];
+      b = thisData[0] - step;
       if (std::isnan(step) || std::isnan(b)) {
         firstSection.set_size(1, 1);
         firstSection[0] = rtNaN;
-      } else if ((step == 0.0) || ((simLimits_data[0] < b) && (step < 0.0)) ||
-                 ((b < simLimits_data[0]) && (step > 0.0))) {
+      } else if ((step == 0.0) || ((simLimits[0] < b) && (step < 0.0)) || ((b <
+                   simLimits[0]) && (step > 0.0))) {
         firstSection.set_size(1, 0);
-      } else if ((std::isinf(simLimits_data[0]) || std::isinf(b)) && (std::isinf
-                  (step) || (simLimits_data[0] == b))) {
+      } else if ((std::isinf(simLimits[0]) || std::isinf(b)) && (std::isinf(step)
+                  || (simLimits[0] == b))) {
         firstSection.set_size(1, 1);
         firstSection[0] = rtNaN;
       } else if (std::isinf(step)) {
         firstSection.set_size(1, 1);
-        firstSection[0] = simLimits_data[0];
-      } else if ((std::floor(simLimits_data[0]) == simLimits_data[0]) && (std::
-                  floor(step) == step)) {
-        loop_ub = static_cast<int32_T>((b - simLimits_data[0]) / step);
+        firstSection[0] = simLimits[0];
+      } else if ((std::floor(simLimits[0]) == simLimits[0]) && (std::floor(step)
+                  == step)) {
+        loop_ub = static_cast<int32_T>((b - simLimits[0]) / step);
         firstSection.set_size(1, loop_ub + 1);
         for (i = 0; i <= loop_ub; i++) {
-          firstSection[i] = simLimits_data[0] + step * static_cast<real_T>(i);
+          firstSection[i] = simLimits[0] + step * static_cast<real_T>(i);
         }
       } else {
-        coder::eml_float_colon(simLimits_data[0], step, b, firstSection);
+        coder::eml_float_colon(simLimits[0], step, b, firstSection);
       }
     } else {
       firstSection.set_size(1, 0);
     }
 
-    if (simLimits_data[1] > this_data[this_data.size(0) - 1]) {
-      step = this_data[this_data.size(0) - 1] - this_data[this_data.size(0) - 2];
-      b = this_data[this_data.size(0) - 1] + step;
+    if (simLimits[1] > thisData[thisData.size(0) - 1]) {
+      step = thisData[thisData.size(0) - 1] - thisData[thisData.size(0) - 2];
+      b = thisData[thisData.size(0) - 1] + step;
       if (std::isnan(b) || std::isnan(step)) {
         lastSection.set_size(1, 1);
         lastSection[0] = rtNaN;
-      } else if ((step == 0.0) || ((b < simLimits_data[1]) && (step < 0.0)) ||
-                 ((simLimits_data[1] < b) && (step > 0.0))) {
+      } else if ((step == 0.0) || ((b < simLimits[1]) && (step < 0.0)) ||
+                 ((simLimits[1] < b) && (step > 0.0))) {
         lastSection.set_size(1, 0);
-      } else if ((std::isinf(b) || std::isinf(simLimits_data[1])) && (std::isinf
-                  (step) || (b == simLimits_data[1]))) {
+      } else if ((std::isinf(b) || std::isinf(simLimits[1])) && (std::isinf(step)
+                  || (b == simLimits[1]))) {
         lastSection.set_size(1, 1);
         lastSection[0] = rtNaN;
       } else if (std::isinf(step)) {
         lastSection.set_size(1, 1);
         lastSection[0] = b;
       } else if ((std::floor(b) == b) && (std::floor(step) == step)) {
-        loop_ub = static_cast<int32_T>((simLimits_data[1] - b) / step);
+        loop_ub = static_cast<int32_T>((simLimits[1] - b) / step);
         lastSection.set_size(1, loop_ub + 1);
         for (i = 0; i <= loop_ub; i++) {
           lastSection[i] = b + step * static_cast<real_T>(i);
         }
       } else {
-        coder::eml_float_colon(b, step, simLimits_data[1], lastSection);
+        coder::eml_float_colon(b, step, simLimits[1], lastSection);
       }
     } else {
       lastSection.set_size(1, 0);
     }
 
-    b_nLayersTot = firstSection.size(1);
-    simXdata.set_size((this_data.size(0) + firstSection.size(1)) +
+    loop_ub_tmp = firstSection.size(1);
+    simXdata.set_size((thisData.size(0) + firstSection.size(1)) +
                       lastSection.size(1));
     loop_ub = firstSection.size(1);
     for (i = 0; i < loop_ub; i++) {
       simXdata[i] = firstSection[i];
     }
 
-    loop_ub = this_data.size(0);
+    loop_ub = thisData.size(0);
     for (i = 0; i < loop_ub; i++) {
-      simXdata[i + b_nLayersTot] = this_data[i];
+      simXdata[i + loop_ub_tmp] = thisData[i];
     }
 
     loop_ub = lastSection.size(1);
     for (i = 0; i < loop_ub; i++) {
-      simXdata[(i + b_nLayersTot) + this_data.size(0)] = lastSection[i];
+      simXdata[(i + loop_ub_tmp) + thisData.size(0)] = lastSection[i];
     }
 
     splits_idx_1 = static_cast<uint32_T>(firstSection.size(1)) +
-      static_cast<uint32_T>(this_data.size(0));
-    Simulation.set_size(simXdata.size(0), 2);
+      static_cast<uint32_T>(thisData.size(0));
+    simulation.set_size(simXdata.size(0), 2);
     loop_ub = simXdata.size(0);
     for (i = 0; i < 2; i++) {
       for (i1 = 0; i1 < loop_ub; i1++) {
-        Simulation[i1 + Simulation.size(0) * i] = 0.0;
+        simulation[i1 + simulation.size(0) * i] = 0.0;
       }
     }
 
     loop_ub = simXdata.size(0);
     for (i = 0; i < loop_ub; i++) {
-      Simulation[i] = simXdata[i];
+      simulation[i] = simXdata[i];
     }
 
     //  If we are using data resolutions, then we also need to adjust the length
@@ -220,24 +217,24 @@ namespace RAT
     //  values at the ends of the curve.
     simResolData.set_size(1);
     simResolData[0] = 0.0;
-    if (res == -1.0) {
-      b_nLayersTot = firstSection.size(1);
-      simResolData.set_size((this_data.size(0) + firstSection.size(1)) +
+    if (resolution == -1.0) {
+      loop_ub_tmp = firstSection.size(1);
+      simResolData.set_size((thisData.size(0) + firstSection.size(1)) +
                             lastSection.size(1));
       loop_ub = firstSection.size(1);
       for (i = 0; i < loop_ub; i++) {
-        simResolData[i] = this_data[this_data.size(0) * 3];
+        simResolData[i] = thisData[thisData.size(0) * 3];
       }
 
-      loop_ub = this_data.size(0);
+      loop_ub = thisData.size(0);
       for (i = 0; i < loop_ub; i++) {
-        simResolData[i + b_nLayersTot] = this_data[i + this_data.size(0) * 3];
+        simResolData[i + loop_ub_tmp] = thisData[i + thisData.size(0) * 3];
       }
 
       loop_ub = lastSection.size(1);
       for (i = 0; i < loop_ub; i++) {
-        simResolData[(i + b_nLayersTot) + this_data.size(0)] = this_data
-          [(this_data.size(0) + this_data.size(0) * 3) - 1];
+        simResolData[(i + loop_ub_tmp) + thisData.size(0)] = thisData
+          [(thisData.size(0) + thisData.size(0) * 3) - 1];
       }
     }
 
@@ -248,21 +245,21 @@ namespace RAT
     //  Apply resolution
     //  Note: paraPoints gives an error during valifation, so use
     //  single cored resolution as a workaround for now.
-    if (res == -1.0) {
+    if (resolution == -1.0) {
       // simRef = dataResolutionPollyParallelPoints(simXdata,simRef,simResolData,length(simXdata));
       dataResolutionPolly(simXdata, simRef, simResolData, static_cast<real_T>
                           (simXdata.size(0)), r);
       loop_ub = r.size(0);
       for (i = 0; i < loop_ub; i++) {
-        Simulation[i + Simulation.size(0)] = r[i];
+        simulation[i + simulation.size(0)] = r[i];
       }
     } else {
       // simRef = resolutionPollyParallelPoints(simXdata,simRef,res,length(simXdata));
-      resolutionPolly(simXdata, simRef, res, static_cast<real_T>(simXdata.size(0)),
-                      r);
+      resolutionPolly(simXdata, simRef, resolution, static_cast<real_T>
+                      (simXdata.size(0)), r);
       loop_ub = r.size(0);
       for (i = 0; i < loop_ub; i++) {
-        Simulation[i + Simulation.size(0)] = r[i];
+        simulation[i + simulation.size(0)] = r[i];
       }
     }
 
@@ -277,19 +274,19 @@ namespace RAT
     loop_ub = i1 - i;
     reflectivity.set_size(loop_ub, 2);
     for (i1 = 0; i1 < 2; i1++) {
-      for (b_nLayersTot = 0; b_nLayersTot < loop_ub; b_nLayersTot++) {
-        reflectivity[b_nLayersTot + reflectivity.size(0) * i1] = Simulation[(i +
-          b_nLayersTot) + Simulation.size(0) * i1];
+      for (loop_ub_tmp = 0; loop_ub_tmp < loop_ub; loop_ub_tmp++) {
+        reflectivity[loop_ub_tmp + reflectivity.size(0) * i1] = simulation[(i +
+          loop_ub_tmp) + simulation.size(0) * i1];
       }
     }
   }
 
-  void callReflectivity(real_T nbairs, real_T nbsubs, const real_T
-                        simLimits_data[], const real_T repeatLayers[2], const ::
-                        coder::array<real_T, 2U> &this_data, ::coder::array<
-                        real_T, 2U> &layers, real_T ssubs, real_T res, boolean_T
+  void callReflectivity(real_T bulkIns, real_T bulkOuts, const real_T simLimits
+                        [2], const real_T repeatLayers[2], const ::coder::array<
+                        real_T, 2U> &thisData, ::coder::array<real_T, 2U>
+                        &layers, real_T ssubs, real_T resolution, boolean_T
                         useImaginary, ::coder::array<real_T, 2U> &reflectivity, ::
-                        coder::array<real_T, 2U> &Simulation)
+                        coder::array<real_T, 2U> &simulation)
   {
     ::coder::array<creal_T, 1U> slds;
     ::coder::array<real_T, 2U> firstSection;
@@ -304,10 +301,10 @@ namespace RAT
     real_T nLayersTot;
     real_T nRepeats;
     real_T step;
-    int32_T b_nLayersTot;
     int32_T i;
     int32_T i1;
     int32_T loop_ub;
+    int32_T loop_ub_tmp;
     uint32_T layerCount;
     uint32_T splits_idx_1;
     if (repeatLayers[0] != 0.0) {
@@ -321,7 +318,7 @@ namespace RAT
       //  No layers defined. Make a zeros dummy zero layer
       layers.set_size(1, 3);
       layers[0] = 0.0;
-      layers[layers.size(0)] = nbairs;
+      layers[layers.size(0)] = bulkIns;
       layers[layers.size(0) * 2] = 0.0;
     }
 
@@ -329,23 +326,23 @@ namespace RAT
     nLayersTot = static_cast<real_T>(layers.size(0)) * nRepeats + 2.0;
 
     //  Make arrays for thick, sld, rough
-    b_nLayersTot = static_cast<int32_T>(nLayersTot);
-    thicks.set_size(b_nLayersTot);
-    roughs.set_size(b_nLayersTot);
-    for (i = 0; i < b_nLayersTot; i++) {
+    loop_ub_tmp = static_cast<int32_T>(nLayersTot);
+    thicks.set_size(loop_ub_tmp);
+    roughs.set_size(loop_ub_tmp);
+    for (i = 0; i < loop_ub_tmp; i++) {
       thicks[i] = 0.0;
       roughs[i] = 0.0;
     }
 
     if (useImaginary) {
-      slds.set_size(b_nLayersTot);
-      for (i = 0; i < b_nLayersTot; i++) {
+      slds.set_size(loop_ub_tmp);
+      for (i = 0; i < loop_ub_tmp; i++) {
         slds[i].re = 0.0;
         slds[i].im = 0.0;
       }
     } else {
-      slds.set_size(b_nLayersTot);
-      for (i = 0; i < b_nLayersTot; i++) {
+      slds.set_size(loop_ub_tmp);
+      for (i = 0; i < loop_ub_tmp; i++) {
         slds[i].re = 0.0;
         slds[i].im = 0.0;
       }
@@ -358,19 +355,19 @@ namespace RAT
       i1 = layers.size(0);
       for (int32_T n{0}; n < i1; n++) {
         if (!useImaginary) {
-          b_nLayersTot = static_cast<int32_T>(layerCount + static_cast<uint32_T>
+          loop_ub_tmp = static_cast<int32_T>(layerCount + static_cast<uint32_T>
             (n)) - 1;
-          thicks[b_nLayersTot] = layers[n];
-          slds[b_nLayersTot].re = layers[n + layers.size(0)];
-          slds[b_nLayersTot].im = 0.0;
-          roughs[b_nLayersTot] = layers[n + layers.size(0) * 2];
+          thicks[loop_ub_tmp] = layers[n];
+          slds[loop_ub_tmp].re = layers[n + layers.size(0)];
+          slds[loop_ub_tmp].im = 0.0;
+          roughs[loop_ub_tmp] = layers[n + layers.size(0) * 2];
         } else {
-          b_nLayersTot = static_cast<int32_T>(layerCount + static_cast<uint32_T>
+          loop_ub_tmp = static_cast<int32_T>(layerCount + static_cast<uint32_T>
             (n)) - 1;
-          thicks[b_nLayersTot] = layers[n];
-          slds[b_nLayersTot].re = layers[n + layers.size(0)];
-          slds[b_nLayersTot].im = layers[n + layers.size(0) * 2];
-          roughs[b_nLayersTot] = layers[n + layers.size(0) * 3];
+          thicks[loop_ub_tmp] = layers[n];
+          slds[loop_ub_tmp].re = layers[n + layers.size(0)];
+          slds[loop_ub_tmp].im = layers[n + layers.size(0) * 2];
+          roughs[loop_ub_tmp] = layers[n + layers.size(0) * 3];
         }
       }
 
@@ -378,101 +375,101 @@ namespace RAT
     }
 
     //  Add the air and substrate parameters
-    slds[0].re = nbairs;
+    slds[0].re = bulkIns;
     slds[0].im = 0.0;
-    slds[slds.size(0) - 1].re = nbsubs;
+    slds[slds.size(0) - 1].re = bulkOuts;
     slds[slds.size(0) - 1].im = 0.0;
     roughs[roughs.size(0) - 1] = ssubs;
-    if (simLimits_data[0] < this_data[0]) {
-      step = this_data[1] - this_data[0];
-      b = this_data[0] - step;
+    if (simLimits[0] < thisData[0]) {
+      step = thisData[1] - thisData[0];
+      b = thisData[0] - step;
       if (std::isnan(step) || std::isnan(b)) {
         firstSection.set_size(1, 1);
         firstSection[0] = rtNaN;
-      } else if ((step == 0.0) || ((simLimits_data[0] < b) && (step < 0.0)) ||
-                 ((b < simLimits_data[0]) && (step > 0.0))) {
+      } else if ((step == 0.0) || ((simLimits[0] < b) && (step < 0.0)) || ((b <
+                   simLimits[0]) && (step > 0.0))) {
         firstSection.set_size(1, 0);
-      } else if ((std::isinf(simLimits_data[0]) || std::isinf(b)) && (std::isinf
-                  (step) || (simLimits_data[0] == b))) {
+      } else if ((std::isinf(simLimits[0]) || std::isinf(b)) && (std::isinf(step)
+                  || (simLimits[0] == b))) {
         firstSection.set_size(1, 1);
         firstSection[0] = rtNaN;
       } else if (std::isinf(step)) {
         firstSection.set_size(1, 1);
-        firstSection[0] = simLimits_data[0];
-      } else if ((std::floor(simLimits_data[0]) == simLimits_data[0]) && (std::
-                  floor(step) == step)) {
-        loop_ub = static_cast<int32_T>((b - simLimits_data[0]) / step);
+        firstSection[0] = simLimits[0];
+      } else if ((std::floor(simLimits[0]) == simLimits[0]) && (std::floor(step)
+                  == step)) {
+        loop_ub = static_cast<int32_T>((b - simLimits[0]) / step);
         firstSection.set_size(1, loop_ub + 1);
         for (i = 0; i <= loop_ub; i++) {
-          firstSection[i] = simLimits_data[0] + step * static_cast<real_T>(i);
+          firstSection[i] = simLimits[0] + step * static_cast<real_T>(i);
         }
       } else {
-        coder::eml_float_colon(simLimits_data[0], step, b, firstSection);
+        coder::eml_float_colon(simLimits[0], step, b, firstSection);
       }
     } else {
       firstSection.set_size(1, 0);
     }
 
-    if (simLimits_data[1] > this_data[this_data.size(0) - 1]) {
-      step = this_data[this_data.size(0) - 1] - this_data[this_data.size(0) - 2];
-      b = this_data[this_data.size(0) - 1] + step;
+    if (simLimits[1] > thisData[thisData.size(0) - 1]) {
+      step = thisData[thisData.size(0) - 1] - thisData[thisData.size(0) - 2];
+      b = thisData[thisData.size(0) - 1] + step;
       if (std::isnan(b) || std::isnan(step)) {
         lastSection.set_size(1, 1);
         lastSection[0] = rtNaN;
-      } else if ((step == 0.0) || ((b < simLimits_data[1]) && (step < 0.0)) ||
-                 ((simLimits_data[1] < b) && (step > 0.0))) {
+      } else if ((step == 0.0) || ((b < simLimits[1]) && (step < 0.0)) ||
+                 ((simLimits[1] < b) && (step > 0.0))) {
         lastSection.set_size(1, 0);
-      } else if ((std::isinf(b) || std::isinf(simLimits_data[1])) && (std::isinf
-                  (step) || (b == simLimits_data[1]))) {
+      } else if ((std::isinf(b) || std::isinf(simLimits[1])) && (std::isinf(step)
+                  || (b == simLimits[1]))) {
         lastSection.set_size(1, 1);
         lastSection[0] = rtNaN;
       } else if (std::isinf(step)) {
         lastSection.set_size(1, 1);
         lastSection[0] = b;
       } else if ((std::floor(b) == b) && (std::floor(step) == step)) {
-        loop_ub = static_cast<int32_T>((simLimits_data[1] - b) / step);
+        loop_ub = static_cast<int32_T>((simLimits[1] - b) / step);
         lastSection.set_size(1, loop_ub + 1);
         for (i = 0; i <= loop_ub; i++) {
           lastSection[i] = b + step * static_cast<real_T>(i);
         }
       } else {
-        coder::eml_float_colon(b, step, simLimits_data[1], lastSection);
+        coder::eml_float_colon(b, step, simLimits[1], lastSection);
       }
     } else {
       lastSection.set_size(1, 0);
     }
 
-    b_nLayersTot = firstSection.size(1);
-    simXdata.set_size((this_data.size(0) + firstSection.size(1)) +
+    loop_ub_tmp = firstSection.size(1);
+    simXdata.set_size((thisData.size(0) + firstSection.size(1)) +
                       lastSection.size(1));
     loop_ub = firstSection.size(1);
     for (i = 0; i < loop_ub; i++) {
       simXdata[i] = firstSection[i];
     }
 
-    loop_ub = this_data.size(0);
+    loop_ub = thisData.size(0);
     for (i = 0; i < loop_ub; i++) {
-      simXdata[i + b_nLayersTot] = this_data[i];
+      simXdata[i + loop_ub_tmp] = thisData[i];
     }
 
     loop_ub = lastSection.size(1);
     for (i = 0; i < loop_ub; i++) {
-      simXdata[(i + b_nLayersTot) + this_data.size(0)] = lastSection[i];
+      simXdata[(i + loop_ub_tmp) + thisData.size(0)] = lastSection[i];
     }
 
     splits_idx_1 = static_cast<uint32_T>(firstSection.size(1)) +
-      static_cast<uint32_T>(this_data.size(0));
-    Simulation.set_size(simXdata.size(0), 2);
+      static_cast<uint32_T>(thisData.size(0));
+    simulation.set_size(simXdata.size(0), 2);
     loop_ub = simXdata.size(0);
     for (i = 0; i < 2; i++) {
       for (i1 = 0; i1 < loop_ub; i1++) {
-        Simulation[i1 + Simulation.size(0) * i] = 0.0;
+        simulation[i1 + simulation.size(0) * i] = 0.0;
       }
     }
 
     loop_ub = simXdata.size(0);
     for (i = 0; i < loop_ub; i++) {
-      Simulation[i] = simXdata[i];
+      simulation[i] = simXdata[i];
     }
 
     //  If we are using data resolutions, then we also need to adjust the length
@@ -480,24 +477,24 @@ namespace RAT
     //  values at the ends of the curve.
     simResolData.set_size(1);
     simResolData[0] = 0.0;
-    if (res == -1.0) {
-      b_nLayersTot = firstSection.size(1);
-      simResolData.set_size((this_data.size(0) + firstSection.size(1)) +
+    if (resolution == -1.0) {
+      loop_ub_tmp = firstSection.size(1);
+      simResolData.set_size((thisData.size(0) + firstSection.size(1)) +
                             lastSection.size(1));
       loop_ub = firstSection.size(1);
       for (i = 0; i < loop_ub; i++) {
-        simResolData[i] = this_data[this_data.size(0) * 3];
+        simResolData[i] = thisData[thisData.size(0) * 3];
       }
 
-      loop_ub = this_data.size(0);
+      loop_ub = thisData.size(0);
       for (i = 0; i < loop_ub; i++) {
-        simResolData[i + b_nLayersTot] = this_data[i + this_data.size(0) * 3];
+        simResolData[i + loop_ub_tmp] = thisData[i + thisData.size(0) * 3];
       }
 
       loop_ub = lastSection.size(1);
       for (i = 0; i < loop_ub; i++) {
-        simResolData[(i + b_nLayersTot) + this_data.size(0)] = this_data
-          [(this_data.size(0) + this_data.size(0) * 3) - 1];
+        simResolData[(i + loop_ub_tmp) + thisData.size(0)] = thisData
+          [(thisData.size(0) + thisData.size(0) * 3) - 1];
       }
     }
 
@@ -506,19 +503,19 @@ namespace RAT
     abelesSingle(simXdata, nLayersTot, thicks, slds, roughs, simRef);
 
     //  Apply resolution correction...
-    if (res == -1.0) {
+    if (resolution == -1.0) {
       dataResolutionPolly(simXdata, simRef, simResolData, static_cast<real_T>
                           (simXdata.size(0)), r);
       loop_ub = r.size(0);
       for (i = 0; i < loop_ub; i++) {
-        Simulation[i + Simulation.size(0)] = r[i];
+        simulation[i + simulation.size(0)] = r[i];
       }
     } else {
-      resolutionPolly(simXdata, simRef, res, static_cast<real_T>(simXdata.size(0)),
-                      r);
+      resolutionPolly(simXdata, simRef, resolution, static_cast<real_T>
+                      (simXdata.size(0)), r);
       loop_ub = r.size(0);
       for (i = 0; i < loop_ub; i++) {
-        Simulation[i + Simulation.size(0)] = r[i];
+        simulation[i + simulation.size(0)] = r[i];
       }
     }
 
@@ -533,9 +530,9 @@ namespace RAT
     loop_ub = i1 - i;
     reflectivity.set_size(loop_ub, 2);
     for (i1 = 0; i1 < 2; i1++) {
-      for (b_nLayersTot = 0; b_nLayersTot < loop_ub; b_nLayersTot++) {
-        reflectivity[b_nLayersTot + reflectivity.size(0) * i1] = Simulation[(i +
-          b_nLayersTot) + Simulation.size(0) * i1];
+      for (loop_ub_tmp = 0; loop_ub_tmp < loop_ub; loop_ub_tmp++) {
+        reflectivity[loop_ub_tmp + reflectivity.size(0) * i1] = simulation[(i +
+          loop_ub_tmp) + simulation.size(0) * i1];
       }
     }
   }

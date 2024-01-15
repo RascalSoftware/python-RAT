@@ -23,6 +23,7 @@ namespace RAT
     namespace internal
     {
       boolean_T b_relop(real_T a, real_T b);
+      boolean_T c_relop(real_T a, real_T b);
       boolean_T relop(real_T a, real_T b);
     }
   }

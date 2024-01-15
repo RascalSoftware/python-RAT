@@ -93,6 +93,27 @@ namespace RAT
         }
       }
     }
+
+    void eml_integer_colon_dispatcher(int32_T b, ::coder::array<int32_T, 2U> &y)
+    {
+      int32_T n;
+      if (b < 1) {
+        n = 0;
+      } else {
+        n = b;
+      }
+
+      y.set_size(1, n);
+      if (n > 0) {
+        int32_T yk;
+        y[0] = 1;
+        yk = 1;
+        for (int32_T k{2}; k <= n; k++) {
+          yk++;
+          y[k - 1] = yk;
+        }
+      }
+    }
   }
 }
 

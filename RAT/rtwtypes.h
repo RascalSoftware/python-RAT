@@ -5,7 +5,7 @@
 //
 // rtwtypes.h
 //
-// Code generation for function 'reflectivityCalculation'
+// Code generation for function 'RATMain'
 //
 #ifndef RTWTYPES_H
 #define RTWTYPES_H

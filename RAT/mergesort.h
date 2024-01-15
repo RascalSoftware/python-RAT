@@ -23,6 +23,11 @@ namespace RAT
   {
     namespace internal
     {
+      void b_mergesort(int32_T idx[4], const real_T x[4]);
+      void b_mergesort(::coder::array<int32_T, 2U> &idx, const ::coder::array<
+                       real_T, 2U> &x, int32_T n);
+      void b_mergesort(::coder::array<int32_T, 1U> &idx, const ::coder::array<
+                       real_T, 1U> &x, int32_T n);
       void b_mergesort(::coder::array<int32_T, 1U> &idx, const ::coder::array<
                        real_T, 2U> &x, const int32_T dir_data[], int32_T n);
     }

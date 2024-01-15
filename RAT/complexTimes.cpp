@@ -22,7 +22,7 @@ namespace RAT
     {
       namespace scalar
       {
-        static real_T rescale(real_T *re, real_T *im);
+        static real_T b_rescale(real_T *re, real_T *im);
       }
     }
   }
@@ -37,7 +37,7 @@ namespace RAT
     {
       namespace scalar
       {
-        static real_T rescale(real_T *re, real_T *im)
+        static real_T b_rescale(real_T *re, real_T *im)
         {
           real_T absim;
           real_T scale;
@@ -99,10 +99,10 @@ namespace RAT
               boolean_T finiteScale;
               sar = ar;
               sai = ai;
-              scaleA = rescale(&sar, &sai);
+              scaleA = b_rescale(&sar, &sai);
               sbr = br;
               sbi = bi;
-              scaleB = rescale(&sbr, &sbi);
+              scaleB = b_rescale(&sbr, &sbi);
               if ((!std::isinf(scaleA)) && (!std::isnan(scaleA)) && ((!std::
                     isinf(scaleB)) && (!std::isnan(scaleB)))) {
                 finiteScale = true;

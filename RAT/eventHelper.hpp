@@ -51,7 +51,7 @@ class eventHelper
                 this->initialised = false;
             }   
         };
-
+        
         void sendMessage(const char* msg)
         {                              
             auto sendMessage = library->get_function<void(const char*)>("sendMessage");
@@ -60,18 +60,29 @@ class eventHelper
             return sendMessage(msg);   
 
         };
+        
+        bool hasPlotHandler(void)
+        {                              
+            auto hasPlotHandler = library->get_function<bool(void)>("hasPlotHandler");
+            
+            // pass the arguments to the function
+            return hasPlotHandler();   
+        };
 
         void updatePlot(int nContrast, double* reflect, double* nReflect, double* shiftedData, double* nShiftedData, 
-                        double* sldProfiles, double* nSldProfiles, double* layers, double* nLayers, double* ssubs, 
+                        double* sldProfiles, double* nSldProfiles, double* layers, double* nLayers, 
+                        double* sldProfiles2, double* nSldProfiles2, double* layers2, double* nLayers2, double* ssubs, 
                         double* resample, double* dataPresent, const char* modelType)
         {                              
             auto updatePlot = library->get_function<void(int, double*, double*, double*, double*, 
                                                          double*, double*, double*, double*, double*, 
+                                                         double*, double*, double*, double*,
                                                          double*, double*, const char*)>("updatePlot");
             
             // pass the arguments to the function
             return updatePlot(nContrast, reflect, nReflect, shiftedData, nShiftedData, sldProfiles, nSldProfiles, 
-                              layers, nLayers, ssubs, resample, dataPresent, modelType);   
+                              layers, nLayers, sldProfiles2, nSldProfiles2, layers2, nLayers2, ssubs, resample, 
+                              dataPresent, modelType);   
 
         };
 };

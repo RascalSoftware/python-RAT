@@ -23,7 +23,9 @@ namespace RAT
   {
     namespace internal
     {
+      int32_T b_bsearch(const real_T x_data[], real_T xi);
       int32_T b_bsearch(const ::coder::array<real_T, 1U> &x, real_T xi);
+      int32_T c_bsearch(const real_T x[3], real_T xi);
     }
   }
 }

@@ -10,19 +10,19 @@
 
 // Include files
 #include "reflectivityCalculation.h"
-#include "reflectivityCalculation_internal_types.h"
-#include "reflectivityCalculation_types.h"
+#include "RATMain_internal_types.h"
+#include "RATMain_types.h"
+#include "reflectivityCalculation1.h"
+#include "reflectivityCalculation2.h"
 #include "rt_nonfinite.h"
-#include "standardTFReflectivityCalculation.h"
 #include "strcmp.h"
-#include "triggerEvent.h"
 #include "coder_array.h"
 #include "coder_bounded_array.h"
 
 // Type Definitions
 namespace RAT
 {
-  struct cell_wrap_12
+  struct cell_wrap_19
   {
     ::coder::array<real_T, 2U> f1;
   };
@@ -31,174 +31,35 @@ namespace RAT
 // Function Declarations
 namespace RAT
 {
-  static void cast(const cell_8 *r, cell_19 *r1);
-  static void cast(const ::coder::array<cell_wrap_2, 2U> &r, ::coder::array<
-                   cell_wrap_15, 2U> &r1);
-  static void cast(const ::coder::array<cell_wrap_4, 1U> &r, ::coder::array<
-                   cell_wrap_15, 1U> &r1);
-  static void cast(const ::coder::array<cell_wrap_1, 2U> &r, ::coder::array<
-                   cell_wrap_15, 2U> &r1);
-  static void cast(const ::coder::array<cell_wrap_3, 2U> &r, ::coder::array<
-                   cell_wrap_15, 2U> &r1);
-  static void cast(const ::coder::array<cell_wrap_9, 1U> &r, ::coder::array<
-                   cell_wrap_12, 1U> &r1);
-  static void cast(const ::coder::array<cell_wrap_15, 1U> &r, ::coder::array<
-                   cell_wrap_12, 1U> &r1);
-  static void cast(const ::coder::array<cell_wrap_15, 1U> &r, ::coder::array<
-                   cell_wrap_13, 1U> &r1);
+  static void cast(const ::coder::array<cell_wrap_8, 1U> &r, ::coder::array<
+                   cell_wrap_21, 1U> &r1);
+  static void cast(const ::coder::array<cell_wrap_8, 1U> &r, ::coder::array<
+                   cell_wrap_19, 1U> &r1);
+  static void cast(const ::coder::array<cell_wrap_11, 1U> &r, ::coder::array<
+                   cell_wrap_19, 1U> &r1);
+  static void cast(const ::coder::array<cell_wrap_8, 1U> &r, ::coder::array<
+                   cell_wrap_20, 1U> &r1);
+  static void cast(const ::coder::array<cell_wrap_8, 2U> &r, ::coder::array<
+                   cell_wrap_21, 2U> &r1);
+  static void cast(const ::coder::array<cell_wrap_8, 2U> &r, ::coder::array<
+                   cell_wrap_36, 2U> &r1);
+  static void cast(const ::coder::array<cell_wrap_8, 2U> &r, ::coder::array<
+                   cell_wrap_20, 2U> &r1);
 }
 
 // Function Definitions
 namespace RAT
 {
-  static void cast(const cell_8 *r, cell_19 *r1)
-  {
-    int32_T loop_ub;
-    r1->f1.set_size(1, r->f1.size(1));
-    loop_ub = r->f1.size(1);
-    for (int32_T i{0}; i < loop_ub; i++) {
-      r1->f1[i] = r->f1[i];
-    }
-
-    cast(r->f2, r1->f2);
-    r1->f3.set_size(1, r->f3.size(1));
-    loop_ub = r->f3.size(1);
-    for (int32_T i{0}; i < loop_ub; i++) {
-      r1->f3[i] = r->f3[i];
-    }
-
-    cast(r->f4, r1->f4);
-    cast(r->f5, r1->f5);
-    cast(r->f6, r1->f6);
-    r1->f7.set_size(1, r->f7.size(1));
-    loop_ub = r->f7.size(1);
-    for (int32_T i{0}; i < loop_ub; i++) {
-      r1->f7[i] = r->f7[i];
-    }
-
-    r1->f8.set_size(1, r->f8.size(1));
-    loop_ub = r->f8.size(1);
-    for (int32_T i{0}; i < loop_ub; i++) {
-      r1->f8[i] = r->f8[i];
-    }
-
-    r1->f9.set_size(1, r->f9.size(1));
-    loop_ub = r->f9.size(1);
-    for (int32_T i{0}; i < loop_ub; i++) {
-      r1->f9[i] = r->f9[i];
-    }
-
-    r1->f10.set_size(1, r->f10.size(1));
-    loop_ub = r->f10.size(1);
-    for (int32_T i{0}; i < loop_ub; i++) {
-      r1->f10[i] = r->f10[i];
-    }
-
-    r1->f11.set_size(1, r->f11.size(1));
-    loop_ub = r->f11.size(1);
-    for (int32_T i{0}; i < loop_ub; i++) {
-      r1->f11[i] = r->f11[i];
-    }
-
-    r1->f12.set_size(1, r->f12.size(1));
-    loop_ub = r->f12.size(1);
-    for (int32_T i{0}; i < loop_ub; i++) {
-      r1->f12[i] = r->f12[i];
-    }
-
-    r1->f13.set_size(1, r->f13.size(1));
-    loop_ub = r->f13.size(1);
-    for (int32_T i{0}; i < loop_ub; i++) {
-      r1->f13[i] = r->f13[i];
-    }
-
-    r1->f14.set_size(1, r->f14.size(1));
-    loop_ub = r->f14.size(1);
-    for (int32_T i{0}; i < loop_ub; i++) {
-      r1->f14[i] = r->f14[i];
-    }
-
-    r1->f15.set_size(1, r->f15.size(1));
-    loop_ub = r->f15.size(1);
-    for (int32_T i{0}; i < loop_ub; i++) {
-      r1->f15[i] = r->f15[i];
-    }
-
-    r1->f16.set_size(1, r->f16.size(1));
-    loop_ub = r->f16.size(1);
-    for (int32_T i{0}; i < loop_ub; i++) {
-      r1->f16[i] = r->f16[i];
-    }
-
-    cast(r->f17, r1->f17);
-    r1->f18.set_size(1, r->f18.size(1));
-    loop_ub = r->f18.size(1);
-    for (int32_T i{0}; i < loop_ub; i++) {
-      r1->f18[i] = r->f18[i];
-    }
-
-    cast(r->f19, r1->f19);
-    r1->f20.set_size(1, r->f20.size(1));
-    loop_ub = r->f20.size(1);
-    for (int32_T i{0}; i < loop_ub; i++) {
-      r1->f20[i] = r->f20[i];
-    }
-  }
-
-  static void cast(const ::coder::array<cell_wrap_2, 2U> &r, ::coder::array<
-                   cell_wrap_15, 2U> &r1)
-  {
-    int32_T i;
-    r1.set_size(1, r.size(1));
-    i = r.size(1) - 1;
-    for (int32_T i1{0}; i1 <= i; i1++) {
-      int32_T loop_ub;
-      loop_ub = r[i1].f1.size[1];
-      r1[r1.size(0) * i1].f1.set_size(r[r.size(0) * i1].f1.size[0], r[r.size(0) *
-        i1].f1.size[1]);
-      for (int32_T i2{0}; i2 < loop_ub; i2++) {
-        int32_T b_loop_ub;
-        b_loop_ub = r[i1].f1.size[0];
-        for (int32_T i3{0}; i3 < b_loop_ub; i3++) {
-          r1[i1].f1[r1[i1].f1.size(0) * i2] = r[i1].f1.data[r[i1].f1.size[0] *
-            i2];
-        }
-      }
-    }
-  }
-
-  static void cast(const ::coder::array<cell_wrap_4, 1U> &r, ::coder::array<
-                   cell_wrap_15, 1U> &r1)
+  static void cast(const ::coder::array<cell_wrap_8, 1U> &r, ::coder::array<
+                   cell_wrap_21, 1U> &r1)
   {
     int32_T i;
     r1.set_size(r.size(0));
     i = r.size(0);
     for (int32_T i1{0}; i1 < i; i1++) {
       int32_T loop_ub;
-      loop_ub = r[i1].f1.size[1];
-      r1[i1].f1.set_size(r[i1].f1.size[0], r[i1].f1.size[1]);
-      for (int32_T i2{0}; i2 < loop_ub; i2++) {
-        int32_T b_loop_ub;
-        b_loop_ub = r[i1].f1.size[0];
-        for (int32_T i3{0}; i3 < b_loop_ub; i3++) {
-          r1[i1].f1[r1[i1].f1.size(0) * i2] = r[i1].f1.data[r[i1].f1.size[0] *
-            i2];
-        }
-      }
-    }
-  }
-
-  static void cast(const ::coder::array<cell_wrap_1, 2U> &r, ::coder::array<
-                   cell_wrap_15, 2U> &r1)
-  {
-    int32_T i;
-    r1.set_size(1, r.size(1));
-    i = r.size(1) - 1;
-    for (int32_T i1{0}; i1 <= i; i1++) {
-      int32_T loop_ub;
       loop_ub = r[i1].f1.size(1);
-      r1[r1.size(0) * i1].f1.set_size(r[r.size(0) * i1].f1.size(0), r[r.size(0) *
-        i1].f1.size(1));
+      r1[i1].f1.set_size(r[i1].f1.size(0), r[i1].f1.size(1));
       for (int32_T i2{0}; i2 < loop_ub; i2++) {
         int32_T b_loop_ub;
         b_loop_ub = r[i1].f1.size(0);
@@ -210,29 +71,29 @@ namespace RAT
     }
   }
 
-  static void cast(const ::coder::array<cell_wrap_3, 2U> &r, ::coder::array<
-                   cell_wrap_15, 2U> &r1)
+  static void cast(const ::coder::array<cell_wrap_8, 1U> &r, ::coder::array<
+                   cell_wrap_19, 1U> &r1)
   {
     int32_T i;
-    r1.set_size(1, r.size(1));
-    i = r.size(1) - 1;
-    for (int32_T i1{0}; i1 <= i; i1++) {
+    r1.set_size(r.size(0));
+    i = r.size(0);
+    for (int32_T i1{0}; i1 < i; i1++) {
       int32_T loop_ub;
       loop_ub = r[i1].f1.size(1);
-      r1[r1.size(0) * i1].f1.set_size(r[r.size(0) * i1].f1.size(0), r[r.size(0) *
-        i1].f1.size(1));
+      r1[i1].f1.set_size(r[i1].f1.size(0), r[i1].f1.size(1));
       for (int32_T i2{0}; i2 < loop_ub; i2++) {
         int32_T b_loop_ub;
         b_loop_ub = r[i1].f1.size(0);
         for (int32_T i3{0}; i3 < b_loop_ub; i3++) {
-          r1[i1].f1[r1[i1].f1.size(0) * i2] = r[i1].f1[r[i1].f1.size(0) * i2];
+          r1[i1].f1[i3 + r1[i1].f1.size(0) * i2] = r[i1].f1[i3 + r[i1].f1.size(0)
+            * i2];
         }
       }
     }
   }
 
-  static void cast(const ::coder::array<cell_wrap_9, 1U> &r, ::coder::array<
-                   cell_wrap_12, 1U> &r1)
+  static void cast(const ::coder::array<cell_wrap_11, 1U> &r, ::coder::array<
+                   cell_wrap_19, 1U> &r1)
   {
     int32_T i;
     r1.set_size(r.size(0));
@@ -250,8 +111,8 @@ namespace RAT
     }
   }
 
-  static void cast(const ::coder::array<cell_wrap_15, 1U> &r, ::coder::array<
-                   cell_wrap_12, 1U> &r1)
+  static void cast(const ::coder::array<cell_wrap_8, 1U> &r, ::coder::array<
+                   cell_wrap_20, 1U> &r1)
   {
     int32_T i;
     r1.set_size(r.size(0));
@@ -271,12 +132,12 @@ namespace RAT
     }
   }
 
-  static void cast(const ::coder::array<cell_wrap_15, 1U> &r, ::coder::array<
-                   cell_wrap_13, 1U> &r1)
+  static void cast(const ::coder::array<cell_wrap_8, 2U> &r, ::coder::array<
+                   cell_wrap_21, 2U> &r1)
   {
     int32_T i;
-    r1.set_size(r.size(0));
-    i = r.size(0);
+    r1.set_size(r.size(0), r.size(1));
+    i = r.size(0) * r.size(1);
     for (int32_T i1{0}; i1 < i; i1++) {
       int32_T loop_ub;
       loop_ub = r[i1].f1.size(1);
@@ -292,25 +153,80 @@ namespace RAT
     }
   }
 
-  void reflectivityCalculation(const struct0_T *problemDef, const cell_8
-    *problemDefCells, const struct1_T *, const struct2_T *controls, struct4_T
-    *problem, cell_11 *result)
+  static void cast(const ::coder::array<cell_wrap_8, 2U> &r, ::coder::array<
+                   cell_wrap_36, 2U> &r1)
   {
-    ::coder::array<cell_wrap_12, 1U> Simulation;
-    ::coder::array<cell_wrap_12, 1U> reflectivity;
-    ::coder::array<cell_wrap_12, 1U> sldProfiles;
-    ::coder::array<cell_wrap_13, 1U> allLayers;
-    ::coder::array<cell_wrap_13, 1U> layerSlds;
-    ::coder::array<cell_wrap_13, 1U> shifted_data;
-    ::coder::array<cell_wrap_15, 1U> b_allLayers;
-    ::coder::array<cell_wrap_15, 1U> b_layerSlds;
-    ::coder::array<cell_wrap_15, 1U> b_shifted_data;
-    ::coder::array<cell_wrap_15, 1U> b_sldProfiles;
-    ::coder::array<cell_wrap_9, 1U> b_Simulation;
-    ::coder::array<cell_wrap_9, 1U> b_reflectivity;
-    cell_19 r;
+    int32_T i;
+    r1.set_size(r.size(0), r.size(1));
+    i = r.size(0) * r.size(1);
+    for (int32_T i1{0}; i1 < i; i1++) {
+      int32_T loop_ub;
+      loop_ub = r[i1].f1.size(1);
+      r1[i1].f1.set_size(r[i1].f1.size(0), r[i1].f1.size(1));
+      for (int32_T i2{0}; i2 < loop_ub; i2++) {
+        int32_T b_loop_ub;
+        b_loop_ub = r[i1].f1.size(0);
+        for (int32_T i3{0}; i3 < b_loop_ub; i3++) {
+          r1[i1].f1[i3 + r1[i1].f1.size(0) * i2] = r[i1].f1[i3 + r[i1].f1.size(0)
+            * i2];
+        }
+      }
+    }
+  }
+
+  static void cast(const ::coder::array<cell_wrap_8, 2U> &r, ::coder::array<
+                   cell_wrap_20, 2U> &r1)
+  {
+    int32_T i;
+    r1.set_size(r.size(0), r.size(1));
+    i = r.size(0) * r.size(1);
+    for (int32_T i1{0}; i1 < i; i1++) {
+      int32_T loop_ub;
+      loop_ub = r[i1].f1.size(1);
+      r1[i1].f1.set_size(r[i1].f1.size(0), r[i1].f1.size(1));
+      for (int32_T i2{0}; i2 < loop_ub; i2++) {
+        int32_T b_loop_ub;
+        b_loop_ub = r[i1].f1.size(0);
+        for (int32_T i3{0}; i3 < b_loop_ub; i3++) {
+          r1[i1].f1[i3 + r1[i1].f1.size(0) * i2] = r[i1].f1[i3 + r[i1].f1.size(0)
+            * i2];
+        }
+      }
+    }
+  }
+
+  void reflectivityCalculation(const struct5_T *problemDef, const cell_14
+    *problemDefCells, const struct2_T *controls, struct_T *problem, cell_13
+    *result)
+  {
+    ::coder::array<cell_wrap_11, 1U> b_reflectivity;
+    ::coder::array<cell_wrap_11, 1U> b_simulation;
+    ::coder::array<cell_wrap_19, 1U> reflectivity;
+    ::coder::array<cell_wrap_19, 1U> simulation;
+    ::coder::array<cell_wrap_19, 1U> sldProfiles;
+    ::coder::array<cell_wrap_20, 2U> domainAllLayers;
+    ::coder::array<cell_wrap_20, 2U> r2;
+    ::coder::array<cell_wrap_20, 1U> allLayers;
+    ::coder::array<cell_wrap_20, 1U> shiftedData;
+    ::coder::array<cell_wrap_21, 2U> domainLayerSlds;
+    ::coder::array<cell_wrap_21, 2U> r;
+    ::coder::array<cell_wrap_21, 1U> layerSlds;
+    ::coder::array<cell_wrap_36, 2U> domainSldProfiles;
+    ::coder::array<cell_wrap_36, 2U> r1;
+    ::coder::array<cell_wrap_8, 2U> b_domainAllLayers;
+    ::coder::array<cell_wrap_8, 2U> b_domainLayerSlds;
+    ::coder::array<cell_wrap_8, 2U> b_domainSldProfiles;
+    ::coder::array<cell_wrap_8, 2U> cell4;
+    ::coder::array<cell_wrap_8, 2U> cell5;
+    ::coder::array<cell_wrap_8, 2U> cell6;
+    ::coder::array<cell_wrap_8, 1U> b_allLayers;
+    ::coder::array<cell_wrap_8, 1U> b_layerSlds;
+    ::coder::array<cell_wrap_8, 1U> b_shiftedData;
+    ::coder::array<cell_wrap_8, 1U> b_sldProfiles;
+    int32_T b_index;
     int32_T i;
     int32_T i1;
+    int32_T loop_ub;
 
     //  Main entry point into the reflectivity calculation for the toolbox.
     //  This is the main function that is called by any of the minimisers or
@@ -333,21 +249,21 @@ namespace RAT
     //  Setting these parameters in the struct defines them as doubles
     problem->ssubs.set_size(1);
     problem->ssubs[0] = 0.0;
-    problem->backgrounds.set_size(1);
-    problem->backgrounds[0] = 0.0;
-    problem->qshifts.set_size(1);
-    problem->qshifts[0] = 0.0;
+    problem->backgroundParams.set_size(1);
+    problem->backgroundParams[0] = 0.0;
+    problem->qzshifts.set_size(1);
+    problem->qzshifts[0] = 0.0;
     problem->scalefactors.set_size(1);
     problem->scalefactors[0] = 0.0;
-    problem->nbairs.set_size(1);
-    problem->nbairs[0] = 0.0;
-    problem->nbsubs.set_size(1);
-    problem->nbsubs[0] = 0.0;
-    problem->resolutions.set_size(1);
-    problem->resolutions[0] = 0.0;
-    problem->calculations.all_chis.set_size(1);
-    problem->calculations.all_chis[0] = 0.0;
-    problem->calculations.sum_chi = 0.0;
+    problem->bulkIn.set_size(1);
+    problem->bulkIn[0] = 0.0;
+    problem->bulkOut.set_size(1);
+    problem->bulkOut[0] = 0.0;
+    problem->resolutionParams.set_size(1);
+    problem->resolutionParams[0] = 0.0;
+    problem->calculations.allChis.set_size(1);
+    problem->calculations.allChis[0] = 0.0;
+    problem->calculations.sumChi = 0.0;
     problem->allSubRough.set_size(1);
     problem->allSubRough[0] = 0.0;
     problem->resample.set_size(1, 1);
@@ -360,55 +276,90 @@ namespace RAT
     //  TODO: Find out which is necessary and tidy this up.
     i = static_cast<int32_T>(problemDef->numberOfContrasts);
     reflectivity.set_size(i);
-    Simulation.set_size(i);
-    shifted_data.set_size(i);
+    simulation.set_size(i);
+    shiftedData.set_size(i);
     layerSlds.set_size(i);
+    domainLayerSlds.set_size(i, 2);
     sldProfiles.set_size(i);
+    domainSldProfiles.set_size(i, 2);
     allLayers.set_size(i);
+    domainAllLayers.set_size(i, 2);
     for (int32_T b_i{0}; b_i < i; b_i++) {
       reflectivity[b_i].f1.set_size(2, 2);
       reflectivity[b_i].f1[0] = 1.0;
       reflectivity[b_i].f1[1] = 1.0;
       reflectivity[b_i].f1[reflectivity[b_i].f1.size(0)] = 1.0;
       reflectivity[b_i].f1[reflectivity[b_i].f1.size(0) + 1] = 1.0;
-      Simulation[b_i].f1.set_size(2, 2);
-      Simulation[b_i].f1[0] = 1.0;
-      Simulation[b_i].f1[1] = 1.0;
-      Simulation[b_i].f1[Simulation[b_i].f1.size(0)] = 1.0;
-      Simulation[b_i].f1[Simulation[b_i].f1.size(0) + 1] = 1.0;
-      shifted_data[b_i].f1.set_size(2, 3);
+      simulation[b_i].f1.set_size(2, 2);
+      simulation[b_i].f1[0] = 1.0;
+      simulation[b_i].f1[1] = 1.0;
+      simulation[b_i].f1[simulation[b_i].f1.size(0)] = 1.0;
+      simulation[b_i].f1[simulation[b_i].f1.size(0) + 1] = 1.0;
+      shiftedData[b_i].f1.set_size(2, 3);
       layerSlds[b_i].f1.set_size(2, 3);
+      domainLayerSlds[b_i].f1.set_size(2, 3);
+      domainLayerSlds[b_i + domainLayerSlds.size(0)].f1.set_size(2, 3);
       sldProfiles[b_i].f1.set_size(2, 2);
       sldProfiles[b_i].f1[0] = 1.0;
       sldProfiles[b_i].f1[1] = 1.0;
       sldProfiles[b_i].f1[sldProfiles[b_i].f1.size(0)] = 1.0;
       sldProfiles[b_i].f1[sldProfiles[b_i].f1.size(0) + 1] = 1.0;
+      domainSldProfiles[b_i].f1.set_size(2, 2);
+      domainSldProfiles[b_i + domainSldProfiles.size(0)].f1.set_size(2, 2);
+      domainSldProfiles[b_i].f1[0] = 1.0;
+      domainSldProfiles[b_i + domainSldProfiles.size(0)].f1[0] = 1.0;
+      domainSldProfiles[b_i].f1[1] = 1.0;
+      domainSldProfiles[b_i + domainSldProfiles.size(0)].f1[1] = 1.0;
+      domainSldProfiles[b_i].f1[domainSldProfiles[b_i].f1.size(0)] = 1.0;
+      domainSldProfiles[b_i + domainSldProfiles.size(0)]
+        .f1[domainSldProfiles[b_i + domainSldProfiles.size(0)].f1.size(0)] = 1.0;
+      domainSldProfiles[b_i].f1[domainSldProfiles[b_i].f1.size(0) + 1] = 1.0;
+      domainSldProfiles[b_i + domainSldProfiles.size(0)]
+        .f1[domainSldProfiles[b_i + domainSldProfiles.size(0)].f1.size(0) + 1] =
+        1.0;
       allLayers[b_i].f1.set_size(2, 3);
+      domainAllLayers[b_i].f1.set_size(2, 3);
+      domainAllLayers[b_i + domainAllLayers.size(0)].f1.set_size(2, 3);
       for (i1 = 0; i1 < 3; i1++) {
-        shifted_data[b_i].f1[shifted_data[b_i].f1.size(0) * i1] = 1.0;
-        shifted_data[b_i].f1[shifted_data[b_i].f1.size(0) * i1 + 1] = 1.0;
+        shiftedData[b_i].f1[shiftedData[b_i].f1.size(0) * i1] = 1.0;
+        shiftedData[b_i].f1[shiftedData[b_i].f1.size(0) * i1 + 1] = 1.0;
         layerSlds[b_i].f1[layerSlds[b_i].f1.size(0) * i1] = 1.0;
         layerSlds[b_i].f1[layerSlds[b_i].f1.size(0) * i1 + 1] = 1.0;
+        domainLayerSlds[b_i].f1[domainLayerSlds[b_i].f1.size(0) * i1] = 1.0;
+        domainLayerSlds[b_i + domainLayerSlds.size(0)].f1[domainLayerSlds[b_i +
+          domainLayerSlds.size(0)].f1.size(0) * i1] = 1.0;
+        domainLayerSlds[b_i].f1[domainLayerSlds[b_i].f1.size(0) * i1 + 1] = 1.0;
+        domainLayerSlds[b_i + domainLayerSlds.size(0)].f1[domainLayerSlds[b_i +
+          domainLayerSlds.size(0)].f1.size(0) * i1 + 1] = 1.0;
         allLayers[b_i].f1[allLayers[b_i].f1.size(0) * i1] = 1.0;
         allLayers[b_i].f1[allLayers[b_i].f1.size(0) * i1 + 1] = 1.0;
+        domainAllLayers[b_i].f1[domainAllLayers[b_i].f1.size(0) * i1] = 1.0;
+        domainAllLayers[b_i + domainAllLayers.size(0)].f1[domainAllLayers[b_i +
+          domainAllLayers.size(0)].f1.size(0) * i1] = 1.0;
+        domainAllLayers[b_i].f1[domainAllLayers[b_i].f1.size(0) * i1 + 1] = 1.0;
+        domainAllLayers[b_i + domainAllLayers.size(0)].f1[domainAllLayers[b_i +
+          domainAllLayers.size(0)].f1.size(0) * i1 + 1] = 1.0;
       }
     }
 
     //  Decide which target function we are calling and call the relevant routines
-    if (coder::internal::b_strcmp(problemDef->TF.data, problemDef->TF.size)) {
-      i1 = 0;
+    if (coder::internal::i_strcmp(problemDef->TF.data, problemDef->TF.size)) {
+      b_index = 0;
+    } else if (coder::internal::j_strcmp(problemDef->TF.data,
+                problemDef->TF.size)) {
+      b_index = 1;
     } else {
-      i1 = -1;
+      b_index = -1;
     }
 
-    if (i1 == 0) {
-      cast(problemDefCells, &r);
-      standardTFReflectivityCalculation(problemDef, &r, controls, problem,
-        b_reflectivity, b_Simulation, b_shifted_data, b_layerSlds, b_sldProfiles,
-        b_allLayers);
+    switch (b_index) {
+     case 0:
+      nonPolarisedTF::b_reflectivityCalculation(problemDef, problemDefCells,
+        controls, problem, b_reflectivity, b_simulation, b_shiftedData,
+        b_layerSlds, b_sldProfiles, b_allLayers);
       cast(b_reflectivity, reflectivity);
-      cast(b_Simulation, Simulation);
-      cast(b_shifted_data, shifted_data);
+      cast(b_simulation, simulation);
+      cast(b_shiftedData, shiftedData);
       cast(b_layerSlds, layerSlds);
       cast(b_sldProfiles, sldProfiles);
       cast(b_allLayers, allLayers);
@@ -417,86 +368,265 @@ namespace RAT
       // problem = oilWaterTF_reflectivityCalculation(problemDef,problemDefCells,controls);
       // case 'magnetic'
       // problem = polarisedTF_reflectivityCalculation(problemDef,problemDefCells,controls);
-      // case 'domains'
-      // [problem,reflectivity,Simulation,shifted_data,layerSlds,sldProfiles,allLayers] = domainsTF_reflectivityCalculation(problemDef,problemDefCells,problemDefLimits,controls);
-      // otherwise
-      // error('The calculation type "%s" is not supported', whichTF);
+      break;
+
+     case 1:
+      domainsTF::b_reflectivityCalculation(problemDef, problemDefCells, controls,
+        problem, b_reflectivity, b_simulation, b_shiftedData, b_domainLayerSlds,
+        b_domainSldProfiles, b_domainAllLayers);
+      cast(b_reflectivity, reflectivity);
+      cast(b_simulation, simulation);
+      cast(b_shiftedData, shiftedData);
+      cast(b_domainLayerSlds, r);
+      domainLayerSlds.set_size(r.size(0), r.size(1));
+      b_index = r.size(1);
+      for (i1 = 0; i1 < b_index; i1++) {
+        loop_ub = r.size(0);
+        for (int32_T i2{0}; i2 < loop_ub; i2++) {
+          domainLayerSlds[i2 + domainLayerSlds.size(0) * i1] = r[i2 + r.size(0) *
+            i1];
+        }
+      }
+
+      cast(b_domainSldProfiles, r1);
+      domainSldProfiles.set_size(r1.size(0), r1.size(1));
+      b_index = r1.size(1);
+      for (i1 = 0; i1 < b_index; i1++) {
+        loop_ub = r1.size(0);
+        for (int32_T i2{0}; i2 < loop_ub; i2++) {
+          domainSldProfiles[i2 + domainSldProfiles.size(0) * i1] = r1[i2 +
+            r1.size(0) * i1];
+        }
+      }
+
+      cast(b_domainAllLayers, r2);
+      domainAllLayers.set_size(r2.size(0), r2.size(1));
+      b_index = r2.size(1);
+      for (i1 = 0; i1 < b_index; i1++) {
+        loop_ub = r2.size(0);
+        for (int32_T i2{0}; i2 < loop_ub; i2++) {
+          domainAllLayers[i2 + domainAllLayers.size(0) * i1] = r2[i2 + r2.size(0)
+            * i1];
+        }
+      }
+
+      //      otherwise
+      //          error('The calculation type "%s" is not supported', whichTF);
+      break;
     }
 
     result->f1.set_size(i);
     result->f2.set_size(i);
     result->f3.set_size(i);
-    result->f4.set_size(i);
-    result->f5.set_size(i);
-    result->f6.set_size(i);
     for (int32_T b_i{0}; b_i < i; b_i++) {
-      int32_T b_loop_ub;
-      int32_T loop_ub;
-      loop_ub = reflectivity[b_i].f1.size(0);
+      b_index = reflectivity[b_i].f1.size(0);
       result->f1[b_i].f1.set_size(reflectivity[b_i].f1.size(0), 2);
-      b_loop_ub = Simulation[b_i].f1.size(0);
-      result->f2[b_i].f1.set_size(Simulation[b_i].f1.size(0), 2);
+      loop_ub = simulation[b_i].f1.size(0);
+      result->f2[b_i].f1.set_size(simulation[b_i].f1.size(0), 2);
       for (i1 = 0; i1 < 2; i1++) {
-        for (int32_T i2{0}; i2 < loop_ub; i2++) {
+        for (int32_T i2{0}; i2 < b_index; i2++) {
           result->f1[b_i].f1[i2 + result->f1[b_i].f1.size(0) * i1] =
             reflectivity[b_i].f1[i2 + reflectivity[b_i].f1.size(0) * i1];
         }
 
-        for (int32_T i2{0}; i2 < b_loop_ub; i2++) {
+        for (int32_T i2{0}; i2 < loop_ub; i2++) {
           result->f2[b_i].f1[i2 + result->f2[b_i].f1.size(0) * i1] =
-            Simulation[b_i].f1[i2 + Simulation[b_i].f1.size(0) * i1];
+            simulation[b_i].f1[i2 + simulation[b_i].f1.size(0) * i1];
         }
       }
 
-      loop_ub = shifted_data[b_i].f1.size(0);
-      result->f3[b_i].f1.set_size(shifted_data[b_i].f1.size(0), 3);
-      b_loop_ub = layerSlds[b_i].f1.size(0);
-      result->f4[b_i].f1.set_size(layerSlds[b_i].f1.size(0), 3);
+      b_index = shiftedData[b_i].f1.size(0);
+      result->f3[b_i].f1.set_size(shiftedData[b_i].f1.size(0), 3);
       for (i1 = 0; i1 < 3; i1++) {
-        for (int32_T i2{0}; i2 < loop_ub; i2++) {
+        for (int32_T i2{0}; i2 < b_index; i2++) {
           result->f3[b_i].f1[i2 + result->f3[b_i].f1.size(0) * i1] =
-            shifted_data[b_i].f1[i2 + shifted_data[b_i].f1.size(0) * i1];
-        }
-
-        for (int32_T i2{0}; i2 < b_loop_ub; i2++) {
-          result->f4[b_i].f1[i2 + result->f4[b_i].f1.size(0) * i1] =
-            layerSlds[b_i].f1[i2 + layerSlds[b_i].f1.size(0) * i1];
-        }
-      }
-
-      loop_ub = sldProfiles[b_i].f1.size(0);
-      result->f5[b_i].f1.set_size(sldProfiles[b_i].f1.size(0), 2);
-      for (i1 = 0; i1 < 2; i1++) {
-        for (int32_T i2{0}; i2 < loop_ub; i2++) {
-          result->f5[b_i].f1[i2 + result->f5[b_i].f1.size(0) * i1] =
-            sldProfiles[b_i].f1[i2 + sldProfiles[b_i].f1.size(0) * i1];
-        }
-      }
-
-      loop_ub = allLayers[b_i].f1.size(0);
-      result->f6[b_i].f1.set_size(allLayers[b_i].f1.size(0), 3);
-      for (i1 = 0; i1 < 3; i1++) {
-        for (int32_T i2{0}; i2 < loop_ub; i2++) {
-          result->f6[b_i].f1[i2 + result->f6[b_i].f1.size(0) * i1] =
-            allLayers[b_i].f1[i2 + allLayers[b_i].f1.size(0) * i1];
+            shiftedData[b_i].f1[i2 + shiftedData[b_i].f1.size(0) * i1];
         }
       }
     }
 
-    //  Send plot event
-    triggerEvent(result->f1, result->f3, result->f5, result->f6, problem->ssubs,
-                 problemDef->resample, problemDef->dataPresent,
-                 problemDef->modelType.data, problemDef->modelType.size);
+    //  The size of this array now varies depending on TF
+    if (coder::internal::j_strcmp(problemDef->TF.data, problemDef->TF.size)) {
+      i1 = 0;
+    } else {
+      i1 = -1;
+    }
+
+    if (i1 == 0) {
+      cell4.set_size(i, 2);
+      for (int32_T b_i{0}; b_i < i; b_i++) {
+        b_index = domainLayerSlds[b_i].f1.size(1);
+        cell4[b_i].f1.set_size(domainLayerSlds[b_i].f1.size(0),
+          domainLayerSlds[b_i].f1.size(1));
+        for (i1 = 0; i1 < b_index; i1++) {
+          loop_ub = domainLayerSlds[b_i].f1.size(0);
+          for (int32_T i2{0}; i2 < loop_ub; i2++) {
+            cell4[b_i].f1[i2 + cell4[b_i].f1.size(0) * i1] = domainLayerSlds[b_i]
+              .f1[i2 + domainLayerSlds[b_i].f1.size(0) * i1];
+          }
+        }
+
+        b_index = domainLayerSlds[b_i + domainLayerSlds.size(0)].f1.size(1);
+        cell4[b_i + cell4.size(0)].f1.set_size(domainLayerSlds[b_i +
+          domainLayerSlds.size(0)].f1.size(0), domainLayerSlds[b_i +
+          domainLayerSlds.size(0)].f1.size(1));
+        for (i1 = 0; i1 < b_index; i1++) {
+          loop_ub = domainLayerSlds[b_i + domainLayerSlds.size(0)].f1.size(0);
+          for (int32_T i2{0}; i2 < loop_ub; i2++) {
+            cell4[b_i + cell4.size(0)].f1[i2 + cell4[b_i + cell4.size(0)].
+              f1.size(0) * i1] = domainLayerSlds[b_i + domainLayerSlds.size(0)].
+              f1[i2 + domainLayerSlds[b_i + domainLayerSlds.size(0)].f1.size(0) *
+              i1];
+          }
+        }
+      }
+
+      result->f4.set_size(cell4.size(0), 2);
+      b_index = cell4.size(0);
+      for (i1 = 0; i1 < 2; i1++) {
+        for (int32_T i2{0}; i2 < b_index; i2++) {
+          result->f4[i2 + result->f4.size(0) * i1] = cell4[i2 + cell4.size(0) *
+            i1];
+        }
+      }
+
+      cell5.set_size(i, 2);
+      for (int32_T b_i{0}; b_i < i; b_i++) {
+        b_index = domainSldProfiles[b_i].f1.size(1);
+        cell5[b_i].f1.set_size(domainSldProfiles[b_i].f1.size(0),
+          domainSldProfiles[b_i].f1.size(1));
+        for (i1 = 0; i1 < b_index; i1++) {
+          loop_ub = domainSldProfiles[b_i].f1.size(0);
+          for (int32_T i2{0}; i2 < loop_ub; i2++) {
+            cell5[b_i].f1[i2 + cell5[b_i].f1.size(0) * i1] =
+              domainSldProfiles[b_i].f1[i2 + domainSldProfiles[b_i].f1.size(0) *
+              i1];
+          }
+        }
+
+        b_index = domainSldProfiles[b_i + domainSldProfiles.size(0)].f1.size(1);
+        cell5[b_i + cell5.size(0)].f1.set_size(domainSldProfiles[b_i +
+          domainSldProfiles.size(0)].f1.size(0), domainSldProfiles[b_i +
+          domainSldProfiles.size(0)].f1.size(1));
+        for (i1 = 0; i1 < b_index; i1++) {
+          loop_ub = domainSldProfiles[b_i + domainSldProfiles.size(0)].f1.size(0);
+          for (int32_T i2{0}; i2 < loop_ub; i2++) {
+            cell5[b_i + cell5.size(0)].f1[i2 + cell5[b_i + cell5.size(0)].
+              f1.size(0) * i1] = domainSldProfiles[b_i + domainSldProfiles.size
+              (0)].f1[i2 + domainSldProfiles[b_i + domainSldProfiles.size(0)].
+              f1.size(0) * i1];
+          }
+        }
+      }
+
+      result->f5.set_size(cell5.size(0), 2);
+      b_index = cell5.size(0);
+      for (i1 = 0; i1 < 2; i1++) {
+        for (int32_T i2{0}; i2 < b_index; i2++) {
+          result->f5[i2 + result->f5.size(0) * i1] = cell5[i2 + cell5.size(0) *
+            i1];
+        }
+      }
+
+      cell6.set_size(i, 2);
+      for (int32_T b_i{0}; b_i < i; b_i++) {
+        b_index = domainAllLayers[b_i].f1.size(0);
+        cell6[b_i].f1.set_size(domainAllLayers[b_i].f1.size(0), 3);
+        loop_ub = domainAllLayers[b_i + domainAllLayers.size(0)].f1.size(0);
+        cell6[b_i + cell6.size(0)].f1.set_size(domainAllLayers[b_i +
+          domainAllLayers.size(0)].f1.size(0), 3);
+        for (i1 = 0; i1 < 3; i1++) {
+          for (int32_T i2{0}; i2 < b_index; i2++) {
+            cell6[b_i].f1[i2 + cell6[b_i].f1.size(0) * i1] = domainAllLayers[b_i]
+              .f1[i2 + domainAllLayers[b_i].f1.size(0) * i1];
+          }
+
+          for (int32_T i2{0}; i2 < loop_ub; i2++) {
+            cell6[b_i + cell6.size(0)].f1[i2 + cell6[b_i + cell6.size(0)].
+              f1.size(0) * i1] = domainAllLayers[b_i + domainAllLayers.size(0)].
+              f1[i2 + domainAllLayers[b_i + domainAllLayers.size(0)].f1.size(0) *
+              i1];
+          }
+        }
+      }
+
+      result->f6.set_size(cell6.size(0), 2);
+      b_index = cell6.size(0);
+      for (i = 0; i < 2; i++) {
+        for (i1 = 0; i1 < b_index; i1++) {
+          result->f6[i1 + result->f6.size(0) * i] = cell6[i1 + cell6.size(0) * i];
+        }
+      }
+    } else {
+      cell4.set_size(i, 1);
+      for (int32_T b_i{0}; b_i < i; b_i++) {
+        b_index = layerSlds[b_i].f1.size(1);
+        cell4[b_i].f1.set_size(layerSlds[b_i].f1.size(0), layerSlds[b_i].f1.size
+          (1));
+        for (i1 = 0; i1 < b_index; i1++) {
+          loop_ub = layerSlds[b_i].f1.size(0);
+          for (int32_T i2{0}; i2 < loop_ub; i2++) {
+            cell4[b_i].f1[i2 + cell4[b_i].f1.size(0) * i1] = layerSlds[b_i]
+              .f1[i2 + layerSlds[b_i].f1.size(0) * i1];
+          }
+        }
+      }
+
+      result->f4.set_size(cell4.size(0), 1);
+      b_index = cell4.size(0);
+      for (i1 = 0; i1 < b_index; i1++) {
+        result->f4[i1] = cell4[i1];
+      }
+
+      cell5.set_size(i, 1);
+      for (int32_T b_i{0}; b_i < i; b_i++) {
+        b_index = sldProfiles[b_i].f1.size(0);
+        cell5[b_i].f1.set_size(sldProfiles[b_i].f1.size(0), 2);
+        for (i1 = 0; i1 < 2; i1++) {
+          for (int32_T i2{0}; i2 < b_index; i2++) {
+            cell5[b_i].f1[i2 + cell5[b_i].f1.size(0) * i1] = sldProfiles[b_i]
+              .f1[i2 + sldProfiles[b_i].f1.size(0) * i1];
+          }
+        }
+      }
+
+      result->f5.set_size(cell5.size(0), 1);
+      b_index = cell5.size(0);
+      for (i1 = 0; i1 < b_index; i1++) {
+        result->f5[i1] = cell5[i1];
+      }
+
+      cell6.set_size(i, 1);
+      for (int32_T b_i{0}; b_i < i; b_i++) {
+        b_index = allLayers[b_i].f1.size(0);
+        cell6[b_i].f1.set_size(allLayers[b_i].f1.size(0), 3);
+        for (i1 = 0; i1 < 3; i1++) {
+          for (int32_T i2{0}; i2 < b_index; i2++) {
+            cell6[b_i].f1[i2 + cell6[b_i].f1.size(0) * i1] = allLayers[b_i]
+              .f1[i2 + allLayers[b_i].f1.size(0) * i1];
+          }
+        }
+      }
+
+      result->f6.set_size(cell6.size(0), 1);
+      b_index = cell6.size(0);
+      for (i = 0; i < b_index; i++) {
+        result->f6[i] = cell6[i];
+      }
+    }
 
     //  Pre-processor directives for Matlab Coder
     //  to define the size of the output array
     // Result coder definitions....
     // Reflectivity
-    // Simulatin
+    // simulation
     // Shifted data
-    // Layers slds
-    // Sld profiles
-    // All layers (resampled)
+    //  coder.varsize('result{4}',[Inf 2],[1 1]);           %Layers slds
+    //  coder.varsize('result{4}{:}',[Inf 6],[1 1]);
+    //  coder.varsize('result{5}',[Inf 2],[1 1]);           %Sld profiles
+    //  coder.varsize('results{5}{:}',[Inf 2],[1 2]);
+    //  coder.varsize('result{6}',[Inf 2],[1 1]);           %All layers (resampled)
+    //  coder.varsize('result{6}{:}',[Inf 3],[1 0]);
   }
 }
 

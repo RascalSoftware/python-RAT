@@ -19,13 +19,12 @@
 // Function Declarations
 namespace RAT
 {
-  void resampleLayersReIm(const ::coder::array<real_T, 2U> &sldProfile, const ::
+  void b_resampleLayersReIm(const ::coder::array<real_T, 2U> &sldProfile, const ::
     coder::array<real_T, 2U> &sldProfileIm, const real_T resamPars[2], ::coder::
     array<real_T, 2U> &newSLD);
-  void resampleLayersReIm(const real_T sldProfile_data[], const int32_T
-    sldProfile_size[2], const real_T sldProfileIm_data[], const int32_T
-    sldProfileIm_size[2], const real_T resamPars[2], ::coder::array<real_T, 2U>
-    &newSLD);
+  void c_resampleLayersReIm(const ::coder::array<real_T, 2U> &sldProfile, const ::
+    coder::array<real_T, 2U> &sldProfileIm, const real_T resamPars[2], ::coder::
+    array<real_T, 2U> &newSLD);
 }
 
 #endif

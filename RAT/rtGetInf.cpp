@@ -5,7 +5,7 @@
 //
 // rtGetInf.cpp
 //
-// Code generation for function 'reflectivityCalculation'
+// Code generation for function 'RATMain'
 //
 
 // Abstract:

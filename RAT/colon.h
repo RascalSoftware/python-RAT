@@ -23,6 +23,7 @@ namespace RAT
   {
     void eml_float_colon(real_T a, real_T d, real_T b, ::coder::array<real_T, 2U>
                          &y);
+    void eml_integer_colon_dispatcher(int32_T b, ::coder::array<int32_T, 2U> &y);
   }
 }
 

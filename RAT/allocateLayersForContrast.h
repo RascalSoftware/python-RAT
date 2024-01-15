@@ -11,7 +11,7 @@
 #define ALLOCATELAYERSFORCONTRAST_H
 
 // Include files
-#include "reflectivityCalculation_internal_types.h"
+#include "RATMain_types.h"
 #include "rtwtypes.h"
 #include "coder_array.h"
 #include <cstddef>
@@ -21,7 +21,7 @@
 namespace RAT
 {
   void allocateLayersForContrast(const ::coder::array<real_T, 2U>
-    &contrastLayers, const ::coder::array<cell_wrap_20, 2U>
+    &contrastLayers, const ::coder::array<cell_wrap_24, 2U>
     &outParameterisedLayers, boolean_T useImaginary, real_T
     thisContrastLayers_data[], int32_T thisContrastLayers_size[2]);
 }

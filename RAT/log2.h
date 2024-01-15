@@ -12,6 +12,7 @@
 
 // Include files
 #include "rtwtypes.h"
+#include "coder_array.h"
 #include <cstddef>
 #include <cstdlib>
 
@@ -20,6 +21,8 @@ namespace RAT
 {
   namespace coder
   {
+    void b_log2(const ::coder::array<real_T, 1U> &x, ::coder::array<real_T, 1U>
+                &f, ::coder::array<real_T, 1U> &e);
     void b_log2(real_T x, real_T *f, real_T *e);
   }
 }

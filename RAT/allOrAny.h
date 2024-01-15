@@ -23,8 +23,11 @@ namespace RAT
   {
     namespace internal
     {
+      boolean_T allOrAny_anonFcn2(int32_T n, const boolean_T X_data[]);
       boolean_T allOrAny_anonFcn3(int32_T n, const ::coder::array<boolean_T, 1U>
         &X);
+      void b_allOrAny_anonFcn2(int32_T n, const boolean_T X_data[], boolean_T
+        Y_data[]);
     }
   }
 }
