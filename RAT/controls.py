@@ -38,7 +38,7 @@ class Simplex(Calculate):
     maxFunEvals: int = Field(10000, gt=0)
     maxIter: int = Field(1000, gt=0)
     updateFreq: int = -1
-    updatePlotFreq: int = -1
+    updatePlotFreq: int = 1
 
 
 class DE(Calculate):

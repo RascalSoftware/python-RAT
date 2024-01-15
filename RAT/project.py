@@ -112,7 +112,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
 
     background_parameters: ClassList = ClassList(RAT.models.Parameter(name='Background Param 1', min=1e-7, value=1e-6,
                                                                       max=1e-5, fit=False,
-                                                                      prior_type=RAT.models.Priors.Uniform, mu=0,
+                                                                      prior_type=RAT.models.Priors.Uniform, mu=0.0,
                                                                       sigma=np.inf))
 
     backgrounds: ClassList = ClassList(RAT.models.Background(name='Background 1', type=RAT.models.Types.Constant,
@@ -120,7 +120,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
 
     resolution_parameters: ClassList = ClassList(RAT.models.Parameter(name='Resolution Param 1', min=0.01, value=0.03,
                                                                       max=0.05, fit=False,
-                                                                      prior_type=RAT.models.Priors.Uniform, mu=0,
+                                                                      prior_type=RAT.models.Priors.Uniform, mu=0.0,
                                                                       sigma=np.inf))
 
     resolutions: ClassList = ClassList(RAT.models.Resolution(name='Resolution 1', type=RAT.models.Types.Constant,

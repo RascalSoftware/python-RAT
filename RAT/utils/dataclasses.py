@@ -1,8 +1,9 @@
 """Defines dataclasses used for the inputs to the compiled RAT code."""
 
 from dataclasses import dataclass, field
-from RAT.utils.enums import Parallel, Procedures, Display, BoundHandling, Strategies, Calc, Geometries, Models
 from typing import Union
+
+from RAT.utils.enums import Parallel, Procedures, Display, BoundHandling, Strategies, Calc, Geometries, Models
 
 
 @dataclass
@@ -21,27 +22,27 @@ class Checks:
 @dataclass
 class Limits:
     """Parameters limits for all parameter sets defined in the project."""
-    param: list[float] = field(default_factory=list)
-    backgroundParam: list[float] = field(default_factory=list)
-    qzshift: list[float] = field(default_factory=list)
-    scalefactor: list[float] = field(default_factory=list)
-    bulkIn: list[float] = field(default_factory=list)
-    bulkOut: list[float] = field(default_factory=list)
-    resolutionParam: list[float] = field(default_factory=list)
-    domainRatio: list[float] = field(default_factory=list)
+    param: list[[float, float]] = field(default_factory=list)
+    backgroundParam: list[[float, float]] = field(default_factory=list)
+    qzshift: list[[float, float]] = field(default_factory=list)
+    scalefactor: list[[float, float]] = field(default_factory=list)
+    bulkIn: list[[float, float]] = field(default_factory=list)
+    bulkOut: list[[float, float]] = field(default_factory=list)
+    resolutionParam: list[[float, float]] = field(default_factory=list)
+    domainRatio: list[[float, float]] = field(default_factory=list)
 
 
 @dataclass
 class Priors:
     """Priors parameters for all parameter sets defined in the project."""
-    param: list = field(default_factory=list)
-    backgroundParam: list = field(default_factory=list)
-    qzshift: list = field(default_factory=list)
-    scalefactor: list = field(default_factory=list)
-    bulkIn: list = field(default_factory=list)
-    bulkOut: list = field(default_factory=list)
-    resolutionParam: list = field(default_factory=list)
-    domainRatio: list = field(default_factory=list)
+    param: list[list] = field(default_factory=list)
+    backgroundParam: list[list] = field(default_factory=list)
+    qzshift: list[list] = field(default_factory=list)
+    scalefactor: list[list] = field(default_factory=list)
+    bulkIn: list[list] = field(default_factory=list)
+    bulkOut: list[list] = field(default_factory=list)
+    resolutionParam: list[list] = field(default_factory=list)
+    domainRatio: list[list] = field(default_factory=list)
     priorNames: list[str] = field(default_factory=list)
     priorValues: list = field(default_factory=list)
 
@@ -61,7 +62,7 @@ class Controls:
     maxFunEvals: int = 10000
     maxIter: int = 1000
     updateFreq: int = -1
-    updatePlotFreq: int = -1
+    updatePlotFreq: int = 1
     # DE
     populationSize: int = 20
     fWeight: float = 0.5
@@ -80,6 +81,7 @@ class Controls:
     jumpProbability: float = 0.5
     pUnitGamma: float = 0.2
     boundHandling: BoundHandling = BoundHandling.Fold
+    adaptPCR: bool = False
     checks: Checks = Checks()
 
 
@@ -87,9 +89,9 @@ class Controls:
 class Problem:
     """The full set of problemDef parameters required for RATMain."""
     # General
-    TF: str = Calc.NonPolarised.value
-    modelType: str = Models.StandardLayers.value
-    geometry: str = Geometries.AirSubstrate.value
+    TF: str = Calc.NonPolarised
+    modelType: str = Models.StandardLayers
+    geometry: str = Geometries.AirSubstrate
     useImaginary: bool = False
     # Parameter Values
     params: list[float] = field(default_factory=list)

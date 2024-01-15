@@ -321,7 +321,7 @@ def test_set_domain_contrasts(project_parameters: dict) -> None:
     (RAT.project.Calc.Domains, RAT.models.ContrastWithRatio, RAT.project.Calc.NonPolarised, "Contrast", 0),
 ])
 def test_set_calculation(input_calculation: 'RAT.project.Calc', input_contrast: Callable,
-                       new_calculation: 'RAT.project.Calc', new_contrast_model: str, num_domain_ratios: int) -> None:
+                         new_calculation: 'RAT.project.Calc', new_contrast_model: str, num_domain_ratios: int) -> None:
     """When changing the value of the calculation option, the "contrasts" ClassList should switch to using the
     appropriate Contrast model.
     """

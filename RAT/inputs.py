@@ -1,6 +1,5 @@
 """Handles inputs to the compiled RAT code"""
 
-from dataclasses import asdict
 from typing import Union
 
 import RAT
@@ -46,6 +45,15 @@ def make_input(project: RAT.Project, controls: Union[RAT.controls.Calculate, RAT
                        'background_parameters': 'backgroundParam',
                        'resolution_parameters': 'resolutionParam',
                        }
+    checks_field = {'parameters': 'fitParam',
+                    'bulk_in': 'fitBulkIn',
+                    'bulk_out': 'fitBulkOut',
+                    'qz_shifts': 'fitQzshift',
+                    'scalefactors': 'fitScalefactor',
+                    'domain_ratios': 'fitDomainRatio',
+                    'background_parameters': 'fitBackgroundParam',
+                    'resolution_parameters': 'fitResolutionParam',
+                    }
 
     prior_id = {'uniform': 1, 'gaussian': 2, 'jeffreys': 3}
 
@@ -54,10 +62,11 @@ def make_input(project: RAT.Project, controls: Union[RAT.controls.Calculate, RAT
     priors = Priors()
 
     for class_list in RAT.project.parameter_class_lists:
-        setattr('checks', 'fit' + dataclass_field[class_list], [int(element.fit) for element in class_list])
-        setattr('limits', dataclass_field[class_list], [[element.min, element.max] for element in class_list])
-        setattr('priors', dataclass_field[class_list], [[element.name, element.prior_type, element.mu, element.sigma]
-                                                        for element in class_list])
+        setattr(checks, checks_field[class_list], [int(element.fit) for element in getattr(project, class_list)])
+        setattr(limits, dataclass_field[class_list], [[element.min, element.max]
+                                                      for element in getattr(project, class_list)])
+        setattr(priors, dataclass_field[class_list], [[element.name, element.prior_type, element.mu, element.sigma]
+                                                      for element in getattr(project, class_list)])
 
     priors.priorNames = [param.name for class_list in RAT.project.parameter_class_lists
                          for param in getattr(project, class_list)]
@@ -68,7 +77,7 @@ def make_input(project: RAT.Project, controls: Union[RAT.controls.Calculate, RAT
     if project.model == Models.CustomXY:
         controls.calcSldDuringFit = True
 
-    input_controls = Controls(**{**controls.model_dump(), **asdict(checks)})
+    input_controls = Controls(**controls.model_dump(), checks=checks)
 
     # Set the values in the problem dataclass
     problem = make_problem(project)
@@ -113,17 +122,17 @@ def make_problem(project: RAT.Project) -> RAT.utils.dataclasses.Problem:
         resolutionParams=[param.value for param in project.resolution_parameters],
         contrastBulkIns=[project.bulk_in.index(contrast.bulkIn, 1) for contrast in project.contrasts],
         contrastBulkOuts=[project.bulk_out.index(contrast.bulkOut, 1) for contrast in project.contrasts],
-        contrastQzshifts=[],  # This is marked as "to do" in RAT
+        contrastQzshifts=[1] * len(project.contrasts),  # This is marked as "to do" in RAT
         contrastScalefactors=[project.scalefactors.index(contrast.scalefactor, 1) for contrast in project.contrasts],
-        contrastDomainRatios=[project.domain_ratios.index(contrast.domain_ratio, 1) for contrast in project.contrasts
-                              if hasattr(contrast, 'domain_ratio')],
+        contrastDomainRatios=[project.domain_ratios.index(contrast.domain_ratio, 1)
+                              if hasattr(contrast, 'domain_ratio') else 0 for contrast in project.contrasts],
         contrastBackgrounds=[project.backgrounds.index(contrast.background, 1) for contrast in project.contrasts],
-        contrastBackgroundsType=[],
+        contrastBackgroundsType=[1] * len(project.contrasts),
         contrastResolutions=[project.resolutions.index(contrast.resolution, 1) for contrast in project.contrasts],
         contrastCustomFiles=contrast_custom_files,
         resample=[contrast.resample for contrast in project.contrasts],
         dataPresent=[1 if contrast.data else 0 for contrast in project.contrasts],
-        oilChiDataPresent=[],
+        oilChiDataPresent=[0],
         numberOfContrasts=len(project.contrasts),
         numberOfLayers=len(project.layers),
         numberOfDomainContrasts=len(project.domain_contrasts),
@@ -160,7 +169,7 @@ def make_cells(project: RAT.Project) -> list:
 
     # Set contrast parameters according to model type
     if project.model == Models.StandardLayers:
-        if project.calc_type == Calc.Domains:
+        if project.calculation == Calc.Domains:
             contrast_models = [[project.domain_contrasts.index(domain_contrast, 1) for domain_contrast in contrast.model]
                                for contrast in project.contrasts]
         else:
@@ -173,7 +182,7 @@ def make_cells(project: RAT.Project) -> list:
     layer_details = []
     for layer in project.layers:
 
-        layer_params = [project.parameters.index(attribute, 1) for attribute in layer.model_fields[1:-2]]
+        layer_params = []#[project.parameters.index(getattr(layer, attribute), 1) for attribute in list(layer.model_fields.keys())[1:-2]]
         layer_params.append(project.parameters.index(layer.hydration, 1) if layer.hydration else float('NaN'))
         layer_params.append(hydrate_id[layer.hydrate_with])
 
@@ -188,14 +197,14 @@ def make_cells(project: RAT.Project) -> list:
 
         data_index = project.data.index(contrast.data)
 
-        if project.data[data_index].data:
+        if 'data' in project.data[data_index].model_fields_set:
             all_data.append(project.data[data_index].data)
-            data_limits.append(project.data[data_index].data_limits)
-            simulation_limits.append(project.data[data_index].simulation_limits)
+            data_limits.append(project.data[data_index].data_range)
+            simulation_limits.append(project.data[data_index].simulation_range)
         else:
-            all_data.append([0, 0, 0])
-            data_limits.append([0, 0])
-            simulation_limits.append([0, 0])
+            all_data.append([0.0, 0.0, 0.0])
+            data_limits.append([0.0, 0.0])
+            simulation_limits.append([0.0, 0.0])
 
     # Populate the list of cells
     cells = []
@@ -204,7 +213,7 @@ def make_cells(project: RAT.Project) -> list:
     cells.append(data_limits)
     cells.append(simulation_limits)
     cells.append([contrast_model if contrast_model else 0 for contrast_model in contrast_models])
-    cells.append(layer_details if project.model == Models.StandardLayers else [0])
+    #cells.append(layer_details if project.model == Models.StandardLayers else [0])
     cells.append([param.name for param in project.parameters])
     cells.append([param.name for param in project.background_parameters])
     cells.append([param.name for param in project.scalefactors])
@@ -218,7 +227,7 @@ def make_cells(project: RAT.Project) -> list:
     cells.append([param.type for param in project.backgrounds])
     cells.append([param.type for param in project.resolutions])
 
-    cells.append([[0, 0, 0]] * len(project.contrasts))  # Placeholder for oil chi data
+    cells.append([[0.0, 0.0, 0.0]] * len(project.contrasts))  # Placeholder for oil chi data
     cells.append([[0, 1]] * len(project.domain_contrasts))  # This is marked as "to do" in RAT
 
     domain_contrast_models = [[project.layers.index(layer, 1) for layer in domain_contrast.model]
