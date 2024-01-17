@@ -72,8 +72,9 @@ model_names_used_in = {'background_parameters': AllFields('backgrounds', ['value
                        'resolutions': AllFields('contrasts', ['resolution']),
                        }
 
-parameter_class_lists = ['parameters', 'bulk_in', 'bulk_out', 'qz_shifts', 'scalefactors', 'domain_ratios',
-                         'background_parameters',  'resolution_parameters']
+# Note that the order of these parameters is hard-coded into RAT
+parameter_class_lists = ['parameters', 'background_parameters', 'scalefactors', 'qz_shifts', 'bulk_in', 'bulk_out',
+                         'resolution_parameters', 'domain_ratios']
 class_lists = [*parameter_class_lists, 'backgrounds', 'resolutions', 'custom_files', 'data', 'layers',
                'domain_contrasts', 'contrasts']
 

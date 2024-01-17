@@ -120,8 +120,8 @@ def make_problem(project: RAT.Project) -> RAT.utils.dataclasses.Problem:
         domainRatio=[param.value for param in project.domain_ratios],
         backgroundParams=[param.value for param in project.background_parameters],
         resolutionParams=[param.value for param in project.resolution_parameters],
-        contrastBulkIns=[project.bulk_in.index(contrast.bulkIn, 1) for contrast in project.contrasts],
-        contrastBulkOuts=[project.bulk_out.index(contrast.bulkOut, 1) for contrast in project.contrasts],
+        contrastBulkIns=[project.bulk_in.index(contrast.bulk_in, 1) for contrast in project.contrasts],
+        contrastBulkOuts=[project.bulk_out.index(contrast.bulk_out, 1) for contrast in project.contrasts],
         contrastQzshifts=[1] * len(project.contrasts),  # This is marked as "to do" in RAT
         contrastScalefactors=[project.scalefactors.index(contrast.scalefactor, 1) for contrast in project.contrasts],
         contrastDomainRatios=[project.domain_ratios.index(contrast.domain_ratio, 1)
@@ -132,7 +132,7 @@ def make_problem(project: RAT.Project) -> RAT.utils.dataclasses.Problem:
         contrastCustomFiles=contrast_custom_files,
         resample=[contrast.resample for contrast in project.contrasts],
         dataPresent=[1 if contrast.data else 0 for contrast in project.contrasts],
-        oilChiDataPresent=[0],
+        oilChiDataPresent=[0] * len(project.contrasts),
         numberOfContrasts=len(project.contrasts),
         numberOfLayers=len(project.layers),
         numberOfDomainContrasts=len(project.domain_contrasts),

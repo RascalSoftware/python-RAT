@@ -67,7 +67,7 @@ class Controls:
     populationSize: int = 20
     fWeight: float = 0.5
     crossoverProbability: float = 0.8
-    strategy: Strategies = Strategies.RandomWithPerVectorDither
+    strategy: Strategies = Strategies.RandomWithPerVectorDither.value
     targetValue: float = 1.0
     numGenerations: int = 500
     # NS

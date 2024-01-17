@@ -18,8 +18,8 @@ def test_project():
     test_project.parameters.append(name='Test SLD')
     test_project.custom_files.append(name='Test Custom File')
     test_project.layers.append(name='Test Layer', SLD='Test SLD')
-    test_project.contrasts.append(name='Test Contrast', data='Simulation', background='Background 1', bulkIn='SLD Air',
-                                  bulkOut='SLD D2O', scalefactor='Scalefactor 1', resolution='Resolution 1',
+    test_project.contrasts.append(name='Test Contrast', data='Simulation', background='Background 1', bulk_in='SLD Air',
+                                  bulk_out='SLD D2O', scalefactor='Scalefactor 1', resolution='Resolution 1',
                                   model=['Test Layer'])
     return test_project
 
@@ -32,9 +32,9 @@ def test_problem():
                    contrastQzshifts=[1], contrastScalefactors=[1], contrastBackgrounds=[1], contrastBackgroundsType=[1],
                    contrastResolutions=[1], contrastCustomFiles=NaNList([float('NaN')]), contrastDomainRatios=[0],
                    resample=[False], dataPresent=[1], oilChiDataPresent=[0], numberOfContrasts=1, numberOfLayers=1,
-                   fitParams=[3.0], otherParams=[0.0, 0.0, 6.35e-06, 0.0, 0.23, 1e-06, 0.03], fitLimits=[[1.0, 5.0]],
-                   otherLimits=[[0.0, 0.0], [0.0, 0.0], [6.2e-06, 6.35e-06], [-0.0001, 0.0001], [0.02, 0.25],
-                                [1e-07, 1e-05], [0.01, 0.05]]
+                   fitParams=[3.0], otherParams=[0.0, 1e-06, 0.23, 0.0, 0.0, 6.35e-06, 0.03], fitLimits=[[1.0, 5.0]],
+                   otherLimits=[[0.0, 0.0], [1e-07, 1e-05], [0.02, 0.25], [-0.0001, 0.0001], [0.0, 0.0],
+                                [6.2e-06, 6.35e-06], [0.01, 0.05]]
                    )
 
 
@@ -90,8 +90,8 @@ def test_priors():
                   bulkOut=[['SLD D2O', RAT.models.Priors.Uniform, 0.0, np.inf]],
                   resolutionParam=[['Resolution Param 1', RAT.models.Priors.Uniform, 0.0, np.inf]],
                   domainRatio=[],
-                  priorNames=['Substrate Roughness', 'Test SLD', 'SLD Air', 'SLD D2O',  'Qz shift 1', 'Scalefactor 1',
-                              'Background Param 1',  'Resolution Param 1'],
+                  priorNames=['Substrate Roughness', 'Test SLD', 'Background Param 1', 'Scalefactor 1', 'Qz shift 1',
+                              'SLD Air', 'SLD D2O', 'Resolution Param 1'],
                   priorValues=[[1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf],
                                [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf]]
                   )
@@ -114,7 +114,7 @@ def test_controls():
                     populationSize=20,
                     fWeight=0.5,
                     crossoverProbability=0.8,
-                    strategy=RAT.utils.enums.Strategies.RandomWithPerVectorDither,
+                    strategy=4,
                     targetValue=1.0,
                     numGenerations=500,
                     Nlive=150,
