@@ -35,9 +35,7 @@ namespace RAT
     coder::array<real_T, 1U> &packedArray, ::coder::array<real_T, 1U> &counts);
   static void d_packCellArray(const ::coder::array<cell_wrap_8, 2U> &cellArray, ::
     coder::array<real_T, 1U> &packedArray, ::coder::array<real_T, 1U> &counts);
-  static void packCellArray(const ::coder::array<cell_wrap_11, 1U> &cellArray, ::
-    coder::array<real_T, 1U> &packedArray, ::coder::array<real_T, 1U> &counts);
-  static void packCellArray(const ::coder::array<cell_wrap_20, 1U> &cellArray, ::
+  static void e_packCellArray(const ::coder::array<cell_wrap_8, 2U> &cellArray, ::
     coder::array<real_T, 1U> &packedArray, ::coder::array<real_T, 1U> &counts);
   static void packCellArray(const ::coder::array<cell_wrap_8, 2U> &cellArray, ::
     coder::array<real_T, 1U> &packedArray, ::coder::array<real_T, 1U> &counts);
@@ -114,6 +112,57 @@ namespace RAT
     i = cellArray.size(0);
     for (int32_T b_i{0}; b_i < i; b_i++) {
       real_T d;
+      d = static_cast<real_T>(cellArray[b_i].f1.size(0)) * static_cast<real_T>
+        (cellArray[b_i].f1.size(1));
+      counts[b_i] = d;
+      rowSize += d;
+    }
+
+    b_rowSize = static_cast<int32_T>(rowSize);
+    packedArray.set_size(b_rowSize);
+    for (i = 0; i < b_rowSize; i++) {
+      packedArray[i] = 0.0;
+    }
+
+    start = 1.0;
+    i = cellArray.size(0);
+    for (int32_T b_i{0}; b_i < i; b_i++) {
+      real_T stop;
+      int32_T i1;
+      stop = start + counts[b_i];
+      if (start > stop - 1.0) {
+        i1 = 1;
+      } else {
+        i1 = static_cast<int32_T>(start);
+      }
+
+      b_rowSize = cellArray[b_i].f1.size(0) * cellArray[b_i].f1.size(1);
+      for (int32_T i2{0}; i2 < b_rowSize; i2++) {
+        packedArray[(i1 + i2) - 1] = cellArray[b_i].f1[i2];
+      }
+
+      start = stop;
+    }
+  }
+
+  static void d_packCellArray(const ::coder::array<cell_wrap_8, 2U> &cellArray, ::
+    coder::array<real_T, 1U> &packedArray, ::coder::array<real_T, 1U> &counts)
+  {
+    real_T rowSize;
+    real_T start;
+    int32_T b_rowSize;
+    int32_T i;
+
+    //  Packs a specified column of a cell array with different sized arrays into a
+    //  single row array and an array of counts for each cell. For the example below
+    //  reflect will be [1, 2, 3, 4, 5, 6, 7] and nReflect will be [3, 4]
+    //
+    //  [reflect, nReflect] = packCellArray({[1; 2; 3], [4; 5; 6; 7]}, 1);
+    rowSize = 0.0;
+    counts.set_size(cellArray.size(0));
+    i = cellArray.size(0);
+    for (int32_T b_i{0}; b_i < i; b_i++) {
+      real_T d;
       d = static_cast<real_T>(cellArray[b_i + cellArray.size(0)].f1.size(0)) *
         static_cast<real_T>(cellArray[b_i + cellArray.size(0)].f1.size(1));
       counts[b_i] = d;
@@ -148,7 +197,7 @@ namespace RAT
     }
   }
 
-  static void d_packCellArray(const ::coder::array<cell_wrap_8, 2U> &cellArray, ::
+  static void e_packCellArray(const ::coder::array<cell_wrap_8, 2U> &cellArray, ::
     coder::array<real_T, 1U> &packedArray, ::coder::array<real_T, 1U> &counts)
   {
     real_T rowSize;
@@ -199,7 +248,7 @@ namespace RAT
     }
   }
 
-  static void packCellArray(const ::coder::array<cell_wrap_11, 1U> &cellArray, ::
+  static void packCellArray(const ::coder::array<cell_wrap_8, 2U> &cellArray, ::
     coder::array<real_T, 1U> &packedArray, ::coder::array<real_T, 1U> &counts)
   {
     real_T rowSize;
@@ -249,116 +298,12 @@ namespace RAT
     }
   }
 
-  static void packCellArray(const ::coder::array<cell_wrap_20, 1U> &cellArray, ::
-    coder::array<real_T, 1U> &packedArray, ::coder::array<real_T, 1U> &counts)
-  {
-    real_T rowSize;
-    real_T start;
-    int32_T b_rowSize;
-    int32_T i;
-
-    //  Packs a specified column of a cell array with different sized arrays into a
-    //  single row array and an array of counts for each cell. For the example below
-    //  reflect will be [1, 2, 3, 4, 5, 6, 7] and nReflect will be [3, 4]
-    //
-    //  [reflect, nReflect] = packCellArray({[1; 2; 3], [4; 5; 6; 7]}, 1);
-    rowSize = 0.0;
-    counts.set_size(cellArray.size(0));
-    i = cellArray.size(0);
-    for (int32_T b_i{0}; b_i < i; b_i++) {
-      real_T d;
-      d = static_cast<real_T>(cellArray[b_i].f1.size(0)) * 3.0;
-      counts[b_i] = d;
-      rowSize += d;
-    }
-
-    b_rowSize = static_cast<int32_T>(rowSize);
-    packedArray.set_size(b_rowSize);
-    for (i = 0; i < b_rowSize; i++) {
-      packedArray[i] = 0.0;
-    }
-
-    start = 1.0;
-    i = cellArray.size(0);
-    for (int32_T b_i{0}; b_i < i; b_i++) {
-      real_T stop;
-      int32_T i1;
-      stop = start + counts[b_i];
-      if (start > stop - 1.0) {
-        i1 = 1;
-      } else {
-        i1 = static_cast<int32_T>(start);
-      }
-
-      b_rowSize = cellArray[b_i].f1.size(0) * 3;
-      for (int32_T i2{0}; i2 < b_rowSize; i2++) {
-        packedArray[(i1 + i2) - 1] = cellArray[b_i].f1[i2];
-      }
-
-      start = stop;
-    }
-  }
-
-  static void packCellArray(const ::coder::array<cell_wrap_8, 2U> &cellArray, ::
-    coder::array<real_T, 1U> &packedArray, ::coder::array<real_T, 1U> &counts)
-  {
-    real_T rowSize;
-    real_T start;
-    int32_T b_rowSize;
-    int32_T i;
-
-    //  Packs a specified column of a cell array with different sized arrays into a
-    //  single row array and an array of counts for each cell. For the example below
-    //  reflect will be [1, 2, 3, 4, 5, 6, 7] and nReflect will be [3, 4]
-    //
-    //  [reflect, nReflect] = packCellArray({[1; 2; 3], [4; 5; 6; 7]}, 1);
-    rowSize = 0.0;
-    counts.set_size(cellArray.size(0));
-    i = cellArray.size(0);
-    for (int32_T b_i{0}; b_i < i; b_i++) {
-      real_T d;
-      d = static_cast<real_T>(cellArray[b_i].f1.size(0)) * static_cast<real_T>
-        (cellArray[b_i].f1.size(1));
-      counts[b_i] = d;
-      rowSize += d;
-    }
-
-    b_rowSize = static_cast<int32_T>(rowSize);
-    packedArray.set_size(b_rowSize);
-    for (i = 0; i < b_rowSize; i++) {
-      packedArray[i] = 0.0;
-    }
-
-    start = 1.0;
-    i = cellArray.size(0);
-    for (int32_T b_i{0}; b_i < i; b_i++) {
-      real_T stop;
-      int32_T i1;
-      stop = start + counts[b_i];
-      if (start > stop - 1.0) {
-        i1 = 1;
-      } else {
-        i1 = static_cast<int32_T>(start);
-      }
-
-      b_rowSize = cellArray[b_i].f1.size(0) * cellArray[b_i].f1.size(1);
-      for (int32_T i2{0}; i2 < b_rowSize; i2++) {
-        packedArray[(i1 + i2) - 1] = cellArray[b_i].f1[i2];
-      }
-
-      start = stop;
-    }
-  }
-
   void helper_not_empty_init()
   {
     helper_not_empty = false;
   }
 
-  void triggerEvent(const ::coder::array<cell_wrap_11, 1U> &data_f1_f1, const ::
-                    coder::array<cell_wrap_20, 1U> &data_f1_f3, const ::coder::
-                    array<cell_wrap_8, 2U> &data_f1_f5, const ::coder::array<
-                    cell_wrap_8, 2U> &data_f1_f6, const ::coder::array<real_T,
+  void triggerEvent(const cell_wrap_9 data_f1[6], const ::coder::array<real_T,
                     1U> &data_f2, const char_T data_f3_TF_data[], const int32_T
                     data_f3_TF_size[2], const ::coder::array<real_T, 2U>
                     &data_f3_resample, const ::coder::array<real_T, 2U>
@@ -392,8 +337,8 @@ namespace RAT
 
     //  Triggers the event type with the given data. The supported event types are
     //  'message' and 'plot'. The data for message is a char array while for
-    //  the plot it is a cell array containing the result cell, problem.ssubs
-    //  and problemDef
+    //  the plot it is a cell array containing the result cell,
+    //  contrastParams.ssubs and problemStruct
     //
     //  triggerEvent('message', 'Hello world');
     if (!helper_not_empty) {
@@ -418,12 +363,12 @@ namespace RAT
       boolean_T hasPlotHandler;
       hasPlotHandler = std::mem_fn(&eventHelper::hasPlotHandler)(helper);
       if (hasPlotHandler) {
-        packCellArray(data_f1_f1, reflect, nReflect);
+        packCellArray(data_f1[0].f1, reflect, nReflect);
 
         //  reflectivity
-        packCellArray(data_f1_f3, shiftedData, nShiftedData);
-        packCellArray(data_f1_f5, sldProfiles, nSldProfiles);
-        b_packCellArray(data_f1_f6, layers, nLayers);
+        b_packCellArray(data_f1[2].f1, shiftedData, nShiftedData);
+        c_packCellArray(data_f1[4].f1, sldProfiles, nSldProfiles);
+        b_packCellArray(data_f1[5].f1, layers, nLayers);
         if (coder::internal::j_strcmp(data_f3_TF_data, data_f3_TF_size)) {
           i = 0;
         } else {
@@ -431,7 +376,7 @@ namespace RAT
         }
 
         if (i == 0) {
-          c_packCellArray(data_f1_f5, b_sldProfiles2, nSldProfiles2);
+          d_packCellArray(data_f1[4].f1, b_sldProfiles2, nSldProfiles2);
           loop_ub = b_sldProfiles2.size(0);
           sldProfiles2.set_size(b_sldProfiles2.size(0), 1);
           for (i = 0; i < loop_ub; i++) {
@@ -444,7 +389,7 @@ namespace RAT
             b_nSldProfiles2[i] = nSldProfiles2[i];
           }
 
-          d_packCellArray(data_f1_f6, b_sldProfiles2, nSldProfiles2);
+          e_packCellArray(data_f1[5].f1, b_sldProfiles2, nSldProfiles2);
           loop_ub = b_sldProfiles2.size(0);
           layers2.set_size(b_sldProfiles2.size(0), 1);
           for (i = 0; i < loop_ub; i++) {
@@ -490,7 +435,7 @@ namespace RAT
         }
 
         std::mem_fn(&eventHelper::updatePlot)(helper, static_cast<real_T>
-          (data_f1_f1.size(0)), &(reflect.data())[0], &(nReflect.data())[0],
+          (data_f1[0].f1.size(0)), &(reflect.data())[0], &(nReflect.data())[0],
           &(shiftedData.data())[0], &(nShiftedData.data())[0],
           &(sldProfiles.data())[0], &(nSldProfiles.data())[0], &(layers.data())
           [0], &(nLayers.data())[0], &sldProfiles2[0], &b_nSldProfiles2[0],

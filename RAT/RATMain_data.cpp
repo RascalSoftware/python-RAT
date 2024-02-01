@@ -23,9 +23,7 @@ namespace RAT
   real_T freq;
   boolean_T freq_not_empty;
   omp_nest_lock_t RATMain_nestLockGlobal;
-  const char_T cv[9]{ 'c', 'a', 'l', 'c', 'u', 'l', 'a', 't', 'e' };
-
-  const char_T cv1[128]{ '\x00', '\x01', '\x02', '\x03', '\x04', '\x05', '\x06',
+  const char_T cv[128]{ '\x00', '\x01', '\x02', '\x03', '\x04', '\x05', '\x06',
     '\x07', '\x08', '\x09', '\x0a', '\x0b', '\x0c', '\x0d', '\x0e', '\x0f',
     '\x10', '\x11', '\x12', '\x13', '\x14', '\x15', '\x16', '\x17', '\x18',
     '\x19', '\x1a', '\x1b', '\x1c', '\x1d', '\x1e', '\x1f', ' ', '!', '\"', '#',
@@ -172,6 +170,8 @@ namespace RAT
     0.00861658276939875, 0.00705087547137324, 0.00552240329925101,
     0.00403797259336304, 0.00260907274610216, 0.0012602859304986,
     0.000477467764609386 };
+
+  const char_T cv1[9]{ 'c', 'a', 'l', 'c', 'u', 'l', 'a', 't', 'e' };
 }
 
 // End of code generation (RATMain_data.cpp)

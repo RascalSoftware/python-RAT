@@ -312,7 +312,7 @@ namespace RAT
         if (!useImaginary) {
           resampleLayers(sldProfile, resamPars, layerSld);
         } else {
-          b_resampleLayersReIm(sldProfile, sldProfileIm, resamPars, layerSld);
+          resampleLayersReIm(sldProfile, sldProfileIm, resamPars, layerSld);
         }
 
         resamLayers.set_size(layerSld.size(0), layerSld.size(1));
@@ -642,7 +642,7 @@ namespace RAT
         if (!useImaginary) {
           resampleLayers(sldProfile, resamPars, layerSld);
         } else {
-          b_resampleLayersReIm(sldProfile, sldProfileIm, resamPars, layerSld);
+          resampleLayersReIm(sldProfile, sldProfileIm, resamPars, layerSld);
         }
 
         resamLayers.set_size(layerSld.size(0), layerSld.size(1));

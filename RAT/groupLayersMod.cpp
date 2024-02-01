@@ -152,8 +152,6 @@ namespace RAT
       }
     }
 
-    //      problem.layers{i} = layers;
-    //      problem.ssubs(i) = s_sub;
     if ((layers.size(0) != 0) && (layers.size(1) != 0)) {
       outLayers.set_size(layers.size(0), 3);
       loop_ub = layers.size(0);

@@ -22,7 +22,12 @@
 // Type Definitions
 namespace RAT
 {
-  struct cell_wrap_19
+  struct cell_wrap_16
+  {
+    ::coder::array<real_T, 2U> f1;
+  };
+
+  struct cell_wrap_17
   {
     ::coder::array<real_T, 2U> f1;
   };
@@ -32,26 +37,26 @@ namespace RAT
 namespace RAT
 {
   static void cast(const ::coder::array<cell_wrap_8, 1U> &r, ::coder::array<
-                   cell_wrap_21, 1U> &r1);
+                   cell_wrap_18, 1U> &r1);
   static void cast(const ::coder::array<cell_wrap_8, 1U> &r, ::coder::array<
-                   cell_wrap_19, 1U> &r1);
-  static void cast(const ::coder::array<cell_wrap_11, 1U> &r, ::coder::array<
-                   cell_wrap_19, 1U> &r1);
+                   cell_wrap_16, 1U> &r1);
+  static void cast(const ::coder::array<cell_wrap_20, 1U> &r, ::coder::array<
+                   cell_wrap_16, 1U> &r1);
   static void cast(const ::coder::array<cell_wrap_8, 1U> &r, ::coder::array<
-                   cell_wrap_20, 1U> &r1);
+                   cell_wrap_17, 1U> &r1);
   static void cast(const ::coder::array<cell_wrap_8, 2U> &r, ::coder::array<
-                   cell_wrap_21, 2U> &r1);
+                   cell_wrap_18, 2U> &r1);
   static void cast(const ::coder::array<cell_wrap_8, 2U> &r, ::coder::array<
-                   cell_wrap_36, 2U> &r1);
+                   cell_wrap_34, 2U> &r1);
   static void cast(const ::coder::array<cell_wrap_8, 2U> &r, ::coder::array<
-                   cell_wrap_20, 2U> &r1);
+                   cell_wrap_17, 2U> &r1);
 }
 
 // Function Definitions
 namespace RAT
 {
   static void cast(const ::coder::array<cell_wrap_8, 1U> &r, ::coder::array<
-                   cell_wrap_21, 1U> &r1)
+                   cell_wrap_18, 1U> &r1)
   {
     int32_T i;
     r1.set_size(r.size(0));
@@ -72,7 +77,7 @@ namespace RAT
   }
 
   static void cast(const ::coder::array<cell_wrap_8, 1U> &r, ::coder::array<
-                   cell_wrap_19, 1U> &r1)
+                   cell_wrap_16, 1U> &r1)
   {
     int32_T i;
     r1.set_size(r.size(0));
@@ -92,8 +97,8 @@ namespace RAT
     }
   }
 
-  static void cast(const ::coder::array<cell_wrap_11, 1U> &r, ::coder::array<
-                   cell_wrap_19, 1U> &r1)
+  static void cast(const ::coder::array<cell_wrap_20, 1U> &r, ::coder::array<
+                   cell_wrap_16, 1U> &r1)
   {
     int32_T i;
     r1.set_size(r.size(0));
@@ -112,7 +117,7 @@ namespace RAT
   }
 
   static void cast(const ::coder::array<cell_wrap_8, 1U> &r, ::coder::array<
-                   cell_wrap_20, 1U> &r1)
+                   cell_wrap_17, 1U> &r1)
   {
     int32_T i;
     r1.set_size(r.size(0));
@@ -133,7 +138,7 @@ namespace RAT
   }
 
   static void cast(const ::coder::array<cell_wrap_8, 2U> &r, ::coder::array<
-                   cell_wrap_21, 2U> &r1)
+                   cell_wrap_18, 2U> &r1)
   {
     int32_T i;
     r1.set_size(r.size(0), r.size(1));
@@ -154,7 +159,7 @@ namespace RAT
   }
 
   static void cast(const ::coder::array<cell_wrap_8, 2U> &r, ::coder::array<
-                   cell_wrap_36, 2U> &r1)
+                   cell_wrap_34, 2U> &r1)
   {
     int32_T i;
     r1.set_size(r.size(0), r.size(1));
@@ -175,7 +180,7 @@ namespace RAT
   }
 
   static void cast(const ::coder::array<cell_wrap_8, 2U> &r, ::coder::array<
-                   cell_wrap_20, 2U> &r1)
+                   cell_wrap_17, 2U> &r1)
   {
     int32_T i;
     r1.set_size(r.size(0), r.size(1));
@@ -195,27 +200,30 @@ namespace RAT
     }
   }
 
-  void reflectivityCalculation(const struct5_T *problemDef, const cell_14
-    *problemDefCells, const struct2_T *controls, struct_T *problem, cell_13
-    *result)
+  void reflectivityCalculation(const c_struct_T *problemStruct, const cell_11
+    *problemCells, const struct2_T *controls, d_struct_T *contrastParams,
+    cell_wrap_9 resultCells[6])
   {
-    ::coder::array<cell_wrap_11, 1U> b_reflectivity;
-    ::coder::array<cell_wrap_11, 1U> b_simulation;
-    ::coder::array<cell_wrap_19, 1U> reflectivity;
-    ::coder::array<cell_wrap_19, 1U> simulation;
-    ::coder::array<cell_wrap_19, 1U> sldProfiles;
-    ::coder::array<cell_wrap_20, 2U> domainAllLayers;
-    ::coder::array<cell_wrap_20, 2U> r2;
-    ::coder::array<cell_wrap_20, 1U> allLayers;
-    ::coder::array<cell_wrap_20, 1U> shiftedData;
-    ::coder::array<cell_wrap_21, 2U> domainLayerSlds;
-    ::coder::array<cell_wrap_21, 2U> r;
-    ::coder::array<cell_wrap_21, 1U> layerSlds;
-    ::coder::array<cell_wrap_36, 2U> domainSldProfiles;
-    ::coder::array<cell_wrap_36, 2U> r1;
+    ::coder::array<cell_wrap_16, 1U> reflectivity;
+    ::coder::array<cell_wrap_16, 1U> simulation;
+    ::coder::array<cell_wrap_16, 1U> sldProfiles;
+    ::coder::array<cell_wrap_17, 2U> domainAllLayers;
+    ::coder::array<cell_wrap_17, 2U> r2;
+    ::coder::array<cell_wrap_17, 1U> allLayers;
+    ::coder::array<cell_wrap_17, 1U> shiftedData;
+    ::coder::array<cell_wrap_18, 2U> domainLayerSlds;
+    ::coder::array<cell_wrap_18, 2U> r;
+    ::coder::array<cell_wrap_18, 1U> layerSlds;
+    ::coder::array<cell_wrap_20, 1U> b_reflectivity;
+    ::coder::array<cell_wrap_20, 1U> b_simulation;
+    ::coder::array<cell_wrap_34, 2U> domainSldProfiles;
+    ::coder::array<cell_wrap_34, 2U> r1;
     ::coder::array<cell_wrap_8, 2U> b_domainAllLayers;
     ::coder::array<cell_wrap_8, 2U> b_domainLayerSlds;
     ::coder::array<cell_wrap_8, 2U> b_domainSldProfiles;
+    ::coder::array<cell_wrap_8, 2U> cell1;
+    ::coder::array<cell_wrap_8, 2U> cell2;
+    ::coder::array<cell_wrap_8, 2U> cell3;
     ::coder::array<cell_wrap_8, 2U> cell4;
     ::coder::array<cell_wrap_8, 2U> cell5;
     ::coder::array<cell_wrap_8, 2U> cell6;
@@ -247,34 +255,34 @@ namespace RAT
     //  triggerEvent('message', 'Running reflectivity calculation...');
     //  for compilation, we have to preallocate memory for the output arrays
     //  Setting these parameters in the struct defines them as doubles
-    problem->ssubs.set_size(1);
-    problem->ssubs[0] = 0.0;
-    problem->backgroundParams.set_size(1);
-    problem->backgroundParams[0] = 0.0;
-    problem->qzshifts.set_size(1);
-    problem->qzshifts[0] = 0.0;
-    problem->scalefactors.set_size(1);
-    problem->scalefactors[0] = 0.0;
-    problem->bulkIn.set_size(1);
-    problem->bulkIn[0] = 0.0;
-    problem->bulkOut.set_size(1);
-    problem->bulkOut[0] = 0.0;
-    problem->resolutionParams.set_size(1);
-    problem->resolutionParams[0] = 0.0;
-    problem->calculations.allChis.set_size(1);
-    problem->calculations.allChis[0] = 0.0;
-    problem->calculations.sumChi = 0.0;
-    problem->allSubRough.set_size(1);
-    problem->allSubRough[0] = 0.0;
-    problem->resample.set_size(1, 1);
-    problem->resample[0] = 0.0;
+    contrastParams->ssubs.set_size(1);
+    contrastParams->ssubs[0] = 0.0;
+    contrastParams->backgroundParams.set_size(1);
+    contrastParams->backgroundParams[0] = 0.0;
+    contrastParams->qzshifts.set_size(1);
+    contrastParams->qzshifts[0] = 0.0;
+    contrastParams->scalefactors.set_size(1);
+    contrastParams->scalefactors[0] = 0.0;
+    contrastParams->bulkIn.set_size(1);
+    contrastParams->bulkIn[0] = 0.0;
+    contrastParams->bulkOut.set_size(1);
+    contrastParams->bulkOut[0] = 0.0;
+    contrastParams->resolutionParams.set_size(1);
+    contrastParams->resolutionParams[0] = 0.0;
+    contrastParams->calculations.allChis.set_size(1);
+    contrastParams->calculations.allChis[0] = 0.0;
+    contrastParams->calculations.sumChi = 0.0;
+    contrastParams->allSubRough.set_size(1);
+    contrastParams->allSubRough[0] = 0.0;
+    contrastParams->resample.set_size(1, 1);
+    contrastParams->resample[0] = 0.0;
 
     //  We also foll the results arrays to define their
     //  type and size. (NOTE: at the moment we have a 'coder.varsize'
     //  pre-processor directives for the compiler here and at the
     //  end for the results block. We are unlikely to need both
     //  TODO: Find out which is necessary and tidy this up.
-    i = static_cast<int32_T>(problemDef->numberOfContrasts);
+    i = static_cast<int32_T>(problemStruct->numberOfContrasts);
     reflectivity.set_size(i);
     simulation.set_size(i);
     shiftedData.set_size(i);
@@ -343,10 +351,11 @@ namespace RAT
     }
 
     //  Decide which target function we are calling and call the relevant routines
-    if (coder::internal::i_strcmp(problemDef->TF.data, problemDef->TF.size)) {
+    if (coder::internal::i_strcmp(problemStruct->TF.data, problemStruct->TF.size))
+    {
       b_index = 0;
-    } else if (coder::internal::j_strcmp(problemDef->TF.data,
-                problemDef->TF.size)) {
+    } else if (coder::internal::j_strcmp(problemStruct->TF.data,
+                problemStruct->TF.size)) {
       b_index = 1;
     } else {
       b_index = -1;
@@ -354,8 +363,8 @@ namespace RAT
 
     switch (b_index) {
      case 0:
-      nonPolarisedTF::b_reflectivityCalculation(problemDef, problemDefCells,
-        controls, problem, b_reflectivity, b_simulation, b_shiftedData,
+      nonPolarisedTF::b_reflectivityCalculation(problemStruct, problemCells,
+        controls, contrastParams, b_reflectivity, b_simulation, b_shiftedData,
         b_layerSlds, b_sldProfiles, b_allLayers);
       cast(b_reflectivity, reflectivity);
       cast(b_simulation, simulation);
@@ -365,15 +374,15 @@ namespace RAT
       cast(b_allLayers, allLayers);
 
       // case 'oil water'
-      // problem = oilWaterTF_reflectivityCalculation(problemDef,problemDefCells,controls);
+      // contrastParams = oilWaterTFReflectivityCalculation(problemStruct,problemCells,controls);
       // case 'magnetic'
-      // problem = polarisedTF_reflectivityCalculation(problemDef,problemDefCells,controls);
+      // contrastParams = polarisedTFReflectivityCalculation(problemStruct,problemCells,controls);
       break;
 
      case 1:
-      domainsTF::b_reflectivityCalculation(problemDef, problemDefCells, controls,
-        problem, b_reflectivity, b_simulation, b_shiftedData, b_domainLayerSlds,
-        b_domainSldProfiles, b_domainAllLayers);
+      domainsTF::b_reflectivityCalculation(problemStruct, problemCells, controls,
+        contrastParams, b_reflectivity, b_simulation, b_shiftedData,
+        b_domainLayerSlds, b_domainSldProfiles, b_domainAllLayers);
       cast(b_reflectivity, reflectivity);
       cast(b_simulation, simulation);
       cast(b_shiftedData, shiftedData);
@@ -415,38 +424,63 @@ namespace RAT
       break;
     }
 
-    result->f1.set_size(i);
-    result->f2.set_size(i);
-    result->f3.set_size(i);
+    cell1.set_size(i, 1);
     for (int32_T b_i{0}; b_i < i; b_i++) {
       b_index = reflectivity[b_i].f1.size(0);
-      result->f1[b_i].f1.set_size(reflectivity[b_i].f1.size(0), 2);
-      loop_ub = simulation[b_i].f1.size(0);
-      result->f2[b_i].f1.set_size(simulation[b_i].f1.size(0), 2);
+      cell1[b_i].f1.set_size(reflectivity[b_i].f1.size(0), 2);
       for (i1 = 0; i1 < 2; i1++) {
         for (int32_T i2{0}; i2 < b_index; i2++) {
-          result->f1[b_i].f1[i2 + result->f1[b_i].f1.size(0) * i1] =
-            reflectivity[b_i].f1[i2 + reflectivity[b_i].f1.size(0) * i1];
-        }
-
-        for (int32_T i2{0}; i2 < loop_ub; i2++) {
-          result->f2[b_i].f1[i2 + result->f2[b_i].f1.size(0) * i1] =
-            simulation[b_i].f1[i2 + simulation[b_i].f1.size(0) * i1];
-        }
-      }
-
-      b_index = shiftedData[b_i].f1.size(0);
-      result->f3[b_i].f1.set_size(shiftedData[b_i].f1.size(0), 3);
-      for (i1 = 0; i1 < 3; i1++) {
-        for (int32_T i2{0}; i2 < b_index; i2++) {
-          result->f3[b_i].f1[i2 + result->f3[b_i].f1.size(0) * i1] =
-            shiftedData[b_i].f1[i2 + shiftedData[b_i].f1.size(0) * i1];
+          cell1[b_i].f1[i2 + cell1[b_i].f1.size(0) * i1] = reflectivity[b_i]
+            .f1[i2 + reflectivity[b_i].f1.size(0) * i1];
         }
       }
     }
 
+    resultCells[0].f1.set_size(cell1.size(0), 1);
+    b_index = cell1.size(0);
+    for (i1 = 0; i1 < b_index; i1++) {
+      resultCells[0].f1[i1] = cell1[i1];
+    }
+
+    cell2.set_size(i, 1);
+    for (int32_T b_i{0}; b_i < i; b_i++) {
+      b_index = simulation[b_i].f1.size(0);
+      cell2[b_i].f1.set_size(simulation[b_i].f1.size(0), 2);
+      for (i1 = 0; i1 < 2; i1++) {
+        for (int32_T i2{0}; i2 < b_index; i2++) {
+          cell2[b_i].f1[i2 + cell2[b_i].f1.size(0) * i1] = simulation[b_i].f1[i2
+            + simulation[b_i].f1.size(0) * i1];
+        }
+      }
+    }
+
+    resultCells[1].f1.set_size(cell2.size(0), 1);
+    b_index = cell2.size(0);
+    for (i1 = 0; i1 < b_index; i1++) {
+      resultCells[1].f1[i1] = cell2[i1];
+    }
+
+    cell3.set_size(i, 1);
+    for (int32_T b_i{0}; b_i < i; b_i++) {
+      b_index = shiftedData[b_i].f1.size(0);
+      cell3[b_i].f1.set_size(shiftedData[b_i].f1.size(0), 3);
+      for (i1 = 0; i1 < 3; i1++) {
+        for (int32_T i2{0}; i2 < b_index; i2++) {
+          cell3[b_i].f1[i2 + cell3[b_i].f1.size(0) * i1] = shiftedData[b_i]
+            .f1[i2 + shiftedData[b_i].f1.size(0) * i1];
+        }
+      }
+    }
+
+    resultCells[2].f1.set_size(cell3.size(0), 1);
+    b_index = cell3.size(0);
+    for (i1 = 0; i1 < b_index; i1++) {
+      resultCells[2].f1[i1] = cell3[i1];
+    }
+
     //  The size of this array now varies depending on TF
-    if (coder::internal::j_strcmp(problemDef->TF.data, problemDef->TF.size)) {
+    if (coder::internal::j_strcmp(problemStruct->TF.data, problemStruct->TF.size))
+    {
       i1 = 0;
     } else {
       i1 = -1;
@@ -481,12 +515,12 @@ namespace RAT
         }
       }
 
-      result->f4.set_size(cell4.size(0), 2);
+      resultCells[3].f1.set_size(cell4.size(0), 2);
       b_index = cell4.size(0);
       for (i1 = 0; i1 < 2; i1++) {
         for (int32_T i2{0}; i2 < b_index; i2++) {
-          result->f4[i2 + result->f4.size(0) * i1] = cell4[i2 + cell4.size(0) *
-            i1];
+          resultCells[3].f1[i2 + resultCells[3].f1.size(0) * i1] = cell4[i2 +
+            cell4.size(0) * i1];
         }
       }
 
@@ -519,12 +553,12 @@ namespace RAT
         }
       }
 
-      result->f5.set_size(cell5.size(0), 2);
+      resultCells[4].f1.set_size(cell5.size(0), 2);
       b_index = cell5.size(0);
       for (i1 = 0; i1 < 2; i1++) {
         for (int32_T i2{0}; i2 < b_index; i2++) {
-          result->f5[i2 + result->f5.size(0) * i1] = cell5[i2 + cell5.size(0) *
-            i1];
+          resultCells[4].f1[i2 + resultCells[4].f1.size(0) * i1] = cell5[i2 +
+            cell5.size(0) * i1];
         }
       }
 
@@ -550,11 +584,12 @@ namespace RAT
         }
       }
 
-      result->f6.set_size(cell6.size(0), 2);
+      resultCells[5].f1.set_size(cell6.size(0), 2);
       b_index = cell6.size(0);
       for (i = 0; i < 2; i++) {
         for (i1 = 0; i1 < b_index; i1++) {
-          result->f6[i1 + result->f6.size(0) * i] = cell6[i1 + cell6.size(0) * i];
+          resultCells[5].f1[i1 + resultCells[5].f1.size(0) * i] = cell6[i1 +
+            cell6.size(0) * i];
         }
       }
     } else {
@@ -572,10 +607,10 @@ namespace RAT
         }
       }
 
-      result->f4.set_size(cell4.size(0), 1);
+      resultCells[3].f1.set_size(cell4.size(0), 1);
       b_index = cell4.size(0);
       for (i1 = 0; i1 < b_index; i1++) {
-        result->f4[i1] = cell4[i1];
+        resultCells[3].f1[i1] = cell4[i1];
       }
 
       cell5.set_size(i, 1);
@@ -590,10 +625,10 @@ namespace RAT
         }
       }
 
-      result->f5.set_size(cell5.size(0), 1);
+      resultCells[4].f1.set_size(cell5.size(0), 1);
       b_index = cell5.size(0);
       for (i1 = 0; i1 < b_index; i1++) {
-        result->f5[i1] = cell5[i1];
+        resultCells[4].f1[i1] = cell5[i1];
       }
 
       cell6.set_size(i, 1);
@@ -608,10 +643,10 @@ namespace RAT
         }
       }
 
-      result->f6.set_size(cell6.size(0), 1);
+      resultCells[5].f1.set_size(cell6.size(0), 1);
       b_index = cell6.size(0);
       for (i = 0; i < b_index; i++) {
-        result->f6[i] = cell6[i];
+        resultCells[5].f1[i] = cell6[i];
       }
     }
 

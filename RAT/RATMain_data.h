@@ -27,10 +27,10 @@ namespace RAT
   extern real_T freq;
   extern boolean_T freq_not_empty;
   extern omp_nest_lock_t RATMain_nestLockGlobal;
-  extern const char_T cv[9];
-  extern const char_T cv1[128];
+  extern const char_T cv[128];
   extern const real_T dv[257];
   extern const real_T dv1[257];
+  extern const char_T cv1[9];
 }
 
 #endif

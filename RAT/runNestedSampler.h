@@ -18,23 +18,23 @@
 // Type Declarations
 namespace RAT
 {
-  struct struct5_T;
-  struct cell_14;
+  struct c_struct_T;
+  struct cell_11;
   struct struct1_T;
   struct struct2_T;
   struct struct4_T;
-  struct struct_T;
+  struct d_struct_T;
   struct cell_wrap_9;
-  struct struct8_T;
+  struct struct7_T;
 }
 
 // Function Declarations
 namespace RAT
 {
-  void runNestedSampler(struct5_T *problemDef, const cell_14 *problemDefCells,
-                        const struct1_T *problemDefLimits, const struct2_T
-                        *controls, const struct4_T *inPriors, struct_T
-                        *outProblem, cell_wrap_9 result[6], struct8_T
+  void runNestedSampler(c_struct_T *problemStruct, const cell_11 *problemCells,
+                        const struct1_T *problemLimits, const struct2_T
+                        *controls, const struct4_T *inPriors, d_struct_T
+                        *contrastParams, cell_wrap_9 result[6], struct7_T
                         *bayesResults);
 }
 

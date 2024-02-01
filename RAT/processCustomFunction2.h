@@ -25,18 +25,13 @@ namespace RAT
     namespace customLayers
     {
       void processCustomFunction(const ::coder::array<real_T, 2U>
-        &contrastBackgrounds, const ::coder::array<real_T, 2U> &contrastQzshifts,
-        const ::coder::array<real_T, 2U> &contrastScalefactors, const ::coder::
-        array<real_T, 2U> &contrastBulkIns, const ::coder::array<real_T, 2U>
-        &contrastBulkOuts, const ::coder::array<real_T, 2U> &contrastResolutions,
-        const ::coder::array<real_T, 2U> &backgroundParams, const ::coder::array<
-        real_T, 2U> &qzshifts, const ::coder::array<real_T, 2U> &scalefactor,
+        &contrastBulkIns, const ::coder::array<real_T, 2U> &contrastBulkOuts,
         const ::coder::array<real_T, 2U> &bulkIn, const ::coder::array<real_T,
-        2U> &bulkOut, const ::coder::array<real_T, 2U> &resolutionParams, const ::
-        coder::array<real_T, 2U> &cCustFiles, real_T numberOfContrasts, const ::
-        coder::array<cell_wrap_1, 2U> &customFiles, const ::coder::array<real_T,
-        2U> &params, boolean_T useImaginary, ::coder::array<cell_wrap_21, 2U>
-        &allLayers, ::coder::array<real_T, 1U> &allRoughs);
+        2U> &bulkOut, const ::coder::array<real_T, 2U> &cCustFiles, real_T
+        numberOfContrasts, const ::coder::array<cell_wrap_1, 2U> &customFiles,
+        const ::coder::array<real_T, 2U> &params, boolean_T useImaginary, ::
+        coder::array<cell_wrap_18, 2U> &allLayers, ::coder::array<real_T, 1U>
+        &allRoughs);
     }
   }
 }

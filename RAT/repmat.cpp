@@ -41,7 +41,7 @@ namespace RAT
       }
     }
 
-    void repmat(real_T varargin_1, ::coder::array<k_struct_T, 1U> &b)
+    void repmat(real_T varargin_1, ::coder::array<l_struct_T, 1U> &b)
     {
       int32_T loop_ub_tmp;
       loop_ub_tmp = static_cast<int32_T>(varargin_1);

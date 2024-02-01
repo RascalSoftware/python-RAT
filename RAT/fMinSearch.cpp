@@ -206,8 +206,8 @@ namespace RAT
   void fMinSearch(::coder::array<real_T, 1U> &x, real_T options_MaxIter, real_T
                   options_MaxFunEvals, real_T options_TolX, real_T
                   options_TolFun, const char_T dis_data[], const int32_T
-                  dis_size[2], const struct5_T *varargin_1, const ::coder::array<
-                  cell_wrap_2, 2U> &varargin_2_f1, const ::coder::array<
+                  dis_size[2], const c_struct_T *varargin_1, const ::coder::
+                  array<cell_wrap_2, 2U> &varargin_2_f1, const ::coder::array<
                   cell_wrap_8, 2U> &varargin_2_f2, const ::coder::array<
                   cell_wrap_2, 2U> &varargin_2_f3, const ::coder::array<
                   cell_wrap_2, 2U> &varargin_2_f4, const ::coder::array<
@@ -215,8 +215,8 @@ namespace RAT
                   cell_wrap_8, 1U> &varargin_2_f6, const ::coder::array<
                   cell_wrap_1, 2U> &varargin_2_f14, const ::coder::array<
                   cell_wrap_8, 2U> &varargin_2_f19, const struct2_T *varargin_3,
-                  const j_struct_T *varargin_4, real_T *fval, real_T *exitflag,
-                  h_struct_T *output)
+                  const k_struct_T *varargin_4, real_T *fval, real_T *exitflag,
+                  i_struct_T *output)
   {
     static const char_T cv6[33]{ 'N', 'e', 'l', 'd', 'e', 'r', '-', 'M', 'e',
       'a', 'd', ' ', 's', 'i', 'm', 'p', 'l', 'e', 'x', ' ', 'd', 'i', 'r', 'e',
@@ -264,8 +264,8 @@ namespace RAT
     ::coder::array<real_T, 1U> y;
     ::coder::array<int32_T, 2U> iidx;
     ::coder::array<char_T, 2U> b_varargin_4;
-    cell_13 result;
-    struct_T problem;
+    cell_wrap_9 result[6];
+    d_struct_T problem;
     real_T func_evals;
     real_T fxc;
     real_T fxcc;
@@ -495,7 +495,7 @@ namespace RAT
     simplexIntrafun(x, varargin_1, varargin_2_f1, varargin_2_f2, varargin_2_f3,
                     varargin_2_f4, varargin_2_f5, varargin_2_f6, varargin_2_f14,
                     varargin_2_f19, varargin_3, varargin_4, &fv[0], &problem,
-                    &result);
+                    result);
 
     //  Initial simplex setup continues later
     //  Initialize the output and plot functions.
@@ -544,10 +544,9 @@ namespace RAT
       //      fprintf('%g \n', func_evals)
     }
 
-    triggerEvent(result.f1, result.f3, result.f5, result.f6, problem.ssubs,
-                 varargin_1->TF.data, varargin_1->TF.size, varargin_1->resample,
-                 varargin_1->dataPresent, varargin_1->modelType.data,
-                 varargin_1->modelType.size);
+    triggerEvent(result, problem.ssubs, varargin_1->TF.data, varargin_1->TF.size,
+                 varargin_1->resample, varargin_1->dataPresent,
+                 varargin_1->modelType.data, varargin_1->modelType.size);
 
     //  OutputFcn and PlotFcns call
     //  if haveoutputfcn || haveplotfcn
@@ -587,7 +586,7 @@ namespace RAT
       simplexIntrafun(y, varargin_1, varargin_2_f1, varargin_2_f2, varargin_2_f3,
                       varargin_2_f4, varargin_2_f5, varargin_2_f6,
                       varargin_2_f14, varargin_2_f19, varargin_3, varargin_4,
-                      &fv[j + 1], &problem, &result);
+                      &fv[j + 1], &problem, result);
     }
 
     //  sort so v(1,:) has the lowest function value
@@ -635,10 +634,10 @@ namespace RAT
     }
 
     if (rt_remd_snf(1.0, varargin_3->updatePlotFreq) == 0.0) {
-      triggerEvent(result.f1, result.f3, result.f5, result.f6, problem.ssubs,
-                   varargin_1->TF.data, varargin_1->TF.size,
-                   varargin_1->resample, varargin_1->dataPresent,
-                   varargin_1->modelType.data, varargin_1->modelType.size);
+      triggerEvent(result, problem.ssubs, varargin_1->TF.data,
+                   varargin_1->TF.size, varargin_1->resample,
+                   varargin_1->dataPresent, varargin_1->modelType.data,
+                   varargin_1->modelType.size);
     }
 
     //  OutputFcn and PlotFcns call
@@ -767,7 +766,7 @@ namespace RAT
         simplexIntrafun(xr, varargin_1, varargin_2_f1, varargin_2_f2,
                         varargin_2_f3, varargin_2_f4, varargin_2_f5,
                         varargin_2_f6, varargin_2_f14, varargin_2_f19,
-                        varargin_3, varargin_4, &fxr, &problem, &result);
+                        varargin_3, varargin_4, &fxr, &problem, result);
         func_evals++;
         if (fxr < fv[0]) {
           //  Calculate the expansion point
@@ -784,7 +783,7 @@ namespace RAT
           simplexIntrafun(xe, varargin_1, varargin_2_f1, varargin_2_f2,
                           varargin_2_f3, varargin_2_f4, varargin_2_f5,
                           varargin_2_f6, varargin_2_f14, varargin_2_f19,
-                          varargin_3, varargin_4, &fxe, &problem, &result);
+                          varargin_3, varargin_4, &fxe, &problem, result);
           func_evals++;
           if (fxe < fxr) {
             x_idx_1 = xe.size(0);
@@ -840,7 +839,7 @@ namespace RAT
             simplexIntrafun(xc, varargin_1, varargin_2_f1, varargin_2_f2,
                             varargin_2_f3, varargin_2_f4, varargin_2_f5,
                             varargin_2_f6, varargin_2_f14, varargin_2_f19,
-                            varargin_3, varargin_4, &fxc, &problem, &result);
+                            varargin_3, varargin_4, &fxc, &problem, result);
             func_evals++;
             if (fxc <= fxr) {
               x_idx_1 = xc.size(0);
@@ -877,7 +876,7 @@ namespace RAT
             simplexIntrafun(xcc, varargin_1, varargin_2_f1, varargin_2_f2,
                             varargin_2_f3, varargin_2_f4, varargin_2_f5,
                             varargin_2_f6, varargin_2_f14, varargin_2_f19,
-                            varargin_3, varargin_4, &fxcc, &problem, &result);
+                            varargin_3, varargin_4, &fxcc, &problem, result);
             func_evals++;
             if (fxcc < fv[fv.size(1) - 1]) {
               x_idx_1 = xcc.size(0);
@@ -925,7 +924,7 @@ namespace RAT
                               varargin_2_f3, varargin_2_f4, varargin_2_f5,
                               varargin_2_f6, varargin_2_f14, varargin_2_f19,
                               varargin_3, varargin_4, &fv[j + 1], &problem,
-                              &result);
+                              result);
             }
 
             func_evals += static_cast<real_T>(n);
@@ -976,10 +975,10 @@ namespace RAT
         }
 
         if (rt_remd_snf(itercount, varargin_3->updatePlotFreq) == 0.0) {
-          triggerEvent(result.f1, result.f3, result.f5, result.f6, problem.ssubs,
-                       varargin_1->TF.data, varargin_1->TF.size,
-                       varargin_1->resample, varargin_1->dataPresent,
-                       varargin_1->modelType.data, varargin_1->modelType.size);
+          triggerEvent(result, problem.ssubs, varargin_1->TF.data,
+                       varargin_1->TF.size, varargin_1->resample,
+                       varargin_1->dataPresent, varargin_1->modelType.data,
+                       varargin_1->modelType.size);
         }
 
         //  OutputFcn and PlotFcns call

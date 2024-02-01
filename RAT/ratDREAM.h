@@ -19,10 +19,10 @@
 // Type Declarations
 namespace RAT
 {
-  struct struct5_T;
-  struct cell_14;
+  struct c_struct_T;
+  struct cell_11;
   struct struct2_T;
-  struct struct13_T;
+  struct struct12_T;
 }
 
 // Function Declarations
@@ -34,11 +34,11 @@ namespace RAT
                 const ::coder::array<real_T, 2U> &Par_info_min, const ::coder::
                 array<real_T, 2U> &Par_info_max, const char_T
                 Par_info_boundhandling_data[], const int32_T
-                Par_info_boundhandling_size[2], const struct5_T
-                *ratInputs_problemDef, const cell_14 *ratInputs_problemDefCells,
+                Par_info_boundhandling_size[2], const c_struct_T
+                *ratInputs_problemStruct, const cell_11 *ratInputs_problemCells,
                 const struct2_T *ratInputs_controls, const ::coder::array<real_T,
                 2U> &ratInputs_priors, ::coder::array<real_T, 3U> &chain,
-                struct13_T *output, ::coder::array<real_T, 2U> &fx);
+                struct12_T *output, ::coder::array<real_T, 2U> &fx);
 }
 
 #endif

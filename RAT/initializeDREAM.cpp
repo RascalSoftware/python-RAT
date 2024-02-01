@@ -26,7 +26,7 @@ namespace RAT
 {
   static void binary_expand_op(::coder::array<real_T, 2U> &in1, const ::coder::
     array<real_T, 2U> &in2, const ::coder::array<real_T, 2U> &in3, const
-    struct14_T *in4);
+    struct13_T *in4);
   static void binary_expand_op(::coder::array<real_T, 2U> &in1, const ::coder::
     array<real_T, 2U> &in2, const ::coder::array<real_T, 2U> &in3, const ::coder::
     array<real_T, 2U> &in4);
@@ -37,7 +37,7 @@ namespace RAT
 {
   static void binary_expand_op(::coder::array<real_T, 2U> &in1, const ::coder::
     array<real_T, 2U> &in2, const ::coder::array<real_T, 2U> &in3, const
-    struct14_T *in4)
+    struct13_T *in4)
   {
     ::coder::array<real_T, 2U> b_in2;
     int32_T i;
@@ -163,14 +163,14 @@ namespace RAT
     }
   }
 
-  void initializeDREAM(const struct14_T *DREAMPar, const ::coder::array<real_T,
+  void initializeDREAM(const struct13_T *DREAMPar, const ::coder::array<real_T,
                        2U> &Par_info_min, const ::coder::array<real_T, 2U>
                        &Par_info_max, const char_T Par_info_boundhandling_data[],
                        const int32_T Par_info_boundhandling_size[2], ::coder::
-                       array<real_T, 3U> &chain, struct13_T *output, ::coder::
-                       array<real_T, 2U> &log_L, const struct5_T
-                       *ratInputs_problemDef, const cell_14
-                       *ratInputs_problemDefCells, const struct2_T
+                       array<real_T, 3U> &chain, struct12_T *output, ::coder::
+                       array<real_T, 2U> &log_L, const c_struct_T
+                       *ratInputs_problemStruct, const cell_11
+                       *ratInputs_problemCells, const struct2_T
                        *ratInputs_controls, const ::coder::array<real_T, 2U>
                        &ratInputs_priors, ::coder::array<real_T, 2U> &X, ::coder::
                        array<real_T, 2U> &fx, ::coder::array<real_T, 2U> &CR,
@@ -272,11 +272,11 @@ namespace RAT
                      Par_info_boundhandling_size);
 
     //  Now evaluate the model ( = pdf ) and return fx
-    evaluateModel(x, DREAMPar, ratInputs_problemDef, ratInputs_problemDefCells,
+    evaluateModel(x, DREAMPar, ratInputs_problemStruct, ratInputs_problemCells,
                   ratInputs_controls, fx);
 
     //  Calculate the log-likelihood and log-prior of x (fx)
-    calcDensity(x, fx, DREAMPar, ratInputs_problemDef->fitLimits,
+    calcDensity(x, fx, DREAMPar, ratInputs_problemStruct->fitLimits,
                 ratInputs_priors, log_L_x, log_PR_x);
 
     //  Define starting x values, corresponding density, log densty and simulations (Xfx)

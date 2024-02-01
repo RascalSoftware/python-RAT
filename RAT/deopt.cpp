@@ -29,7 +29,7 @@
 namespace RAT
 {
   static void binary_expand_op(::coder::array<real_T, 2U> &in1, int32_T in2,
-    const i_struct_T *in3, const ::coder::array<real_T, 2U> &in4);
+    const j_struct_T *in3, const ::coder::array<real_T, 2U> &in4);
   static void h_binary_expand_op(::coder::array<real_T, 2U> &in1, const ::coder::
     array<real_T, 2U> &in2, const ::coder::array<boolean_T, 2U> &in3, const ::
     coder::array<real_T, 2U> &in4, const ::coder::array<real_T, 2U> &in5, const ::
@@ -40,7 +40,7 @@ namespace RAT
 namespace RAT
 {
   static void binary_expand_op(::coder::array<real_T, 2U> &in1, int32_T in2,
-    const i_struct_T *in3, const ::coder::array<real_T, 2U> &in4)
+    const j_struct_T *in3, const ::coder::array<real_T, 2U> &in4)
   {
     int32_T i;
     int32_T loop_ub;
@@ -300,22 +300,22 @@ namespace RAT
     }
   }
 
-  void deopt(const struct5_T *problem, const ::coder::array<cell_wrap_2, 2U>
-             &problemDefCells_f1, const ::coder::array<cell_wrap_8, 2U>
-             &problemDefCells_f2, const ::coder::array<cell_wrap_2, 2U>
-             &problemDefCells_f3, const ::coder::array<cell_wrap_2, 2U>
-             &problemDefCells_f4, const ::coder::array<cell_wrap_8, 2U>
-             &problemDefCells_f5, const ::coder::array<cell_wrap_8, 1U>
-             &problemDefCells_f6, const ::coder::array<cell_wrap_1, 2U>
-             &problemDefCells_f14, const ::coder::array<cell_wrap_8, 2U>
-             &problemDefCells_f19, const char_T controls_parallel_data[], const
+  void deopt(const c_struct_T *problem, const ::coder::array<cell_wrap_2, 2U>
+             &problemCells_f1, const ::coder::array<cell_wrap_8, 2U>
+             &problemCells_f2, const ::coder::array<cell_wrap_2, 2U>
+             &problemCells_f3, const ::coder::array<cell_wrap_2, 2U>
+             &problemCells_f4, const ::coder::array<cell_wrap_8, 2U>
+             &problemCells_f5, const ::coder::array<cell_wrap_8, 1U>
+             &problemCells_f6, const ::coder::array<cell_wrap_1, 2U>
+             &problemCells_f14, const ::coder::array<cell_wrap_8, 2U>
+             &problemCells_f19, const char_T controls_parallel_data[], const
              int32_T controls_parallel_size[2], const real_T controls_resamPars
              [2], boolean_T controls_calcSldDuringFit, const char_T
              controls_display_data[], const int32_T controls_display_size[2],
-             const struct3_T *controls_checks, const i_struct_T *S_struct, ::
+             const struct3_T *controls_checks, const j_struct_T *S_struct, ::
              coder::array<real_T, 2U> &FVr_bestmem)
   {
-    ::coder::array<k_struct_T, 1U> S_val;
+    ::coder::array<l_struct_T, 1U> S_val;
     ::coder::array<real_T, 2U> FM_pm3;
     ::coder::array<real_T, 2U> FM_pop;
     ::coder::array<real_T, 2U> FM_ui;
@@ -326,7 +326,7 @@ namespace RAT
     ::coder::array<real_T, 2U> r;
     ::coder::array<real_T, 2U> r1;
     ::coder::array<boolean_T, 2U> FM_mui;
-    struct5_T b_problem;
+    c_struct_T b_problem;
     real_T F_CR;
     real_T I_D;
     real_T I_NP;
@@ -502,17 +502,16 @@ namespace RAT
     S_val[0] = intrafun(b_FM_pop, &b_problem, controls_parallel_data,
                         controls_parallel_size, controls_resamPars,
                         controls_calcSldDuringFit, controls_checks,
-                        problemDefCells_f1, problemDefCells_f2,
-                        problemDefCells_f3, problemDefCells_f4,
-                        problemDefCells_f5, problemDefCells_f6,
-                        problemDefCells_f14, problemDefCells_f19);
+                        problemCells_f1, problemCells_f2, problemCells_f3,
+                        problemCells_f4, problemCells_f5, problemCells_f6,
+                        problemCells_f14, problemCells_f19);
     S_bestval_FVr_oa = S_val[0].FVr_oa;
 
     //  best objective function value so far
     b_loop_ub_tmp = static_cast<int32_T>(I_NP - 1.0);
     loop_ub = FM_pop.size(1);
     for (int32_T k{0}; k < b_loop_ub_tmp; k++) {
-      k_struct_T expl_temp;
+      l_struct_T expl_temp;
 
       //  check the remaining members
       b_FM_pop.set_size(1, FM_pop.size(1));
@@ -524,10 +523,9 @@ namespace RAT
       expl_temp = intrafun(b_FM_pop, &b_problem, controls_parallel_data,
                            controls_parallel_size, controls_resamPars,
                            controls_calcSldDuringFit, controls_checks,
-                           problemDefCells_f1, problemDefCells_f2,
-                           problemDefCells_f3, problemDefCells_f4,
-                           problemDefCells_f5, problemDefCells_f6,
-                           problemDefCells_f14, problemDefCells_f19);
+                           problemCells_f1, problemCells_f2, problemCells_f3,
+                           problemCells_f4, problemCells_f5, problemCells_f6,
+                           problemCells_f14, problemCells_f19);
       S_val[k + 1] = expl_temp;
       if (leftWin(expl_temp.I_no, expl_temp.FVr_oa, S_bestval_FVr_oa) == 1.0) {
         //  save its location
@@ -729,7 +727,7 @@ namespace RAT
       // -----Optional parent+child selection-----------------------------------------
       // -----Select which vectors are allowed to enter the new population------------
       for (int32_T k{0}; k < i; k++) {
-        k_struct_T S_tempval;
+        l_struct_T S_tempval;
 
         // =====Only use this if boundary constraints are needed==================
         for (int32_T j{0}; j < loop_ub_tmp; j++) {
@@ -761,10 +759,9 @@ namespace RAT
         S_tempval = intrafun(b_FM_pop, &b_problem, controls_parallel_data,
                              controls_parallel_size, controls_resamPars,
                              controls_calcSldDuringFit, controls_checks,
-                             problemDefCells_f1, problemDefCells_f2,
-                             problemDefCells_f3, problemDefCells_f4,
-                             problemDefCells_f5, problemDefCells_f6,
-                             problemDefCells_f14, problemDefCells_f19);
+                             problemCells_f1, problemCells_f2, problemCells_f3,
+                             problemCells_f4, problemCells_f5, problemCells_f6,
+                             problemCells_f14, problemCells_f19);
 
         //  check cost of competitor
         if (leftWin(S_tempval.I_no, S_tempval.FVr_oa, S_val[k].FVr_oa) == 1.0) {
@@ -824,9 +821,9 @@ namespace RAT
     }
 
     // ---end while ((I_iter < I_itermax) ...
-    //  problemDef.fitParams = x;
-    //  problemDef = unpackParams(problemDef,controls);
-    //  [problem,res] = reflectivityCalculation(problemDef,problemDefCells,controls);
+    //  problemStruct.fitParams = x;
+    //  problemStruct = unpackParams(problemStruct,controls);
+    //  [problem,res] = reflectivityCalculation(problemStruct,problemCells,controls);
   }
 }
 

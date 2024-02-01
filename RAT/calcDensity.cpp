@@ -19,8 +19,8 @@
 namespace RAT
 {
   void calcDensity(const ::coder::array<real_T, 2U> &x, const ::coder::array<
-                   real_T, 2U> &fx, const struct14_T *DREAMPar, const ::coder::
-                   array<real_T, 2U> &ratInputs_problemDef_fitLimits, const ::
+                   real_T, 2U> &fx, const struct13_T *DREAMPar, const ::coder::
+                   array<real_T, 2U> &ratInputs_problemStruct_fitLimits, const ::
                    coder::array<real_T, 2U> &ratInputs_priors, ::coder::array<
                    real_T, 1U> &log_L, ::coder::array<real_T, 1U> &log_PR)
   {
@@ -93,7 +93,7 @@ namespace RAT
         b_x[i] = x[b_i + x.size(0) * i];
       }
 
-      PR[b_i] = scaledGaussPrior(b_x, ratInputs_problemDef_fitLimits,
+      PR[b_i] = scaledGaussPrior(b_x, ratInputs_problemStruct_fitLimits,
         ratInputs_priors);
 
       //  mvnpdf automatically goes over all pars

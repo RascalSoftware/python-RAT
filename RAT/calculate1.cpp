@@ -28,13 +28,14 @@ namespace RAT
   {
     namespace customLayers
     {
-      void calculate(const struct5_T *problemDef, const cell_14 *problemDefCells,
-                     const struct2_T *controls, struct_T *problem, ::coder::
-                     array<cell_wrap_11, 1U> &reflectivity, ::coder::array<
-                     cell_wrap_11, 1U> &simulation, ::coder::array<cell_wrap_8,
-                     1U> &shiftedData, ::coder::array<cell_wrap_8, 1U>
-                     &layerSlds, ::coder::array<cell_wrap_8, 1U> &sldProfiles, ::
-                     coder::array<cell_wrap_8, 1U> &allLayers)
+      void calculate(const c_struct_T *problemStruct, const cell_11
+                     *problemCells, const struct2_T *controls, d_struct_T
+                     *contrastParams, ::coder::array<cell_wrap_20, 1U>
+                     &reflectivity, ::coder::array<cell_wrap_20, 1U> &simulation,
+                     ::coder::array<cell_wrap_8, 1U> &shiftedData, ::coder::
+                     array<cell_wrap_8, 1U> &layerSlds, ::coder::array<
+                     cell_wrap_8, 1U> &sldProfiles, ::coder::array<cell_wrap_8,
+                     1U> &allLayers)
       {
         int32_T loop_ub_tmp;
 
@@ -49,16 +50,16 @@ namespace RAT
         //  Pre-allocation - It's necessary to
         //  pre-allocate the memory for all the arrays
         //  for compilation, so do this in this block.
-        loop_ub_tmp = static_cast<int32_T>(problemDef->numberOfContrasts);
-        problem->ssubs.set_size(loop_ub_tmp);
-        problem->backgroundParams.set_size(loop_ub_tmp);
-        problem->qzshifts.set_size(loop_ub_tmp);
-        problem->scalefactors.set_size(loop_ub_tmp);
-        problem->bulkIn.set_size(loop_ub_tmp);
-        problem->bulkOut.set_size(loop_ub_tmp);
-        problem->calculations.allChis.set_size(loop_ub_tmp);
-        problem->resolutionParams.set_size(loop_ub_tmp);
-        problem->allSubRough.set_size(loop_ub_tmp);
+        loop_ub_tmp = static_cast<int32_T>(problemStruct->numberOfContrasts);
+        contrastParams->ssubs.set_size(loop_ub_tmp);
+        contrastParams->backgroundParams.set_size(loop_ub_tmp);
+        contrastParams->qzshifts.set_size(loop_ub_tmp);
+        contrastParams->scalefactors.set_size(loop_ub_tmp);
+        contrastParams->bulkIn.set_size(loop_ub_tmp);
+        contrastParams->bulkOut.set_size(loop_ub_tmp);
+        contrastParams->calculations.allChis.set_size(loop_ub_tmp);
+        contrastParams->resolutionParams.set_size(loop_ub_tmp);
+        contrastParams->allSubRough.set_size(loop_ub_tmp);
         reflectivity.set_size(loop_ub_tmp);
         simulation.set_size(loop_ub_tmp);
         shiftedData.set_size(loop_ub_tmp);
@@ -66,15 +67,15 @@ namespace RAT
         sldProfiles.set_size(loop_ub_tmp);
         allLayers.set_size(loop_ub_tmp);
         for (int32_T i{0}; i < loop_ub_tmp; i++) {
-          problem->ssubs[i] = 0.0;
-          problem->backgroundParams[i] = 0.0;
-          problem->qzshifts[i] = 0.0;
-          problem->scalefactors[i] = 0.0;
-          problem->bulkIn[i] = 0.0;
-          problem->bulkOut[i] = 0.0;
-          problem->calculations.allChis[i] = 0.0;
-          problem->resolutionParams[i] = 0.0;
-          problem->allSubRough[i] = 0.0;
+          contrastParams->ssubs[i] = 0.0;
+          contrastParams->backgroundParams[i] = 0.0;
+          contrastParams->qzshifts[i] = 0.0;
+          contrastParams->scalefactors[i] = 0.0;
+          contrastParams->bulkIn[i] = 0.0;
+          contrastParams->bulkOut[i] = 0.0;
+          contrastParams->calculations.allChis[i] = 0.0;
+          contrastParams->resolutionParams[i] = 0.0;
+          contrastParams->allSubRough[i] = 0.0;
           reflectivity[i].f1.set_size(2, 2);
           reflectivity[i].f1[0] = 1.0;
           reflectivity[i].f1[1] = 1.0;
@@ -119,41 +120,46 @@ namespace RAT
 
         switch (loop_ub_tmp) {
          case 0:
-          b_single(problemDef, problemDefCells, controls, problem->ssubs,
-                   problem->backgroundParams, problem->qzshifts,
-                   problem->scalefactors, problem->bulkIn, problem->bulkOut,
-                   problem->resolutionParams, problem->calculations.allChis,
-                   reflectivity, simulation, shiftedData, layerSlds, sldProfiles,
-                   allLayers, problem->allSubRough);
+          b_single(problemStruct, problemCells, controls, contrastParams->ssubs,
+                   contrastParams->backgroundParams, contrastParams->qzshifts,
+                   contrastParams->scalefactors, contrastParams->bulkIn,
+                   contrastParams->bulkOut, contrastParams->resolutionParams,
+                   contrastParams->calculations.allChis, reflectivity,
+                   simulation, shiftedData, layerSlds, sldProfiles, allLayers,
+                   contrastParams->allSubRough);
           break;
 
          case 1:
-          parallelPoints(problemDef, problemDefCells, controls, problem->ssubs,
-                         problem->backgroundParams, problem->qzshifts,
-                         problem->scalefactors, problem->bulkIn,
-                         problem->bulkOut, problem->resolutionParams,
-                         problem->calculations.allChis, reflectivity, simulation,
-                         shiftedData, layerSlds, sldProfiles, allLayers,
-                         problem->allSubRough);
+          parallelPoints(problemStruct, problemCells, controls,
+                         contrastParams->ssubs, contrastParams->backgroundParams,
+                         contrastParams->qzshifts, contrastParams->scalefactors,
+                         contrastParams->bulkIn, contrastParams->bulkOut,
+                         contrastParams->resolutionParams,
+                         contrastParams->calculations.allChis, reflectivity,
+                         simulation, shiftedData, layerSlds, sldProfiles,
+                         allLayers, contrastParams->allSubRough);
           break;
 
          case 2:
-          c_parallelContrasts(problemDef, problemDefCells, controls,
-                              problem->ssubs, problem->backgroundParams,
-                              problem->qzshifts, problem->scalefactors,
-                              problem->bulkIn, problem->bulkOut,
-                              problem->resolutionParams,
-                              problem->calculations.allChis, reflectivity,
+          c_parallelContrasts(problemStruct, problemCells, controls,
+                              contrastParams->ssubs,
+                              contrastParams->backgroundParams,
+                              contrastParams->qzshifts,
+                              contrastParams->scalefactors,
+                              contrastParams->bulkIn, contrastParams->bulkOut,
+                              contrastParams->resolutionParams,
+                              contrastParams->calculations.allChis, reflectivity,
                               simulation, shiftedData, layerSlds, sldProfiles,
-                              allLayers, problem->allSubRough);
+                              allLayers, contrastParams->allSubRough);
           break;
         }
 
-        problem->calculations.sumChi = coder::sum(problem->calculations.allChis);
-        problem->resample.set_size(1, problemDef->resample.size(1));
-        loop_ub_tmp = problemDef->resample.size(1);
+        contrastParams->calculations.sumChi = coder::sum
+          (contrastParams->calculations.allChis);
+        contrastParams->resample.set_size(1, problemStruct->resample.size(1));
+        loop_ub_tmp = problemStruct->resample.size(1);
         for (int32_T b_i{0}; b_i < loop_ub_tmp; b_i++) {
-          problem->resample[b_i] = problemDef->resample[b_i];
+          contrastParams->resample[b_i] = problemStruct->resample[b_i];
         }
       }
     }

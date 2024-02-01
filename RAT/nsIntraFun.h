@@ -19,18 +19,18 @@
 // Type Declarations
 namespace RAT
 {
-  struct struct5_T;
+  struct c_struct_T;
   struct struct2_T;
-  struct cell_14;
+  struct cell_11;
 }
 
 // Function Declarations
 namespace RAT
 {
-  real_T nsIntraFun(const struct5_T *data_f1, const struct2_T *data_f2, const
-                    cell_14 *data_f4, const ::coder::array<real_T, 2U> &p);
-  real_T nsIntraFun(const struct5_T *data_f1, const struct2_T *data_f2, const
-                    cell_14 *data_f4, const ::coder::array<real_T, 1U> &p);
+  real_T nsIntraFun(const c_struct_T *data_f1, const struct2_T *data_f2, const
+                    cell_11 *data_f4, const ::coder::array<real_T, 2U> &p);
+  real_T nsIntraFun(const c_struct_T *data_f1, const struct2_T *data_f2, const
+                    cell_11 *data_f4, const ::coder::array<real_T, 1U> &p);
 }
 
 #endif

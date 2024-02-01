@@ -19,8 +19,8 @@
 // Type Declarations
 namespace RAT
 {
-  struct struct5_T;
-  struct cell_14;
+  struct c_struct_T;
+  struct cell_11;
   struct struct2_T;
   struct f_struct_T;
 }
@@ -29,7 +29,7 @@ namespace RAT
 namespace RAT
 {
   void refPrctileConfInts(const ::coder::array<real_T, 2U> &bayesOutputs_chain,
-    struct5_T *problemDef, const cell_14 *problemDefCells, const struct2_T
+    c_struct_T *problemStruct, const cell_11 *problemCells, const struct2_T
     *controlsStruct, f_struct_T *allPredInts);
 }
 

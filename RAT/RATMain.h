@@ -19,11 +19,10 @@
 // Function Declarations
 namespace RAT
 {
-  extern void RATMain(const struct0_T *problemDef, const cell_7 *problemDefCells,
-                      const struct1_T *problemDefLimits, struct2_T *controls,
-                      const struct4_T *priors, struct5_T *outProblemDef,
-                      struct6_T *problem, cell_wrap_9 results[6], struct8_T
-                      *bayesResults);
+  extern void RATMain(struct0_T *problemStruct, const cell_7 *problemCells,
+                      const struct1_T *problemLimits, struct2_T *controls, const
+                      struct4_T *priors, struct5_T *contrastParams, cell_wrap_9
+                      resultCells[6], struct7_T *bayesResults);
 }
 
 #endif

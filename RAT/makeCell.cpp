@@ -17,6 +17,33 @@
 // Function Definitions
 namespace RAT
 {
+  void b_makeCell(real_T m, const real_T vals_data[], ::coder::array<
+                  cell_wrap_22, 2U> &x)
+  {
+    int32_T i;
+
+    //  Creates a m by n cell array and initialise each cell with given
+    //  value
+    //
+    //  array = makeCell(5, 2, [1, 1])
+    i = static_cast<int32_T>(m);
+    x.set_size(i, 2);
+    for (int32_T b_i{0}; b_i < i; b_i++) {
+      real_T d;
+      real_T d1;
+      real_T d2;
+      d = vals_data[0];
+      d1 = vals_data[1];
+      d2 = vals_data[2];
+      for (int32_T j{0}; j < 2; j++) {
+        x[b_i + x.size(0) * j].f1.set_size(1, 3);
+        x[b_i + x.size(0) * j].f1[0] = d;
+        x[b_i + x.size(0) * j].f1[1] = d1;
+        x[b_i + x.size(0) * j].f1[2] = d2;
+      }
+    }
+  }
+
   void b_makeCell(real_T m, const real_T vals_data[], ::coder::array<cell_wrap_8,
                   2U> &x)
   {
@@ -152,8 +179,8 @@ namespace RAT
     x[49].f1[0] = 1.0;
   }
 
-  void makeCell(real_T m, const real_T vals_data[], ::coder::array<cell_wrap_24,
-                1U> &x)
+  void makeCell(real_T m, const real_T vals_data[], ::coder::array<cell_wrap_22,
+                2U> &x)
   {
     int32_T i;
 
@@ -162,7 +189,7 @@ namespace RAT
     //
     //  array = makeCell(5, 2, [1, 1])
     i = static_cast<int32_T>(m);
-    x.set_size(i);
+    x.set_size(i, 1);
     for (int32_T b_i{0}; b_i < i; b_i++) {
       x[b_i].f1.set_size(1, 3);
       x[b_i].f1[0] = vals_data[0];

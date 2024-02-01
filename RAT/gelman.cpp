@@ -72,7 +72,7 @@ namespace RAT
     }
   }
 
-  void gelman(const ::coder::array<real_T, 3U> &chain, const struct14_T
+  void gelman(const ::coder::array<real_T, 3U> &chain, const struct13_T
               *DREAMPar, ::coder::array<real_T, 2U> &R_stat)
   {
     ::coder::array<real_T, 3U> r1;

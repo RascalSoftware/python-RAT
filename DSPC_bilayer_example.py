@@ -117,8 +117,8 @@ if __name__ == '__main__':
     #-------------------------------------------------------------------------------------
     # Cells
     cells.f1 = [[0, 1], [0, 1]]
-    cells.f2 = [np.loadtxt('data/data1.csv', delimiter=','), 
-                np.loadtxt('data/data2.csv', delimiter=',')]
+    cells.f2 = [np.loadtxt('data/dspc_bilayer/data1.csv', delimiter=','), 
+                np.loadtxt('data/dspc_bilayer/data2.csv', delimiter=',')]
     cells.f3 = [[0.011403, 0.59342], [0.011403, 0.59342]]
     cells.f4 = [[0.011403, 0.70956], [0.011403, 0.59342]]
     cells.f5 = [[1, 2, 3, 4, 5, 6, 6, 5], [1, 2, 3, 4, 5, 6, 6, 5]]
@@ -189,18 +189,18 @@ if __name__ == '__main__':
                           [1, 0, np.Inf],[1, 0, np.Inf],[1, 0, np.Inf],[1, 0, np.Inf],[1, 0, np.Inf],
                           [1, 0, np.Inf],[1, 0, np.Inf],[1, 0, np.Inf],[1, 0, np.Inf],[1, 0, np.Inf]]
     
-    pdef, problem, output, bayes_result = rat.RATMain(problem, cells, limits, control, priors)
+    problem, contrast_params, result, bayes_results = rat.RATMain(problem, cells, limits, control, priors)
     
-    print(problem.ssubs)
-    print(problem.backgroundParams)
-    print(problem.qzshifts)
-    print(problem.scalefactors)
-    print(problem.bulkIn)
-    print(problem.bulkOut)
-    print(problem.resolutionParams)
-    print(problem.calculations.allChis)
-    print(problem.calculations.sumChi)
-    print(problem.allSubRough)
-    print(problem.resample)
+    print(contrast_params.ssubs)
+    print(contrast_params.backgroundParams)
+    print(contrast_params.qzshifts)
+    print(contrast_params.scalefactors)
+    print(contrast_params.bulkIn)
+    print(contrast_params.bulkOut)
+    print(contrast_params.resolutionParams)
+    print(contrast_params.calculations.allChis)
+    print(contrast_params.calculations.sumChi)
+    print(contrast_params.allSubRough)
+    print(contrast_params.resample)
     #print(output)
     

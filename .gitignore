@@ -9,3 +9,9 @@ __pycache__/
 
 # Build
 *.rat.cpp
+*.so
+*.dll 
+*.dylib
+*.obj
+*.exp
+*.lib

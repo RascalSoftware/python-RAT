@@ -20,15 +20,13 @@
 // Function Declarations
 namespace RAT
 {
-  extern void cast(const ::coder::array<cell_wrap_50, 1U> &r, ::coder::array<
+  extern void cast(const ::coder::array<cell_wrap_48, 1U> &r, ::coder::array<
                    cell_wrap_8, 1U> &r1);
-  extern void cast(const ::coder::array<cell_wrap_24, 1U> &r, ::coder::array<
-                   cell_wrap_8, 1U> &r1);
-  extern void cast(const ::coder::array<cell_wrap_11, 1U> &r, ::coder::array<
-                   cell_wrap_8, 1U> &r1);
-  extern void cast(const ::coder::array<cell_wrap_20, 1U> &r, ::coder::array<
-                   cell_wrap_8, 1U> &r1);
-  extern void cast(const ::coder::array<cell_wrap_21, 2U> &r, ::coder::array<
+  extern void cast(const ::coder::array<cell_wrap_48, 2U> &r, ::coder::array<
+                   cell_wrap_8, 2U> &r1);
+  extern void cast(const ::coder::array<cell_wrap_22, 2U> &r, ::coder::array<
+                   cell_wrap_8, 2U> &r1);
+  extern void cast(const ::coder::array<cell_wrap_18, 2U> &r, ::coder::array<
                    cell_wrap_8, 2U> &r1);
   extern void emlrtFreeThreadStackData();
   extern RATMainTLS *emlrtGetThreadStackData();

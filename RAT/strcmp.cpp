@@ -90,7 +90,7 @@ namespace RAT
           do {
             exitg1 = 0;
             if (kstr < 7) {
-              if (cv1[static_cast<uint8_T>(a_data[kstr]) & 127] != cv1[
+              if (cv[static_cast<uint8_T>(a_data[kstr]) & 127] != cv[
                   static_cast<int32_T>(b_cv[kstr])]) {
                 exitg1 = 1;
               } else {
@@ -145,7 +145,7 @@ namespace RAT
           do {
             exitg1 = 0;
             if (kstr < 9) {
-              if (a_data[kstr] != cv[kstr]) {
+              if (a_data[kstr] != cv1[kstr]) {
                 exitg1 = 1;
               } else {
                 kstr++;
@@ -227,7 +227,7 @@ namespace RAT
           do {
             exitg1 = 0;
             if (kstr < 3) {
-              if (cv1[static_cast<uint8_T>(a_data[kstr]) & 127] != cv1[
+              if (cv[static_cast<uint8_T>(a_data[kstr]) & 127] != cv[
                   static_cast<int32_T>(b_cv[kstr])]) {
                 exitg1 = 1;
               } else {
@@ -625,7 +625,7 @@ namespace RAT
           do {
             exitg1 = 0;
             if (kstr < 13) {
-              if (cv1[static_cast<uint8_T>(a_data[kstr]) & 127] != cv1[
+              if (cv[static_cast<uint8_T>(a_data[kstr]) & 127] != cv[
                   static_cast<int32_T>(b_cv[kstr])]) {
                 exitg1 = 1;
               } else {
@@ -794,7 +794,7 @@ namespace RAT
           do {
             exitg1 = 0;
             if (kstr < 4) {
-              if (cv1[static_cast<uint8_T>(a_data[kstr]) & 127] != cv1[
+              if (cv[static_cast<uint8_T>(a_data[kstr]) & 127] != cv[
                   static_cast<int32_T>(b_cv[kstr])]) {
                 exitg1 = 1;
               } else {
@@ -831,7 +831,7 @@ namespace RAT
             do {
               exitg1 = 0;
               if (kstr <= i - 1) {
-                if (cv1[static_cast<uint8_T>(a->f1[kstr]) & 127] != cv1[
+                if (cv[static_cast<uint8_T>(a->f1[kstr]) & 127] != cv[
                     static_cast<uint8_T>(b[k].f1[kstr]) & 127]) {
                   exitg1 = 1;
                 } else {

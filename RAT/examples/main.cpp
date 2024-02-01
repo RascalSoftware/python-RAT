@@ -644,25 +644,24 @@ int32_T main(int32_T, char **)
 
 void main_RATMain()
 {
-  static RAT::struct0_T problemDef;
+  static RAT::struct0_T problemStruct;
   static RAT::struct2_T controls;
-  static RAT::struct5_T outProblemDef;
-  static RAT::struct8_T bayesResults;
-  RAT::cell_7 problemDefCells;
-  RAT::cell_wrap_9 results[6];
-  RAT::struct1_T problemDefLimits;
+  static RAT::struct7_T bayesResults;
+  RAT::cell_7 problemCells;
+  RAT::cell_wrap_9 resultCells[6];
+  RAT::struct1_T problemLimits;
   RAT::struct4_T priors;
-  RAT::struct6_T problem;
+  RAT::struct5_T contrastParams;
 
   // Initialize function 'RATMain' input arguments.
-  // Initialize function input argument 'problemDef'.
-  argInit_struct0_T(&problemDef);
+  // Initialize function input argument 'problemStruct'.
+  argInit_struct0_T(&problemStruct);
 
-  // Initialize function input argument 'problemDefCells'.
-  argInit_cell_7(&problemDefCells);
+  // Initialize function input argument 'problemCells'.
+  argInit_cell_7(&problemCells);
 
-  // Initialize function input argument 'problemDefLimits'.
-  argInit_struct1_T(&problemDefLimits);
+  // Initialize function input argument 'problemLimits'.
+  argInit_struct1_T(&problemLimits);
 
   // Initialize function input argument 'controls'.
   argInit_struct2_T(&controls);
@@ -671,8 +670,8 @@ void main_RATMain()
   argInit_struct4_T(&priors);
 
   // Call the entry-point 'RATMain'.
-  RAT::RATMain(&problemDef, &problemDefCells, &problemDefLimits, &controls,
-               &priors, &outProblemDef, &problem, results, &bayesResults);
+  RAT::RATMain(&problemStruct, &problemCells, &problemLimits, &controls, &priors,
+               &contrastParams, resultCells, &bayesResults);
 }
 
 // End of code generation (main.cpp)

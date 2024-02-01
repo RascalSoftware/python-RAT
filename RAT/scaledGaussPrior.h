@@ -20,8 +20,8 @@
 namespace RAT
 {
   real_T scaledGaussPrior(const ::coder::array<real_T, 2U> &m, const ::coder::
-    array<real_T, 2U> &extras_problemDef_fitLimits, const ::coder::array<real_T,
-    2U> &extras_priors);
+    array<real_T, 2U> &extras_problemStruct_fitLimits, const ::coder::array<
+    real_T, 2U> &extras_priors);
 }
 
 #endif

@@ -20,8 +20,9 @@
 // Type Declarations
 namespace RAT
 {
-  struct j_struct_T;
-  struct h_struct_T;
+  struct c_struct_T;
+  struct k_struct_T;
+  struct i_struct_T;
 }
 
 // Function Declarations
@@ -30,8 +31,8 @@ namespace RAT
   void fMinSearch(::coder::array<real_T, 1U> &x, real_T options_MaxIter, real_T
                   options_MaxFunEvals, real_T options_TolX, real_T
                   options_TolFun, const char_T dis_data[], const int32_T
-                  dis_size[2], const struct5_T *varargin_1, const ::coder::array<
-                  cell_wrap_2, 2U> &varargin_2_f1, const ::coder::array<
+                  dis_size[2], const c_struct_T *varargin_1, const ::coder::
+                  array<cell_wrap_2, 2U> &varargin_2_f1, const ::coder::array<
                   cell_wrap_8, 2U> &varargin_2_f2, const ::coder::array<
                   cell_wrap_2, 2U> &varargin_2_f3, const ::coder::array<
                   cell_wrap_2, 2U> &varargin_2_f4, const ::coder::array<
@@ -39,8 +40,8 @@ namespace RAT
                   cell_wrap_8, 1U> &varargin_2_f6, const ::coder::array<
                   cell_wrap_1, 2U> &varargin_2_f14, const ::coder::array<
                   cell_wrap_8, 2U> &varargin_2_f19, const struct2_T *varargin_3,
-                  const j_struct_T *varargin_4, real_T *fval, real_T *exitflag,
-                  h_struct_T *output);
+                  const k_struct_T *varargin_4, real_T *fval, real_T *exitflag,
+                  i_struct_T *output);
 }
 
 #endif

@@ -21,8 +21,8 @@
 namespace RAT
 {
   real_T scaledGaussPrior(const ::coder::array<real_T, 2U> &m, const ::coder::
-    array<real_T, 2U> &extras_problemDef_fitLimits, const ::coder::array<real_T,
-    2U> &extras_priors)
+    array<real_T, 2U> &extras_problemStruct_fitLimits, const ::coder::array<
+    real_T, 2U> &extras_priors)
   {
     ::coder::array<real_T, 2U> usedConstr;
     ::coder::array<real_T, 2U> usedPriors;
@@ -62,8 +62,9 @@ namespace RAT
     loop_ub = usedPriorInd.size(0);
     for (i = 0; i < 2; i++) {
       for (int32_T i1{0}; i1 < loop_ub; i1++) {
-        usedConstr[i1 + usedConstr.size(0) * i] = extras_problemDef_fitLimits
-          [(usedPriorInd[i1] + extras_problemDef_fitLimits.size(0) * i) - 1];
+        usedConstr[i1 + usedConstr.size(0) * i] =
+          extras_problemStruct_fitLimits[(usedPriorInd[i1] +
+          extras_problemStruct_fitLimits.size(0) * i) - 1];
       }
     }
 

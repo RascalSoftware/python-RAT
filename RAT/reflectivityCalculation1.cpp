@@ -26,12 +26,12 @@ namespace RAT
 {
   namespace nonPolarisedTF
   {
-    void b_reflectivityCalculation(const struct5_T *problemDef, const cell_14
-      *problemDefCells, const struct2_T *controls, struct_T *problem, ::coder::
-      array<cell_wrap_11, 1U> &reflectivity, ::coder::array<cell_wrap_11, 1U>
-      &simulation, ::coder::array<cell_wrap_8, 1U> &shiftedData, ::coder::array<
-      cell_wrap_8, 1U> &layerSlds, ::coder::array<cell_wrap_8, 1U> &sldProfiles,
-      ::coder::array<cell_wrap_8, 1U> &allLayers)
+    void b_reflectivityCalculation(const c_struct_T *problemStruct, const
+      cell_11 *problemCells, const struct2_T *controls, d_struct_T
+      *contrastParams, ::coder::array<cell_wrap_20, 1U> &reflectivity, ::coder::
+      array<cell_wrap_20, 1U> &simulation, ::coder::array<cell_wrap_8, 1U>
+      &shiftedData, ::coder::array<cell_wrap_8, 1U> &layerSlds, ::coder::array<
+      cell_wrap_8, 1U> &sldProfiles, ::coder::array<cell_wrap_8, 1U> &allLayers)
     {
       int32_T switch_expression_size[2];
       int32_T loop_ub_tmp;
@@ -52,18 +52,18 @@ namespace RAT
       //  Pre-allocate the output arrays.. this is necessary because otherwise
       //  the compiler complains with 'Output argument <....> is not assigned on
       //  some execution paths' error.
-      loop_ub_tmp = static_cast<int32_T>(problemDef->numberOfContrasts);
-      problem->ssubs.set_size(loop_ub_tmp);
-      problem->backgroundParams.set_size(loop_ub_tmp);
-      problem->qzshifts.set_size(loop_ub_tmp);
-      problem->scalefactors.set_size(loop_ub_tmp);
-      problem->bulkIn.set_size(loop_ub_tmp);
-      problem->bulkOut.set_size(loop_ub_tmp);
-      problem->resolutionParams.set_size(loop_ub_tmp);
-      problem->calculations.allChis.set_size(loop_ub_tmp);
-      problem->calculations.sumChi = 0.0;
-      problem->allSubRough.set_size(loop_ub_tmp);
-      problem->resample.set_size(1, loop_ub_tmp);
+      loop_ub_tmp = static_cast<int32_T>(problemStruct->numberOfContrasts);
+      contrastParams->ssubs.set_size(loop_ub_tmp);
+      contrastParams->backgroundParams.set_size(loop_ub_tmp);
+      contrastParams->qzshifts.set_size(loop_ub_tmp);
+      contrastParams->scalefactors.set_size(loop_ub_tmp);
+      contrastParams->bulkIn.set_size(loop_ub_tmp);
+      contrastParams->bulkOut.set_size(loop_ub_tmp);
+      contrastParams->resolutionParams.set_size(loop_ub_tmp);
+      contrastParams->calculations.allChis.set_size(loop_ub_tmp);
+      contrastParams->calculations.sumChi = 0.0;
+      contrastParams->allSubRough.set_size(loop_ub_tmp);
+      contrastParams->resample.set_size(1, loop_ub_tmp);
       reflectivity.set_size(loop_ub_tmp);
       simulation.set_size(loop_ub_tmp);
       shiftedData.set_size(loop_ub_tmp);
@@ -71,16 +71,16 @@ namespace RAT
       sldProfiles.set_size(loop_ub_tmp);
       allLayers.set_size(loop_ub_tmp);
       for (int32_T i{0}; i < loop_ub_tmp; i++) {
-        problem->ssubs[i] = 0.0;
-        problem->backgroundParams[i] = 0.0;
-        problem->qzshifts[i] = 0.0;
-        problem->scalefactors[i] = 0.0;
-        problem->bulkIn[i] = 0.0;
-        problem->bulkOut[i] = 0.0;
-        problem->resolutionParams[i] = 0.0;
-        problem->calculations.allChis[i] = 0.0;
-        problem->allSubRough[i] = 0.0;
-        problem->resample[i] = 0.0;
+        contrastParams->ssubs[i] = 0.0;
+        contrastParams->backgroundParams[i] = 0.0;
+        contrastParams->qzshifts[i] = 0.0;
+        contrastParams->scalefactors[i] = 0.0;
+        contrastParams->bulkIn[i] = 0.0;
+        contrastParams->bulkOut[i] = 0.0;
+        contrastParams->resolutionParams[i] = 0.0;
+        contrastParams->calculations.allChis[i] = 0.0;
+        contrastParams->allSubRough[i] = 0.0;
+        contrastParams->resample[i] = 0.0;
         reflectivity[i].f1.set_size(2, 2);
         reflectivity[i].f1[0] = 1.0;
         reflectivity[i].f1[1] = 1.0;
@@ -109,7 +109,7 @@ namespace RAT
         }
       }
 
-      coder::lower(problemDef->modelType.data, problemDef->modelType.size,
+      coder::lower(problemStruct->modelType.data, problemStruct->modelType.size,
                    switch_expression_data, switch_expression_size);
       if (coder::internal::k_strcmp(switch_expression_data,
            switch_expression_size)) {
@@ -127,23 +127,23 @@ namespace RAT
       switch (loop_ub_tmp) {
        case 0:
         //  Standard layers calculation
-        standardLayers::calculate(problemDef, problemDefCells, controls, problem,
-          reflectivity, simulation, shiftedData, layerSlds, sldProfiles,
-          allLayers);
+        standardLayers::calculate(problemStruct, problemCells, controls,
+          contrastParams, reflectivity, simulation, shiftedData, layerSlds,
+          sldProfiles, allLayers);
         break;
 
        case 1:
         //  Custom layers with user supplied custom model file
-        customLayers::calculate(problemDef, problemDefCells, controls, problem,
-          reflectivity, simulation, shiftedData, layerSlds, sldProfiles,
-          allLayers);
+        customLayers::calculate(problemStruct, problemCells, controls,
+          contrastParams, reflectivity, simulation, shiftedData, layerSlds,
+          sldProfiles, allLayers);
         break;
 
        case 2:
         //  Custom SLD profile with user defined model file
-        customXY::calculate(problemDef, problemDefCells, controls, problem,
-                            reflectivity, simulation, shiftedData, layerSlds,
-                            sldProfiles, allLayers);
+        customXY::calculate(problemStruct, problemCells, controls,
+                            contrastParams, reflectivity, simulation,
+                            shiftedData, layerSlds, sldProfiles, allLayers);
         break;
       }
     }

@@ -19,7 +19,7 @@
 // Type Definitions
 namespace RAT
 {
-  struct struct15_T
+  struct struct14_T
   {
     real_T Y;
     real_T N;
@@ -30,95 +30,58 @@ namespace RAT
     real_T f1[2];
   };
 
-  struct struct0_T
-  {
-    ::coder::array<real_T, 2U> contrastBackgrounds;
-    ::coder::array<real_T, 2U> contrastBackgroundsType;
-    ::coder::bounded_array<char_T, 10000U, 2U> TF;
-    ::coder::array<real_T, 2U> resample;
-    ::coder::array<real_T, 2U> dataPresent;
-    ::coder::array<real_T, 2U> oilChiDataPresent;
-    real_T numberOfContrasts;
-    ::coder::bounded_array<char_T, 10000U, 2U> geometry;
-    boolean_T useImaginary;
-    ::coder::array<real_T, 2U> contrastQzshifts;
-    ::coder::array<real_T, 2U> contrastScalefactors;
-    ::coder::array<real_T, 2U> contrastBulkIns;
-    ::coder::array<real_T, 2U> contrastBulkOuts;
-    ::coder::array<real_T, 2U> contrastResolutions;
-    ::coder::array<real_T, 2U> backgroundParams;
-    ::coder::array<real_T, 2U> qzshifts;
-    ::coder::array<real_T, 2U> scalefactors;
-    ::coder::array<real_T, 2U> bulkIn;
-    ::coder::array<real_T, 2U> bulkOut;
-    ::coder::array<real_T, 2U> resolutionParams;
-    ::coder::array<real_T, 2U> params;
-    real_T numberOfLayers;
-    ::coder::bounded_array<char_T, 10000U, 2U> modelType;
-    ::coder::array<real_T, 2U> contrastCustomFiles;
-    ::coder::array<real_T, 2U> contrastDomainRatios;
-    ::coder::array<real_T, 2U> domainRatio;
-    real_T numberOfDomainContrasts;
-    ::coder::array<real_T, 2U> fitParams;
-    ::coder::array<real_T, 2U> otherParams;
-    ::coder::array<real_T, 2U> fitLimits;
-    ::coder::array<real_T, 2U> otherLimits;
-  };
-
-  struct cell_wrap_3
+  struct cell_wrap_8
   {
     ::coder::array<real_T, 2U> f1;
   };
 
-  struct cell_wrap_4
+  struct cell_wrap_9
   {
-    ::coder::array<real_T, 2U> f1;
+    ::coder::array<cell_wrap_8, 2U> f1;
   };
 
-  struct cell_wrap_5
+  struct struct13_T
   {
-    ::coder::bounded_array<real_T, 10U, 2U> f1;
+    real_T d;
+    real_T N;
+    real_T T;
+    boolean_T parallel;
+    real_T CPU;
+    real_T lambda;
+    real_T pUnitGamma;
+    real_T nCR;
+    real_T delta;
+    real_T steps;
+    real_T zeta;
+    char_T outlier[3];
+    boolean_T adaptPCR;
+    real_T thinning;
+    real_T epsilon;
+    boolean_T ABC;
+    boolean_T IO;
+    boolean_T modout;
+    boolean_T restart;
+    boolean_T save;
+    ::coder::array<real_T, 2U> R;
   };
 
-  struct cell_wrap_6
+  struct struct12_T
   {
-    ::coder::bounded_array<char_T, 10000U, 2U> f1;
+    ::coder::bounded_array<real_T, 2000U, 2U> outlier;
+    real_T RunTime;
+    struct13_T DREAMPar;
+    struct14_T Meas_info;
+    real_T iteration;
+    real_T iloc;
+    real_T fx;
+    ::coder::bounded_array<real_T, 2000U, 2U> AR;
+    ::coder::array<real_T, 2U> R_stat;
+    ::coder::array<real_T, 2U> CR;
   };
 
-  struct cell_7
+  struct cell_wrap_1
   {
-    ::coder::array<cell_wrap_2, 2U> f1;
-    ::coder::array<cell_wrap_3, 2U> f2;
-    ::coder::array<cell_wrap_2, 2U> f3;
-    ::coder::array<cell_wrap_2, 2U> f4;
-    ::coder::array<cell_wrap_4, 2U> f5;
-    ::coder::array<cell_wrap_5, 1U> f6;
-    ::coder::array<cell_wrap_6, 2U> f7;
-    ::coder::array<cell_wrap_6, 2U> f8;
-    ::coder::array<cell_wrap_6, 2U> f9;
-    ::coder::array<cell_wrap_6, 2U> f10;
-    ::coder::array<cell_wrap_6, 2U> f11;
-    ::coder::array<cell_wrap_6, 2U> f12;
-    ::coder::array<cell_wrap_6, 2U> f13;
-    ::coder::array<cell_wrap_6, 2U> f14;
-    ::coder::array<cell_wrap_6, 2U> f15;
-    ::coder::array<cell_wrap_6, 2U> f16;
-    ::coder::array<cell_wrap_3, 2U> f17;
-    ::coder::array<cell_wrap_2, 2U> f18;
-    ::coder::array<cell_wrap_4, 2U> f19;
-    ::coder::array<cell_wrap_6, 2U> f20;
-  };
-
-  struct struct1_T
-  {
-    ::coder::array<real_T, 2U> param;
-    ::coder::array<real_T, 2U> backgroundParam;
-    ::coder::array<real_T, 2U> scalefactor;
-    ::coder::array<real_T, 2U> qzshift;
-    ::coder::array<real_T, 2U> bulkIn;
-    ::coder::array<real_T, 2U> bulkOut;
-    ::coder::array<real_T, 2U> resolutionParam;
-    ::coder::array<real_T, 2U> domainRatio;
+    ::coder::array<char_T, 2U> f1;
   };
 
   struct struct3_T
@@ -165,17 +128,52 @@ namespace RAT
     struct3_T checks;
   };
 
+  struct struct6_T
+  {
+    ::coder::array<real_T, 1U> allChis;
+    real_T sumChi;
+  };
+
+  struct cell_wrap_18
+  {
+    ::coder::array<real_T, 2U> f1;
+  };
+
+  struct cell_wrap_22
+  {
+    ::coder::array<real_T, 2U> f1;
+  };
+
+  struct cell_wrap_48
+  {
+    ::coder::array<real_T, 2U> f1;
+  };
+
+  struct struct10_T
+  {
+    ::coder::array<real_T, 2U> par95;
+    ::coder::array<real_T, 2U> par65;
+    ::coder::array<real_T, 2U> mean;
+  };
+
+  struct struct1_T
+  {
+    ::coder::array<real_T, 2U> param;
+    ::coder::array<real_T, 2U> backgroundParam;
+    ::coder::array<real_T, 2U> scalefactor;
+    ::coder::array<real_T, 2U> qzshift;
+    ::coder::array<real_T, 2U> bulkIn;
+    ::coder::array<real_T, 2U> bulkOut;
+    ::coder::array<real_T, 2U> resolutionParam;
+    ::coder::array<real_T, 2U> domainRatio;
+  };
+
   struct cell_0
   {
     ::coder::array<char_T, 2U> f1;
     ::coder::array<char_T, 2U> f2;
     real_T f3;
     real_T f4;
-  };
-
-  struct cell_wrap_1
-  {
-    ::coder::array<char_T, 2U> f1;
   };
 
   struct struct4_T
@@ -192,7 +190,68 @@ namespace RAT
     ::coder::array<real_T, 2U> priorValues;
   };
 
-  struct struct5_T
+  struct struct8_T
+  {
+    ::coder::array<cell_wrap_8, 1U> ref;
+    ::coder::array<cell_wrap_8, 2U> sld;
+    real_T chi;
+    ::coder::array<cell_wrap_8, 1U> data;
+  };
+
+  struct struct9_T
+  {
+    ::coder::array<cell_wrap_8, 1U> refPredInts;
+    ::coder::array<cell_wrap_8, 2U> sldPredInts;
+    ::coder::array<cell_wrap_8, 1U> refXdata;
+    ::coder::array<cell_wrap_8, 2U> sldXdata;
+    ::coder::bounded_array<real_T, 1000U, 1U> sampleChi;
+  };
+
+  struct cell_wrap_3
+  {
+    ::coder::array<real_T, 2U> f1;
+  };
+
+  struct cell_wrap_4
+  {
+    ::coder::array<real_T, 2U> f1;
+  };
+
+  struct cell_wrap_5
+  {
+    ::coder::bounded_array<real_T, 10U, 2U> f1;
+  };
+
+  struct cell_wrap_6
+  {
+    ::coder::bounded_array<char_T, 10000U, 2U> f1;
+  };
+
+  struct cell_7
+  {
+    ::coder::array<cell_wrap_2, 2U> f1;
+    ::coder::array<cell_wrap_3, 2U> f2;
+    ::coder::array<cell_wrap_2, 2U> f3;
+    ::coder::array<cell_wrap_2, 2U> f4;
+    ::coder::array<cell_wrap_4, 2U> f5;
+    ::coder::array<cell_wrap_5, 1U> f6;
+    ::coder::array<cell_wrap_6, 2U> f7;
+    ::coder::array<cell_wrap_6, 2U> f8;
+    ::coder::array<cell_wrap_6, 2U> f9;
+    ::coder::array<cell_wrap_6, 2U> f10;
+    ::coder::array<cell_wrap_6, 2U> f11;
+    ::coder::array<cell_wrap_6, 2U> f12;
+    ::coder::array<cell_wrap_6, 2U> f13;
+    ::coder::array<cell_wrap_6, 2U> f14;
+    ::coder::array<cell_wrap_6, 2U> f15;
+    ::coder::array<cell_wrap_6, 2U> f16;
+    ::coder::array<cell_wrap_3, 2U> f17;
+    ::coder::array<cell_wrap_2, 2U> f18;
+    ::coder::array<cell_wrap_4, 2U> f19;
+    ::coder::array<cell_wrap_6, 2U> f20;
+  };
+
+  struct struct0_T
   {
     ::coder::array<real_T, 2U> contrastBackgrounds;
     ::coder::array<real_T, 2U> contrastBackgroundsType;
@@ -227,13 +286,7 @@ namespace RAT
     ::coder::array<real_T, 2U> otherLimits;
   };
 
-  struct struct7_T
-  {
-    ::coder::array<real_T, 1U> allChis;
-    real_T sumChi;
-  };
-
-  struct struct6_T
+  struct struct5_T
   {
     ::coder::array<real_T, 1U> ssubs;
     ::coder::array<real_T, 1U> backgroundParams;
@@ -242,147 +295,38 @@ namespace RAT
     ::coder::array<real_T, 1U> bulkIn;
     ::coder::array<real_T, 1U> bulkOut;
     ::coder::array<real_T, 1U> resolutionParams;
-    struct7_T calculations;
+    struct6_T calculations;
     ::coder::array<real_T, 1U> allSubRough;
     ::coder::array<real_T, 2U> resample;
   };
 
-  struct cell_wrap_8
-  {
-    ::coder::array<real_T, 2U> f1;
-  };
-
-  struct cell_wrap_9
-  {
-    ::coder::array<cell_wrap_8, 2U> f1;
-  };
-
-  struct struct9_T
-  {
-    ::coder::array<cell_wrap_8, 1U> ref;
-    ::coder::array<cell_wrap_8, 2U> sld;
-    real_T chi;
-    ::coder::array<cell_wrap_8, 1U> data;
-  };
-
-  struct struct10_T
-  {
-    ::coder::array<cell_wrap_8, 1U> refPredInts;
-    ::coder::array<cell_wrap_8, 1U> sldPredInts;
-    ::coder::array<cell_wrap_8, 1U> refXdata;
-    ::coder::array<cell_wrap_8, 2U> sldXdata;
-    ::coder::bounded_array<real_T, 1000U, 1U> sampleChi;
-  };
-
-  struct struct11_T
-  {
-    ::coder::array<real_T, 2U> par95;
-    ::coder::array<real_T, 2U> par65;
-    ::coder::array<real_T, 2U> mean;
-  };
-
-  struct struct14_T
-  {
-    real_T d;
-    real_T N;
-    real_T T;
-    boolean_T parallel;
-    real_T CPU;
-    real_T lambda;
-    real_T pUnitGamma;
-    real_T nCR;
-    real_T delta;
-    real_T steps;
-    real_T zeta;
-    char_T outlier[3];
-    boolean_T adaptPCR;
-    real_T thinning;
-    real_T epsilon;
-    boolean_T ABC;
-    boolean_T IO;
-    boolean_T modout;
-    boolean_T restart;
-    boolean_T save;
-    ::coder::array<real_T, 2U> R;
-  };
-
-  struct struct13_T
-  {
-    ::coder::bounded_array<real_T, 2000U, 2U> outlier;
-    real_T RunTime;
-    struct14_T DREAMPar;
-    struct15_T Meas_info;
-    real_T iteration;
-    real_T iloc;
-    real_T fx;
-    ::coder::bounded_array<real_T, 2000U, 2U> AR;
-    ::coder::array<real_T, 2U> R_stat;
-    ::coder::array<real_T, 2U> CR;
-  };
-
-  struct struct16_T
+  struct struct15_T
   {
     real_T LogZ;
     ::coder::array<real_T, 2U> nestSamples;
     ::coder::array<real_T, 2U> postSamples;
   };
 
-  struct struct12_T
+  struct struct11_T
   {
     ::coder::array<real_T, 3U> allChains;
-    struct13_T dreamOutput;
-    struct16_T nestOutput;
+    struct12_T dreamOutput;
+    struct15_T nestOutput;
   };
 
-  struct struct8_T
+  struct struct7_T
   {
-    struct9_T bestFitsMean;
-    struct10_T predlims;
-    struct11_T parConfInts;
+    struct8_T bestFitsMean;
+    struct9_T predlims;
+    struct10_T parConfInts;
     ::coder::array<real_T, 2U> bestPars;
-    struct12_T bayesRes;
+    struct11_T bayesRes;
     ::coder::array<real_T, 2U> chain;
-  };
-
-  struct cell_wrap_11
-  {
-    ::coder::array<real_T, 2U> f1;
-  };
-
-  struct cell_wrap_20
-  {
-    ::coder::array<real_T, 2U> f1;
-  };
-
-  struct cell_wrap_21
-  {
-    ::coder::array<real_T, 2U> f1;
-  };
-
-  struct cell_wrap_24
-  {
-    ::coder::array<real_T, 2U> f1;
-  };
-
-  struct cell_wrap_50
-  {
-    ::coder::array<real_T, 2U> f1;
   };
 
   struct SLDFunction
   {
     int32_T belowVals_data[10000];
-  };
-
-  struct normalizeFunction
-  {
-    real_T tmp_data[6000];
-  };
-
-  struct resampleLayersReIm
-  {
-    real_T sldProfileIm_data[6000];
-    real_T b_sldProfileIm_data[6000];
   };
 
   struct parallelContrasts
@@ -399,10 +343,8 @@ namespace RAT
   struct RATMainTLS
   {
     SLDFunction f0;
-    normalizeFunction f1;
-    resampleLayersReIm f2;
-    parallelContrasts f3;
-    b_parallelContrasts f4;
+    parallelContrasts f1;
+    b_parallelContrasts f2;
   };
 }
 

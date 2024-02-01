@@ -19,16 +19,18 @@
 // Function Declarations
 namespace RAT
 {
-  void b_callCppFunction(::coder::array<real_T, 2U> &params, real_T bulkIn,
-    real_T bulkOut, real_T contrast, const char_T pointer_data[], const int32_T
-    pointer_size[2], ::coder::array<real_T, 2U> &output, real_T *subRough);
-  void c_callCppFunction(::coder::array<real_T, 2U> &params, real_T bulkIn,
-    real_T bulkOut, real_T contrast, const char_T pointer_data[], const int32_T
-    pointer_size[2], ::coder::array<real_T, 2U> &output, real_T *subRough);
-  void callCppFunction(::coder::array<real_T, 2U> &params, real_T bulkIn, real_T
-                       bulkOut, real_T contrast, const char_T pointer_data[],
-                       const int32_T pointer_size[2], ::coder::array<real_T, 2U>
-                       &output, real_T *subRough);
+  void b_callCppFunction(const char_T pointer_data[], const int32_T
+    pointer_size[2], ::coder::array<real_T, 2U> &params, real_T bulkIn, ::coder::
+    array<real_T, 2U> &bulkOut, real_T contrast, ::coder::array<real_T, 2U>
+    &output, real_T *subRough);
+  void c_callCppFunction(const char_T pointer_data[], const int32_T
+    pointer_size[2], ::coder::array<real_T, 2U> &params, real_T bulkIn, ::coder::
+    array<real_T, 2U> &bulkOut, real_T contrast, ::coder::array<real_T, 2U>
+    &output, real_T *subRough);
+  void callCppFunction(const char_T pointer_data[], const int32_T pointer_size[2],
+                       ::coder::array<real_T, 2U> &params, real_T bulkIn, ::
+                       coder::array<real_T, 2U> &bulkOut, real_T contrast, ::
+                       coder::array<real_T, 2U> &output, real_T *subRough);
 }
 
 #endif

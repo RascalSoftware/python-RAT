@@ -19,9 +19,9 @@
 // Function Definitions
 namespace RAT
 {
-  void evaluateModel(const ::coder::array<real_T, 2U> &x, const struct14_T
-                     *DREAMPar, const struct5_T *ratInputs_problemDef, const
-                     cell_14 *ratInputs_problemDefCells, const struct2_T
+  void evaluateModel(const ::coder::array<real_T, 2U> &x, const struct13_T
+                     *DREAMPar, const c_struct_T *ratInputs_problemStruct, const
+                     cell_11 *ratInputs_problemCells, const struct2_T
                      *ratInputs_controls, ::coder::array<real_T, 2U> &fx)
   {
     ::coder::array<real_T, 2U> b_x;
@@ -60,7 +60,7 @@ namespace RAT
         b_x[i] = x[ii + x.size(0) * i];
       }
 
-      fx[ii] = DREAMWrapper(b_x, ratInputs_problemDef, ratInputs_problemDefCells,
+      fx[ii] = DREAMWrapper(b_x, ratInputs_problemStruct, ratInputs_problemCells,
                             ratInputs_controls);
     }
   }

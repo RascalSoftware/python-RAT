@@ -31,22 +31,22 @@ namespace RAT
   {
     namespace standardLayers
     {
-      void c_parallelContrasts(const struct5_T *problemDef, const cell_14
-        *problemDefCells, const struct2_T *controls, ::coder::array<real_T, 1U>
+      void c_parallelContrasts(const c_struct_T *problemStruct, const cell_11
+        *problemCells, const struct2_T *controls, ::coder::array<real_T, 1U>
         &outSsubs, ::coder::array<real_T, 1U> &backgroundParams, ::coder::array<
         real_T, 1U> &qzshifts, ::coder::array<real_T, 1U> &scalefactors, ::coder::
         array<real_T, 1U> &bulkIns, ::coder::array<real_T, 1U> &bulkOuts, ::
         coder::array<real_T, 1U> &resolutionParams, ::coder::array<real_T, 1U>
-        &chis, ::coder::array<cell_wrap_11, 1U> &reflectivity, ::coder::array<
-        cell_wrap_11, 1U> &simulation, ::coder::array<cell_wrap_8, 1U>
+        &chis, ::coder::array<cell_wrap_20, 1U> &reflectivity, ::coder::array<
+        cell_wrap_20, 1U> &simulation, ::coder::array<cell_wrap_8, 1U>
         &shiftedData, ::coder::array<cell_wrap_8, 2U> &layerSlds, ::coder::array<
         cell_wrap_8, 2U> &domainSldProfiles, ::coder::array<cell_wrap_8, 2U>
         &allLayers, ::coder::array<real_T, 1U> &allRoughs)
       {
-        ::coder::array<cell_wrap_24, 2U> outParameterisedLayers;
-        ::coder::array<cell_wrap_37, 1U> tempAllLayers;
-        ::coder::array<cell_wrap_37, 1U> tempLayerSlds;
-        ::coder::array<cell_wrap_37, 1U> tempSldProfiles;
+        ::coder::array<cell_wrap_22, 2U> outParameterisedLayers;
+        ::coder::array<cell_wrap_35, 1U> tempAllLayers;
+        ::coder::array<cell_wrap_35, 1U> tempLayerSlds;
+        ::coder::array<cell_wrap_35, 1U> tempSldProfiles;
         ::coder::array<real_T, 2U> a__6;
         ::coder::array<real_T, 2U> reflect1;
         ::coder::array<real_T, 2U> reflect2;
@@ -107,7 +107,7 @@ namespace RAT
         //  Splits up the master input list of all arrays into separate arrays
         //
         //  INPUTS:
-        //      * problemDefCells: cell array where all the project data is grouped together.
+        //      * problemCells: cell array where all the project data is grouped together.
         //
         //  OUTPUTS:
         //      * repeatLayers: controls repeating of the layers stack.
@@ -118,52 +118,56 @@ namespace RAT
         //      * contrastLayers: Which specific combination of arrays are needed for each contrast.
         //      * customFiles:Filenames and path for any custom files used.
         //  Additionally extract the additional domain layers details
-        //  Extract individual parameters from problemDef struct
-        // Extract individual parameters from problemDef
-        nParams = problemDef->params.size(1);
-        numberOfContrasts = problemDef->numberOfContrasts;
+        //  Extract individual parameters from problemStruct
+        // Extract individual parameters from problem
+        nParams = problemStruct->params.size(1);
+        numberOfContrasts = problemStruct->numberOfContrasts;
         calcSld = controls->calcSldDuringFit;
-        useImaginary = problemDef->useImaginary;
+        useImaginary = problemStruct->useImaginary;
 
         //  Default for compile.
         //  Allocate the memory for the output arrays before the main loop
         backgroundParams.set_size(static_cast<int32_T>
-          (problemDef->numberOfContrasts));
+          (problemStruct->numberOfContrasts));
 
         //  end memory allocation.
         //  First we need to allocate the absolute values of the input
         //  parameters to all the layers in the layers list. This only needs
         //  to be done once, and so is done outside the contrasts loop
-        allocateParamsToLayers(problemDef->params, problemDefCells->f6,
+        allocateParamsToLayers(problemStruct->params, problemCells->f6,
           outParameterisedLayers);
 
         //  Resample params if requiired
         //  Loop over all the contrasts
-        outSsubs.set_size(static_cast<int32_T>(problemDef->numberOfContrasts));
+        outSsubs.set_size(static_cast<int32_T>(problemStruct->numberOfContrasts));
         tempSldProfiles.set_size(static_cast<int32_T>
-          (problemDef->numberOfContrasts));
-        reflectivity.set_size(static_cast<int32_T>(problemDef->numberOfContrasts));
-        simulation.set_size(static_cast<int32_T>(problemDef->numberOfContrasts));
-        shiftedData.set_size(static_cast<int32_T>(problemDef->numberOfContrasts));
+          (problemStruct->numberOfContrasts));
+        reflectivity.set_size(static_cast<int32_T>
+                              (problemStruct->numberOfContrasts));
+        simulation.set_size(static_cast<int32_T>
+                            (problemStruct->numberOfContrasts));
+        shiftedData.set_size(static_cast<int32_T>
+                             (problemStruct->numberOfContrasts));
         tempLayerSlds.set_size(static_cast<int32_T>
-          (problemDef->numberOfContrasts));
+          (problemStruct->numberOfContrasts));
         tempAllLayers.set_size(static_cast<int32_T>
-          (problemDef->numberOfContrasts));
-        chis.set_size(static_cast<int32_T>(problemDef->numberOfContrasts));
-        qzshifts.set_size(static_cast<int32_T>(problemDef->numberOfContrasts));
-        scalefactors.set_size(static_cast<int32_T>(problemDef->numberOfContrasts));
-        bulkIns.set_size(static_cast<int32_T>(problemDef->numberOfContrasts));
-        bulkOuts.set_size(static_cast<int32_T>(problemDef->numberOfContrasts));
+          (problemStruct->numberOfContrasts));
+        chis.set_size(static_cast<int32_T>(problemStruct->numberOfContrasts));
+        qzshifts.set_size(static_cast<int32_T>(problemStruct->numberOfContrasts));
+        scalefactors.set_size(static_cast<int32_T>
+                              (problemStruct->numberOfContrasts));
+        bulkIns.set_size(static_cast<int32_T>(problemStruct->numberOfContrasts));
+        bulkOuts.set_size(static_cast<int32_T>(problemStruct->numberOfContrasts));
         resolutionParams.set_size(static_cast<int32_T>
-          (problemDef->numberOfContrasts));
-        allRoughs.set_size(static_cast<int32_T>(problemDef->numberOfContrasts));
-        layerSlds.set_size(static_cast<int32_T>(problemDef->numberOfContrasts),
+          (problemStruct->numberOfContrasts));
+        allRoughs.set_size(static_cast<int32_T>(problemStruct->numberOfContrasts));
+        layerSlds.set_size(static_cast<int32_T>(problemStruct->numberOfContrasts),
                            2);
-        allLayers.set_size(static_cast<int32_T>(problemDef->numberOfContrasts),
+        allLayers.set_size(static_cast<int32_T>(problemStruct->numberOfContrasts),
                            2);
         domainSldProfiles.set_size(static_cast<int32_T>
-          (problemDef->numberOfContrasts), 2);
-        ub_loop = static_cast<int32_T>(problemDef->numberOfContrasts) - 1;
+          (problemStruct->numberOfContrasts), 2);
+        ub_loop = static_cast<int32_T>(problemStruct->numberOfContrasts) - 1;
 
 #pragma omp parallel \
  num_threads(omp_get_max_threads()) \
@@ -181,28 +185,28 @@ namespace RAT
             //  from the input arrays.
             //  First need to decide which values of the backgrounds, scalefactors
             //  data shifts and bulk contrasts are associated with this contrast
-            backSort(problemDef->contrastBackgrounds[i],
-                     problemDef->contrastQzshifts[i],
-                     problemDef->contrastScalefactors[i],
-                     problemDef->contrastBulkIns[i],
-                     problemDef->contrastBulkOuts[i],
-                     problemDef->contrastResolutions[i],
-                     problemDef->backgroundParams, problemDef->qzshifts,
-                     problemDef->scalefactors, problemDef->bulkIn,
-                     problemDef->bulkOut, problemDef->resolutionParams,
+            backSort(problemStruct->contrastBackgrounds[i],
+                     problemStruct->contrastQzshifts[i],
+                     problemStruct->contrastScalefactors[i],
+                     problemStruct->contrastBulkIns[i],
+                     problemStruct->contrastBulkOuts[i],
+                     problemStruct->contrastResolutions[i],
+                     problemStruct->backgroundParams, problemStruct->qzshifts,
+                     problemStruct->scalefactors, problemStruct->bulkIn,
+                     problemStruct->bulkOut, problemStruct->resolutionParams,
                      &thisBackground, &thisQzshift, &thisScalefactor,
                      &thisBulkIn, &thisBulkOut, &thisResol);
 
             //  Also need to determine which layers from the overall layers list
             //  are required for this contrast, and put them in the correct order
             //  according to geometry. We run it twice, once for each domain...
-            allocateLayersForContrast(problemDefCells->f19[0].f1,
+            allocateLayersForContrast(problemCells->f19[0].f1,
               outParameterisedLayers, useImaginary,
-              RATMainTLSThread->f3.thisContrastLayers1_data,
+              RATMainTLSThread->f1.thisContrastLayers1_data,
               thisContrastLayers1_size);
-            allocateLayersForContrast(problemDefCells->f19[1].f1,
+            allocateLayersForContrast(problemCells->f19[1].f1,
               outParameterisedLayers, useImaginary,
-              RATMainTLSThread->f3.thisContrastLayers2_data,
+              RATMainTLSThread->f1.thisContrastLayers2_data,
               thisContrastLayers2_size);
 
             //  For the other parameters, we extract the correct ones from the input
@@ -214,51 +218,51 @@ namespace RAT
             //  Call the core layers calculation - need to do this once for each
             //  domain
             thisContrastLayers1_data.set
-              (&RATMainTLSThread->f3.thisContrastLayers1_data[0],
+              (&RATMainTLSThread->f1.thisContrastLayers1_data[0],
                thisContrastLayers1_size[0], thisContrastLayers1_size[1]);
-            b_dv[0] = problemDefCells->f3[i].f1[0];
-            b_dv[1] = problemDefCells->f3[i].f1[1];
-            b_dv1[0] = problemDefCells->f4[i].f1[0];
-            b_dv1[1] = problemDefCells->f4[i].f1[1];
-            dv2[0] = problemDefCells->f1[i].f1[0];
-            dv2[1] = problemDefCells->f1[i].f1[1];
+            b_dv[0] = problemCells->f3[i].f1[0];
+            b_dv[1] = problemCells->f3[i].f1[1];
+            b_dv1[0] = problemCells->f4[i].f1[0];
+            b_dv1[1] = problemCells->f4[i].f1[1];
+            dv2[0] = problemCells->f1[i].f1[0];
+            dv2[1] = problemCells->f1[i].f1[1];
             nonPolarisedTF::coreLayersCalculation(thisContrastLayers1_data,
-              problemDef->params[0], problemDef->geometry.data,
-              problemDef->geometry.size, thisBulkIn, thisBulkOut,
-              problemDef->resample[i], calcSld, thisScalefactor, thisQzshift,
-              problemDef->dataPresent[i], problemDefCells->f2[i].f1, b_dv, b_dv1,
+              problemStruct->params[0], problemStruct->geometry.data,
+              problemStruct->geometry.size, thisBulkIn, thisBulkOut,
+              problemStruct->resample[i], calcSld, thisScalefactor, thisQzshift,
+              problemStruct->dataPresent[i], problemCells->f2[i].f1, b_dv, b_dv1,
               dv2, thisBackground, thisResol,
-              problemDef->contrastBackgroundsType[i], static_cast<real_T>
+              problemStruct->contrastBackgroundsType[i], static_cast<real_T>
               (nParams), controls->resamPars, useImaginary, r3.f1, reflect1,
               simul1, shiftedDat, r2.f1, r4.f1, &a__5, &thisSsubs);
             thisContrastLayers2_data.set
-              (&RATMainTLSThread->f3.thisContrastLayers2_data[0],
+              (&RATMainTLSThread->f1.thisContrastLayers2_data[0],
                thisContrastLayers2_size[0], thisContrastLayers2_size[1]);
-            b_dv[0] = problemDefCells->f3[i].f1[0];
-            b_dv[1] = problemDefCells->f3[i].f1[1];
-            b_dv1[0] = problemDefCells->f4[i].f1[0];
-            b_dv1[1] = problemDefCells->f4[i].f1[1];
-            dv2[0] = problemDefCells->f1[i].f1[0];
-            dv2[1] = problemDefCells->f1[i].f1[1];
+            b_dv[0] = problemCells->f3[i].f1[0];
+            b_dv[1] = problemCells->f3[i].f1[1];
+            b_dv1[0] = problemCells->f4[i].f1[0];
+            b_dv1[1] = problemCells->f4[i].f1[1];
+            dv2[0] = problemCells->f1[i].f1[0];
+            dv2[1] = problemCells->f1[i].f1[1];
             nonPolarisedTF::coreLayersCalculation(thisContrastLayers2_data,
-              problemDef->params[0], problemDef->geometry.data,
-              problemDef->geometry.size, thisBulkIn, thisBulkOut,
-              problemDef->resample[i], calcSld, thisScalefactor, thisQzshift,
-              problemDef->dataPresent[i], problemDefCells->f2[i].f1, b_dv, b_dv1,
+              problemStruct->params[0], problemStruct->geometry.data,
+              problemStruct->geometry.size, thisBulkIn, thisBulkOut,
+              problemStruct->resample[i], calcSld, thisScalefactor, thisQzshift,
+              problemStruct->dataPresent[i], problemCells->f2[i].f1, b_dv, b_dv1,
               dv2, thisBackground, thisResol,
-              problemDef->contrastBackgroundsType[i], static_cast<real_T>
+              problemStruct->contrastBackgroundsType[i], static_cast<real_T>
               (nParams), controls->resamPars, useImaginary, r1.f1, reflect2,
               simul2, a__6, r.f1, r5.f1, &a__7, &a__8);
 
             //  Calculate the average reflectivities....
             averageReflectivity(reflect1, reflect2, simul1, simul2,
-                                problemDef->domainRatio[static_cast<int32_T>
-                                (problemDef->contrastDomainRatios[i]) - 1],
+                                problemStruct->domainRatio[static_cast<int32_T>
+                                (problemStruct->contrastDomainRatios[i]) - 1],
                                 totReflect, totSimul);
 
             //  Get an overall chi-squared for the new averaged curve..
-            thisChiSquared = chiSquared(shiftedDat, totReflect, static_cast<
-              real_T>(problemDef->params.size(1)));
+            thisChiSquared = chiSquared(shiftedDat, totReflect,
+              static_cast<real_T>(problemStruct->params.size(1)));
 
             //  Store returned values for this contrast in the output arrays.
             //  As well as the calculated profiles, we also store a record of
@@ -304,7 +308,7 @@ namespace RAT
             bulkIns[i] = thisBulkIn;
             bulkOuts[i] = thisBulkOut;
             resolutionParams[i] = thisResol;
-            allRoughs[i] = problemDef->params[0];
+            allRoughs[i] = problemStruct->params[0];
           }
         }
 

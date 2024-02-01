@@ -19,16 +19,14 @@
 // Type Declarations
 namespace RAT
 {
-  struct cell_27;
+  struct cell_25;
 }
 
 // Function Declarations
 namespace RAT
 {
   void adaptive(const ::coder::array<real_T, 2U> &sldProfile, const real_T
-                startDomain[2], real_T minAngle, real_T nPoints, cell_27 *out);
-  void b_adaptive(const ::coder::array<real_T, 2U> &sldProfile, const real_T
-                  startDomain[2], real_T minAngle, real_T nPoints, cell_27 *out);
+                startDomain[2], real_T minAngle, real_T nPoints, cell_25 *out);
 }
 
 #endif

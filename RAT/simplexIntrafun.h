@@ -20,26 +20,26 @@
 // Type Declarations
 namespace RAT
 {
-  struct j_struct_T;
-  struct struct_T;
-  struct cell_13;
+  struct c_struct_T;
+  struct k_struct_T;
+  struct d_struct_T;
 }
 
 // Function Declarations
 namespace RAT
 {
-  void simplexIntrafun(const ::coder::array<real_T, 1U> &x, const struct5_T
-                       *problemDef, const ::coder::array<cell_wrap_2, 2U>
-                       &problemDefCells_f1, const ::coder::array<cell_wrap_8, 2U>
-                       &problemDefCells_f2, const ::coder::array<cell_wrap_2, 2U>
-                       &problemDefCells_f3, const ::coder::array<cell_wrap_2, 2U>
-                       &problemDefCells_f4, const ::coder::array<cell_wrap_8, 2U>
-                       &problemDefCells_f5, const ::coder::array<cell_wrap_8, 1U>
-                       &problemDefCells_f6, const ::coder::array<cell_wrap_1, 2U>
-                       &problemDefCells_f14, const ::coder::array<cell_wrap_8,
-                       2U> &problemDefCells_f19, const struct2_T *controls,
-                       const j_struct_T *params, real_T *fval, struct_T
-                       *b_problemDef, cell_13 *result);
+  void simplexIntrafun(const ::coder::array<real_T, 1U> &x, const c_struct_T
+                       *problemStruct, const ::coder::array<cell_wrap_2, 2U>
+                       &problemCells_f1, const ::coder::array<cell_wrap_8, 2U>
+                       &problemCells_f2, const ::coder::array<cell_wrap_2, 2U>
+                       &problemCells_f3, const ::coder::array<cell_wrap_2, 2U>
+                       &problemCells_f4, const ::coder::array<cell_wrap_8, 2U>
+                       &problemCells_f5, const ::coder::array<cell_wrap_8, 1U>
+                       &problemCells_f6, const ::coder::array<cell_wrap_1, 2U>
+                       &problemCells_f14, const ::coder::array<cell_wrap_8, 2U>
+                       &problemCells_f19, const struct2_T *controls, const
+                       k_struct_T *params, real_T *fval, d_struct_T
+                       *b_problemStruct, cell_wrap_9 result[6]);
 }
 
 #endif

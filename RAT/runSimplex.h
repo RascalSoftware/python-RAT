@@ -18,20 +18,20 @@
 // Type Declarations
 namespace RAT
 {
-  struct struct5_T;
-  struct cell_14;
+  struct c_struct_T;
+  struct cell_11;
   struct struct1_T;
   struct struct2_T;
-  struct struct_T;
+  struct d_struct_T;
   struct cell_wrap_9;
 }
 
 // Function Declarations
 namespace RAT
 {
-  void runSimplex(struct5_T *problemDef, const cell_14 *problemDefCells, const
-                  struct1_T *problemDefLimits, const struct2_T *controls,
-                  struct_T *problem, cell_wrap_9 result[6]);
+  void runSimplex(c_struct_T *problemStruct, const cell_11 *problemCells, const
+                  struct1_T *problemLimits, const struct2_T *controls,
+                  d_struct_T *contrastParams, cell_wrap_9 result[6]);
 }
 
 #endif

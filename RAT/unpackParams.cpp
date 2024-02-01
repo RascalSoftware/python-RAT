@@ -10,14 +10,14 @@
 
 // Include files
 #include "unpackParams.h"
-#include "RATMain_types.h"
+#include "RATMain_internal_types.h"
 #include "rt_nonfinite.h"
 #include "coder_array.h"
 
 // Function Definitions
 namespace RAT
 {
-  void unpackParams(struct5_T *problemDef, const ::coder::array<real_T, 2U>
+  void unpackParams(c_struct_T *problemStruct, const ::coder::array<real_T, 2U>
                     &controls_checks_fitParam, const ::coder::array<real_T, 2U>
                     &controls_checks_fitBackgroundParam, const ::coder::array<
                     real_T, 2U> &controls_checks_fitQzshift, const ::coder::
@@ -41,7 +41,7 @@ namespace RAT
     unpacked_counter = 1U;
     packed_counter = 1U;
     uppars_counter = 0;
-    unnamed_idx_1 = problemDef->params.size(1);
+    unnamed_idx_1 = problemStruct->params.size(1);
     uppars.set_size(1, unnamed_idx_1);
     for (i = 0; i < unnamed_idx_1; i++) {
       uppars[i] = 0.0;
@@ -50,26 +50,26 @@ namespace RAT
     i = controls_checks_fitParam.size(1);
     for (int32_T b_i{0}; b_i < i; b_i++) {
       if (controls_checks_fitParam[b_i] == 1.0) {
-        uppars[uppars_counter] = problemDef->fitParams[static_cast<int32_T>
+        uppars[uppars_counter] = problemStruct->fitParams[static_cast<int32_T>
           (unpacked_counter) - 1];
         unpacked_counter++;
         uppars_counter++;
       } else {
-        uppars[uppars_counter] = problemDef->otherParams[static_cast<int32_T>
+        uppars[uppars_counter] = problemStruct->otherParams[static_cast<int32_T>
           (packed_counter) - 1];
         packed_counter++;
         uppars_counter++;
       }
     }
 
-    problemDef->params.set_size(1, uppars.size(1));
+    problemStruct->params.set_size(1, uppars.size(1));
     unnamed_idx_1 = uppars.size(1);
     for (i = 0; i < unnamed_idx_1; i++) {
-      problemDef->params[i] = uppars[i];
+      problemStruct->params[i] = uppars[i];
     }
 
     // Also the backgrounds
-    unnamed_idx_1 = problemDef->backgroundParams.size(1);
+    unnamed_idx_1 = problemStruct->backgroundParams.size(1);
     uppars.set_size(1, unnamed_idx_1);
     for (i = 0; i < unnamed_idx_1; i++) {
       uppars[i] = 0.0;
@@ -79,26 +79,26 @@ namespace RAT
     i = controls_checks_fitBackgroundParam.size(1);
     for (int32_T b_i{0}; b_i < i; b_i++) {
       if (controls_checks_fitBackgroundParam[b_i] == 1.0) {
-        uppars[uppars_counter] = problemDef->fitParams[static_cast<int32_T>
+        uppars[uppars_counter] = problemStruct->fitParams[static_cast<int32_T>
           (unpacked_counter) - 1];
         unpacked_counter++;
         uppars_counter++;
       } else {
-        uppars[uppars_counter] = problemDef->otherParams[static_cast<int32_T>
+        uppars[uppars_counter] = problemStruct->otherParams[static_cast<int32_T>
           (packed_counter) - 1];
         packed_counter++;
         uppars_counter++;
       }
     }
 
-    problemDef->backgroundParams.set_size(1, uppars.size(1));
+    problemStruct->backgroundParams.set_size(1, uppars.size(1));
     unnamed_idx_1 = uppars.size(1);
     for (i = 0; i < unnamed_idx_1; i++) {
-      problemDef->backgroundParams[i] = uppars[i];
+      problemStruct->backgroundParams[i] = uppars[i];
     }
 
     // Scalefactors
-    unnamed_idx_1 = problemDef->scalefactors.size(1);
+    unnamed_idx_1 = problemStruct->scalefactors.size(1);
     uppars.set_size(1, unnamed_idx_1);
     for (i = 0; i < unnamed_idx_1; i++) {
       uppars[i] = 0.0;
@@ -108,26 +108,26 @@ namespace RAT
     i = controls_checks_fitScalefactor.size(1);
     for (int32_T b_i{0}; b_i < i; b_i++) {
       if (controls_checks_fitScalefactor[b_i] == 1.0) {
-        uppars[uppars_counter] = problemDef->fitParams[static_cast<int32_T>
+        uppars[uppars_counter] = problemStruct->fitParams[static_cast<int32_T>
           (unpacked_counter) - 1];
         unpacked_counter++;
         uppars_counter++;
       } else {
-        uppars[uppars_counter] = problemDef->otherParams[static_cast<int32_T>
+        uppars[uppars_counter] = problemStruct->otherParams[static_cast<int32_T>
           (packed_counter) - 1];
         packed_counter++;
         uppars_counter++;
       }
     }
 
-    problemDef->scalefactors.set_size(1, uppars.size(1));
+    problemStruct->scalefactors.set_size(1, uppars.size(1));
     unnamed_idx_1 = uppars.size(1);
     for (i = 0; i < unnamed_idx_1; i++) {
-      problemDef->scalefactors[i] = uppars[i];
+      problemStruct->scalefactors[i] = uppars[i];
     }
 
     // qzshifts
-    unnamed_idx_1 = problemDef->qzshifts.size(1);
+    unnamed_idx_1 = problemStruct->qzshifts.size(1);
     uppars.set_size(1, unnamed_idx_1);
     for (i = 0; i < unnamed_idx_1; i++) {
       uppars[i] = 0.0;
@@ -137,26 +137,26 @@ namespace RAT
     i = controls_checks_fitQzshift.size(1);
     for (int32_T b_i{0}; b_i < i; b_i++) {
       if (controls_checks_fitQzshift[b_i] == 1.0) {
-        uppars[uppars_counter] = problemDef->fitParams[static_cast<int32_T>
+        uppars[uppars_counter] = problemStruct->fitParams[static_cast<int32_T>
           (unpacked_counter) - 1];
         unpacked_counter++;
         uppars_counter++;
       } else {
-        uppars[uppars_counter] = problemDef->otherParams[static_cast<int32_T>
+        uppars[uppars_counter] = problemStruct->otherParams[static_cast<int32_T>
           (packed_counter) - 1];
         packed_counter++;
         uppars_counter++;
       }
     }
 
-    problemDef->qzshifts.set_size(1, uppars.size(1));
+    problemStruct->qzshifts.set_size(1, uppars.size(1));
     unnamed_idx_1 = uppars.size(1);
     for (i = 0; i < unnamed_idx_1; i++) {
-      problemDef->qzshifts[i] = uppars[i];
+      problemStruct->qzshifts[i] = uppars[i];
     }
 
     // Bulk In
-    unnamed_idx_1 = problemDef->bulkIn.size(1);
+    unnamed_idx_1 = problemStruct->bulkIn.size(1);
     uppars.set_size(1, unnamed_idx_1);
     for (i = 0; i < unnamed_idx_1; i++) {
       uppars[i] = 0.0;
@@ -166,26 +166,26 @@ namespace RAT
     i = controls_checks_fitBulkIn.size(1);
     for (int32_T b_i{0}; b_i < i; b_i++) {
       if (controls_checks_fitBulkIn[b_i] == 1.0) {
-        uppars[uppars_counter] = problemDef->fitParams[static_cast<int32_T>
+        uppars[uppars_counter] = problemStruct->fitParams[static_cast<int32_T>
           (unpacked_counter) - 1];
         unpacked_counter++;
         uppars_counter++;
       } else {
-        uppars[uppars_counter] = problemDef->otherParams[static_cast<int32_T>
+        uppars[uppars_counter] = problemStruct->otherParams[static_cast<int32_T>
           (packed_counter) - 1];
         packed_counter++;
         uppars_counter++;
       }
     }
 
-    problemDef->bulkIn.set_size(1, uppars.size(1));
+    problemStruct->bulkIn.set_size(1, uppars.size(1));
     unnamed_idx_1 = uppars.size(1);
     for (i = 0; i < unnamed_idx_1; i++) {
-      problemDef->bulkIn[i] = uppars[i];
+      problemStruct->bulkIn[i] = uppars[i];
     }
 
     // Bulk Out
-    unnamed_idx_1 = problemDef->bulkOut.size(1);
+    unnamed_idx_1 = problemStruct->bulkOut.size(1);
     uppars.set_size(1, unnamed_idx_1);
     for (i = 0; i < unnamed_idx_1; i++) {
       uppars[i] = 0.0;
@@ -195,26 +195,26 @@ namespace RAT
     i = controls_checks_fitBulkOut.size(1);
     for (int32_T b_i{0}; b_i < i; b_i++) {
       if (controls_checks_fitBulkOut[b_i] == 1.0) {
-        uppars[uppars_counter] = problemDef->fitParams[static_cast<int32_T>
+        uppars[uppars_counter] = problemStruct->fitParams[static_cast<int32_T>
           (unpacked_counter) - 1];
         unpacked_counter++;
         uppars_counter++;
       } else {
-        uppars[uppars_counter] = problemDef->otherParams[static_cast<int32_T>
+        uppars[uppars_counter] = problemStruct->otherParams[static_cast<int32_T>
           (packed_counter) - 1];
         packed_counter++;
         uppars_counter++;
       }
     }
 
-    problemDef->bulkOut.set_size(1, uppars.size(1));
+    problemStruct->bulkOut.set_size(1, uppars.size(1));
     unnamed_idx_1 = uppars.size(1);
     for (i = 0; i < unnamed_idx_1; i++) {
-      problemDef->bulkOut[i] = uppars[i];
+      problemStruct->bulkOut[i] = uppars[i];
     }
 
     // Resolutions
-    unnamed_idx_1 = problemDef->resolutionParams.size(1);
+    unnamed_idx_1 = problemStruct->resolutionParams.size(1);
     uppars.set_size(1, unnamed_idx_1);
     for (i = 0; i < unnamed_idx_1; i++) {
       uppars[i] = 0.0;
@@ -224,26 +224,26 @@ namespace RAT
     i = controls_checks_fitResolutionParam.size(1);
     for (int32_T b_i{0}; b_i < i; b_i++) {
       if (controls_checks_fitResolutionParam[b_i] == 1.0) {
-        uppars[uppars_counter] = problemDef->fitParams[static_cast<int32_T>
+        uppars[uppars_counter] = problemStruct->fitParams[static_cast<int32_T>
           (unpacked_counter) - 1];
         unpacked_counter++;
         uppars_counter++;
       } else {
-        uppars[uppars_counter] = problemDef->otherParams[static_cast<int32_T>
+        uppars[uppars_counter] = problemStruct->otherParams[static_cast<int32_T>
           (packed_counter) - 1];
         packed_counter++;
         uppars_counter++;
       }
     }
 
-    problemDef->resolutionParams.set_size(1, uppars.size(1));
+    problemStruct->resolutionParams.set_size(1, uppars.size(1));
     unnamed_idx_1 = uppars.size(1);
     for (i = 0; i < unnamed_idx_1; i++) {
-      problemDef->resolutionParams[i] = uppars[i];
+      problemStruct->resolutionParams[i] = uppars[i];
     }
 
     // Domain Ratios
-    unnamed_idx_1 = problemDef->domainRatio.size(1);
+    unnamed_idx_1 = problemStruct->domainRatio.size(1);
     uppars.set_size(1, unnamed_idx_1);
     for (i = 0; i < unnamed_idx_1; i++) {
       uppars[i] = 0.0;
@@ -253,22 +253,22 @@ namespace RAT
     i = controls_checks_fitDomainRatio.size(1);
     for (int32_T b_i{0}; b_i < i; b_i++) {
       if (controls_checks_fitDomainRatio[b_i] == 1.0) {
-        uppars[uppars_counter] = problemDef->fitParams[static_cast<int32_T>
+        uppars[uppars_counter] = problemStruct->fitParams[static_cast<int32_T>
           (unpacked_counter) - 1];
         unpacked_counter++;
         uppars_counter++;
       } else {
-        uppars[uppars_counter] = problemDef->otherParams[static_cast<int32_T>
+        uppars[uppars_counter] = problemStruct->otherParams[static_cast<int32_T>
           (packed_counter) - 1];
         packed_counter++;
         uppars_counter++;
       }
     }
 
-    problemDef->domainRatio.set_size(1, uppars.size(1));
+    problemStruct->domainRatio.set_size(1, uppars.size(1));
     unnamed_idx_1 = uppars.size(1);
     for (i = 0; i < unnamed_idx_1; i++) {
-      problemDef->domainRatio[i] = uppars[i];
+      problemStruct->domainRatio[i] = uppars[i];
     }
   }
 }

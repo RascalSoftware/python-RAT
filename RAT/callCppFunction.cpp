@@ -14,21 +14,26 @@
 #include "classHandle.hpp"
 #include "coder_array.h"
 #include <algorithm>
+#include <cmath>
 #include <functional>
 
 // Function Definitions
 namespace RAT
 {
-  void b_callCppFunction(::coder::array<real_T, 2U> &params, real_T bulkIn,
-    real_T bulkOut, real_T contrast, const char_T pointer_data[], const int32_T
-    pointer_size[2], ::coder::array<real_T, 2U> &output, real_T *subRough)
+  void b_callCppFunction(const char_T pointer_data[], const int32_T
+    pointer_size[2], ::coder::array<real_T, 2U> &params, real_T bulkIn, ::coder::
+    array<real_T, 2U> &bulkOut, real_T contrast, ::coder::array<real_T, 2U>
+    &output, real_T *subRough)
   {
-    static real_T tempOutput[6000];
-    static real_T tempOutput_data[6000];
     CallbackInterface * callback;
     ClassHandle<CallbackInterface> * callbackHandle;
+    std::vector<double> bulkInArray;
+    std::vector<double> bulkOutArray;
+    std::vector<double> outArray;
+    std::vector<double> paramsArray;
+    ::coder::array<real_T, 2U> tempOutput;
     real_T outputSize[2];
-    real_T size;
+    real_T d;
     int32_T loop_ub;
     int32_T loop_ub_tmp;
     char_T b_pointer_data[10000];
@@ -40,43 +45,61 @@ namespace RAT
     callbackHandle = convertString2HandlePtr<CallbackInterface>(&b_pointer_data
       [0]);
     callback = std::mem_fn(&ClassHandle<CallbackInterface>::ptr)(callbackHandle);
+    paramsArray = convertPtr2Vector(&params[0], static_cast<real_T>(params.size
+      (1)));
+    bulkInArray = convertPtr2Vector(&bulkIn, 1.0);
+    bulkOutArray = convertPtr2Vector(&bulkOut[0], static_cast<real_T>
+      (bulkOut.size(1)));
+    outArray = { };
 
-    //  This is not ideal, it needs to be fixed
     //  domain should either before 0 or 1. A value less than zero indicates no domains
-    std::mem_fn<void(double*, double*, double*, int, int, double*, double*,
-                     double*)>(&CallbackInterface::invoke)(callback, &params[0],
-      &bulkIn, &bulkOut, contrast, 0.0, &tempOutput[0], &outputSize[0], subRough);
-    size = outputSize[0] * outputSize[1];
-    if (size < 1.0) {
-      loop_ub = 0;
+    std::mem_fn<void(std::vector<double>&, std::vector<double>&, std::vector<
+                     double>&, int, int, std::vector<double>&, double*, double*)>
+      (&CallbackInterface::invoke)(callback, paramsArray, bulkInArray,
+      bulkOutArray, contrast, 0.0, outArray, &outputSize[0], subRough);
+    d = std::round(outputSize[0] * outputSize[1]);
+    if (d < 2.147483648E+9) {
+      if (d >= -2.147483648E+9) {
+        loop_ub = static_cast<int32_T>(d);
+      } else {
+        loop_ub = MIN_int32_T;
+      }
+    } else if (d >= 2.147483648E+9) {
+      loop_ub = MAX_int32_T;
     } else {
-      loop_ub = static_cast<int32_T>(size);
+      loop_ub = 0;
     }
 
-    if (loop_ub - 1 >= 0) {
-      std::copy(&tempOutput[0], &tempOutput[loop_ub], &tempOutput_data[0]);
+    tempOutput.set_size(1, loop_ub);
+    for (int32_T i{0}; i < loop_ub; i++) {
+      tempOutput[i] = 0.0;
     }
 
+    convertVector2Ptr(outArray, &tempOutput[0]);
     loop_ub_tmp = static_cast<int32_T>(outputSize[1]);
     loop_ub = static_cast<int32_T>(outputSize[0]);
     output.set_size(loop_ub, loop_ub_tmp);
     for (int32_T i{0}; i < loop_ub_tmp; i++) {
       for (int32_T i1{0}; i1 < loop_ub; i1++) {
-        output[i1 + output.size(0) * i] = tempOutput_data[i + loop_ub_tmp * i1];
+        output[i1 + output.size(0) * i] = tempOutput[i + loop_ub_tmp * i1];
       }
     }
   }
 
-  void c_callCppFunction(::coder::array<real_T, 2U> &params, real_T bulkIn,
-    real_T bulkOut, real_T contrast, const char_T pointer_data[], const int32_T
-    pointer_size[2], ::coder::array<real_T, 2U> &output, real_T *subRough)
+  void c_callCppFunction(const char_T pointer_data[], const int32_T
+    pointer_size[2], ::coder::array<real_T, 2U> &params, real_T bulkIn, ::coder::
+    array<real_T, 2U> &bulkOut, real_T contrast, ::coder::array<real_T, 2U>
+    &output, real_T *subRough)
   {
-    static real_T tempOutput[6000];
-    static real_T tempOutput_data[6000];
     CallbackInterface * callback;
     ClassHandle<CallbackInterface> * callbackHandle;
+    std::vector<double> bulkInArray;
+    std::vector<double> bulkOutArray;
+    std::vector<double> outArray;
+    std::vector<double> paramsArray;
+    ::coder::array<real_T, 2U> tempOutput;
     real_T outputSize[2];
-    real_T size;
+    real_T d;
     int32_T loop_ub;
     int32_T loop_ub_tmp;
     char_T b_pointer_data[10000];
@@ -88,44 +111,61 @@ namespace RAT
     callbackHandle = convertString2HandlePtr<CallbackInterface>(&b_pointer_data
       [0]);
     callback = std::mem_fn(&ClassHandle<CallbackInterface>::ptr)(callbackHandle);
+    paramsArray = convertPtr2Vector(&params[0], static_cast<real_T>(params.size
+      (1)));
+    bulkInArray = convertPtr2Vector(&bulkIn, 1.0);
+    bulkOutArray = convertPtr2Vector(&bulkOut[0], static_cast<real_T>
+      (bulkOut.size(1)));
+    outArray = { };
 
-    //  This is not ideal, it needs to be fixed
     //  domain should either before 0 or 1. A value less than zero indicates no domains
-    std::mem_fn<void(double*, double*, double*, int, int, double*, double*,
-                     double*)>(&CallbackInterface::invoke)(callback, &params[0],
-      &bulkIn, &bulkOut, contrast, 1.0, &tempOutput[0], &outputSize[0], subRough);
-    size = outputSize[0] * outputSize[1];
-    if (size < 1.0) {
-      loop_ub = 0;
+    std::mem_fn<void(std::vector<double>&, std::vector<double>&, std::vector<
+                     double>&, int, int, std::vector<double>&, double*, double*)>
+      (&CallbackInterface::invoke)(callback, paramsArray, bulkInArray,
+      bulkOutArray, contrast, 1.0, outArray, &outputSize[0], subRough);
+    d = std::round(outputSize[0] * outputSize[1]);
+    if (d < 2.147483648E+9) {
+      if (d >= -2.147483648E+9) {
+        loop_ub = static_cast<int32_T>(d);
+      } else {
+        loop_ub = MIN_int32_T;
+      }
+    } else if (d >= 2.147483648E+9) {
+      loop_ub = MAX_int32_T;
     } else {
-      loop_ub = static_cast<int32_T>(size);
+      loop_ub = 0;
     }
 
-    if (loop_ub - 1 >= 0) {
-      std::copy(&tempOutput[0], &tempOutput[loop_ub], &tempOutput_data[0]);
+    tempOutput.set_size(1, loop_ub);
+    for (int32_T i{0}; i < loop_ub; i++) {
+      tempOutput[i] = 0.0;
     }
 
+    convertVector2Ptr(outArray, &tempOutput[0]);
     loop_ub_tmp = static_cast<int32_T>(outputSize[1]);
     loop_ub = static_cast<int32_T>(outputSize[0]);
     output.set_size(loop_ub, loop_ub_tmp);
     for (int32_T i{0}; i < loop_ub_tmp; i++) {
       for (int32_T i1{0}; i1 < loop_ub; i1++) {
-        output[i1 + output.size(0) * i] = tempOutput_data[i + loop_ub_tmp * i1];
+        output[i1 + output.size(0) * i] = tempOutput[i + loop_ub_tmp * i1];
       }
     }
   }
 
-  void callCppFunction(::coder::array<real_T, 2U> &params, real_T bulkIn, real_T
-                       bulkOut, real_T contrast, const char_T pointer_data[],
-                       const int32_T pointer_size[2], ::coder::array<real_T, 2U>
-                       &output, real_T *subRough)
+  void callCppFunction(const char_T pointer_data[], const int32_T pointer_size[2],
+                       ::coder::array<real_T, 2U> &params, real_T bulkIn, ::
+                       coder::array<real_T, 2U> &bulkOut, real_T contrast, ::
+                       coder::array<real_T, 2U> &output, real_T *subRough)
   {
-    static real_T tempOutput[6000];
-    static real_T tempOutput_data[6000];
     CallbackInterface * callback;
     ClassHandle<CallbackInterface> * callbackHandle;
+    std::vector<double> bulkInArray;
+    std::vector<double> bulkOutArray;
+    std::vector<double> outArray;
+    std::vector<double> paramsArray;
+    ::coder::array<real_T, 2U> tempOutput;
     real_T outputSize[2];
-    real_T size;
+    real_T d;
     int32_T loop_ub;
     int32_T loop_ub_tmp;
     char_T b_pointer_data[10000];
@@ -137,29 +177,43 @@ namespace RAT
     callbackHandle = convertString2HandlePtr<CallbackInterface>(&b_pointer_data
       [0]);
     callback = std::mem_fn(&ClassHandle<CallbackInterface>::ptr)(callbackHandle);
+    paramsArray = convertPtr2Vector(&params[0], static_cast<real_T>(params.size
+      (1)));
+    bulkInArray = convertPtr2Vector(&bulkIn, 1.0);
+    bulkOutArray = convertPtr2Vector(&bulkOut[0], static_cast<real_T>
+      (bulkOut.size(1)));
+    outArray = { };
 
-    //  This is not ideal, it needs to be fixed
     //  domain should either before 0 or 1. A value less than zero indicates no domains
-    std::mem_fn<void(double*, double*, double*, int, double*, double*, double*)>
-      (&CallbackInterface::invoke)(callback, &params[0], &bulkIn, &bulkOut,
-      contrast, &tempOutput[0], &outputSize[0], subRough);
-    size = outputSize[0] * outputSize[1];
-    if (size < 1.0) {
-      loop_ub = 0;
+    std::mem_fn<void(std::vector<double>&, std::vector<double>&, std::vector<
+                     double>&, int, std::vector<double>&, double*, double*)>
+      (&CallbackInterface::invoke)(callback, paramsArray, bulkInArray,
+      bulkOutArray, contrast, outArray, &outputSize[0], subRough);
+    d = std::round(outputSize[0] * outputSize[1]);
+    if (d < 2.147483648E+9) {
+      if (d >= -2.147483648E+9) {
+        loop_ub = static_cast<int32_T>(d);
+      } else {
+        loop_ub = MIN_int32_T;
+      }
+    } else if (d >= 2.147483648E+9) {
+      loop_ub = MAX_int32_T;
     } else {
-      loop_ub = static_cast<int32_T>(size);
+      loop_ub = 0;
     }
 
-    if (loop_ub - 1 >= 0) {
-      std::copy(&tempOutput[0], &tempOutput[loop_ub], &tempOutput_data[0]);
+    tempOutput.set_size(1, loop_ub);
+    for (int32_T i{0}; i < loop_ub; i++) {
+      tempOutput[i] = 0.0;
     }
 
+    convertVector2Ptr(outArray, &tempOutput[0]);
     loop_ub_tmp = static_cast<int32_T>(outputSize[1]);
     loop_ub = static_cast<int32_T>(outputSize[0]);
     output.set_size(loop_ub, loop_ub_tmp);
     for (int32_T i{0}; i < loop_ub_tmp; i++) {
       for (int32_T i1{0}; i1 < loop_ub; i1++) {
-        output[i1 + output.size(0) * i] = tempOutput_data[i + loop_ub_tmp * i1];
+        output[i1 + output.size(0) * i] = tempOutput[i + loop_ub_tmp * i1];
       }
     }
   }

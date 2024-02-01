@@ -20,28 +20,28 @@
 // Function Definitions
 namespace RAT
 {
-  real_T DREAMWrapper(const ::coder::array<real_T, 2U> &pars, const struct5_T
-                      *ratInputs_problemDef, const cell_14
-                      *ratInputs_problemDefCells, const struct2_T
+  real_T DREAMWrapper(const ::coder::array<real_T, 2U> &pars, const c_struct_T
+                      *ratInputs_problemStruct, const cell_11
+                      *ratInputs_problemCells, const struct2_T
                       *ratInputs_controls)
   {
-    cell_13 a__1;
-    struct5_T problem;
-    struct_T outProblem;
+    c_struct_T problemStruct;
+    cell_wrap_9 a__1[6];
+    d_struct_T contrastParams;
     int32_T loop_ub;
 
     //  Get the inputs for Reflectivity Calculation
-    problem = *ratInputs_problemDef;
+    problemStruct = *ratInputs_problemStruct;
 
     //  Put the current parameters into problem
-    problem.fitParams.set_size(1, pars.size(1));
+    problemStruct.fitParams.set_size(1, pars.size(1));
     loop_ub = pars.size(1);
     for (int32_T i{0}; i < loop_ub; i++) {
-      problem.fitParams[problem.fitParams.size(0) * i] = pars[i];
+      problemStruct.fitParams[problemStruct.fitParams.size(0) * i] = pars[i];
     }
 
     //  Distribute them to the right parts
-    unpackParams(&problem, ratInputs_controls->checks.fitParam,
+    unpackParams(&problemStruct, ratInputs_controls->checks.fitParam,
                  ratInputs_controls->checks.fitBackgroundParam,
                  ratInputs_controls->checks.fitQzshift,
                  ratInputs_controls->checks.fitScalefactor,
@@ -51,11 +51,11 @@ namespace RAT
                  ratInputs_controls->checks.fitDomainRatio);
 
     //  Calculate....
-    reflectivityCalculation(&problem, ratInputs_problemDefCells,
-      ratInputs_controls, &outProblem, &a__1);
+    reflectivityCalculation(&problemStruct, ratInputs_problemCells,
+      ratInputs_controls, &contrastParams, a__1);
 
     //  Function value is chi-squared....
-    return -outProblem.calculations.sumChi / 2.0;
+    return -contrastParams.calculations.sumChi / 2.0;
   }
 }
 

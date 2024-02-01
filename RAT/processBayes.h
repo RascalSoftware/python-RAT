@@ -19,14 +19,14 @@
 // Type Declarations
 namespace RAT
 {
-  struct struct5_T;
+  struct c_struct_T;
   struct struct2_T;
-  struct cell_14;
-  struct struct_T;
-  struct cell_13;
+  struct cell_11;
+  struct d_struct_T;
+  struct cell_wrap_9;
   struct e_struct_T;
   struct f_struct_T;
-  struct struct11_T;
+  struct struct10_T;
 }
 
 // Function Declarations
@@ -34,18 +34,19 @@ namespace RAT
 {
   void processBayes(const real_T bayesOutputs_bestPars_data[], const int32_T
                     bayesOutputs_bestPars_size[2], const ::coder::array<real_T,
-                    2U> &bayesOutputs_chain, const struct5_T *allProblem_f1,
-                    const struct2_T *allProblem_f2, const cell_14 *allProblem_f4,
-                    struct5_T *problemDef, struct_T *outProblem, cell_13 *result,
-                    e_struct_T *bayesResults_bestFitsMean, f_struct_T
-                    *bayesResults_predlims, struct11_T *bayesResults_parConfInts);
+                    2U> &bayesOutputs_chain, const c_struct_T *allProblem_f1,
+                    const struct2_T *allProblem_f2, const cell_11 *allProblem_f4,
+                    c_struct_T *problemStruct, d_struct_T *contrastParams,
+                    cell_wrap_9 result[6], e_struct_T *bayesResults_bestFitsMean,
+                    f_struct_T *bayesResults_predlims, struct10_T
+                    *bayesResults_parConfInts);
   void processBayes(const ::coder::array<real_T, 2U> &bayesOutputs_bestPars,
                     const ::coder::array<real_T, 2U> &bayesOutputs_chain, const
-                    struct5_T *allProblem_f1, const struct2_T *allProblem_f2,
-                    const cell_14 *allProblem_f4, struct5_T *problemDef,
-                    struct_T *outProblem, cell_13 *result, e_struct_T
-                    *bayesResults_bestFitsMean, f_struct_T
-                    *bayesResults_predlims, struct11_T *bayesResults_parConfInts);
+                    c_struct_T *allProblem_f1, const struct2_T *allProblem_f2,
+                    const cell_11 *allProblem_f4, c_struct_T *problemStruct,
+                    d_struct_T *contrastParams, cell_wrap_9 result[6],
+                    e_struct_T *bayesResults_bestFitsMean, f_struct_T
+                    *bayesResults_predlims, struct10_T *bayesResults_parConfInts);
 }
 
 #endif

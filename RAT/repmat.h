@@ -30,7 +30,7 @@ namespace RAT
   {
     void b_repmat(real_T varargin_2, ::coder::array<char_T, 2U> &b);
     void repmat(cell_wrap_9 b[6]);
-    void repmat(real_T varargin_1, ::coder::array<k_struct_T, 1U> &b);
+    void repmat(real_T varargin_1, ::coder::array<l_struct_T, 1U> &b);
     void repmat(const ::coder::array<real_T, 2U> &a, real_T varargin_1, ::coder::
                 array<real_T, 2U> &b);
     void repmat(real_T varargin_2, ::coder::array<char_T, 2U> &b);
