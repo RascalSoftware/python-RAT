@@ -3,6 +3,7 @@ import cppimport
 import numpy as np
 from customBilayer import customBilayer
 from misc import MatlabWrapper, DylibWrapper
+import events
 
 faulthandler.enable()
 
@@ -25,13 +26,13 @@ if __name__ == '__main__':
     control.calcSldDuringFit = False 
     control.resamPars = [0.9000, 50]
 
-    # control.procedure = 'simplex'
-    # control.tolX = 1e-6    
-    # control.tolFun = 1e-6
-    # control.maxFunEvals = 10000
-    # control.maxIter = 1
-    # control.updateFreq = -1
-    # control.updatePlotFreq = 1
+    control.procedure = 'simplex'
+    control.tolX = 1e-6    
+    control.tolFun = 1e-6
+    control.maxFunEvals = 10000
+    control.maxIter = 1
+    control.updateFreq = -1
+    control.updatePlotFreq = 1
 
     # control.procedure = 'dream'
     # control.nSamples = 100     
@@ -55,12 +56,12 @@ if __name__ == '__main__':
     # control.propScale = 0.1
     # control.nsTolerance = 0.1   
 
-    control.checks.fitParam = [1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1]
-    control.checks.fitBackgroundParam = np.ones((2))
+    control.checks.fitParam = [1, 1, 1, 1, 1, 1, 1, 1]
+    control.checks.fitBackgroundParam = np.ones((3))
     control.checks.fitQzshift = [0]
-    control.checks.fitScalefactor = [0, 0]
+    control.checks.fitScalefactor = [1]
     control.checks.fitBulkIn = [0]
-    control.checks.fitBulkOut = [0, 0]
+    control.checks.fitBulkOut = [1, 1, 1]
     control.checks.fitResolutionParam = [0]
     
     #------------------------------------------------------------------------------------
@@ -92,10 +93,12 @@ if __name__ == '__main__':
     problem.contrastDomainRatios = [0, 0, 0]
     problem.domainRatio = []
     problem.numberOfDomainContrasts = 0
-    problem.fitParams = []
-    problem.otherParams = []
-    problem.fitLimits = []
-    problem.otherLimits = []
+    problem.fitParams = [3, 20, 0.2, 55, 0.2, 0.1, 4, 2, 1.0e-07, 1.0e-07, 1.0e-07, 1, 6.35e-06, 2.073e-06, -5.6e-07]
+    problem.otherParams = [0, 2.073e-06, 0.03]
+    problem.fitLimits = [[1, 10], [5, 60], [0, 0.5], [45, 65], [0, 0.5], [0, 0.2], [2, 8], [0, 10],
+                         [1.0e-10, 1.0e-05], [1.0e-10, 1.0e-05], [1.0e-10, 1.0e-05], [0.5, 2], [5.0e-06, 6.35e-06], 
+                         [1.0e-06, 3.0e-06], [-6.0e-07, -3.0e-07]]
+    problem.otherLimits = [[-0.0001, 0.0001], [2.07e-06, 2.08e-06], [0.01, 0.05]]
 
     #------------------------------------------------------------------------------------
     # Limits
@@ -170,9 +173,14 @@ if __name__ == '__main__':
                           [1, 0, np.Inf],[1, 0, np.Inf],[1, 0, np.Inf]]
     
 
+    def fakePlot(event):
+        print("Hello plotting")
+
     import time    
     start = time.perf_counter()
+    events.register(rat.EventTypes.Plot, fakePlot)
     problem, contrast_params, result, bayes_results = rat.RATMain(problem, cells, limits, control, priors)
+    events.clear()
     print(time.perf_counter() - start, 'sec')
     # print(contrast_params.ssubs)
     # print(contrast_params.backgroundParams)

@@ -5,6 +5,7 @@ cfg['parallel'] = True
 setup_pybind11(cfg)
 %>*/
 
+#include <cstdlib>
 #include <iostream>
 #include <functional>
 #include <pybind11/pybind11.h>
@@ -17,6 +18,7 @@ setup_pybind11(cfg)
 #include "RAT/RATMain_types.h"
 #include "RAT/classHandle.hpp"
 #include "RAT/dylib.hpp"
+#include "events/eventManager.h"
 
 namespace py = pybind11;
 
@@ -124,6 +126,122 @@ class DylibEngine
         }catch (const dylib::symbol_error &) {
             throw std::runtime_error("failed to get dynamic libray symbol for ***functionName");
         }        
+    };
+};
+
+
+struct PlotEventData
+{
+    py::list reflectivity;
+    py::list shiftedData;
+    py::list sldProfiles;
+    py::list allLayers;
+    py::array_t<double> ssubs;
+    py::array_t<double> resample;
+    py::array_t<double> dataPresent;
+    std::string modelType;
+};
+
+class EventStuff
+{
+    public:
+    std::unique_ptr<dylib> library;
+    py::function callback;
+    
+    EventStuff(py::function callback)
+    {   
+        std::string filename = "eventManager" + std::string(dylib::extension);
+        this->library = std::unique_ptr<dylib>(new dylib("", filename.c_str()));
+        if (!library)
+        {
+            std::cerr << "event manager dynamic libray failed to load" << std::endl;
+            return;
+        }
+        this->callback = callback;
+    };
+    
+    py::list unpackDataToCell(int rows, int cols, double* data, double* nData, 
+                              double* data2, double* nData2, int dataCol)   
+    {
+        py::list allResults;
+        int dims[2] = {0, dataCol};
+        int offset = 0;
+        for (int i = 0; i < rows; i++){
+            py::list rowList;
+            dims[0] = (int)nData[i] / dataCol;
+            auto result = py::array_t<double,  py::array::f_style>({dims[0], dims[1]});
+            std::memcpy(result.request().ptr, data + offset, result.nbytes());
+            offset += result.size();
+            rowList.append(result);
+            allResults.append(rowList);
+        }
+
+        if (data2 != NULL && nData2 != NULL)
+        {
+            // This is used to unpack the domains data into the second column 
+            offset = 0;
+            for ( int i = 0; i < rows; i++){
+                dims[0] = (int)nData2[i] / dataCol;
+                auto result = py::array_t<double,  py::array::f_style>({dims[0], dims[1]});
+                std::memcpy(result.request().ptr, data2 + offset, result.nbytes());
+                offset +=  result.size();
+                auto rowList = allResults[i].cast<py::list>();
+                rowList.append(result);
+            }
+        }
+
+        return allResults;
+    };
+
+    void eventCallback(const baseEvent& event)
+    {
+        if (event.type == EventTypes::Message) {
+            messageEvent* mEvent = (messageEvent*)&event; 
+            this->callback(event.type, mEvent->msg);
+        } else if (event.type == EventTypes::Plot){
+            plotEvent* pEvent = (plotEvent*)&event;
+            PlotEventData eventData;
+            
+            eventData.modelType = std::string(pEvent->data->modelType);
+
+            eventData.ssubs = py::array_t<double>(pEvent->data->nContrast);
+            std::memcpy(eventData.ssubs.request().ptr, pEvent->data->ssubs, eventData.ssubs.nbytes());
+
+            eventData.resample = py::array_t<double>(pEvent->data->nContrast);
+            std::memcpy(eventData.resample.request().ptr, pEvent->data->resample, eventData.resample.nbytes());
+
+            eventData.dataPresent = py::array_t<double>(pEvent->data->nContrast);
+            std::memcpy(eventData.dataPresent.request().ptr, pEvent->data->dataPresent, eventData.dataPresent.nbytes());
+
+            eventData.reflectivity = unpackDataToCell(pEvent->data->nContrast, 1, 
+                                                      pEvent->data->reflect, pEvent->data->nReflect, NULL, NULL, 2);
+
+            eventData.shiftedData = unpackDataToCell(pEvent->data->nContrast, 1, 
+                                                     pEvent->data->shiftedData, pEvent->data->nShiftedData, NULL, NULL, 3);
+            
+            eventData.sldProfiles = unpackDataToCell(pEvent->data->nContrast, (pEvent->data->nSldProfiles2 == NULL) ? 1 : 2,
+                                                     pEvent->data->sldProfiles, pEvent->data->nSldProfiles, 
+                                                     pEvent->data->sldProfiles2, pEvent->data->nSldProfiles2, 2);
+
+            eventData.allLayers = unpackDataToCell(pEvent->data->nContrast, (pEvent->data->nLayers2 == NULL) ? 1 : 2, 
+                                                   pEvent->data->layers, pEvent->data->nLayers, 
+                                                   pEvent->data->layers2, pEvent->data->nLayers, 2);
+            this->callback(event.type, eventData);
+        }
+    };
+    
+
+    void registerEvent(EventTypes eventType)
+    {
+        std::function<void(const baseEvent& event)> caller = std::bind(&EventStuff::eventCallback, this, std::placeholders::_1);
+        auto addListener = library->get_function<void(EventTypes, std::function<void(const baseEvent&)>)>("addListener");
+        addListener(eventType, caller);    
+    };
+
+    void clear()
+    {
+        auto clearListeners = library->get_function<void(void)>("clearListeners");
+        clearListeners();
     };
 };
 
@@ -1093,6 +1211,15 @@ public:
 
 PYBIND11_MODULE(rat, m) {
     static Module module;
+    py::class_<EventStuff>(m, "EventStuff")
+        .def(py::init<py::function>())
+        .def("register", &EventStuff::registerEvent)
+        .def("clear", &EventStuff::clear);
+
+    py::enum_<EventTypes>(m, "EventTypes")
+        .value("Message", EventTypes::Message)
+        .value("Plot", EventTypes::Plot);
+
     py::class_<DylibEngine>(m, "DylibEngine")
         .def(py::init<std::string, std::string>())
         .def("invoke", &DylibEngine::invoke, py::arg("params"), py::arg("bulk_in"), 
@@ -1106,6 +1233,17 @@ PYBIND11_MODULE(rat, m) {
         .def_readwrite("refXdata", &Predlims::refXdata)
         .def_readwrite("sldXdata", &Predlims::sldXdata)
         .def_readwrite("sampleChi", &Predlims::sampleChi);
+    
+    py::class_<PlotEventData>(m, "PlotEventData")
+        .def(py::init<>())
+        .def_readonly("reflectivity", &PlotEventData::reflectivity)
+        .def_readonly("shiftedData", &PlotEventData::shiftedData)
+        .def_readonly("sldProfiles", &PlotEventData::sldProfiles)
+        .def_readonly("allLayers", &PlotEventData::allLayers)
+        .def_readonly("ssubs", &PlotEventData::ssubs)
+        .def_readonly("resample", &PlotEventData::resample)
+        .def_readonly("dataPresent", &PlotEventData::dataPresent)
+        .def_readonly("modelType", &PlotEventData::modelType);
 
     py::class_<BestFitsMean>(m, "BestFitsMean")
         .def(py::init<>())

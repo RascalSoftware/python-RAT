@@ -92,10 +92,10 @@ if __name__ == '__main__':
     problem.contrastDomainRatios = [1]
     problem.domainRatio = [0.5]
     problem.numberOfDomainContrasts = 0
-    problem.fitParams = []
-    problem.otherParams = []
-    problem.fitLimits = []
-    problem.otherLimits = []
+    problem.fitParams = [3, 150, 1.1e-05, 7.0e-06, 7, 150, 4.5e-06, 7]
+    problem.otherParams = [1.0e-06, 0.23, 0, 2.073e-06, 6.35e-06, 0.03, 0.5]
+    problem.fitLimits = [[1, 5], [100, 200], [9.0e-06, 1.3e-05], [5.0e-06, 1.0e-05], [5, 11], [100, 200], [4.0e-06, 5.0e-06], [5, 11]]
+    problem.otherLimits = [[1.0e-07, 1.0e-05], [0.02, 0.25], [-0.0001,	0.0001], [0, 0], [6.2e-06, 6.35e-06], [0.01, 0.05], [0.4, 0.6]]
 
     #------------------------------------------------------------------------------------
     # Limits
