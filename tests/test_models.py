@@ -49,23 +49,23 @@ def test_default_names(model: Callable, model_name: str) -> None:
 class TestModels(object):
     def test_initialise_with_wrong_type(self, model: Callable) -> None:
         """When initialising a model with the wrong type for the "name" field, we should raise a ValidationError."""
-        with pytest.raises(pydantic.ValidationError, match='Input should be a valid string'):
+        with pytest.raises(pydantic.ValidationError, match=f'1 validation error for {model.__name__}\nname\n  Input should be a valid string'):
             model(name=1)
 
     def test_assignment_with_wrong_type(self, model: Callable) -> None:
         """When assigning the "name" field of a model with the wrong type, we should raise a ValidationError."""
         test_model = model()
-        with pytest.raises(pydantic.ValidationError, match='Input should be a valid string'):
+        with pytest.raises(pydantic.ValidationError, match=f'1 validation error for {model.__name__}\nname\n  Input should be a valid string'):
             test_model.name = 1
 
     def test_initialise_with_zero_length_name(self, model: Callable) -> None:
         """When initialising a model with a zero length name, we should raise a ValidationError."""
-        with pytest.raises(pydantic.ValidationError, match='String should have at least 1 characters'):
+        with pytest.raises(pydantic.ValidationError, match=f'1 validation error for {model.__name__}\nname\n  String should have at least 1 character'):
             model(name='')
 
     def test_initialise_with_extra_fields(self, model: Callable) -> None:
         """When initialising a model with unspecified fields, we should raise a ValidationError."""
-        with pytest.raises(pydantic.ValidationError, match='Extra inputs are not permitted'):
+        with pytest.raises(pydantic.ValidationError, match=f'1 validation error for {model.__name__}\nnew_field\n  Extra inputs are not permitted'):
             model(new_field=1)
 
 
