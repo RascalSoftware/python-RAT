@@ -1,3 +1,4 @@
 [submodule "cpp/RAT"]
 	path = cpp/RAT
-	url = https://github.com/RascalSoftware/RAT/tree/generated_source
+	url = https://github.com/RascalSoftware/RAT
+	branch = generated_source
