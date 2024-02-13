@@ -9,7 +9,7 @@ This project targets Python 3.9 or later. Install an appropriate version of Pyth
 
 Then create a fork of the python-RAT repo, and clone the fork
 
-    git clone https://github.com/<username>/python-RAT.git
+    git clone --recurse-submodules https://github.com/<username>/python-RAT.git
     cd python-RAT
 
 And finally create a separate branch to begin work
