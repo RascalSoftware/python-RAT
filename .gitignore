@@ -15,3 +15,6 @@ __pycache__/
 *.obj
 *.exp
 *.lib
+*.a
+*.egg-info/
+build/*

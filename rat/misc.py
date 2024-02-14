@@ -1,9 +1,7 @@
 import pathlib
-import cppimport
 import numpy as np
 import matlab.engine
-
-rat = cppimport.imp("rat")
+from rat import rat_core
 
 
 class MatlabWrapper:
@@ -34,7 +32,7 @@ class MatlabWrapper:
 
 class DylibWrapper:
     def __init__(self, filename, function_name):
-        self.engine = rat.DylibEngine(filename, function_name)
+        self.engine = rat_core.DylibEngine(filename, function_name)
     
     def getHandle(self):                           
         def handle(params, bulk_in, bulk_out, contrast, domain=-1):

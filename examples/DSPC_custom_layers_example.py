@@ -1,22 +1,19 @@
 import faulthandler
-import cppimport
 import numpy as np
 from customBilayer import customBilayer
-from misc import MatlabWrapper, DylibWrapper
-import events
+from rat import events, rat_core
+from rat.misc import MatlabWrapper, DylibWrapper
 
 faulthandler.enable()
-
-rat = cppimport.imp("rat")
 
 
 if __name__ == '__main__':
     
-    control = rat.Control()
-    problem = rat.ProblemDefinition()
-    limits = rat.Limits()
-    cells = rat.Cells()
-    priors = rat.Priors()
+    control = rat_core.Control()
+    problem = rat_core.ProblemDefinition()
+    limits = rat_core.Limits()
+    cells = rat_core.Cells()
+    priors = rat_core.Priors()
 
     #------------------------------------------------------------------------------------
     # Control
@@ -131,10 +128,10 @@ if __name__ == '__main__':
     cells.f12 = ['SLD D2O', 'SLD SMW', 'SLD H2O']
     cells.f13 = ['Resolution par 1']
 
-    dylib_wrapper = DylibWrapper('customBilayer.dll', 'customBilayer')
+    dylib_wrapper = DylibWrapper('examples/customBilayer.dll', 'customBilayer')
     cells.f14 = [dylib_wrapper.getHandle()]  # C++ callback
     
-    # matlab_wrapper = MatlabWrapper('customBilayer.m')
+    # matlab_wrapper = MatlabWrapper('examples/customBilayer.m')
     # cells.f14 = [matlab_wrapper.getHandle()]  # Matlab callback
     
     # cells.f14 = [customBilayer]  # Python callback
@@ -178,8 +175,8 @@ if __name__ == '__main__':
 
     import time    
     start = time.perf_counter()
-    events.register(rat.EventTypes.Plot, fakePlot)
-    problem, contrast_params, result, bayes_results = rat.RATMain(problem, cells, limits, control, priors)
+    events.register(rat_core.EventTypes.Plot, fakePlot)
+    problem, contrast_params, result, bayes_results = rat_core.RATMain(problem, cells, limits, control, priors)
     events.clear()
     print(time.perf_counter() - start, 'sec')
     # print(contrast_params.ssubs)

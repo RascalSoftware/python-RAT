@@ -18,7 +18,7 @@ setup_pybind11(cfg)
 #include "RAT/RATMain_types.h"
 #include "RAT/classHandle.hpp"
 #include "RAT/dylib.hpp"
-#include "events/eventManager.h"
+#include "RAT/events/eventManager.h"
 
 namespace py = pybind11;
 
@@ -151,7 +151,7 @@ class EventStuff
     EventStuff(py::function callback)
     {   
         std::string filename = "eventManager" + std::string(dylib::extension);
-        this->library = std::unique_ptr<dylib>(new dylib("", filename.c_str()));
+        this->library = std::unique_ptr<dylib>(new dylib(std::getenv("RAT_PATH"), filename.c_str()));
         if (!library)
         {
             std::cerr << "event manager dynamic libray failed to load" << std::endl;
@@ -1209,7 +1209,7 @@ public:
     }
 };
 
-PYBIND11_MODULE(rat, m) {
+PYBIND11_MODULE(rat_core, m) {
     static Module module;
     py::class_<EventStuff>(m, "EventStuff")
         .def(py::init<py::function>())

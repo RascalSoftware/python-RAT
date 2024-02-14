@@ -1,21 +1,19 @@
 import faulthandler
-import cppimport
 import numpy as np
 from alloyDomains import  alloyDomains
-from misc import MatlabWrapper, DylibWrapper
+from rat import events, rat_core
+from rat.misc import MatlabWrapper, DylibWrapper
 
 faulthandler.enable()
-
-rat = cppimport.imp("rat")
 
 
 if __name__ == '__main__':
     
-    control = rat.Control()
-    problem = rat.ProblemDefinition()
-    limits = rat.Limits()
-    cells = rat.Cells()
-    priors = rat.Priors()
+    control = rat_core.Control()
+    problem = rat_core.ProblemDefinition()
+    limits = rat_core.Limits()
+    cells = rat_core.Cells()
+    priors = rat_core.Priors()
 
     #------------------------------------------------------------------------------------
     # Control
@@ -126,10 +124,10 @@ if __name__ == '__main__':
     cells.f12 = ['SLD D2O']
     cells.f13 = ['Resolution par 1']
 
-    dylib_wrapper = DylibWrapper('alloyDomains.dll', 'alloyDomains')
+    dylib_wrapper = DylibWrapper('examples/alloyDomains.dll', 'alloyDomains')
     cells.f14 = [dylib_wrapper.getHandle()]  # C++ callback
     
-    # matlab_wrapper = MatlabWrapper('alloyDomains.m')
+    # matlab_wrapper = MatlabWrapper('examples/alloyDomains.m')
     # cells.f14 = [matlab_wrapper.getHandle()]  # Matlab callback
     
     # cells.f14 = [alloyDomains]  # Python callback
@@ -170,7 +168,7 @@ if __name__ == '__main__':
 
     import time    
     start = time.perf_counter()
-    problem, contrast_params, result, bayes_results = rat.RATMain(problem, cells, limits, control, priors)
+    problem, contrast_params, result, bayes_results = rat_core.RATMain(problem, cells, limits, control, priors)
     print(time.perf_counter() - start, 'sec')
     # print(contrast_params.ssubs)
     # print(contrast_params.backgroundParams)

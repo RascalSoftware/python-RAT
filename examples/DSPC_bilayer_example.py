@@ -1,15 +1,13 @@
-import cppimport
 import numpy as np
-
-rat = cppimport.imp("rat")
+from rat import rat_core
 
 if __name__ == '__main__':
     
-    control = rat.Control()
-    problem = rat.ProblemDefinition()
-    limits = rat.Limits()
-    cells = rat.Cells()
-    priors = rat.Priors()
+    control = rat_core.Control()
+    problem = rat_core.ProblemDefinition()
+    limits = rat_core.Limits()
+    cells = rat_core.Cells()
+    priors = rat_core.Priors()
 
     #------------------------------------------------------------------------------------
     # Control
@@ -189,7 +187,7 @@ if __name__ == '__main__':
                           [1, 0, np.Inf],[1, 0, np.Inf],[1, 0, np.Inf],[1, 0, np.Inf],[1, 0, np.Inf],
                           [1, 0, np.Inf],[1, 0, np.Inf],[1, 0, np.Inf],[1, 0, np.Inf],[1, 0, np.Inf]]
     
-    problem, contrast_params, result, bayes_results = rat.RATMain(problem, cells, limits, control, priors)
+    problem, contrast_params, result, bayes_results = rat_core.RATMain(problem, cells, limits, control, priors)
     
     print(contrast_params.ssubs)
     print(contrast_params.backgroundParams)
