@@ -2,7 +2,7 @@ import faulthandler
 import numpy as np
 from customBilayer import customBilayer
 from rat import events, rat_core
-from rat.misc import MatlabWrapper, DylibWrapper
+from rat.misc import  DylibWrapper # MatlabWrapper
 
 faulthandler.enable()
 
@@ -128,13 +128,13 @@ if __name__ == '__main__':
     cells.f12 = ['SLD D2O', 'SLD SMW', 'SLD H2O']
     cells.f13 = ['Resolution par 1']
 
-    dylib_wrapper = DylibWrapper('examples/customBilayer.dll', 'customBilayer')
-    cells.f14 = [dylib_wrapper.getHandle()]  # C++ callback
+    # dylib_wrapper = DylibWrapper('examples/customBilayer.dll', 'customBilayer')
+    # cells.f14 = [dylib_wrapper.getHandle()]  # C++ callback
     
     # matlab_wrapper = MatlabWrapper('examples/customBilayer.m')
     # cells.f14 = [matlab_wrapper.getHandle()]  # Matlab callback
     
-    # cells.f14 = [customBilayer]  # Python callback
+    cells.f14 = [customBilayer]  # Python callback
     
     cells.f15 = ['constant', 'constant', 'constant']
     cells.f16 = ['constant']

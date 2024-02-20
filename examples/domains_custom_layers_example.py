@@ -2,7 +2,7 @@ import faulthandler
 import numpy as np
 from alloyDomains import  alloyDomains
 from rat import events, rat_core
-from rat.misc import MatlabWrapper, DylibWrapper
+from rat.misc import DylibWrapper # MatlabWrapper
 
 faulthandler.enable()
 
@@ -124,13 +124,13 @@ if __name__ == '__main__':
     cells.f12 = ['SLD D2O']
     cells.f13 = ['Resolution par 1']
 
-    dylib_wrapper = DylibWrapper('examples/alloyDomains.dll', 'alloyDomains')
-    cells.f14 = [dylib_wrapper.getHandle()]  # C++ callback
+    # dylib_wrapper = DylibWrapper('examples/alloyDomains.dll', 'alloyDomains')
+    # cells.f14 = [dylib_wrapper.getHandle()]  # C++ callback
     
     # matlab_wrapper = MatlabWrapper('examples/alloyDomains.m')
     # cells.f14 = [matlab_wrapper.getHandle()]  # Matlab callback
     
-    # cells.f14 = [alloyDomains]  # Python callback
+    cells.f14 = [alloyDomains]  # Python callback
     
     cells.f15 = ['constant']
     cells.f16 = ['constant']

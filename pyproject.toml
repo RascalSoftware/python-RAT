@@ -3,7 +3,14 @@ requires = [
     "setuptools>=42",
     "wheel",
     "pybind11>=2.4",
-    "numpy",
 ]
+
+[optional-dependencies]
+Matlab-2023b = ["matlabengine==23.2.1"]
+Matlab-2023a = ["matlabengine==9.14.3"]
+Matlab-2022b = ["matlabengine==9.13.9"]
+Matlab-2022a = ["matlabengine==9.12.19"]
+Matlab-2021b = ["matlabengine==9.11.21"]
+Matlab-2021a = ["matlabengine==9.10.3"]
 
 build-backend = "setuptools.build_meta"

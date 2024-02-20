@@ -1,10 +1,12 @@
 from glob import glob
+from pathlib import Path
 import platform
+import sys
+import pybind11
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 from setuptools.command.build_clib import build_clib
-import sys
-import pybind11
+
 
 __version__ = '0.0.0'
 
@@ -31,7 +33,7 @@ ext_modules = [
 # check whether compiler supports a flag
 def has_flag(compiler, flagname):
     import tempfile
-    from distutils.errors import CompileError
+    from setuptools.errors import CompileError
     with tempfile.NamedTemporaryFile('w', suffix='.cpp') as f:
         f.write('int main (int argc, char **argv) { return 0; }')
         try:
@@ -54,7 +56,7 @@ class BuildExt(build_ext):
     """A custom build extension for adding compiler-specific options."""
     c_opts = {
         'msvc': ['/EHsc'],
-        'unix': ['-fopenmp'],
+        'unix': ['-fopenmp', '-std=c++11'],
     }
     l_opts = {
         'msvc': [],
@@ -62,9 +64,9 @@ class BuildExt(build_ext):
     }
 
     if sys.platform == 'darwin':
-        darwin_opts = ['-stdlib=libc++', '-mmacosx-version-min=10.7']
-        c_opts['unix'] += darwin_opts
-        l_opts['unix'] += darwin_opts
+        darwin_opts = ['-stdlib=libc++', '-mmacosx-version-min=10.9']
+        c_opts['unix'] = [*darwin_opts, '-fopenmp']
+        l_opts['unix'] = [*darwin_opts, '-lomp']
 
     def build_extensions(self):
         ct = self.compiler.compiler_type
@@ -75,7 +77,6 @@ class BuildExt(build_ext):
                 self.compiler.compiler_so.remove('-Wstrict-prototypes')
 
             opts.append('-DVERSION_INFO="%s"' % self.distribution.get_version())
-            opts.append('-std=c++11')
             if has_flag(self.compiler, '-fvisibility=hidden'):
                 opts.append('-fvisibility=hidden')
         elif ct == 'msvc':
@@ -84,13 +85,27 @@ class BuildExt(build_ext):
             ext.extra_compile_args = opts
             ext.extra_link_args = link_opts
         build_ext.build_extensions(self)
+    
+    def run(self):
+        super().run()
+        build_py = self.get_finalized_command('build_py')
+        package_dir = f'{build_py.build_lib}/rat/'
+        for p in Path(package_dir).glob("**/*"):
+            if p.suffix in {".exp", ".a", ".lib"}:
+                p.unlink() 
+                
+        if self.inplace:
+            obj_name = get_shared_object_name(libevent[0])
+            src = f'{build_py.build_lib}/rat/{obj_name}'
+            dest = f'{build_py.get_package_dir("rat")}/{obj_name}'
+            build_py.copy_file(src, dest)
 
 
 class BuildClib(build_clib):
     def initialize_options(self):
         super().initialize_options()
         build_py = self.get_finalized_command('build_py')
-        self.build_clib =  build_py.get_package_dir("rat")
+        self.build_clib = f'{build_py.build_lib}/rat'
 
     def build_libraries(self, libraries):
         # bug in distutils: flag not valid for c++
@@ -101,7 +116,7 @@ class BuildClib(build_clib):
 
         compiler_type = self.compiler.compiler_type
         if compiler_type == 'msvc':
-            compile_args = ['/std:c++11', '/EHsc', '/LD']
+            compile_args = ['/EHsc', '/LD']
         else:
             compile_args = ['-std=c++11', '-fPIC']
 
@@ -139,12 +154,19 @@ setup(
     description='Python extension for the Reflectivity Analysis Toolbox (RAT)',
     long_description='',
     packages=['rat'],
-    package_data={'rat': [get_shared_object_name(libevent[0])]},
+    include_package_data=True,
+    package_data={'': [get_shared_object_name(libevent[0])]},
     libraries=[libevent],
     ext_modules=ext_modules,
-    install_requires=['pybind11>=2.4', 'numpy'],
+    install_requires=['numpy'],
     python_requires='>=3.9',
     # setup_requires=['pybind11>=2.4'],
-    cmdclass={'build_ext': BuildExt, 'build_clib': BuildClib},
+    cmdclass={'build_clib': BuildClib, 'build_ext': BuildExt},
+    extras_require={"Matlab_2023b": ["matlabengine==23.2.1"],
+                    "Matlab_2023a": ["matlabengine==9.14.3"],
+                    "Matlab-2022b": ["matlabengine==9.13.9"],
+                    "Matlab_2022a": ["matlabengine==9.12.19"],
+                    "Matlab_2021b": ["matlabengine==9.11.21"],
+                    "Matlab_2021a": ["matlabengine==9.10.3"]},
     zip_safe=False,
 )
