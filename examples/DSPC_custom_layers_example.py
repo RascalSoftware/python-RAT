@@ -175,7 +175,7 @@ if __name__ == '__main__':
 
     import time    
     start = time.perf_counter()
-    events.register(rat_core.EventTypes.Plot, fakePlot)
+    events.register(events.EventTypes.Plot, fakePlot)
     problem, contrast_params, result, bayes_results = rat_core.RATMain(problem, cells, limits, control, priors)
     events.clear()
     print(time.perf_counter() - start, 'sec')

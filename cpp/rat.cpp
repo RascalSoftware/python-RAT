@@ -37,38 +37,38 @@ class Library: public CallbackInterface
 
     void setOutput(py::tuple& result, std::vector<double>& output, double *outputSize)
     {
-        int n_rows = 0, idx = 0;
-        for (py::handle row_handle : result[0])
+        int nRows = 0, idx = 0;
+        for (py::handle rowHandle : result[0])
         {
-            py::list rows = py::cast<py::list>(row_handle); 
+            py::list rows = py::cast<py::list>(rowHandle); 
             for (py::handle value : rows)
             {
                 output.push_back(py::cast<double>(value));
                 idx++;
             }
-            n_rows++;
+            nRows++;
         }
 
-        outputSize[0] = n_rows;
-        outputSize[1] = (n_rows == 0) ? 0 : idx / n_rows;
+        outputSize[0] = nRows;
+        outputSize[1] = (nRows == 0) ? 0 : idx / nRows;
     }
 
     // Domain overload
-    void invoke(std::vector<double>& params, std::vector<double>& bulk_in, std::vector<double>& bulk_out, 
+    void invoke(std::vector<double>& params, std::vector<double>& bulkIn, std::vector<double>& bulkOut, 
                         int contrast, int domainNumber, std::vector<double>& output, double *outputSize, double *roughness)
     {
         auto f = py::cast<std::function<py::tuple(py::list, py::list, py::list, int, int)>>(this->function);
-        auto result = f(py::cast(params), py::cast(bulk_in), py::cast(bulk_out), contrast, domainNumber);
+        auto result = f(py::cast(params), py::cast(bulkIn), py::cast(bulkOut), contrast, domainNumber);
         *roughness = py::cast<double>(result[1]);
         setOutput(result, output, outputSize);
     };
     
     // Non-Domain overload
-    void invoke(std::vector<double>& params, std::vector<double>& bulk_in, std::vector<double>& bulk_out, 
+    void invoke(std::vector<double>& params, std::vector<double>& bulkIn, std::vector<double>& bulkOut, 
                         int contrast, std::vector<double>& output, double *outputSize, double *roughness)
     {
         auto f = py::cast<std::function<py::tuple(py::list, py::list, py::list, int)>>(this->function);
-        auto result = f(py::cast(params), py::cast(bulk_in), py::cast(bulk_out), contrast);
+        auto result = f(py::cast(params), py::cast(bulkIn), py::cast(bulkOut), contrast);
         *roughness = py::cast<double>(result[1]);
         setOutput(result, output, outputSize);
     };
@@ -93,7 +93,7 @@ class DylibEngine
 
     ~DylibEngine(){};
 
-    py::tuple invoke(std::vector<double>& params, std::vector<double>& bulk_in, std::vector<double>& bulk_out, int contrast, int domain=DEFAULT_DOMAIN)
+    py::tuple invoke(std::vector<double>& params, std::vector<double>& bulkIn, std::vector<double>& bulkOut, int contrast, int domain=DEFAULT_DOMAIN)
     {   
         try{
             std::vector<double> tempOutput;
@@ -103,12 +103,12 @@ class DylibEngine
             if (domain != -1) {
                 auto func = library->get_function<void(std::vector<double>&, std::vector<double>&, std::vector<double>&, 
                                                        int, int, std::vector<double>&, double*, double*)>(functionName);
-                func(params, bulk_in, bulk_out, contrast, domain, tempOutput, outputSize, &roughness); 
+                func(params, bulkIn, bulkOut, contrast, domain, tempOutput, outputSize, &roughness); 
             }
             else {
                 auto func = library->get_function<void(std::vector<double>&, std::vector<double>&, std::vector<double>&, 
                                                        int, std::vector<double>&, double*, double*)>(functionName);
-                func(params, bulk_in, bulk_out, contrast, tempOutput, outputSize, &roughness);
+                func(params, bulkIn, bulkOut, contrast, tempOutput, outputSize, &roughness);
             } 
             
             py::list output;
@@ -142,13 +142,13 @@ struct PlotEventData
     std::string modelType;
 };
 
-class EventStuff
+class EventBridge
 {
     public:
     std::unique_ptr<dylib> library;
     py::function callback;
     
-    EventStuff(py::function callback)
+    EventBridge(py::function callback)
     {   
         std::string filename = "eventManager" + std::string(dylib::extension);
         this->library = std::unique_ptr<dylib>(new dylib(std::getenv("RAT_PATH"), filename.c_str()));
@@ -233,7 +233,7 @@ class EventStuff
 
     void registerEvent(EventTypes eventType)
     {
-        std::function<void(const baseEvent& event)> caller = std::bind(&EventStuff::eventCallback, this, std::placeholders::_1);
+        std::function<void(const baseEvent& event)> caller = std::bind(&EventBridge::eventCallback, this, std::placeholders::_1);
         auto addListener = library->get_function<void(EventTypes, std::function<void(const baseEvent&)>)>("addListener");
         addListener(eventType, caller);    
     };
@@ -577,7 +577,7 @@ coder::array<real_T, 2U> pyArrayToRatArray2d(py::array_t<real_T> value)
     return result;
 }
 
-coder::array<RAT::cell_0, 1U> py_array_to_unboundedx1_cell_0(py::list values)
+coder::array<RAT::cell_0, 1U> pyListToUnboundedCell0(py::list values)
 {
     coder::array<RAT::cell_0, 1U> result;
     result.set_size(values.size());
@@ -597,7 +597,7 @@ coder::array<RAT::cell_0, 1U> py_array_to_unboundedx1_cell_0(py::list values)
     return result;
 }
 
-coder::array<RAT::cell_wrap_1, 1U> py_array_to_unboundedx1_cell_1(py::list values)
+coder::array<RAT::cell_wrap_1, 1U> pyListToUnboundedCell1(py::list values)
 {
     coder::array<RAT::cell_wrap_1, 1U> result;
     result.set_size(values.size());
@@ -613,7 +613,7 @@ coder::array<RAT::cell_wrap_1, 1U> py_array_to_unboundedx1_cell_1(py::list value
     return result;
 }
 
-RAT::struct0_T createStruct0_T(const ProblemDefinition& problem)
+RAT::struct0_T createStruct0(const ProblemDefinition& problem)
 {
     RAT::struct0_T problem_struct;
     
@@ -657,7 +657,7 @@ RAT::struct0_T createStruct0_T(const ProblemDefinition& problem)
     return problem_struct;
 }
 
-RAT::struct1_T createStruct1T(const Limits& limits)
+RAT::struct1_T createStruct1(const Limits& limits)
 {
     RAT::struct1_T limits_struct;
     limits_struct.param = pyArrayToRatArray2d(limits.param);
@@ -672,7 +672,7 @@ RAT::struct1_T createStruct1T(const Limits& limits)
     return limits_struct;
 }
 
-RAT::struct3_T create_struct3_T(const Checks& checks)
+RAT::struct3_T createStruct3(const Checks& checks)
 {
     RAT::struct3_T checks_struct;
     checks_struct.fitParam = pyArrayToRatArray1d(checks.fitParam);
@@ -687,24 +687,24 @@ RAT::struct3_T create_struct3_T(const Checks& checks)
     return checks_struct;
 }
 
-RAT::struct4_T createStruct4T(const Priors& priors)
+RAT::struct4_T createStruct4(const Priors& priors)
 {
     RAT::struct4_T priors_struct;
-    priors_struct.param = py_array_to_unboundedx1_cell_0(priors.param);
-    priors_struct.backgroundParam = py_array_to_unboundedx1_cell_0(priors.backgroundParam);
-    priors_struct.resolutionParam = py_array_to_unboundedx1_cell_0(priors.resolutionParam);
-    priors_struct.qzshift = py_array_to_unboundedx1_cell_0(priors.qzshift);
-    priors_struct.scalefactor = py_array_to_unboundedx1_cell_0(priors.scalefactor);
-    priors_struct.bulkIn = py_array_to_unboundedx1_cell_0(priors.bulkIn);
-    priors_struct.bulkOut = py_array_to_unboundedx1_cell_0(priors.bulkOut);
-    priors_struct.domainRatio = py_array_to_unboundedx1_cell_0(priors.domainRatio);
-    priors_struct.priorNames = py_array_to_unboundedx1_cell_1(priors.priorNames);
+    priors_struct.param = pyListToUnboundedCell0(priors.param);
+    priors_struct.backgroundParam = pyListToUnboundedCell0(priors.backgroundParam);
+    priors_struct.resolutionParam = pyListToUnboundedCell0(priors.resolutionParam);
+    priors_struct.qzshift = pyListToUnboundedCell0(priors.qzshift);
+    priors_struct.scalefactor = pyListToUnboundedCell0(priors.scalefactor);
+    priors_struct.bulkIn = pyListToUnboundedCell0(priors.bulkIn);
+    priors_struct.bulkOut = pyListToUnboundedCell0(priors.bulkOut);
+    priors_struct.domainRatio = pyListToUnboundedCell0(priors.domainRatio);
+    priors_struct.priorNames = pyListToUnboundedCell1(priors.priorNames);
     priors_struct.priorValues = pyArrayToRatArray2d(priors.priorValues);
     
     return priors_struct;
 }
 
-coder::array<RAT::cell_wrap_2, 2U> py_array_to_rat_cell_wrap_2(py::list values)
+coder::array<RAT::cell_wrap_2, 2U> pyListToRatCellWrap2(py::list values)
 {
     coder::array<RAT::cell_wrap_2, 2U> result;
     result.set_size(1, values.size());
@@ -720,7 +720,7 @@ coder::array<RAT::cell_wrap_2, 2U> py_array_to_rat_cell_wrap_2(py::list values)
     return result;
 }
 
-coder::array<RAT::cell_wrap_3, 2U> py_array_to_rat_cell_wrap_3(py::list values)
+coder::array<RAT::cell_wrap_3, 2U> pyListToRatCellWrap3(py::list values)
 {
     coder::array<RAT::cell_wrap_3, 2U> result;
     result.set_size(1, values.size());
@@ -735,7 +735,7 @@ coder::array<RAT::cell_wrap_3, 2U> py_array_to_rat_cell_wrap_3(py::list values)
     return result;
 }
 
-coder::array<RAT::cell_wrap_4, 2U> py_array_to_rat_cell_wrap_4(py::list values)
+coder::array<RAT::cell_wrap_4, 2U> pyListToRatCellWrap4(py::list values)
 {
     coder::array<RAT::cell_wrap_4, 2U> result;
     result.set_size(1, values.size());
@@ -750,7 +750,7 @@ coder::array<RAT::cell_wrap_4, 2U> py_array_to_rat_cell_wrap_4(py::list values)
     return result;
 }
 
-coder::array<RAT::cell_wrap_5, 1U> py_array_to_rat_cell_wrap_5(py::list values)
+coder::array<RAT::cell_wrap_5, 1U> pyListToRatCellWrap5(py::list values)
 {
     coder::array<RAT::cell_wrap_5, 1U> result;
     result.set_size(values.size());
@@ -765,7 +765,7 @@ coder::array<RAT::cell_wrap_5, 1U> py_array_to_rat_cell_wrap_5(py::list values)
     return result;
 }
 
-coder::array<RAT::cell_wrap_6, 2U> py_array_to_rat_cell_wrap_6(py::list values)
+coder::array<RAT::cell_wrap_6, 2U> pyListToRatCellWrap6(py::list values)
 {
     coder::array<RAT::cell_wrap_6, 2U> result;
     result.set_size(1, values.size());
@@ -799,26 +799,26 @@ coder::array<RAT::cell_wrap_6, 2U> py_function_array_to_rat_cell_wrap_6(py::list
 RAT::cell_7 createCell7(const Cells& cells)
 {
     RAT::cell_7 cells_struct;
-    cells_struct.f1 = py_array_to_rat_cell_wrap_2(cells.f1);
-    cells_struct.f2 = py_array_to_rat_cell_wrap_3(cells.f2);
-    cells_struct.f3 = py_array_to_rat_cell_wrap_2(cells.f3);
-    cells_struct.f4 = py_array_to_rat_cell_wrap_2(cells.f4);
-    cells_struct.f5 = py_array_to_rat_cell_wrap_4(cells.f5);
-    cells_struct.f6 = py_array_to_rat_cell_wrap_5(cells.f6);
-    cells_struct.f7 = py_array_to_rat_cell_wrap_6(cells.f7);
-    cells_struct.f8 = py_array_to_rat_cell_wrap_6(cells.f8);
-    cells_struct.f9 = py_array_to_rat_cell_wrap_6(cells.f9);
-    cells_struct.f10 = py_array_to_rat_cell_wrap_6(cells.f10);
-    cells_struct.f11 = py_array_to_rat_cell_wrap_6(cells.f11);
-    cells_struct.f12 = py_array_to_rat_cell_wrap_6(cells.f12);
-    cells_struct.f13 = py_array_to_rat_cell_wrap_6(cells.f13);
+    cells_struct.f1 = pyListToRatCellWrap2(cells.f1);
+    cells_struct.f2 = pyListToRatCellWrap3(cells.f2);
+    cells_struct.f3 = pyListToRatCellWrap2(cells.f3);
+    cells_struct.f4 = pyListToRatCellWrap2(cells.f4);
+    cells_struct.f5 = pyListToRatCellWrap4(cells.f5);
+    cells_struct.f6 = pyListToRatCellWrap5(cells.f6);
+    cells_struct.f7 = pyListToRatCellWrap6(cells.f7);
+    cells_struct.f8 = pyListToRatCellWrap6(cells.f8);
+    cells_struct.f9 = pyListToRatCellWrap6(cells.f9);
+    cells_struct.f10 = pyListToRatCellWrap6(cells.f10);
+    cells_struct.f11 = pyListToRatCellWrap6(cells.f11);
+    cells_struct.f12 = pyListToRatCellWrap6(cells.f12);
+    cells_struct.f13 = pyListToRatCellWrap6(cells.f13);
     cells_struct.f14 = py_function_array_to_rat_cell_wrap_6(cells.f14);
-    cells_struct.f15 = py_array_to_rat_cell_wrap_6(cells.f15);
-    cells_struct.f16 = py_array_to_rat_cell_wrap_6(cells.f16);
-    cells_struct.f17 = py_array_to_rat_cell_wrap_3(cells.f17);
-    cells_struct.f18 = py_array_to_rat_cell_wrap_2(cells.f18);
-    cells_struct.f19 = py_array_to_rat_cell_wrap_4(cells.f19);
-    cells_struct.f20 = py_array_to_rat_cell_wrap_6(cells.f20);
+    cells_struct.f15 = pyListToRatCellWrap6(cells.f15);
+    cells_struct.f16 = pyListToRatCellWrap6(cells.f16);
+    cells_struct.f17 = pyListToRatCellWrap3(cells.f17);
+    cells_struct.f18 = pyListToRatCellWrap2(cells.f18);
+    cells_struct.f19 = pyListToRatCellWrap4(cells.f19);
+    cells_struct.f20 = pyListToRatCellWrap6(cells.f20);
 
     return cells_struct;
 }
@@ -854,7 +854,7 @@ RAT::struct2_T createStruct2T(const Control& control)
     control_struct.resamPars[1] = control.resamPars.at(1);
     stringToRatArray(control.boundHandling, control_struct.boundHandling.data, control_struct.boundHandling.size);
     control_struct.adaptPCR = control.adaptPCR;
-    control_struct.checks = create_struct3_T(control.checks);
+    control_struct.checks = createStruct3(control.checks);
 
     return control_struct;
 }
@@ -1176,11 +1176,11 @@ BayesResults bayesResultsFromStruct7T(const RAT::struct7_T results)
 py::tuple RATMain(const ProblemDefinition& problem_def, const Cells& cells, const Limits& limits, const Control& control, 
                                   const Priors& priors)
 {
-    RAT::struct0_T problem_def_struct = createStruct0T(problem_def);
+    RAT::struct0_T problem_def_struct = createStruct0(problem_def);
     RAT::cell_7 cells_struct = createCell7(cells);
-    RAT::struct1_T limits_struct = createStruct1T(limits);
+    RAT::struct1_T limits_struct = createStruct1(limits);
     RAT::struct2_T control_struct = createStruct2T(control);
-    RAT::struct4_T priors_struct = createStruct4T(priors);
+    RAT::struct4_T priors_struct = createStruct4(priors);
 
     RAT::cell_wrap_9 results[6];
     RAT::struct5_T problem;
@@ -1211,10 +1211,10 @@ public:
 
 PYBIND11_MODULE(rat_core, m) {
     static Module module;
-    py::class_<EventStuff>(m, "EventStuff")
+    py::class_<EventBridge>(m, "EventBridge")
         .def(py::init<py::function>())
-        .def("register", &EventStuff::registerEvent)
-        .def("clear", &EventStuff::clear);
+        .def("register", &EventBridge::registerEvent)
+        .def("clear", &EventBridge::clear);
 
     py::enum_<EventTypes>(m, "EventTypes")
         .value("Message", EventTypes::Message)
@@ -1222,8 +1222,8 @@ PYBIND11_MODULE(rat_core, m) {
 
     py::class_<DylibEngine>(m, "DylibEngine")
         .def(py::init<std::string, std::string>())
-        .def("invoke", &DylibEngine::invoke, py::arg("params"), py::arg("bulk_in"), 
-                                           py::arg("bulk_out"), py::arg("contrast"), 
+        .def("invoke", &DylibEngine::invoke, py::arg("params"), py::arg("bulkIn"), 
+                                           py::arg("bulkOut"), py::arg("contrast"), 
                                            py::arg("domain") = DEFAULT_DOMAIN);
 
     py::class_<Predlims>(m, "Predlims")
