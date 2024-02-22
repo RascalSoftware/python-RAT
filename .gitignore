@@ -16,3 +16,15 @@ htmlcov/
 _build
 docs/.buildinfo
 docs/*.inv
+*.rat.cpp
+*.so
+*.dll 
+*.dylib
+*.obj
+*.exp
+*.lib
+*.a
+*.egg-info/
+build/*
+dist/*
+*.whl
