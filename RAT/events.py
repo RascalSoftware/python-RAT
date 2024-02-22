@@ -12,7 +12,7 @@ def notify(event_type: EventTypes, data: Union[str, PlotEventData]) -> None:
     event_type : EventTypes
         The event type that was triggered.
     data : str or PlotEventData
-        The data sent by th event. The message event data is a string.
+        The data sent by the event. The message event data is a string.
     """
     callbacks = __event_callbacks[event_type]
     for callback in callbacks:

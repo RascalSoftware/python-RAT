@@ -148,8 +148,8 @@ class BuildClib(build_clib):
 setup(
     name = 'RAT',
     version = __version__,
-    author = 'demo',
-    author_email = 'demo@gmail.com',
+    author = '',
+    author_email = '',
     url = 'https://github.com/RascalSoftware/python-RAT',
     description = 'Python extension for the Reflectivity Analysis Toolbox (RAT)',
     packages = ['RAT'],

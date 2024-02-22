@@ -1471,5 +1471,5 @@ PYBIND11_MODULE(rat_core, m) {
         .def_readwrite("fitLimits", &ProblemDefinition::fitLimits)
         .def_readwrite("otherLimits", &ProblemDefinition::otherLimits);
 
-    m.def("RATMain", &RATMain, "A demo for Python RAT");    
+    m.def("RATMain", &RATMain, "Entry point for the main reflectivity computation.");    
 }
