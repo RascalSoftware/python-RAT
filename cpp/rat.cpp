@@ -1236,14 +1236,14 @@ PYBIND11_MODULE(rat_core, m) {
     
     py::class_<PlotEventData>(m, "PlotEventData")
         .def(py::init<>())
-        .def_readonly("reflectivity", &PlotEventData::reflectivity)
-        .def_readonly("shiftedData", &PlotEventData::shiftedData)
-        .def_readonly("sldProfiles", &PlotEventData::sldProfiles)
-        .def_readonly("allLayers", &PlotEventData::allLayers)
-        .def_readonly("ssubs", &PlotEventData::ssubs)
-        .def_readonly("resample", &PlotEventData::resample)
-        .def_readonly("dataPresent", &PlotEventData::dataPresent)
-        .def_readonly("modelType", &PlotEventData::modelType);
+        .def_readwrite("reflectivity", &PlotEventData::reflectivity)
+        .def_readwrite("shiftedData", &PlotEventData::shiftedData)
+        .def_readwrite("sldProfiles", &PlotEventData::sldProfiles)
+        .def_readwrite("allLayers", &PlotEventData::allLayers)
+        .def_readwrite("ssubs", &PlotEventData::ssubs)
+        .def_readwrite("resample", &PlotEventData::resample)
+        .def_readwrite("dataPresent", &PlotEventData::dataPresent)
+        .def_readwrite("modelType", &PlotEventData::modelType);
 
     py::class_<BestFitsMean>(m, "BestFitsMean")
         .def(py::init<>())

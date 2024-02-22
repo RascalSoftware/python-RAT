@@ -20,3 +20,6 @@ __pycache__/
 build/*
 dist/*
 *.whl
+
+# test
+.coverage

@@ -2,7 +2,7 @@ import faulthandler
 import numpy as np
 from alloyDomains import  alloyDomains
 from rat import events, rat_core
-from rat.misc import DylibWrapper # MatlabWrapper
+from rat.misc import DylibWrapper, MatlabWrapper
 
 faulthandler.enable()
 

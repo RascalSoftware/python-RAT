@@ -143,7 +143,7 @@ class BuildClib(build_clib):
                 )
 
         super().build_libraries(libraries)
-
+                                           
 
 setup(
     name='rat',
@@ -160,9 +160,9 @@ setup(
     ext_modules=ext_modules,
     install_requires=['numpy'],
     python_requires='>=3.9',
-    # setup_requires=['pybind11>=2.4'],
     cmdclass={'build_clib': BuildClib, 'build_ext': BuildExt},
-    extras_require={"Matlab_2023b": ["matlabengine==23.2.1"],
+    extras_require={"Matlab_latest": ["matlabengine"],
+                    "Matlab_2023b": ["matlabengine==23.2.1"],
                     "Matlab_2023a": ["matlabengine==9.14.3"],
                     "Matlab-2022b": ["matlabengine==9.13.9"],
                     "Matlab_2022a": ["matlabengine==9.12.19"],

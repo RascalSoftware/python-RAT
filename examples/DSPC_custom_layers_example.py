@@ -2,7 +2,7 @@ import faulthandler
 import numpy as np
 from customBilayer import customBilayer
 from rat import events, rat_core
-from rat.misc import  DylibWrapper # MatlabWrapper
+from rat.misc import DylibWrapper, MatlabWrapper
 
 faulthandler.enable()
 
@@ -171,7 +171,7 @@ if __name__ == '__main__':
     
 
     def fakePlot(event):
-        print("Hello plotting")
+        print('Hello plotting')
 
     import time    
     start = time.perf_counter()
