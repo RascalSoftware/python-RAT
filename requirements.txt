@@ -1,6 +1,7 @@
 numpy >= 1.20
 prettytable >= 3.9.0
+pybind11 >= 2.4
 pydantic >= 2.4.2
 pytest >= 7.4.0
 pytest-cov >= 4.1.0
-StrEnum >= 0.4.15
+StrEnum >= 0.4.15; python_version < '3.11'
