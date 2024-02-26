@@ -3,7 +3,7 @@ from pathlib import Path
 import platform
 import sys
 import pybind11
-from setuptools import setup, Extension
+from setuptools import setup, Extension, find_packages
 from setuptools.command.build_ext import build_ext
 from setuptools.command.build_clib import build_clib
 
@@ -152,7 +152,7 @@ setup(
     author_email = '',
     url = 'https://github.com/RascalSoftware/python-RAT',
     description = 'Python extension for the Reflectivity Analysis Toolbox (RAT)',
-    packages = ['RAT'],
+    packages = find_packages(),
     include_package_data = True,
     package_data = {'': [get_shared_object_name(libevent[0])]},
     cmdclass = {'build_clib': BuildClib, 'build_ext': BuildExt},
