@@ -378,18 +378,21 @@ struct ContrastParams
     py::array_t<real_T> bulkIn;
     py::array_t<real_T> bulkOut;
     py::array_t<real_T> resolutionParams;
-    Calculation calculations {};
     py::array_t<real_T> allSubRough;
     py::array_t<real_T>  resample;
 };
 
 struct OutputResult {
-    py::list f1;
-    py::list f2;
-    py::list f3;
-    py::list f4;
-    py::list f5;
-    py::list f6;
+    py::list reflectivity;;
+    py::list simulation;
+    py::list shiftedData;
+    py::list layerSlds;
+    py::list sldProfiles;
+    py::list allLayers;
+    Calculation calculationResults {};
+    ContrastParams contrastParams;
+    py::array_t<real_T> bestFitPars;
+    py::list fitNames;
 };
 
 struct Limits {
@@ -876,136 +879,202 @@ py::array_t<real_T> pyArrayFromRatArray2d(coder::array<real_T, 2U> array)
     return result_array;
 }
 
-py::list resultArrayToList(const RAT::cell_wrap_9 results[])
+// py::list resultArrayToList(const RAT::cell_wrap_9 results[])
+// {
+//     py::list outer_list_1;
+//     for (int32_T idx0{0}; idx0 < results[0].f1.size(0); idx0++) {
+//         py::list inner_list;
+//         for (int32_T idx1{0}; idx1 < results[0].f1.size(1); idx1++) {
+//             auto tmp = results[0].f1[idx0 +  results[0].f1.size(0) * idx1];
+//             auto array = py::array_t<real_T, py::array::f_style>({tmp.f1.size(0), tmp.f1.size(1)});
+//             std::memcpy(array.request().ptr, tmp.f1.data(), array.nbytes());
+//             inner_list.append(array);       
+//         }
+//         outer_list_1.append(inner_list);
+//     }
+
+//     py::list outer_list_2;
+//     for (int32_T idx0{0}; idx0 < results[1].f1.size(0); idx0++) {
+//         py::list inner_list;
+//         for (int32_T idx1{0}; idx1 < results[1].f1.size(1); idx1++) {
+//             auto tmp = results[1].f1[idx0 +  results[1].f1.size(0) * idx1];
+//             auto array = py::array_t<real_T, py::array::f_style>({tmp.f1.size(0), tmp.f1.size(1)});
+//             std::memcpy(array.request().ptr, tmp.f1.data(), array.nbytes());
+//             inner_list.append(array);
+//         }
+//         outer_list_2.append(inner_list);
+//     }
+
+//     py::list outer_list_3;
+//     for (int32_T idx0{0}; idx0 < results[2].f1.size(0); idx0++) {
+//         py::list inner_list;
+//         for (int32_T idx1{0}; idx1 < results[2].f1.size(1); idx1++) {
+//             auto tmp = results[2].f1[idx0 +  results[2].f1.size(0) * idx1];
+//             auto array = py::array_t<real_T, py::array::f_style>({tmp.f1.size(0), tmp.f1.size(1)});
+//             std::memcpy(array.request().ptr, tmp.f1.data(), array.nbytes());
+//             inner_list.append(array);
+//         }
+//         outer_list_3.append(inner_list);
+//     }
+
+//     py::list outer_list_4;
+//     for (int32_T idx0{0}; idx0 < results[3].f1.size(0); idx0++) {
+//         py::list inner_list;
+//         for (int32_T idx1{0}; idx1 < results[3].f1.size(1); idx1++) {
+//             auto tmp = results[3].f1[idx0 +  results[3].f1.size(0) * idx1];
+//             auto array = py::array_t<real_T, py::array::f_style>({tmp.f1.size(0), tmp.f1.size(1)});
+//             std::memcpy(array.request().ptr, tmp.f1.data(), array.nbytes());
+//             inner_list.append(array);
+//         }
+//         outer_list_4.append(inner_list);
+//     }
+
+//     py::list outer_list_5;
+//     for (int32_T idx0{0}; idx0 < results[4].f1.size(0); idx0++) {
+//         py::list inner_list;
+//         for (int32_T idx1{0}; idx1 < results[4].f1.size(1); idx1++) {
+//             auto tmp = results[4].f1[idx0 +  results[4].f1.size(0) * idx1];
+//             auto array = py::array_t<real_T, py::array::f_style>({tmp.f1.size(0), tmp.f1.size(1)});
+//             std::memcpy(array.request().ptr, tmp.f1.data(), array.nbytes());
+//             inner_list.append(array);
+//         }
+//         outer_list_5.append(inner_list);
+//     }
+
+//     py::list outer_list_6;
+//     for (int32_T idx0{0}; idx0 < results[5].f1.size(0); idx0++) {
+//         py::list inner_list;
+//         for (int32_T idx1{0}; idx1 < results[5].f1.size(1); idx1++) {
+//             auto tmp = results[5].f1[idx0 +  results[5].f1.size(0) * idx1];
+//             auto array = py::array_t<real_T, py::array::f_style>({tmp.f1.size(0), tmp.f1.size(1)});
+//             std::memcpy(array.request().ptr, tmp.f1.data(), array.nbytes());
+//             inner_list.append(array);
+//         }
+//         outer_list_6.append(inner_list);
+//     }
+//     py::list output_result;
+//     output_result.append(outer_list_1);
+//     output_result.append(outer_list_2);
+//     output_result.append(outer_list_3);
+//     output_result.append(outer_list_4);
+//     output_result.append(outer_list_5);
+//     output_result.append(outer_list_6);
+
+//     return output_result;
+// }
+
+OutputResult OutputResultFromStruct5T(const RAT::struct5_T result)
 {
-    py::list outer_list_1;
-    for (int32_T idx0{0}; idx0 < results[0].f1.size(0); idx0++) {
+    // Copy problem to output
+    OutputResult output_result;
+    for (int32_T idx0{0}; idx0 < result.reflectivity.size(0); idx0++) {
         py::list inner_list;
-        for (int32_T idx1{0}; idx1 < results[0].f1.size(1); idx1++) {
-            auto tmp = results[0].f1[idx0 +  results[0].f1.size(0) * idx1];
+        for (int32_T idx1{0}; idx1 < result.reflectivity.size(1); idx1++) {
+            auto tmp = result.reflectivity[idx0 +  result.reflectivity.size(0) * idx1];
             auto array = py::array_t<real_T, py::array::f_style>({tmp.f1.size(0), tmp.f1.size(1)});
             std::memcpy(array.request().ptr, tmp.f1.data(), array.nbytes());
             inner_list.append(array);       
         }
-        outer_list_1.append(inner_list);
+        output_result.reflectivity.append(inner_list);
     }
 
-    py::list outer_list_2;
-    for (int32_T idx0{0}; idx0 < results[1].f1.size(0); idx0++) {
+    for (int32_T idx0{0}; idx0 < result.simulation.size(0); idx0++) {
         py::list inner_list;
-        for (int32_T idx1{0}; idx1 < results[1].f1.size(1); idx1++) {
-            auto tmp = results[1].f1[idx0 +  results[1].f1.size(0) * idx1];
+        for (int32_T idx1{0}; idx1 < result.simulation.size(1); idx1++) {
+            auto tmp = result.simulation[idx0 +  result.simulation.size(0) * idx1];
             auto array = py::array_t<real_T, py::array::f_style>({tmp.f1.size(0), tmp.f1.size(1)});
             std::memcpy(array.request().ptr, tmp.f1.data(), array.nbytes());
             inner_list.append(array);
         }
-        outer_list_2.append(inner_list);
+        output_result.simulation.append(inner_list);
     }
 
-    py::list outer_list_3;
-    for (int32_T idx0{0}; idx0 < results[2].f1.size(0); idx0++) {
+    for (int32_T idx0{0}; idx0 < result.shiftedData.size(0); idx0++) {
         py::list inner_list;
-        for (int32_T idx1{0}; idx1 < results[2].f1.size(1); idx1++) {
-            auto tmp = results[2].f1[idx0 +  results[2].f1.size(0) * idx1];
+        for (int32_T idx1{0}; idx1 < result.shiftedData.size(1); idx1++) {
+            auto tmp = result.shiftedData[idx0 +  result.shiftedData.size(0) * idx1];
             auto array = py::array_t<real_T, py::array::f_style>({tmp.f1.size(0), tmp.f1.size(1)});
             std::memcpy(array.request().ptr, tmp.f1.data(), array.nbytes());
             inner_list.append(array);
         }
-        outer_list_3.append(inner_list);
+        output_result.shiftedData.append(inner_list);
     }
 
-    py::list outer_list_4;
-    for (int32_T idx0{0}; idx0 < results[3].f1.size(0); idx0++) {
+    for (int32_T idx0{0}; idx0 < result.layerSlds.size(0); idx0++) {
         py::list inner_list;
-        for (int32_T idx1{0}; idx1 < results[3].f1.size(1); idx1++) {
-            auto tmp = results[3].f1[idx0 +  results[3].f1.size(0) * idx1];
+        for (int32_T idx1{0}; idx1 < result.layerSlds.size(1); idx1++) {
+            auto tmp = result.layerSlds[idx0 +  result.layerSlds.size(0) * idx1];
             auto array = py::array_t<real_T, py::array::f_style>({tmp.f1.size(0), tmp.f1.size(1)});
             std::memcpy(array.request().ptr, tmp.f1.data(), array.nbytes());
             inner_list.append(array);
         }
-        outer_list_4.append(inner_list);
+        output_result.layerSlds.append(inner_list);
     }
 
-    py::list outer_list_5;
-    for (int32_T idx0{0}; idx0 < results[4].f1.size(0); idx0++) {
+    for (int32_T idx0{0}; idx0 < result.sldProfiles.size(0); idx0++) {
         py::list inner_list;
-        for (int32_T idx1{0}; idx1 < results[4].f1.size(1); idx1++) {
-            auto tmp = results[4].f1[idx0 +  results[4].f1.size(0) * idx1];
+        for (int32_T idx1{0}; idx1 < result.sldProfiles.size(1); idx1++) {
+            auto tmp = result.sldProfiles[idx0 +  result.sldProfiles.size(0) * idx1];
             auto array = py::array_t<real_T, py::array::f_style>({tmp.f1.size(0), tmp.f1.size(1)});
             std::memcpy(array.request().ptr, tmp.f1.data(), array.nbytes());
             inner_list.append(array);
         }
-        outer_list_5.append(inner_list);
+        output_result.sldProfiles.append(inner_list);
     }
 
-    py::list outer_list_6;
-    for (int32_T idx0{0}; idx0 < results[5].f1.size(0); idx0++) {
+    for (int32_T idx0{0}; idx0 < result.allLayers.size(0); idx0++) {
         py::list inner_list;
-        for (int32_T idx1{0}; idx1 < results[5].f1.size(1); idx1++) {
-            auto tmp = results[5].f1[idx0 +  results[5].f1.size(0) * idx1];
+        for (int32_T idx1{0}; idx1 < result.allLayers.size(1); idx1++) {
+            auto tmp = result.allLayers[idx0 +  result.allLayers.size(0) * idx1];
             auto array = py::array_t<real_T, py::array::f_style>({tmp.f1.size(0), tmp.f1.size(1)});
             std::memcpy(array.request().ptr, tmp.f1.data(), array.nbytes());
             inner_list.append(array);
         }
-        outer_list_6.append(inner_list);
+        output_result.allLayers.append(inner_list);
     }
-    py::list output_result;
-    output_result.append(outer_list_1);
-    output_result.append(outer_list_2);
-    output_result.append(outer_list_3);
-    output_result.append(outer_list_4);
-    output_result.append(outer_list_5);
-    output_result.append(outer_list_6);
+
+    output_result.contrastParams.ssubs = py::array_t<real_T>(result.contrastParams.ssubs.size(0));
+    auto buffer = output_result.contrastParams.ssubs.request();
+    std::memcpy(buffer.ptr, result.contrastParams.ssubs.data(), output_result.contrastParams.ssubs.size()*sizeof(real_T));
+
+    output_result.contrastParams.backgroundParams = py::array_t<real_T>(result.contrastParams.backgroundParams.size(0));
+    buffer = output_result.contrastParams.backgroundParams.request();
+    std::memcpy(buffer.ptr, result.contrastParams.backgroundParams.data(), output_result.contrastParams.backgroundParams.size()*sizeof(real_T));
+
+    output_result.contrastParams.qzshifts = py::array_t<real_T>(result.contrastParams.qzshifts.size(0));
+    buffer = output_result.contrastParams.qzshifts.request();
+    std::memcpy(buffer.ptr, result.contrastParams.qzshifts.data(), output_result.contrastParams.qzshifts.size()*sizeof(real_T));
+
+    output_result.contrastParams.scalefactors = py::array_t<real_T>(result.contrastParams.scalefactors.size(0));
+    buffer = output_result.contrastParams.scalefactors.request();
+    std::memcpy(buffer.ptr, result.contrastParams.scalefactors.data(), output_result.contrastParams.scalefactors.size()*sizeof(real_T));
+
+    output_result.contrastParams.bulkIn = py::array_t<real_T>(result.contrastParams.bulkIn.size(0));
+    buffer = output_result.contrastParams.bulkIn.request();
+    std::memcpy(buffer.ptr, result.contrastParams.bulkIn.data(), output_result.contrastParams.bulkIn.size()*sizeof(real_T));
+
+    output_result.contrastParams.bulkOut = py::array_t<real_T>(result.contrastParams.bulkOut.size(0));
+    buffer = output_result.contrastParams.bulkOut.request();
+    std::memcpy(buffer.ptr, result.contrastParams.bulkOut.data(), output_result.contrastParams.bulkOut.size()*sizeof(real_T));
+
+    output_result.contrastParams.resolutionParams = py::array_t<real_T>(result.contrastParams.resolutionParams.size(0));
+    buffer = output_result.contrastParams.resolutionParams.request();
+    std::memcpy(buffer.ptr, result.contrastParams.resolutionParams.data(), output_result.contrastParams.resolutionParams.size()*sizeof(real_T));
+
+    output_result.calculationResults.sumChi = result.calculationResults.sumChi;
+    output_result.calculationResults.allChis = py::array_t<real_T>(result.calculationResults.allChis.size(0));
+    buffer = output_result.calculationResults.allChis.request();
+    std::memcpy(buffer.ptr, result.calculationResults.allChis.data(), output_result.calculationResults.allChis.size()*sizeof(real_T));
+
+    output_result.contrastParams.allSubRough = py::array_t<real_T>(result.contrastParams.allSubRough.size(0));
+    buffer = output_result.contrastParams.allSubRough.request();
+    std::memcpy(buffer.ptr, result.contrastParams.allSubRough.data(), output_result.contrastParams.allSubRough.size()*sizeof(real_T));
+
+    output_result.contrastParams.resample = py::array_t<real_T>(result.contrastParams.resample.size(1));
+    buffer = output_result.contrastParams.resample.request();
+    std::memcpy(buffer.ptr, result.contrastParams.resample.data(), output_result.contrastParams.resample.size()*sizeof(real_T));
 
     return output_result;
-}
-
-ContrastParams contrastParamsFromStruct5T(const RAT::struct5_T problem)
-{
-    // Copy problem to output
-    ContrastParams output_problem;
-    output_problem.ssubs = py::array_t<real_T>(problem.ssubs.size(0));
-    auto buffer = output_problem.ssubs.request();
-    std::memcpy(buffer.ptr, problem.ssubs.data(), output_problem.ssubs.size()*sizeof(real_T));
-
-    output_problem.backgroundParams = py::array_t<real_T>(problem.backgroundParams.size(0));
-    buffer = output_problem.backgroundParams.request();
-    std::memcpy(buffer.ptr, problem.backgroundParams.data(), output_problem.backgroundParams.size()*sizeof(real_T));
-
-    output_problem.qzshifts = py::array_t<real_T>(problem.qzshifts.size(0));
-    buffer = output_problem.qzshifts.request();
-    std::memcpy(buffer.ptr, problem.qzshifts.data(), output_problem.qzshifts.size()*sizeof(real_T));
-
-    output_problem.scalefactors = py::array_t<real_T>(problem.scalefactors.size(0));
-    buffer = output_problem.scalefactors.request();
-    std::memcpy(buffer.ptr, problem.scalefactors.data(), output_problem.scalefactors.size()*sizeof(real_T));
-
-    output_problem.bulkIn = py::array_t<real_T>(problem.bulkIn.size(0));
-    buffer = output_problem.bulkIn.request();
-    std::memcpy(buffer.ptr, problem.bulkIn.data(), output_problem.bulkIn.size()*sizeof(real_T));
-
-    output_problem.bulkOut = py::array_t<real_T>(problem.bulkOut.size(0));
-    buffer = output_problem.bulkOut.request();
-    std::memcpy(buffer.ptr, problem.bulkOut.data(), output_problem.bulkOut.size()*sizeof(real_T));
-
-    output_problem.resolutionParams = py::array_t<real_T>(problem.resolutionParams.size(0));
-    buffer = output_problem.resolutionParams.request();
-    std::memcpy(buffer.ptr, problem.resolutionParams.data(), output_problem.resolutionParams.size()*sizeof(real_T));
-
-    output_problem.calculations.sumChi = problem.calculations.sumChi;
-    output_problem.calculations.allChis = py::array_t<real_T>(problem.calculations.allChis.size(0));
-    buffer = output_problem.calculations.allChis.request();
-    std::memcpy(buffer.ptr, problem.calculations.allChis.data(), output_problem.calculations.allChis.size()*sizeof(real_T));
-
-    output_problem.allSubRough = py::array_t<real_T>(problem.allSubRough.size(0));
-    buffer = output_problem.allSubRough.request();
-    std::memcpy(buffer.ptr, problem.allSubRough.data(), output_problem.allSubRough.size()*sizeof(real_T));
-
-    output_problem.resample = py::array_t<real_T>(problem.resample.size(1));
-    buffer = output_problem.resample.request();
-    std::memcpy(buffer.ptr, problem.resample.data(), output_problem.resample.size()*sizeof(real_T));
-
-    return output_problem;
 }
 
 ProblemDefinition problemDefinitionFromStruct0T(const RAT::struct0_T problem)
@@ -1055,7 +1124,7 @@ ProblemDefinition problemDefinitionFromStruct0T(const RAT::struct0_T problem)
     return problem_def;
 }
 
-py::list pyList1DFromRatCellWrap8(const coder::array<RAT::cell_wrap_8, 1U>& values)
+py::list pyList1DFromRatCellWrap(const coder::array<RAT::cell_wrap_10, 1U>& values)
 {
     py::list result;
     
@@ -1066,7 +1135,7 @@ py::list pyList1DFromRatCellWrap8(const coder::array<RAT::cell_wrap_8, 1U>& valu
     return result;
 }
 
-py::list pyList2dFromRatCellWrap8(const coder::array<RAT::cell_wrap_8, 2U>& values)
+py::list pyList2dFromRatCellWrap(const coder::array<RAT::cell_wrap_10, 2U>& values)
 {
     py::list result;
     int32_T idx {0};
@@ -1108,22 +1177,22 @@ py::array_t<real_T> pyArrayFromRatArray3d(coder::array<real_T, 3U> array)
     return result_array;
 }
 
-BayesResults bayesResultsFromStruct7T(const RAT::struct7_T results)
+BayesResults bayesResultsFromStruct8T(const RAT::struct8_T results)
 {
     BayesResults bayesResults;
 
     bayesResults.bestPars = pyArrayFromRatArray2d(results.bestPars);
     bayesResults.chain = pyArrayFromRatArray2d(results.chain);
 
-    bayesResults.bestFitsMean.ref = pyList1DFromRatCellWrap8(results.bestFitsMean.ref);
-    bayesResults.bestFitsMean.sld = pyList2dFromRatCellWrap8(results.bestFitsMean.sld);
+    bayesResults.bestFitsMean.ref = pyList1DFromRatCellWrap(results.bestFitsMean.ref);
+    bayesResults.bestFitsMean.sld = pyList2dFromRatCellWrap(results.bestFitsMean.sld);
     bayesResults.bestFitsMean.chi = results.bestFitsMean.chi;
-    bayesResults.bestFitsMean.data = pyList1DFromRatCellWrap8(results.bestFitsMean.data);
+    bayesResults.bestFitsMean.data = pyList1DFromRatCellWrap(results.bestFitsMean.data);
 
-    bayesResults.predlims.refPredInts = pyList1DFromRatCellWrap8(results.predlims.refPredInts);
-    bayesResults.predlims.sldPredInts = pyList2dFromRatCellWrap8(results.predlims.sldPredInts);
-    bayesResults.predlims.refXdata = pyList1DFromRatCellWrap8(results.predlims.refXdata);
-    bayesResults.predlims.sldXdata = pyList2dFromRatCellWrap8(results.predlims.sldXdata);
+    bayesResults.predlims.refPredInts = pyList1DFromRatCellWrap(results.predlims.refPredInts);
+    bayesResults.predlims.sldPredInts = pyList2dFromRatCellWrap(results.predlims.sldPredInts);
+    bayesResults.predlims.refXdata = pyList1DFromRatCellWrap(results.predlims.refXdata);
+    bayesResults.predlims.sldXdata = pyList2dFromRatCellWrap(results.predlims.sldXdata);
     bayesResults.predlims.sampleChi = pyArray1dFromBoundedArray<coder::bounded_array<real_T, 1000U, 1U>>(results.predlims.sampleChi);
 
     bayesResults.parConfInts.par95 = pyArrayFromRatArray2d(results.parConfInts.par95);
@@ -1182,18 +1251,18 @@ py::tuple RATMain(const ProblemDefinition& problem_def, const Cells& cells, cons
     RAT::struct2_T control_struct = createStruct2T(control);
     RAT::struct4_T priors_struct = createStruct4(priors);
 
-    RAT::cell_wrap_9 results[6];
-    RAT::struct5_T problem;
-    RAT::struct7_T bayesResults;
+    // RAT::cell_wrap_9 results[6];
+    RAT::struct5_T results;
+    RAT::struct8_T bayesResults;
 
     // Call the entry-point
     RAT::RATMain(&problem_def_struct, &cells_struct, &limits_struct, &control_struct,
-                 &priors_struct, &problem, results, &bayesResults);
+                 &priors_struct, &results, &bayesResults);
     
     // Copy result to output
     return py::make_tuple(problemDefinitionFromStruct0T(problem_def_struct), 
-                          contrastParamsFromStruct5T(problem), 
-                          resultArrayToList(results), bayesResultsFromStruct7T(bayesResults));    
+                          OutputResultFromStruct5T(results), 
+                          bayesResultsFromStruct8T(bayesResults));    
 }
 
 class Module
@@ -1335,18 +1404,21 @@ PYBIND11_MODULE(rat_core, m) {
         .def_readwrite("bulkIn", &ContrastParams::bulkIn)
         .def_readwrite("bulkOut", &ContrastParams::bulkOut)
         .def_readwrite("resolutionParams", &ContrastParams::resolutionParams)
-        .def_readwrite("calculations", &ContrastParams::calculations)
         .def_readwrite("allSubRough", &ContrastParams::allSubRough)
         .def_readwrite("resample", &ContrastParams::resample);
-
+    
     py::class_<OutputResult>(m, "OutputResult")
         .def(py::init<>())
-        .def_readwrite("f1", &OutputResult::f1)
-        .def_readwrite("f2", &OutputResult::f2)
-        .def_readwrite("f3", &OutputResult::f3)
-        .def_readwrite("f4", &OutputResult::f4)
-        .def_readwrite("f5", &OutputResult::f5)
-        .def_readwrite("f6", &OutputResult::f6);
+        .def_readwrite("reflectivity", &OutputResult::reflectivity)
+        .def_readwrite("simulation", &OutputResult::simulation)
+        .def_readwrite("shiftedData", &OutputResult::shiftedData)
+        .def_readwrite("layerSlds", &OutputResult::layerSlds)
+        .def_readwrite("sldProfiles", &OutputResult::sldProfiles)
+        .def_readwrite("allLayers)", &OutputResult::allLayers)
+        .def_readwrite("calculationResults", &OutputResult::calculationResults)
+        .def_readwrite("contrastParams", &OutputResult::contrastParams)        
+        .def_readwrite("bestFitParams", &OutputResult::bestFitPars)
+        .def_readwrite("fitNames", &OutputResult::fitNames);
 
     py::class_<Checks>(m, "Checks")
         .def(py::init<>())
