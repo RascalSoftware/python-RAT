@@ -16,6 +16,7 @@ setup_pybind11(cfg)
 #include "RAT/RATMain_initialize.h"
 #include "RAT/RATMain_terminate.h"
 #include "RAT/RATMain_types.h"
+#include "RAT/makeSLDProfileXY.h"
 #include "RAT/classHandle.hpp"
 #include "RAT/dylib.hpp"
 #include "RAT/events/eventManager.h"
@@ -1165,6 +1166,23 @@ py::tuple RATMain(const ProblemDefinition& problem_def, const Cells& cells, cons
                           bayesResultsFromStruct8T(bayesResults));    
 }
 
+py::array_t<real_T> makeSLDProfileXY(real_T bulk_in, real_T bulk_out, real_T ssub, const
+                        py::array_t<real_T> &layers, real_T number_of_layers,
+                        real_T repeats)
+{
+    coder::array<real_T, 2U> out;
+    coder::array<real_T, 2U> layers_array = pyArrayToRatArray2d(layers);
+    RAT::makeSLDProfileXY(bulk_in, bulk_out, ssub, layers_array, number_of_layers,
+                         repeats, out);
+
+    return pyArrayFromRatArray2d(out);
+    
+}
+
+// void makeSLDProfileXY(real_T bulkIn, real_T bulkOut, real_T ssub, const ::
+//                         coder::array<real_T, 2U> &layers, real_T numberOfLayers,
+//                         real_T nrepeats, ::coder::array<real_T, 2U> &out)
+
 class Module
 {
 public:
@@ -1434,5 +1452,7 @@ PYBIND11_MODULE(rat_core, m) {
         .def_readwrite("fitLimits", &ProblemDefinition::fitLimits)
         .def_readwrite("otherLimits", &ProblemDefinition::otherLimits);
 
-    m.def("RATMain", &RATMain, "Entry point for the main reflectivity computation.");    
+    m.def("RATMain", &RATMain, "Entry point for the main reflectivity computation.");
+
+    m.def("makeSLDProfileXY", &makeSLDProfileXY, "Called from the plot_ref_SLD_helper");
 }
