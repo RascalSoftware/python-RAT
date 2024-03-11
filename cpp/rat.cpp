@@ -129,6 +129,11 @@ class DylibEngine
     };
 };
 
+struct ProgressEventData
+{
+    std::string message;
+    double percent;
+};
 
 struct PlotEventData
 {
@@ -198,6 +203,13 @@ class EventBridge
         if (event.type == EventTypes::Message) {
             messageEvent* mEvent = (messageEvent*)&event; 
             this->callback(event.type, mEvent->msg);
+        } else if (event.type == EventTypes::Progress){
+            progressEvent* pEvent = (progressEvent*)&event;
+            ProgressEventData eventData;
+            
+            eventData.message = pEvent->msg;
+            eventData.percent = pEvent->percent;
+            this->callback(event.type, eventData);
         } else if (event.type == EventTypes::Plot){
             plotEvent* pEvent = (plotEvent*)&event;
             PlotEventData eventData;
@@ -879,89 +891,6 @@ py::array_t<real_T> pyArrayFromRatArray2d(coder::array<real_T, 2U> array)
     return result_array;
 }
 
-// py::list resultArrayToList(const RAT::cell_wrap_9 results[])
-// {
-//     py::list outer_list_1;
-//     for (int32_T idx0{0}; idx0 < results[0].f1.size(0); idx0++) {
-//         py::list inner_list;
-//         for (int32_T idx1{0}; idx1 < results[0].f1.size(1); idx1++) {
-//             auto tmp = results[0].f1[idx0 +  results[0].f1.size(0) * idx1];
-//             auto array = py::array_t<real_T, py::array::f_style>({tmp.f1.size(0), tmp.f1.size(1)});
-//             std::memcpy(array.request().ptr, tmp.f1.data(), array.nbytes());
-//             inner_list.append(array);       
-//         }
-//         outer_list_1.append(inner_list);
-//     }
-
-//     py::list outer_list_2;
-//     for (int32_T idx0{0}; idx0 < results[1].f1.size(0); idx0++) {
-//         py::list inner_list;
-//         for (int32_T idx1{0}; idx1 < results[1].f1.size(1); idx1++) {
-//             auto tmp = results[1].f1[idx0 +  results[1].f1.size(0) * idx1];
-//             auto array = py::array_t<real_T, py::array::f_style>({tmp.f1.size(0), tmp.f1.size(1)});
-//             std::memcpy(array.request().ptr, tmp.f1.data(), array.nbytes());
-//             inner_list.append(array);
-//         }
-//         outer_list_2.append(inner_list);
-//     }
-
-//     py::list outer_list_3;
-//     for (int32_T idx0{0}; idx0 < results[2].f1.size(0); idx0++) {
-//         py::list inner_list;
-//         for (int32_T idx1{0}; idx1 < results[2].f1.size(1); idx1++) {
-//             auto tmp = results[2].f1[idx0 +  results[2].f1.size(0) * idx1];
-//             auto array = py::array_t<real_T, py::array::f_style>({tmp.f1.size(0), tmp.f1.size(1)});
-//             std::memcpy(array.request().ptr, tmp.f1.data(), array.nbytes());
-//             inner_list.append(array);
-//         }
-//         outer_list_3.append(inner_list);
-//     }
-
-//     py::list outer_list_4;
-//     for (int32_T idx0{0}; idx0 < results[3].f1.size(0); idx0++) {
-//         py::list inner_list;
-//         for (int32_T idx1{0}; idx1 < results[3].f1.size(1); idx1++) {
-//             auto tmp = results[3].f1[idx0 +  results[3].f1.size(0) * idx1];
-//             auto array = py::array_t<real_T, py::array::f_style>({tmp.f1.size(0), tmp.f1.size(1)});
-//             std::memcpy(array.request().ptr, tmp.f1.data(), array.nbytes());
-//             inner_list.append(array);
-//         }
-//         outer_list_4.append(inner_list);
-//     }
-
-//     py::list outer_list_5;
-//     for (int32_T idx0{0}; idx0 < results[4].f1.size(0); idx0++) {
-//         py::list inner_list;
-//         for (int32_T idx1{0}; idx1 < results[4].f1.size(1); idx1++) {
-//             auto tmp = results[4].f1[idx0 +  results[4].f1.size(0) * idx1];
-//             auto array = py::array_t<real_T, py::array::f_style>({tmp.f1.size(0), tmp.f1.size(1)});
-//             std::memcpy(array.request().ptr, tmp.f1.data(), array.nbytes());
-//             inner_list.append(array);
-//         }
-//         outer_list_5.append(inner_list);
-//     }
-
-//     py::list outer_list_6;
-//     for (int32_T idx0{0}; idx0 < results[5].f1.size(0); idx0++) {
-//         py::list inner_list;
-//         for (int32_T idx1{0}; idx1 < results[5].f1.size(1); idx1++) {
-//             auto tmp = results[5].f1[idx0 +  results[5].f1.size(0) * idx1];
-//             auto array = py::array_t<real_T, py::array::f_style>({tmp.f1.size(0), tmp.f1.size(1)});
-//             std::memcpy(array.request().ptr, tmp.f1.data(), array.nbytes());
-//             inner_list.append(array);
-//         }
-//         outer_list_6.append(inner_list);
-//     }
-//     py::list output_result;
-//     output_result.append(outer_list_1);
-//     output_result.append(outer_list_2);
-//     output_result.append(outer_list_3);
-//     output_result.append(outer_list_4);
-//     output_result.append(outer_list_5);
-//     output_result.append(outer_list_6);
-
-//     return output_result;
-// }
 
 OutputResult OutputResultFromStruct5T(const RAT::struct5_T result)
 {
@@ -1287,7 +1216,8 @@ PYBIND11_MODULE(rat_core, m) {
 
     py::enum_<EventTypes>(m, "EventTypes")
         .value("Message", EventTypes::Message)
-        .value("Plot", EventTypes::Plot);
+        .value("Plot", EventTypes::Plot)
+        .value("Progress", EventTypes::Progress);
 
     py::class_<DylibEngine>(m, "DylibEngine")
         .def(py::init<std::string, std::string>())
@@ -1313,6 +1243,11 @@ PYBIND11_MODULE(rat_core, m) {
         .def_readwrite("resample", &PlotEventData::resample)
         .def_readwrite("dataPresent", &PlotEventData::dataPresent)
         .def_readwrite("modelType", &PlotEventData::modelType);
+
+    py::class_<ProgressEventData>(m, "ProgressEventData")
+        .def(py::init<>())
+        .def_readwrite("message", &ProgressEventData::message)
+        .def_readwrite("percent", &ProgressEventData::percent);
 
     py::class_<BestFitsMean>(m, "BestFitsMean")
         .def(py::init<>())
