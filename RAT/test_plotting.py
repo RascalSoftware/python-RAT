@@ -1,6 +1,7 @@
 from RAT.rat_core import PlotEventData
-from plotting import plot_ref_SLD_helper_plotly
+from plotting import *
 import csv
+import numpy as np 
 
  
 def import_data(filename):
@@ -15,7 +16,8 @@ def import_data(filename):
             data = []
             for ix in range(len(data_csv[0])):
                 data.append([row[ix] for row in data_csv])
-        all_data.append(data)
+            data_arr = np.array(data)
+        all_data.append(data_arr)
     return  all_data
 
 
@@ -32,4 +34,4 @@ if __name__=="__main__":
     data.shiftedData = import_data('shifted_data')
     data.sldProfiles = import_data('sld_profiles')
 
-    plot_ref_SLD_helper_plotly(data)
+    plot_ref_SLD_helper_matplotlib(data)
