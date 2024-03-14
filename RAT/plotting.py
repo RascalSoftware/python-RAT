@@ -1,10 +1,13 @@
 from RAT.rat_core import PlotEventData, makeSLDProfileXY
 
+import pyqtgraph as pg
+
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import draw, show
+import numpy as np
 
 
 def plot_ref_SLD_helper_plotly(data: PlotEventData):
@@ -17,7 +20,7 @@ def plot_ref_SLD_helper_plotly(data: PlotEventData):
     ----------
     data : PlotEventData
         The plot event data that contains all the information
-        to generate the ref and sld plots
+        to generate the ref and sld plots.
     """
 
     # Create the figure with 2 sub plots
@@ -25,8 +28,9 @@ def plot_ref_SLD_helper_plotly(data: PlotEventData):
         make_subplots(
             rows=1,
             cols=2,
-            subplot_titles=("Reflectivity Plot",
-                             "Scattering Lenght Density Plot")))
+            subplot_titles=(
+                "Reflectivity Plot",
+                "Scattering Lenght Density Plot")))
  
     for i, (r, sd, sld, layer) in enumerate(zip(data.reflectivity,
                                                 data.shiftedData,
@@ -47,12 +51,21 @@ def plot_ref_SLD_helper_plotly(data: PlotEventData):
 
         # Plot the errors on plot (1,1)
         if data.dataPresent[i]:
-            rat_plot.add_trace(go.Scatter(x=sd[0],
-                                          y=sd[1]/div,
+
+            sd_x = sd[0]
+            sd_y, sd_e = map(lambda x: x/div, (sd[1], sd[2]))
+
+            # Remove values where data - error will be negative
+            indices_to_remove = np.flip(np.nonzero(0 > sd_y - sd_e)[0])
+            sd_x, sd_y, sd_e = map(lambda x: np.delete(x, indices_to_remove),
+                                   (sd_x, sd_y, sd_e))
+
+            rat_plot.add_trace(go.Scatter(x=sd_x,
+                                          y=sd_y,
                                           mode='markers',
                                           error_y=dict(
                                           type='data',
-                                          array = sd[2]/div),
+                                          array = sd_e),
                                           showlegend=False))
 
         # Plot the scattering lenght densities (slds) on plot (1,2)
@@ -65,10 +78,13 @@ def plot_ref_SLD_helper_plotly(data: PlotEventData):
                                  legendgroup = '2')
         
         if data.resample[i] == 1 or data.modelType == 'custom xy':
+            new_layer = [[a, b, c] for a, b, c in zip(layer[0],
+                                                      layer[1],
+                                                      layer[2])]
             new = makeSLDProfileXY(layer[1][1],
                                    layer[1][-1],
                                    data.ssubs[i],
-                                   layer,
+                                   new_layer,
                                    len(layer[0]),
                                    1.0)
 
@@ -105,7 +121,7 @@ def plot_ref_SLD_helper_matplotlib(data: PlotEventData):
     """
 
     # Create the figure with 2 sub plots
-    fig, (ref_plot, sld_plot) = plt.subplots(1, 2)
+    _, (ref_plot, sld_plot) = plt.subplots(1, 2)
     draw()
 
     for i, (r, sd, sld, layer) in enumerate(zip(data.reflectivity,
@@ -119,31 +135,48 @@ def plot_ref_SLD_helper_matplotlib(data: PlotEventData):
         # Plot the reflectivity on plot (1,1)
         ref_plot.plot(r[0],
                       r[1]/div,
-                      label=f'ref {i+1}')
-        
+                      label=f'ref {i+1}',
+                      linewidth=2)       
 
         # Plot the errors on plot (1,1)
         if data.dataPresent[i]:
-            ref_plot.errorbar(x=sd[0],
-                              y=sd[1]/div,
-                              yerr=sd[2]/div) 
+
+            sd_x = sd[0]
+            sd_y, sd_e = map(lambda x: x/div, (sd[1], sd[2]))
+
+            # Remove values where data - error will be negative
+            indices_to_remove = np.flip(np.nonzero(0 > sd_y - sd_e)[0])
+            sd_x, sd_y, sd_e = map(lambda x: np.delete(x, indices_to_remove),
+                                   (sd_x, sd_y, sd_e))
+
+            ref_plot.errorbar(x=sd_x,
+                              y=sd_y,
+                              yerr=sd_e,
+                              fmt='none',
+                              color='red',
+                              ecolor='red',
+                              elinewidth=1,
+                              capsize=2)
 
         # Plot the scattering lenght densities (slds) on plot (1,2)
         for j in range(1, sld.shape[0]):
-            sld_plot.scatter(y=sld[j],
-                             x=sld[0],
-                             label=f'sld {i+1}')
+            sld_plot.plot(sld[0],
+                          sld[j],
+                          label=f'sld {i+1}')
         
         if data.resample[i] == 1 or data.modelType == 'custom xy':
+            new_layer = [[a, b, c] for a, b, c in zip(layer[0],
+                                                      layer[1],
+                                                      layer[2])]
             new = makeSLDProfileXY(layer[1][1],
                                    layer[1][-1],
                                    data.ssubs[i],
-                                   layer,
+                                   new_layer,
                                    len(layer[0]),
                                    1.0)
 
-            sld_plot.scatter(y=[row[1] for row in new],
-                             x=[row[0]-49 for row in new])
+            sld_plot.plot([row[0]-49 for row in new],
+                          [row[1] for row in new])
 
     # Convert the axis to log
     ref_plot.set_yscale('log')
@@ -151,19 +184,29 @@ def plot_ref_SLD_helper_matplotlib(data: PlotEventData):
     ref_plot.set_xlabel('Qz')
     ref_plot.set_ylabel('Ref')
     ref_plot.legend()
+    ref_plot.grid()
 
     # Label the axis and disable legend
     sld_plot.set_xlabel('Z')
     sld_plot.set_ylabel('SLD')
     sld_plot.legend()
+    sld_plot.grid()
 
     # Show plot
     show()
 
 
-def plot_ref_SLD_helper_pyqtgraph(data: PlotEventData, noDelay: bool = True):
+def plot_ref_SLD_helper_pyqtgraph(data: PlotEventData):
     """
-    Helper function to make it eaier to plot from event
+    Helper function to make it easier to plot from event.
+    Uses the pyqt library to plot the reflectivity and the
+    SLD profiles.
+
+    Parameters
+    ----------
+    data : PlotEventData
+        The plot event data that contains all the information
+        to generate the ref and sld plots
     """
  
     # Plot the reflectivity
@@ -179,7 +222,7 @@ def plot_ref_SLD_helper_pyqtgraph(data: PlotEventData, noDelay: bool = True):
     # layout.addWidget(label, 1, 0)
 
     
-    rat_plot = plotly.tools.make_subplots(rows=1, cols=2)
+    rat_plot = pg.tools.make_subplots(rows=1, cols=2)
  
     plotWidget = pg.plot(title="Reflectivity Algorithms Toolbox (RAT) - plots")
     plotWidget.setLogMode(True, True)
@@ -189,10 +232,10 @@ def plot_ref_SLD_helper_pyqtgraph(data: PlotEventData, noDelay: bool = True):
  
         # refplot = plotWidget.AddPlot(r[0], list(np.divide(r[1], div)), symbol='o')
 
-        scatter = plotly.graph_objs.Scatter(
-            y=r[1]/div, 
-            x=r[0])
-        rat_plot.append_trace(scatter, 1, 1)
+        # scatter = plotly.graph_objs.Scatter(
+        #     y=r[1]/div, 
+        #     x=r[0])
+        # rat_plot.append_trace(scatter, 1, 1)
         
         
         # if data.dataPresent[i]:
