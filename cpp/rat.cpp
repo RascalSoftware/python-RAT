@@ -140,8 +140,8 @@ struct PlotEventData
     py::list reflectivity;
     py::list shiftedData;
     py::list sldProfiles;
-    py::list allLayers;
-    py::array_t<double> ssubs;
+    py::list resampledLayers;
+    py::array_t<double> subRoughs;
     py::array_t<double> resample;
     py::array_t<double> dataPresent;
     std::string modelType;
@@ -216,8 +216,8 @@ class EventBridge
             
             eventData.modelType = std::string(pEvent->data->modelType);
 
-            eventData.ssubs = py::array_t<double>(pEvent->data->nContrast);
-            std::memcpy(eventData.ssubs.request().ptr, pEvent->data->ssubs, eventData.ssubs.nbytes());
+            eventData.subRoughs = py::array_t<double>(pEvent->data->nContrast);
+            std::memcpy(eventData.subRoughs.request().ptr, pEvent->data->subRoughs, eventData.subRoughs.nbytes());
 
             eventData.resample = py::array_t<double>(pEvent->data->nContrast);
             std::memcpy(eventData.resample.request().ptr, pEvent->data->resample, eventData.resample.nbytes());
@@ -235,7 +235,7 @@ class EventBridge
                                                      pEvent->data->sldProfiles, pEvent->data->nSldProfiles, 
                                                      pEvent->data->sldProfiles2, pEvent->data->nSldProfiles2, 2);
 
-            eventData.allLayers = unpackDataToCell(pEvent->data->nContrast, (pEvent->data->nLayers2 == NULL) ? 1 : 2, 
+            eventData.resampledLayers = unpackDataToCell(pEvent->data->nContrast, (pEvent->data->nLayers2 == NULL) ? 1 : 2, 
                                                    pEvent->data->layers, pEvent->data->nLayers, 
                                                    pEvent->data->layers2, pEvent->data->nLayers, 2);
             this->callback(event.type, eventData);
@@ -377,21 +377,20 @@ struct Checks {
 
 struct Calculation
 {
-    py::array_t<real_T> allChis;
+    py::array_t<real_T> chiValues;
     real_T sumChi;
 };
 
 struct ContrastParams
 {
-    py::array_t<real_T> ssubs;
     py::array_t<real_T> backgroundParams;
     py::array_t<real_T> qzshifts;
     py::array_t<real_T> scalefactors;
     py::array_t<real_T> bulkIn;
     py::array_t<real_T> bulkOut;
     py::array_t<real_T> resolutionParams;
-    py::array_t<real_T> allSubRough;
-    py::array_t<real_T>  resample;
+    py::array_t<real_T> subRoughs;
+    py::array_t<real_T> resample;
 };
 
 struct OutputResult {
@@ -400,10 +399,10 @@ struct OutputResult {
     py::list shiftedData;
     py::list layerSlds;
     py::list sldProfiles;
-    py::list allLayers;
+    py::list resampledLayers;
     Calculation calculationResults {};
     ContrastParams contrastParams;
-    py::array_t<real_T> bestFitPars;
+    py::array_t<real_T> fitParams;
     py::list fitNames;
 };
 
@@ -479,22 +478,22 @@ struct Control {
     std::string parallel {};
     std::string procedure {};
     std::string display {};
-    real_T tolX {};
-    real_T tolFun {};
-    real_T maxFunEvals {};
-    real_T maxIter {};
+    real_T xTolerance {};
+    real_T funcTolerance {};
+    real_T maxFuncEvals {};
+    real_T maxIterations {};
     real_T populationSize {};
     real_T fWeight {};
     real_T crossoverProbability {};
     real_T targetValue {};
     real_T numGenerations {};
     real_T strategy {};
-    real_T Nlive {};
-    real_T Nmcmc {};
+    real_T nLive {};
+    real_T nMCMC {};
     real_T propScale {};
     real_T nsTolerance {};
     boolean_T calcSldDuringFit {};
-    py::array_t<real_T> resamPars;
+    py::array_t<real_T> resampleParams;
     real_T updateFreq {};
     real_T updatePlotFreq {};
     real_T nSamples {};
@@ -841,17 +840,17 @@ RAT::cell_7 createCell7(const Cells& cells)
 RAT::struct2_T createStruct2T(const Control& control)
 {
     RAT::struct2_T control_struct;
-    control_struct.tolFun = control.tolFun;
-    control_struct.maxFunEvals = control.maxFunEvals;
-    control_struct.maxIter = control.maxIter;
+    control_struct.funcTolerance = control.funcTolerance;
+    control_struct.maxFuncEvals = control.maxFuncEvals;
+    control_struct.maxIterations = control.maxIterations;
     control_struct.populationSize = control.populationSize;
     control_struct.fWeight = control.fWeight;
     control_struct.crossoverProbability = control.crossoverProbability;
     control_struct.targetValue = control.targetValue;
     control_struct.numGenerations = control.numGenerations;
     control_struct.strategy = control.strategy;
-    control_struct.Nlive = control.Nlive;
-    control_struct.Nmcmc = control.Nmcmc;
+    control_struct.nLive = control.nLive;
+    control_struct.nMCMC = control.nMCMC;
     control_struct.propScale = control.propScale;
     control_struct.nsTolerance = control.nsTolerance;
     control_struct.calcSldDuringFit = control.calcSldDuringFit;
@@ -864,9 +863,9 @@ RAT::struct2_T createStruct2T(const Control& control)
     stringToRatArray(control.parallel, control_struct.parallel.data, control_struct.parallel.size);
     stringToRatArray(control.procedure, control_struct.procedure.data, control_struct.procedure.size);
     stringToRatArray(control.display, control_struct.display.data, control_struct.display.size);
-    control_struct.tolX = control.tolX;
-    control_struct.resamPars[0] = control.resamPars.at(0);
-    control_struct.resamPars[1] = control.resamPars.at(1);
+    control_struct.xTolerance = control.xTolerance;
+    control_struct.resampleParams[0] = control.resampleParams.at(0);
+    control_struct.resampleParams[1] = control.resampleParams.at(1);
     stringToRatArray(control.boundHandling, control_struct.boundHandling.data, control_struct.boundHandling.size);
     control_struct.adaptPCR = control.adaptPCR;
     control_struct.checks = createStruct3(control.checks);
@@ -951,23 +950,19 @@ OutputResult OutputResultFromStruct5T(const RAT::struct5_T result)
         output_result.sldProfiles.append(inner_list);
     }
 
-    for (int32_T idx0{0}; idx0 < result.allLayers.size(0); idx0++) {
+    for (int32_T idx0{0}; idx0 < result.resampledLayers.size(0); idx0++) {
         py::list inner_list;
-        for (int32_T idx1{0}; idx1 < result.allLayers.size(1); idx1++) {
-            auto tmp = result.allLayers[idx0 +  result.allLayers.size(0) * idx1];
+        for (int32_T idx1{0}; idx1 < result.resampledLayers.size(1); idx1++) {
+            auto tmp = result.resampledLayers[idx0 +  result.resampledLayers.size(0) * idx1];
             auto array = py::array_t<real_T, py::array::f_style>({tmp.f1.size(0), tmp.f1.size(1)});
             std::memcpy(array.request().ptr, tmp.f1.data(), array.nbytes());
             inner_list.append(array);
         }
-        output_result.allLayers.append(inner_list);
+        output_result.resampledLayers.append(inner_list);
     }
 
-    output_result.contrastParams.ssubs = py::array_t<real_T>(result.contrastParams.ssubs.size(0));
-    auto buffer = output_result.contrastParams.ssubs.request();
-    std::memcpy(buffer.ptr, result.contrastParams.ssubs.data(), output_result.contrastParams.ssubs.size()*sizeof(real_T));
-
     output_result.contrastParams.backgroundParams = py::array_t<real_T>(result.contrastParams.backgroundParams.size(0));
-    buffer = output_result.contrastParams.backgroundParams.request();
+    auto buffer = output_result.contrastParams.backgroundParams.request();
     std::memcpy(buffer.ptr, result.contrastParams.backgroundParams.data(), output_result.contrastParams.backgroundParams.size()*sizeof(real_T));
 
     output_result.contrastParams.qzshifts = py::array_t<real_T>(result.contrastParams.qzshifts.size(0));
@@ -991,13 +986,13 @@ OutputResult OutputResultFromStruct5T(const RAT::struct5_T result)
     std::memcpy(buffer.ptr, result.contrastParams.resolutionParams.data(), output_result.contrastParams.resolutionParams.size()*sizeof(real_T));
 
     output_result.calculationResults.sumChi = result.calculationResults.sumChi;
-    output_result.calculationResults.allChis = py::array_t<real_T>(result.calculationResults.allChis.size(0));
-    buffer = output_result.calculationResults.allChis.request();
-    std::memcpy(buffer.ptr, result.calculationResults.allChis.data(), output_result.calculationResults.allChis.size()*sizeof(real_T));
+    output_result.calculationResults.chiValues = py::array_t<real_T>(result.calculationResults.chiValues.size(0));
+    buffer = output_result.calculationResults.chiValues.request();
+    std::memcpy(buffer.ptr, result.calculationResults.chiValues.data(), output_result.calculationResults.chiValues.size()*sizeof(real_T));
 
-    output_result.contrastParams.allSubRough = py::array_t<real_T>(result.contrastParams.allSubRough.size(0));
-    buffer = output_result.contrastParams.allSubRough.request();
-    std::memcpy(buffer.ptr, result.contrastParams.allSubRough.data(), output_result.contrastParams.allSubRough.size()*sizeof(real_T));
+    output_result.contrastParams.subRoughs = py::array_t<real_T>(result.contrastParams.subRoughs.size(0));
+    buffer = output_result.contrastParams.subRoughs.request();
+    std::memcpy(buffer.ptr, result.contrastParams.subRoughs.data(), output_result.contrastParams.subRoughs.size()*sizeof(real_T));
 
     output_result.contrastParams.resample = py::array_t<real_T>(result.contrastParams.resample.size(1));
     buffer = output_result.contrastParams.resample.request();
@@ -1238,8 +1233,8 @@ PYBIND11_MODULE(rat_core, m) {
         .def_readwrite("reflectivity", &PlotEventData::reflectivity)
         .def_readwrite("shiftedData", &PlotEventData::shiftedData)
         .def_readwrite("sldProfiles", &PlotEventData::sldProfiles)
-        .def_readwrite("allLayers", &PlotEventData::allLayers)
-        .def_readwrite("ssubs", &PlotEventData::ssubs)
+        .def_readwrite("resampledLayers", &PlotEventData::resampledLayers)
+        .def_readwrite("subRoughs", &PlotEventData::subRoughs)
         .def_readwrite("resample", &PlotEventData::resample)
         .def_readwrite("dataPresent", &PlotEventData::dataPresent)
         .def_readwrite("modelType", &PlotEventData::modelType);
@@ -1327,19 +1322,18 @@ PYBIND11_MODULE(rat_core, m) {
 
     py::class_<Calculation>(m, "Calculation")
         .def(py::init<>())
-        .def_readwrite("allChis", &Calculation::allChis)
+        .def_readwrite("chiValues", &Calculation::chiValues)
         .def_readwrite("sumChi", &Calculation::sumChi);
 
     py::class_<ContrastParams>(m, "ContrastParams")
         .def(py::init<>())
-        .def_readwrite("ssubs", &ContrastParams::ssubs)
         .def_readwrite("backgroundParams", &ContrastParams::backgroundParams)
         .def_readwrite("qzshifts", &ContrastParams::qzshifts)
         .def_readwrite("scalefactors", &ContrastParams::scalefactors)
         .def_readwrite("bulkIn", &ContrastParams::bulkIn)
         .def_readwrite("bulkOut", &ContrastParams::bulkOut)
         .def_readwrite("resolutionParams", &ContrastParams::resolutionParams)
-        .def_readwrite("allSubRough", &ContrastParams::allSubRough)
+        .def_readwrite("subRoughs", &ContrastParams::subRoughs)
         .def_readwrite("resample", &ContrastParams::resample);
     
     py::class_<OutputResult>(m, "OutputResult")
@@ -1349,10 +1343,10 @@ PYBIND11_MODULE(rat_core, m) {
         .def_readwrite("shiftedData", &OutputResult::shiftedData)
         .def_readwrite("layerSlds", &OutputResult::layerSlds)
         .def_readwrite("sldProfiles", &OutputResult::sldProfiles)
-        .def_readwrite("allLayers)", &OutputResult::allLayers)
+        .def_readwrite("resampledLayers)", &OutputResult::resampledLayers)
         .def_readwrite("calculationResults", &OutputResult::calculationResults)
         .def_readwrite("contrastParams", &OutputResult::contrastParams)        
-        .def_readwrite("bestFitParams", &OutputResult::bestFitPars)
+        .def_readwrite("bestFitParams", &OutputResult::fitParams)
         .def_readwrite("fitNames", &OutputResult::fitNames);
 
     py::class_<Checks>(m, "Checks")
@@ -1418,22 +1412,22 @@ PYBIND11_MODULE(rat_core, m) {
         .def_readwrite("parallel", &Control::parallel)
         .def_readwrite("procedure", &Control::procedure)
         .def_readwrite("display", &Control::display)
-        .def_readwrite("tolX", &Control::tolX)
-        .def_readwrite("tolFun", &Control::tolFun)
-        .def_readwrite("maxFunEvals", &Control::maxFunEvals)
-        .def_readwrite("maxIter", &Control::maxIter)
+        .def_readwrite("xTolerance", &Control::xTolerance)
+        .def_readwrite("funcTolerance", &Control::funcTolerance)
+        .def_readwrite("maxFuncEvals", &Control::maxFuncEvals)
+        .def_readwrite("maxIterations", &Control::maxIterations)
         .def_readwrite("populationSize", &Control::populationSize)
         .def_readwrite("fWeight", &Control::fWeight)  
         .def_readwrite("crossoverProbability", &Control::crossoverProbability)  
         .def_readwrite("targetValue", &Control::targetValue)
         .def_readwrite("numGenerations", &Control::numGenerations)
         .def_readwrite("strategy", &Control::strategy)
-        .def_readwrite("Nlive", &Control::Nlive)
-        .def_readwrite("Nmcmc", &Control::Nmcmc)
+        .def_readwrite("nLive", &Control::nLive)
+        .def_readwrite("nMCMC", &Control::nMCMC)
         .def_readwrite("propScale", &Control::propScale)
         .def_readwrite("nsTolerance", &Control::nsTolerance)
         .def_readwrite("calcSldDuringFit", &Control::calcSldDuringFit)
-        .def_readwrite("resamPars", &Control::resamPars)
+        .def_readwrite("resampleParams", &Control::resampleParams)
         .def_readwrite("updateFreq", &Control::updateFreq)
         .def_readwrite("updatePlotFreq", &Control::updatePlotFreq)
         .def_readwrite("nSamples", &Control::nSamples)
