@@ -257,45 +257,45 @@ class EventBridge
     };
 };
 
-struct Predlims
+struct PredictionIntervals
 {
-    py::list refPredInts;
-    py::list sldPredInts;
-    py::list refXdata;
-    py::list sldXdata;
+    py::list reflectivity;
+    py::list sld;
+    py::list reflectivityXData;
+    py::list sldXData;
     py::array_t<real_T> sampleChi; 
 };
 
-struct BestFitsMean
+struct BestFitMean
 {
-    py::list ref;
+    py::list reflectivity;
     py::list sld;
     real_T chi;
     py::list data;
 };
 
-struct ParConfInts
+struct ConfidenceIntervals
 {
-    py::array_t<real_T> par95;
-    py::array_t<real_T> par65;
+    py::array_t<real_T> percentile95;
+    py::array_t<real_T> percentile65;
     py::array_t<real_T> mean;
 };
 
-struct NestOutput
+struct NestedSamplerOutput
 {
     real_T logZ;
     py::array_t<real_T> nestSamples;
     py::array_t<real_T> postSamples;
 };
 
-struct DREAMPars
+struct DreamParams
 {
-    real_T d;
-    real_T N;
-    real_T T;
+    real_T nParams;
+    real_T nChains;
+    real_T nGenerations;
     boolean_T parallel;
     real_T CPU;
-    real_T lambda;
+    real_T jumpProbability;
     real_T pUnitGamma;
     real_T nCR;
     real_T delta;
@@ -307,46 +307,30 @@ struct DREAMPars
     real_T epsilon;
     boolean_T ABC;
     boolean_T IO;
-    boolean_T modout;
-    boolean_T restart;
-    boolean_T save;
+    boolean_T storeOutput;
     py::array_t<real_T> R;
-};
-
-struct MeasInfo
-{
-    real_T Y;
-    real_T N;
 };
 
 struct DreamOutput
 {
-    py::array_t<real_T> outlier;
+    py::array_t<real_T> allChains;
+    py::array_t<real_T> outlierChains;
     real_T runtime;
-    DREAMPars DREAMPar;
-    MeasInfo Meas_info;
     real_T iteration;
-    real_T iloc;
-    real_T fx;
+    real_T modelOutput;
     py::array_t<real_T> AR;
     py::array_t<real_T> R_stat;
     py::array_t<real_T> CR;
 };
 
-struct BayesOutput
-{
-    py::array_t<real_T> allChains;
-    DreamOutput dreamOutput;
-    NestOutput nestOutput;
-};
-
 struct BayesResults
 {
-    BestFitsMean bestFitsMean;
-    Predlims predlims;
-    ParConfInts parConfInts;
-    py::array_t<real_T> bestPars;
-    BayesOutput bayesRes;
+    BestFitMean bestFitMean;
+    PredictionIntervals predictionIntervals;
+    ConfidenceIntervals confidenceIntervals;
+    DreamParams dreamParams;
+    DreamOutput dreamOutput;
+    NestedSamplerOutput nestedSamplerOutput;
     py::array_t<real_T> chain;
 };
 
@@ -394,7 +378,7 @@ struct ContrastParams
 };
 
 struct OutputResult {
-    py::list reflectivity;;
+    py::list reflectivity;
     py::list simulation;
     py::list shiftedData;
     py::list layerSlds;
@@ -1105,63 +1089,55 @@ BayesResults bayesResultsFromStruct8T(const RAT::struct8_T results)
 {
     BayesResults bayesResults;
 
-    bayesResults.bestPars = pyArrayFromRatArray2d(results.bestPars);
     bayesResults.chain = pyArrayFromRatArray2d(results.chain);
 
-    bayesResults.bestFitsMean.ref = pyList1DFromRatCellWrap(results.bestFitsMean.ref);
-    bayesResults.bestFitsMean.sld = pyList2dFromRatCellWrap(results.bestFitsMean.sld);
-    bayesResults.bestFitsMean.chi = results.bestFitsMean.chi;
-    bayesResults.bestFitsMean.data = pyList1DFromRatCellWrap(results.bestFitsMean.data);
+    bayesResults.bestFitMean.reflectivity = pyList1DFromRatCellWrap(results.bestFitMean.reflectivity);
+    bayesResults.bestFitMean.sld = pyList2dFromRatCellWrap(results.bestFitMean.sld);
+    bayesResults.bestFitMean.chi = results.bestFitMean.chi;
+    bayesResults.bestFitMean.data = pyList1DFromRatCellWrap(results.bestFitMean.data);
 
-    bayesResults.predlims.refPredInts = pyList1DFromRatCellWrap(results.predlims.refPredInts);
-    bayesResults.predlims.sldPredInts = pyList2dFromRatCellWrap(results.predlims.sldPredInts);
-    bayesResults.predlims.refXdata = pyList1DFromRatCellWrap(results.predlims.refXdata);
-    bayesResults.predlims.sldXdata = pyList2dFromRatCellWrap(results.predlims.sldXdata);
-    bayesResults.predlims.sampleChi = pyArray1dFromBoundedArray<coder::bounded_array<real_T, 1000U, 1U>>(results.predlims.sampleChi);
+    bayesResults.predictionIntervals.reflectivity = pyList1DFromRatCellWrap(results.predictionIntervals.reflectivity);
+    bayesResults.predictionIntervals.sld = pyList2dFromRatCellWrap(results.predictionIntervals.sld);
+    bayesResults.predictionIntervals.reflectivityXData = pyList1DFromRatCellWrap(results.predictionIntervals.reflectivityXData);
+    bayesResults.predictionIntervals.sldXData = pyList2dFromRatCellWrap(results.predictionIntervals.sldXData);
+    bayesResults.predictionIntervals.sampleChi = pyArray1dFromBoundedArray<coder::bounded_array<real_T, 1000U, 1U>>(results.predictionIntervals.sampleChi);
 
-    bayesResults.parConfInts.par95 = pyArrayFromRatArray2d(results.parConfInts.par95);
-    bayesResults.parConfInts.par65 = pyArrayFromRatArray2d(results.parConfInts.par65);
-    bayesResults.parConfInts.mean = pyArrayFromRatArray2d(results.parConfInts.mean);
+    bayesResults.confidenceIntervals.percentile95 = pyArrayFromRatArray2d(results.confidenceIntervals.percentile95);
+    bayesResults.confidenceIntervals.percentile65 = pyArrayFromRatArray2d(results.confidenceIntervals.percentile65);
+    bayesResults.confidenceIntervals.mean = pyArrayFromRatArray2d(results.confidenceIntervals.mean);
 
-    bayesResults.bayesRes.allChains = pyArrayFromRatArray3d(results.bayesRes.allChains);
+    bayesResults.nestedSamplerOutput.logZ = results.nestedSamplerOutput.LogZ;
+    bayesResults.nestedSamplerOutput.nestSamples = pyArrayFromRatArray2d(results.nestedSamplerOutput.nestSamples);
+    bayesResults.nestedSamplerOutput.postSamples = pyArrayFromRatArray2d(results.nestedSamplerOutput.postSamples);
 
-    bayesResults.bayesRes.nestOutput.logZ = results.bayesRes.nestOutput.LogZ;
-    bayesResults.bayesRes.nestOutput.nestSamples = pyArrayFromRatArray2d(results.bayesRes.nestOutput.nestSamples);
-    bayesResults.bayesRes.nestOutput.postSamples = pyArrayFromRatArray2d(results.bayesRes.nestOutput.postSamples);
+    bayesResults.dreamOutput.allChains = pyArrayFromRatArray3d(results.dreamOutput.allChains);
+    bayesResults.dreamOutput.outlierChains = pyArray2dFromBoundedArray<coder::bounded_array<real_T, 2000U, 2U>>(results.dreamOutput.outlierChains);
+    bayesResults.dreamOutput.runtime = results.dreamOutput.runtime;
+    bayesResults.dreamOutput.iteration = results.dreamOutput.iteration;
+    bayesResults.dreamOutput.modelOutput = results.dreamOutput.modelOutput;
+    bayesResults.dreamOutput.R_stat = pyArrayFromRatArray2d(results.dreamOutput.R_stat);
+    bayesResults.dreamOutput.CR = pyArrayFromRatArray2d(results.dreamOutput.CR);
+    bayesResults.dreamOutput.AR = pyArray2dFromBoundedArray<coder::bounded_array<real_T, 2000U, 2U>>(results.dreamOutput.AR);
 
-    bayesResults.bayesRes.dreamOutput.runtime = results.bayesRes.dreamOutput.RunTime;
-    bayesResults.bayesRes.dreamOutput.iteration = results.bayesRes.dreamOutput.iteration;
-    bayesResults.bayesRes.dreamOutput.iloc = results.bayesRes.dreamOutput.iloc;
-    bayesResults.bayesRes.dreamOutput.fx = results.bayesRes.dreamOutput.fx;
-    bayesResults.bayesRes.dreamOutput.R_stat = pyArrayFromRatArray2d(results.bayesRes.dreamOutput.R_stat);
-    bayesResults.bayesRes.dreamOutput.CR = pyArrayFromRatArray2d(results.bayesRes.dreamOutput.CR);
-    bayesResults.bayesRes.dreamOutput.AR = pyArray2dFromBoundedArray<coder::bounded_array<real_T, 2000U, 2U>>(results.bayesRes.dreamOutput.AR);
-    bayesResults.bayesRes.dreamOutput.outlier = pyArray2dFromBoundedArray<coder::bounded_array<real_T, 2000U, 2U>>(results.bayesRes.dreamOutput.outlier);
-
-    bayesResults.bayesRes.dreamOutput.Meas_info.Y = results.bayesRes.dreamOutput.Meas_info.Y;
-    bayesResults.bayesRes.dreamOutput.Meas_info.N = results.bayesRes.dreamOutput.Meas_info.N;
-
-    bayesResults.bayesRes.dreamOutput.DREAMPar.d = results.bayesRes.dreamOutput.DREAMPar.d;
-    bayesResults.bayesRes.dreamOutput.DREAMPar.N = results.bayesRes.dreamOutput.DREAMPar.N;
-    bayesResults.bayesRes.dreamOutput.DREAMPar.T = results.bayesRes.dreamOutput.DREAMPar.T;
-    bayesResults.bayesRes.dreamOutput.DREAMPar.parallel = results.bayesRes.dreamOutput.DREAMPar.parallel;
-    bayesResults.bayesRes.dreamOutput.DREAMPar.CPU = results.bayesRes.dreamOutput.DREAMPar.CPU;
-    bayesResults.bayesRes.dreamOutput.DREAMPar.lambda = results.bayesRes.dreamOutput.DREAMPar.lambda;
-    bayesResults.bayesRes.dreamOutput.DREAMPar.pUnitGamma = results.bayesRes.dreamOutput.DREAMPar.pUnitGamma;
-    bayesResults.bayesRes.dreamOutput.DREAMPar.nCR = results.bayesRes.dreamOutput.DREAMPar.nCR;
-    bayesResults.bayesRes.dreamOutput.DREAMPar.delta = results.bayesRes.dreamOutput.DREAMPar.delta;
-    bayesResults.bayesRes.dreamOutput.DREAMPar.steps = results.bayesRes.dreamOutput.DREAMPar.steps;
-    bayesResults.bayesRes.dreamOutput.DREAMPar.zeta = results.bayesRes.dreamOutput.DREAMPar.zeta;
-    bayesResults.bayesRes.dreamOutput.DREAMPar.outlier = std::string(results.bayesRes.dreamOutput.DREAMPar.outlier);
-    bayesResults.bayesRes.dreamOutput.DREAMPar.adaptPCR = results.bayesRes.dreamOutput.DREAMPar.adaptPCR;
-    bayesResults.bayesRes.dreamOutput.DREAMPar.thinning = results.bayesRes.dreamOutput.DREAMPar.thinning;
-    bayesResults.bayesRes.dreamOutput.DREAMPar.epsilon = results.bayesRes.dreamOutput.DREAMPar.epsilon;
-    bayesResults.bayesRes.dreamOutput.DREAMPar.ABC = results.bayesRes.dreamOutput.DREAMPar.ABC;
-    bayesResults.bayesRes.dreamOutput.DREAMPar.IO = results.bayesRes.dreamOutput.DREAMPar.IO;
-    bayesResults.bayesRes.dreamOutput.DREAMPar.modout = results.bayesRes.dreamOutput.DREAMPar.modout;
-    bayesResults.bayesRes.dreamOutput.DREAMPar.restart = results.bayesRes.dreamOutput.DREAMPar.restart;
-    bayesResults.bayesRes.dreamOutput.DREAMPar.save = results.bayesRes.dreamOutput.DREAMPar.save;
-    bayesResults.bayesRes.dreamOutput.DREAMPar.R = pyArrayFromRatArray2d(results.bayesRes.dreamOutput.DREAMPar.R);
+    bayesResults.dreamParams.nParams = results.dreamParams.nParams;
+    bayesResults.dreamParams.nChains = results.dreamParams.nChains;
+    bayesResults.dreamParams.nGenerations = results.dreamParams.nGenerations;
+    bayesResults.dreamParams.parallel = results.dreamParams.parallel;
+    bayesResults.dreamParams.CPU = results.dreamParams.CPU;
+    bayesResults.dreamParams.jumpProbability = results.dreamParams.jumpProbability;
+    bayesResults.dreamParams.pUnitGamma = results.dreamParams.pUnitGamma;
+    bayesResults.dreamParams.nCR = results.dreamParams.nCR;
+    bayesResults.dreamParams.delta = results.dreamParams.delta;
+    bayesResults.dreamParams.steps = results.dreamParams.steps;
+    bayesResults.dreamParams.zeta = results.dreamParams.zeta;
+    bayesResults.dreamParams.outlier = std::string(results.dreamParams.outlier);
+    bayesResults.dreamParams.adaptPCR = results.dreamParams.adaptPCR;
+    bayesResults.dreamParams.thinning = results.dreamParams.thinning;
+    bayesResults.dreamParams.epsilon = results.dreamParams.epsilon;
+    bayesResults.dreamParams.ABC = results.dreamParams.ABC;
+    bayesResults.dreamParams.IO = results.dreamParams.IO;
+    bayesResults.dreamParams.storeOutput = results.dreamParams.storeOutput;
+    bayesResults.dreamParams.R = pyArrayFromRatArray2d(results.dreamParams.R);
 
     return bayesResults;
 }
@@ -1220,13 +1196,13 @@ PYBIND11_MODULE(rat_core, m) {
                                            py::arg("bulkOut"), py::arg("contrast"), 
                                            py::arg("domain") = DEFAULT_DOMAIN);
 
-    py::class_<Predlims>(m, "Predlims")
+    py::class_<PredictionIntervals>(m, "PredictionIntervals")
         .def(py::init<>())
-        .def_readwrite("refPredInts", &Predlims::refPredInts)
-        .def_readwrite("sldPredInts", &Predlims::sldPredInts)
-        .def_readwrite("refXdata", &Predlims::refXdata)
-        .def_readwrite("sldXdata", &Predlims::sldXdata)
-        .def_readwrite("sampleChi", &Predlims::sampleChi);
+        .def_readwrite("reflectivity", &PredictionIntervals::reflectivity)
+        .def_readwrite("sld", &PredictionIntervals::sld)
+        .def_readwrite("reflectivityXData", &PredictionIntervals::reflectivityXData)
+        .def_readwrite("sldXData", &PredictionIntervals::sldXData)
+        .def_readwrite("sampleChi", &PredictionIntervals::sampleChi);
     
     py::class_<PlotEventData>(m, "PlotEventData")
         .def(py::init<>())
@@ -1244,80 +1220,66 @@ PYBIND11_MODULE(rat_core, m) {
         .def_readwrite("message", &ProgressEventData::message)
         .def_readwrite("percent", &ProgressEventData::percent);
 
-    py::class_<BestFitsMean>(m, "BestFitsMean")
+    py::class_<BestFitMean>(m, "BestFitMean")
         .def(py::init<>())
-        .def_readwrite("ref", &BestFitsMean::ref)
-        .def_readwrite("sld", &BestFitsMean::sld)
-        .def_readwrite("chi", &BestFitsMean::chi)
-        .def_readwrite("data", &BestFitsMean::data);    
+        .def_readwrite("reflectivity", &BestFitMean::reflectivity)
+        .def_readwrite("sld", &BestFitMean::sld)
+        .def_readwrite("chi", &BestFitMean::chi)
+        .def_readwrite("data", &BestFitMean::data);    
 
-    py::class_<ParConfInts>(m, "ParConfInts")
+    py::class_<ConfidenceIntervals>(m, "ConfidenceIntervals")
         .def(py::init<>())
-        .def_readwrite("par95", &ParConfInts::par95)
-        .def_readwrite("par65", &ParConfInts::par65)
-        .def_readwrite("mean", &ParConfInts::mean);
+        .def_readwrite("percentile95", &ConfidenceIntervals::percentile95)
+        .def_readwrite("percentile65", &ConfidenceIntervals::percentile65)
+        .def_readwrite("mean", &ConfidenceIntervals::mean);
 
-    py::class_<MeasInfo>(m, "MeasInfo")
+    py::class_<DreamParams>(m, "DreamParams")
         .def(py::init<>())
-        .def_readwrite("Y", &MeasInfo::Y)
-        .def_readwrite("N", &MeasInfo::N);
+        .def_readwrite("nParams", &DreamParams::nParams)
+        .def_readwrite("nChains", &DreamParams::nChains)
+        .def_readwrite("nGenerations", &DreamParams::nGenerations)
+        .def_readwrite("parallel", &DreamParams::parallel)
+        .def_readwrite("CPU", &DreamParams::CPU)
+        .def_readwrite("jumpProbability", &DreamParams::jumpProbability)
+        .def_readwrite("pUnitGamma", &DreamParams::pUnitGamma)
+        .def_readwrite("nCR", &DreamParams::nCR)
+        .def_readwrite("delta", &DreamParams::delta)
+        .def_readwrite("steps", &DreamParams::steps)
+        .def_readwrite("zeta", &DreamParams::zeta)
+        .def_readwrite("outlier", &DreamParams::outlier)
+        .def_readwrite("adaptPCR", &DreamParams::adaptPCR)
+        .def_readwrite("thinning", &DreamParams::thinning)
+        .def_readwrite("epsilon", &DreamParams::epsilon)
+        .def_readwrite("ABC", &DreamParams::ABC)
+        .def_readwrite("IO", &DreamParams::IO)
+        .def_readwrite("storeOutput", &DreamParams::storeOutput)
+        .def_readwrite("R", &DreamParams::R);
 
-    py::class_<DREAMPars>(m, "DREAMPars")
+    py::class_<NestedSamplerOutput>(m, "NestedSamplerOutput")
         .def(py::init<>())
-        .def_readwrite("d", &DREAMPars::d)
-        .def_readwrite("N", &DREAMPars::N)
-        .def_readwrite("T", &DREAMPars::T)
-        .def_readwrite("parallel", &DREAMPars::parallel)
-        .def_readwrite("CPU", &DREAMPars::CPU)
-        .def_readwrite("lambda_", &DREAMPars::lambda)
-        .def_readwrite("pUnitGamma", &DREAMPars::pUnitGamma)
-        .def_readwrite("nCR", &DREAMPars::nCR)
-        .def_readwrite("delta", &DREAMPars::delta)
-        .def_readwrite("steps", &DREAMPars::steps)
-        .def_readwrite("zeta", &DREAMPars::zeta)
-        .def_readwrite("outlier", &DREAMPars::outlier)
-        .def_readwrite("adaptPCR", &DREAMPars::adaptPCR)
-        .def_readwrite("thinning", &DREAMPars::thinning)
-        .def_readwrite("epsilon", &DREAMPars::epsilon)
-        .def_readwrite("ABC", &DREAMPars::ABC)
-        .def_readwrite("IO", &DREAMPars::IO)
-        .def_readwrite("modout", &DREAMPars::modout)
-        .def_readwrite("restart", &DREAMPars::restart)
-        .def_readwrite("save", &DREAMPars::save)
-        .def_readwrite("R", &DREAMPars::R);
-
-    py::class_<NestOutput>(m, "NestOutput")
-        .def(py::init<>())
-        .def_readwrite("logZ", &NestOutput::logZ)
-        .def_readwrite("nestSamples", &NestOutput::nestSamples)
-        .def_readwrite("postSamples", &NestOutput::postSamples);
+        .def_readwrite("logZ", &NestedSamplerOutput::logZ)
+        .def_readwrite("nestSamples", &NestedSamplerOutput::nestSamples)
+        .def_readwrite("postSamples", &NestedSamplerOutput::postSamples);
 
     py::class_<DreamOutput>(m, "DreamOutput")
         .def(py::init<>())
-        .def_readwrite("outlier", &DreamOutput::outlier)
+        .def_readwrite("allChains", &DreamOutput::allChains)
+        .def_readwrite("outlierChains", &DreamOutput::outlierChains)
         .def_readwrite("runtime", &DreamOutput::runtime)
-        .def_readwrite("DREAMPar", &DreamOutput::DREAMPar)
-        .def_readwrite("Meas_info", &DreamOutput::Meas_info)
         .def_readwrite("iteration", &DreamOutput::iteration)
-        .def_readwrite("iloc", &DreamOutput::iloc)
-        .def_readwrite("fx", &DreamOutput::fx)
+        .def_readwrite("modelOutput", &DreamOutput::modelOutput)
         .def_readwrite("AR", &DreamOutput::AR)
         .def_readwrite("R_stat", &DreamOutput::R_stat)
         .def_readwrite("CR", &DreamOutput::CR);
 
-    py::class_<BayesOutput>(m, "BayesOutput")
-        .def(py::init<>())
-        .def_readwrite("allChains", &BayesOutput::allChains)
-        .def_readwrite("dreamOutput", &BayesOutput::dreamOutput)
-        .def_readwrite("nestOutput", &BayesOutput::nestOutput);
-
     py::class_<BayesResults>(m, "BayesResults")
         .def(py::init<>())
-        .def_readwrite("bestFitsMean", &BayesResults::bestFitsMean)
-        .def_readwrite("predlims", &BayesResults::predlims)
-        .def_readwrite("parConfInts", &BayesResults::parConfInts)
-        .def_readwrite("bestPars", &BayesResults::bestPars)
-        .def_readwrite("bayesRes", &BayesResults::bayesRes)
+        .def_readwrite("bestFitMean", &BayesResults::bestFitMean)
+        .def_readwrite("predictionIntervals", &BayesResults::predictionIntervals)
+        .def_readwrite("confidenceIntervals", &BayesResults::confidenceIntervals)
+        .def_readwrite("dreamParams", &BayesResults::dreamParams)
+        .def_readwrite("dreamOutput", &BayesResults::dreamOutput)
+        .def_readwrite("nestedSamplerOutput", &BayesResults::nestedSamplerOutput)
         .def_readwrite("chain", &BayesResults::chain);
 
     py::class_<Calculation>(m, "Calculation")
