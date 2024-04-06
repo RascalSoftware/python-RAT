@@ -3,6 +3,8 @@ from plotting import *
 import csv
 import numpy as np 
 import pyqtgraph as pg
+from PyQt6 import QtWidgets
+import sys
 
  
 def import_data(filename):
@@ -31,6 +33,16 @@ if __name__=="__main__":
     data.shiftedData = import_data('shifted_data')
     data.sldProfiles = import_data('sld_profiles')
 
-    rat = RATPlot()
-    rat.plot(data)
-    pg.exec()
+
+    app = QApplication(sys.argv)
+    app.setWindowIcon(QtGui.QIcon("RAT/RAT-logo.png"))
+    window = RATPlot()
+    window.update_data(data)
+    sys.exit(app.exec())
+
+    # app = QtWidgets.QApplication(sys.argv)
+    # app.setWindowIcon(QtGui.QIcon("RAT/RAT-logo.png"))
+    # rat = PyQtPlots()
+    # rat.update_data(data)
+    # sys.exit(app.exec())
+    
