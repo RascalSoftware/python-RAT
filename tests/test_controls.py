@@ -18,7 +18,7 @@ class TestCalculate:
     @pytest.mark.parametrize("control_property, value", [
         ('parallel', Parallel.Single),
         ('calcSldDuringFit', False),
-        ('resamPars', [0.9, 50]),
+        ('resampleParams', [0.9, 50]),
         ('display', Display.Iter),
         ('procedure', Procedures.Calculate)
     ])
@@ -27,9 +27,9 @@ class TestCalculate:
         assert getattr(self.calculate, control_property) == value
 
     @pytest.mark.parametrize("control_property, value", [
-        ('parallel', Parallel.All),
+        ('parallel', Parallel.Points),
         ('calcSldDuringFit', True),
-        ('resamPars', [0.2, 1]),
+        ('resampleParams', [0.2, 1]),
         ('display', Display.Notify)
     ])
     def test_calculate_property_setters(self, control_property: str,  value: Any) -> None:
@@ -42,7 +42,7 @@ class TestCalculate:
         """Tests the parallel setter validation in Calculate class."""
         with pytest.raises(pydantic.ValidationError) as exp:
             setattr(self.calculate, 'parallel', var1)
-        assert exp.value.errors()[0]['msg'] == "Input should be 'single', 'points', 'contrasts' or 'all'"
+        assert exp.value.errors()[0]['msg'] == "Input should be 'single', 'points' or 'contrasts'"
         with pytest.raises(pydantic.ValidationError) as exp:
             setattr(self.calculate, 'parallel', var2)
         assert exp.value.errors()[0]['msg'] == "Input should be a valid string"
@@ -68,20 +68,20 @@ class TestCalculate:
         ([5.0], "List should have at least 2 items after validation, not 1"),
         ([12, 13, 14], "List should have at most 2 items after validation, not 3")
     ])
-    def test_calculate_resamPars_length_validation(self, value: list, msg: str) -> None:
-        """Tests the resamPars setter length validation in Calculate class."""
+    def test_calculate_resampleParams_length_validation(self, value: list, msg: str) -> None:
+        """Tests the resampleParams setter length validation in Calculate class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.calculate, 'resamPars', value)
+            setattr(self.calculate, 'resampleParams', value)
         assert exp.value.errors()[0]['msg'] == msg
 
     @pytest.mark.parametrize("value, msg", [
-        ([1.0, 2], "Value error, resamPars[0] must be between 0 and 1"),
-        ([0.5, -0.1], "Value error, resamPars[1] must be greater than or equal to 0")
+        ([1.0, 2], "Value error, resampleParams[0] must be between 0 and 1"),
+        ([0.5, -0.1], "Value error, resampleParams[1] must be greater than or equal to 0")
     ])
-    def test_calculate_resamPars_value_validation(self, value: list, msg: str) -> None:
-        """Tests the resamPars setter value validation in Calculate class."""
+    def test_calculate_resampleParams_value_validation(self, value: list, msg: str) -> None:
+        """Tests the resampleParams setter value validation in Calculate class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.calculate, 'resamPars', value)
+            setattr(self.calculate, 'resampleParams', value)
         assert exp.value.errors()[0]['msg'] == msg
 
     def test_calculate_extra_property_error(self) -> None:
@@ -111,7 +111,7 @@ class TestCalculate:
                      "|    procedure     | calculate |\n"
                      "|     parallel     |   single  |\n"
                      "| calcSldDuringFit |   False   |\n"
-                     "|    resamPars     | [0.9, 50] |\n"
+                     "|  resampleParams  | [0.9, 50] |\n"
                      "|     display      |    iter   |\n"
                      "+------------------+-----------+"
                      )
@@ -129,13 +129,13 @@ class TestSimplex:
     @pytest.mark.parametrize("control_property, value", [
         ('parallel', Parallel.Single),
         ('calcSldDuringFit', False),
-        ('resamPars', [0.9, 50]),
+        ('resampleParams', [0.9, 50]),
         ('display', Display.Iter),
         ('procedure', Procedures.Simplex),
-        ('tolX', 1e-6),
-        ('tolFun', 1e-6),
-        ('maxFunEvals', 10000),
-        ('maxIter', 1000),
+        ('xTolerance', 1e-6),
+        ('funcTolerance', 1e-6),
+        ('maxFuncEvals', 10000),
+        ('maxIterations', 1000),
         ('updateFreq', -1),
         ('updatePlotFreq', 1)
     ])
@@ -144,14 +144,14 @@ class TestSimplex:
         assert getattr(self.simplex, control_property) == value
 
     @pytest.mark.parametrize("control_property, value", [
-        ('parallel', Parallel.All),
+        ('parallel', Parallel.Points),
         ('calcSldDuringFit', True),
-        ('resamPars', [0.2, 1]),
+        ('resampleParams', [0.2, 1]),
         ('display', Display.Notify),
-        ('tolX', 4e-6),
-        ('tolFun', 3e-4),
-        ('maxFunEvals', 100),
-        ('maxIter', 50),
+        ('xTolerance', 4e-6),
+        ('funcTolerance', 3e-4),
+        ('maxFuncEvals', 100),
+        ('maxIterations', 50),
         ('updateFreq', 4),
         ('updatePlotFreq', 3)
     ])
@@ -161,10 +161,10 @@ class TestSimplex:
         assert getattr(self.simplex, control_property) == value
 
     @pytest.mark.parametrize("control_property, value", [
-        ('tolX', -4e-6),
-        ('tolFun', -3e-4),
-        ('maxFunEvals', -100),
-        ('maxIter', -50)
+        ('xTolerance', -4e-6),
+        ('funcTolerance', -3e-4),
+        ('maxFuncEvals', -100),
+        ('maxIterations', -50)
     ])
     def test_simplex_property_errors(self, control_property: str,  value: Union[float, int]) -> None:
         """Tests the property errors of Simplex class."""
@@ -199,12 +199,12 @@ class TestSimplex:
                      "|    procedure     |  simplex  |\n"
                      "|     parallel     |   single  |\n"
                      "| calcSldDuringFit |   False   |\n"
-                     "|    resamPars     | [0.9, 50] |\n"
+                     "|  resampleParams  | [0.9, 50] |\n"
                      "|     display      |    iter   |\n"                     
-                     "|       tolX       |   1e-06   |\n"
-                     "|      tolFun      |   1e-06   |\n"
-                     "|   maxFunEvals    |   10000   |\n"
-                     "|     maxIter      |    1000   |\n"
+                     "|    xTolerance    |   1e-06   |\n"
+                     "|  funcTolerance   |   1e-06   |\n"
+                     "|   maxFuncEvals   |   10000   |\n"
+                     "|  maxIterations   |    1000   |\n"
                      "|    updateFreq    |     -1    |\n"
                      "|  updatePlotFreq  |     1     |\n"
                      "+------------------+-----------+"
@@ -223,7 +223,7 @@ class TestDE:
     @pytest.mark.parametrize("control_property, value", [
         ('parallel', Parallel.Single),
         ('calcSldDuringFit', False),
-        ('resamPars', [0.9, 50]),
+        ('resampleParams', [0.9, 50]),
         ('display', Display.Iter),
         ('procedure', Procedures.DE),
         ('populationSize', 20),
@@ -238,9 +238,9 @@ class TestDE:
         assert getattr(self.de, control_property) == value
 
     @pytest.mark.parametrize("control_property, value", [
-        ('parallel', Parallel.All),
+        ('parallel', Parallel.Points),
         ('calcSldDuringFit', True),
-        ('resamPars', [0.2, 1]),
+        ('resampleParams', [0.2, 1]),
         ('display', Display.Notify),
         ('populationSize', 20),
         ('fWeight', 0.3),
@@ -307,7 +307,7 @@ class TestDE:
                      "|      procedure       |                  de                  |\n"
                      "|       parallel       |                single                |\n"
                      "|   calcSldDuringFit   |                False                 |\n"
-                     "|      resamPars       |              [0.9, 50]               |\n"
+                     "|    resampleParams    |              [0.9, 50]               |\n"
                      "|       display        |                 iter                 |\n"
                      "|    populationSize    |                  20                  |\n"
                      "|       fWeight        |                 0.5                  |\n"
@@ -331,11 +331,11 @@ class TestNS:
     @pytest.mark.parametrize("control_property, value", [
         ('parallel', Parallel.Single),
         ('calcSldDuringFit', False),
-        ('resamPars', [0.9, 50]),
+        ('resampleParams', [0.9, 50]),
         ('display', Display.Iter),
         ('procedure', Procedures.NS),
-        ('Nlive', 150),
-        ('Nmcmc', 0),
+        ('nLive', 150),
+        ('nMCMC', 0),
         ('propScale', 0.1),
         ('nsTolerance', 0.1)
     ])
@@ -344,12 +344,12 @@ class TestNS:
         assert getattr(self.ns, control_property) == value
 
     @pytest.mark.parametrize("control_property, value", [
-        ('parallel', Parallel.All),
+        ('parallel', Parallel.Points),
         ('calcSldDuringFit', True),
-        ('resamPars', [0.2, 1]),
+        ('resampleParams', [0.2, 1]),
         ('display', Display.Notify),
-        ('Nlive', 1500),
-        ('Nmcmc', 1),
+        ('nLive', 1500),
+        ('nMCMC', 1),
         ('propScale', 0.5),
         ('nsTolerance', 0.8)
     ])
@@ -359,12 +359,12 @@ class TestNS:
         assert getattr(self.ns, control_property) == value
 
     @pytest.mark.parametrize("control_property, value, bound", [
-        ('Nmcmc', -0.6, 0),
+        ('nMCMC', -0.6, 0),
         ('nsTolerance', -500, 0),
-        ('Nlive', -500, 1)
+        ('nLive', -500, 1)
     ])
-    def test_ns_Nmcmc_nsTolerance_Nlive_error(self, control_property: str, value: Union[int, float], bound: int) -> None:
-        """Tests the Nmcmc, nsTolerance, Nlive setter error in NS class."""
+    def test_ns_setter_error(self, control_property: str, value: Union[int, float], bound: int) -> None:
+        """Tests the nMCMC, nsTolerance, nLive setter error in NS class."""
         with pytest.raises(pydantic.ValidationError) as exp:
             setattr(self.ns, control_property, value)
         assert exp.value.errors()[0]['msg'] == f"Input should be greater than or equal to {bound}"
@@ -406,10 +406,10 @@ class TestNS:
                      "|    procedure     |     ns    |\n"
                      "|     parallel     |   single  |\n"
                      "| calcSldDuringFit |   False   |\n"
-                     "|    resamPars     | [0.9, 50] |\n"
+                     "|  resampleParams  | [0.9, 50] |\n"
                      "|     display      |    iter   |\n"                     
-                     "|      Nlive       |    150    |\n"
-                     "|      Nmcmc       |    0.0    |\n"
+                     "|      nLive       |    150    |\n"
+                     "|      nMCMC       |    0.0    |\n"
                      "|    propScale     |    0.1    |\n"
                      "|   nsTolerance    |    0.1    |\n"
                      "+------------------+-----------+"
@@ -428,7 +428,7 @@ class TestDream:
     @pytest.mark.parametrize("control_property, value", [
         ('parallel', Parallel.Single),
         ('calcSldDuringFit', False),
-        ('resamPars', [0.9, 50]),
+        ('resampleParams', [0.9, 50]),
         ('display', Display.Iter),
         ('procedure', Procedures.Dream),
         ('nSamples', 50000),
@@ -442,9 +442,9 @@ class TestDream:
         assert getattr(self.dream, control_property) == value
 
     @pytest.mark.parametrize("control_property, value", [
-        ('parallel', Parallel.All),
+        ('parallel', Parallel.Points),
         ('calcSldDuringFit', True),
-        ('resamPars', [0.2, 1]),
+        ('resampleParams', [0.2, 1]),
         ('display', Display.Notify),
         ('nSamples', 500),
         ('nChains', 1000),
@@ -510,7 +510,7 @@ class TestDream:
                      "|    procedure     |   dream   |\n"
                      "|     parallel     |   single  |\n"
                      "| calcSldDuringFit |   False   |\n"
-                     "|    resamPars     | [0.9, 50] |\n"
+                     "|  resampleParams  | [0.9, 50] |\n"
                      "|     display      |    iter   |\n"                     
                      "|     nSamples     |   50000   |\n"
                      "|     nChains      |     10    |\n"

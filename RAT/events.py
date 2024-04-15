@@ -18,6 +18,7 @@ def notify(event_type: EventTypes, data: Union[str, PlotEventData, ProgressEvent
     for callback in callbacks:
         callback(data)
 
+
 def get_event_callback(event_type: EventTypes) -> List[Callable[[Union[str, PlotEventData, ProgressEventData]], None]]:
     """Returns all callbacks registered for the given event type.
 

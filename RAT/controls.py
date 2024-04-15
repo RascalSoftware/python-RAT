@@ -11,17 +11,17 @@ class Calculate(BaseModel, validate_assignment=True, extra='forbid'):
     procedure: Literal[Procedures.Calculate] = Procedures.Calculate
     parallel: Parallel = Parallel.Single
     calcSldDuringFit: bool = False
-    resamPars: list[float] = Field([0.9, 50], min_length=2, max_length=2)
+    resampleParams: list[float] = Field([0.9, 50], min_length=2, max_length=2)
     display: Display = Display.Iter
 
-    @field_validator("resamPars")
+    @field_validator("resampleParams")
     @classmethod
-    def check_resamPars(cls, resamPars):
-        if not 0 < resamPars[0] < 1:
-            raise ValueError('resamPars[0] must be between 0 and 1')
-        if resamPars[1] < 0:
-            raise ValueError('resamPars[1] must be greater than or equal to 0')
-        return resamPars
+    def check_resample_params(cls, resampleParams):
+        if not 0 < resampleParams[0] < 1:
+            raise ValueError('resampleParams[0] must be between 0 and 1')
+        if resampleParams[1] < 0:
+            raise ValueError('resampleParams[1] must be greater than or equal to 0')
+        return resampleParams
 
     def __repr__(self) -> str:
         table = prettytable.PrettyTable()
@@ -33,10 +33,10 @@ class Calculate(BaseModel, validate_assignment=True, extra='forbid'):
 class Simplex(Calculate):
     """Defines the additional fields for the simplex procedure."""
     procedure: Literal[Procedures.Simplex] = Procedures.Simplex
-    tolX: float = Field(1.0e-6, gt=0.0)
-    tolFun: float = Field(1.0e-6, gt=0.0)
-    maxFunEvals: int = Field(10000, gt=0)
-    maxIter: int = Field(1000, gt=0)
+    xTolerance: float = Field(1.0e-6, gt=0.0)
+    funcTolerance: float = Field(1.0e-6, gt=0.0)
+    maxFuncEvals: int = Field(10000, gt=0)
+    maxIterations: int = Field(1000, gt=0)
     updateFreq: int = -1
     updatePlotFreq: int = 1
 
@@ -55,8 +55,8 @@ class DE(Calculate):
 class NS(Calculate):
     """Defines the additional fields for the Nested Sampler procedure."""
     procedure: Literal[Procedures.NS] = Procedures.NS
-    Nlive: int = Field(150, ge=1)
-    Nmcmc: float = Field(0.0, ge=0.0)
+    nLive: int = Field(150, ge=1)
+    nMCMC: float = Field(0.0, ge=0.0)
     propScale: float = Field(0.1, gt=0.0, lt=1.0)
     nsTolerance: float = Field(0.1, ge=0.0)
 

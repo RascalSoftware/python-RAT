@@ -127,7 +127,7 @@ def make_problem(project: RAT.Project) -> RAT.utils.dataclasses.Problem:
         contrastDomainRatios=[project.domain_ratios.index(contrast.domain_ratio, 1)
                               if hasattr(contrast, 'domain_ratio') else 0 for contrast in project.contrasts],
         contrastBackgrounds=[project.backgrounds.index(contrast.background, 1) for contrast in project.contrasts],
-        contrastBackgroundsType=[1] * len(project.contrasts),
+        contrastBackgroundsActions=[1] * len(project.contrasts),
         contrastResolutions=[project.resolutions.index(contrast.resolution, 1) for contrast in project.contrasts],
         contrastCustomFiles=contrast_custom_files,
         resample=[contrast.resample for contrast in project.contrasts],

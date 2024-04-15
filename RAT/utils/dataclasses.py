@@ -11,8 +11,8 @@ class Checks:
     """Fit parameters for all parameter sets defined in the project."""
     fitParam: list[int] = field(default_factory=list)
     fitBackgroundParam: list[int] = field(default_factory=list)
-    fitQzshift: list[int] = field(default_factory=list)
     fitScalefactor: list[int] = field(default_factory=list)
+    fitQzshift: list[int] = field(default_factory=list)
     fitBulkIn: list[int] = field(default_factory=list)
     fitBulkOut: list[int] = field(default_factory=list)
     fitResolutionParam: list[int] = field(default_factory=list)
@@ -24,8 +24,8 @@ class Limits:
     """Parameters limits for all parameter sets defined in the project."""
     param: list[[float, float]] = field(default_factory=list)
     backgroundParam: list[[float, float]] = field(default_factory=list)
-    qzshift: list[[float, float]] = field(default_factory=list)
     scalefactor: list[[float, float]] = field(default_factory=list)
+    qzshift: list[[float, float]] = field(default_factory=list)
     bulkIn: list[[float, float]] = field(default_factory=list)
     bulkOut: list[[float, float]] = field(default_factory=list)
     resolutionParam: list[[float, float]] = field(default_factory=list)
@@ -37,8 +37,8 @@ class Priors:
     """Priors parameters for all parameter sets defined in the project."""
     param: list[list] = field(default_factory=list)
     backgroundParam: list[list] = field(default_factory=list)
-    qzshift: list[list] = field(default_factory=list)
     scalefactor: list[list] = field(default_factory=list)
+    qzshift: list[list] = field(default_factory=list)
     bulkIn: list[list] = field(default_factory=list)
     bulkOut: list[list] = field(default_factory=list)
     resolutionParam: list[list] = field(default_factory=list)
@@ -54,13 +54,13 @@ class Controls:
     procedure: Procedures = Procedures.Calculate
     parallel: Parallel = Parallel.Single
     calcSldDuringFit: bool = False
-    resamPars: list[float] = field(default_factory=list[0.9, 50.0])
+    resampleParams: list[float] = field(default_factory=list[0.9, 50.0])
     display: Display = Display.Iter
     # Simplex
-    tolX: float = 1.0e-6
-    tolFun: float = 1.0e-6
-    maxFunEvals: int = 10000
-    maxIter: int = 1000
+    xTolerance: float = 1.0e-6
+    funcTolerance: float = 1.0e-6
+    maxFuncEvals: int = 10000
+    maxIterations: int = 1000
     updateFreq: int = -1
     updatePlotFreq: int = 1
     # DE
@@ -71,8 +71,8 @@ class Controls:
     targetValue: float = 1.0
     numGenerations: int = 500
     # NS
-    Nlive: int = 150
-    Nmcmc: float = 0.0
+    nLive: int = 150
+    nMCMC: float = 0.0
     propScale: float = 0.1
     nsTolerance: float = 0.1
     # Dream
@@ -82,6 +82,7 @@ class Controls:
     pUnitGamma: float = 0.2
     boundHandling: BoundHandling = BoundHandling.Fold
     adaptPCR: bool = False
+    # Checks
     checks: Checks = Checks()
 
 
@@ -109,7 +110,7 @@ class Problem:
     contrastScalefactors: list[int] = field(default_factory=list)
     contrastDomainRatios: list[int] = field(default_factory=list)
     contrastBackgrounds: list[int] = field(default_factory=list)
-    contrastBackgroundsType: list[int] = field(default_factory=list)
+    contrastBackgroundsActions: list[int] = field(default_factory=list)
     contrastResolutions: list[int] = field(default_factory=list)
     contrastCustomFiles: list[Union[int, float]] = field(default_factory=list)
     resample: list[int] = field(default_factory=list)

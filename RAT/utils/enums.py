@@ -11,7 +11,6 @@ class Parallel(StrEnum):
     Single = 'single'
     Points = 'points'
     Contrasts = 'contrasts'
-    All = 'all'
 
 
 class Procedures(StrEnum):

@@ -11,6 +11,7 @@ try:
 except ImportError:
     from strenum import StrEnum
 
+
 def int_sequence():
     """Iterate through integers for use as model counters."""
     num = 1
@@ -130,7 +131,7 @@ class Data(RATModel, arbitrary_types_allowed=True):
     @model_validator(mode='after')
     def check_ranges(self) -> 'Data':
         """The limits of the "data_range" field must lie within the range of the supplied data, whilst the limits
-        of the "simulation_range" field must lie outside of the range of the supplied data.
+        of the "simulation_range" field must lie outside the range of the supplied data.
         """
         if len(self.data[:, 0]) > 0:
             data_min = np.min(self.data[:, 0])
