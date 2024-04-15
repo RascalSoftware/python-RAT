@@ -137,7 +137,7 @@ class TestSimplex:
         ('maxFunEvals', 10000),
         ('maxIter', 1000),
         ('updateFreq', -1),
-        ('updatePlotFreq', -1)
+        ('updatePlotFreq', 1)
     ])
     def test_simplex_property_values(self, control_property: str, value: Any) -> None:
         """Tests the default values of Simplex class."""
@@ -206,7 +206,7 @@ class TestSimplex:
                      "|   maxFunEvals    |   10000   |\n"
                      "|     maxIter      |    1000   |\n"
                      "|    updateFreq    |     -1    |\n"
-                     "|  updatePlotFreq  |     -1    |\n"
+                     "|  updatePlotFreq  |     1     |\n"
                      "+------------------+-----------+"
                      )
 

@@ -49,8 +49,8 @@ values_defined_in = {'backgrounds.value_1': 'background_parameters',
                      'layers.roughness': 'parameters',
                      'contrasts.data': 'data',
                      'contrasts.background': 'backgrounds',
-                     'contrasts.bulkIn': 'bulk_in',
-                     'contrasts.bulkOut': 'bulk_out',
+                     'contrasts.bulk_in': 'bulk_in',
+                     'contrasts.bulk_out': 'bulk_out',
                      'contrasts.scalefactor': 'scalefactors',
                      'contrasts.resolution': 'resolutions',
                      'contrasts.domain_ratio': 'domain_ratios',
@@ -65,8 +65,8 @@ model_names_used_in = {'background_parameters': AllFields('backgrounds', ['value
                                                           'roughness']),
                        'data': AllFields('contrasts', ['data']),
                        'backgrounds': AllFields('contrasts', ['background']),
-                       'bulk_in': AllFields('contrasts', ['bulkIn']),
-                       'bulk_out': AllFields('contrasts', ['bulkOut']),
+                       'bulk_in': AllFields('contrasts', ['bulk_in']),
+                       'bulk_out': AllFields('contrasts', ['bulk_out']),
                        'scalefactors': AllFields('contrasts', ['scalefactor']),
                        'domain_ratios': AllFields('contrasts', ['domain_ratio']),
                        'resolutions': AllFields('contrasts', ['resolution']),
@@ -327,8 +327,8 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
 
         self.check_allowed_values('contrasts', ['data'], self.data.get_names())
         self.check_allowed_values('contrasts', ['background'], self.backgrounds.get_names())
-        self.check_allowed_values('contrasts', ['bulkIn'], self.bulk_in.get_names())
-        self.check_allowed_values('contrasts', ['bulkOut'], self.bulk_out.get_names())
+        self.check_allowed_values('contrasts', ['bulk_in'], self.bulk_in.get_names())
+        self.check_allowed_values('contrasts', ['bulk_out'], self.bulk_out.get_names())
         self.check_allowed_values('contrasts', ['scalefactor'], self.scalefactors.get_names())
         self.check_allowed_values('contrasts', ['resolution'], self.resolutions.get_names())
         self.check_allowed_values('contrasts', ['domain_ratio'], self.domain_ratios.get_names())

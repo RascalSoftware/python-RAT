@@ -71,8 +71,8 @@ class ContrastWithRatio(RATModel):
     name: str = Field(default_factory=lambda: 'New Contrast ' + next(contrast_number), min_length=1)
     data: str = ''
     background: str = ''
-    bulkIn: str = ''
-    bulkOut: str = ''
+    bulk_in: str = ''
+    bulk_out: str = ''
     scalefactor: str = ''
     resolution: str = ''
     resample: bool = False
