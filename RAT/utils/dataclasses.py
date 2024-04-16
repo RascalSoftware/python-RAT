@@ -1,51 +1,8 @@
 """Defines dataclasses used for the inputs to the compiled RAT code."""
 
 from dataclasses import dataclass, field
-from typing import Union
 
-from RAT.utils.enums import Parallel, Procedures, Display, BoundHandling, Strategies, Calc, Geometries, Models
-
-
-@dataclass
-class Checks:
-    """Fit parameters for all parameter sets defined in the project."""
-    fitParam: list[int] = field(default_factory=list)
-    fitBackgroundParam: list[int] = field(default_factory=list)
-    fitScalefactor: list[int] = field(default_factory=list)
-    fitQzshift: list[int] = field(default_factory=list)
-    fitBulkIn: list[int] = field(default_factory=list)
-    fitBulkOut: list[int] = field(default_factory=list)
-    fitResolutionParam: list[int] = field(default_factory=list)
-    fitDomainRatio: list[int] = field(default_factory=list)
-
-
-@dataclass
-class Limits:
-    """Parameters limits for all parameter sets defined in the project."""
-    param: list[[float, float]] = field(default_factory=list)
-    backgroundParam: list[[float, float]] = field(default_factory=list)
-    scalefactor: list[[float, float]] = field(default_factory=list)
-    qzshift: list[[float, float]] = field(default_factory=list)
-    bulkIn: list[[float, float]] = field(default_factory=list)
-    bulkOut: list[[float, float]] = field(default_factory=list)
-    resolutionParam: list[[float, float]] = field(default_factory=list)
-    domainRatio: list[[float, float]] = field(default_factory=list)
-
-
-@dataclass
-class Priors:
-    """Priors parameters for all parameter sets defined in the project."""
-    param: list[list] = field(default_factory=list)
-    backgroundParam: list[list] = field(default_factory=list)
-    scalefactor: list[list] = field(default_factory=list)
-    qzshift: list[list] = field(default_factory=list)
-    bulkIn: list[list] = field(default_factory=list)
-    bulkOut: list[list] = field(default_factory=list)
-    resolutionParam: list[list] = field(default_factory=list)
-    domainRatio: list[list] = field(default_factory=list)
-    priorNames: list[str] = field(default_factory=list)
-    priorValues: list = field(default_factory=list)
-
+from RAT.utils.enums import Parallel, Procedures, Display, BoundHandling, Strategies
 
 @dataclass(frozen=True)
 class Controls:
@@ -82,45 +39,3 @@ class Controls:
     pUnitGamma: float = 0.2
     boundHandling: BoundHandling = BoundHandling.Fold
     adaptPCR: bool = False
-    # Checks
-    checks: Checks = Checks()
-
-
-@dataclass(frozen=True)
-class Problem:
-    """The full set of problemDef parameters required for RATMain."""
-    # General
-    TF: str = Calc.NonPolarised
-    modelType: str = Models.StandardLayers
-    geometry: str = Geometries.AirSubstrate
-    useImaginary: bool = False
-    # Parameter Values
-    params: list[float] = field(default_factory=list)
-    bulkIn: list[float] = field(default_factory=list)
-    bulkOut: list[float] = field(default_factory=list)
-    qzshifts: list[float] = field(default_factory=list)
-    scalefactors: list[float] = field(default_factory=list)
-    domainRatio: list[int] = field(default_factory=list)
-    backgroundParams: list[float] = field(default_factory=list)
-    resolutionParams: list[float] = field(default_factory=list)
-    # Contrast Parameters
-    contrastBulkIns: list[int] = field(default_factory=list)
-    contrastBulkOuts: list[int] = field(default_factory=list)
-    contrastQzshifts: list[int] = field(default_factory=list)
-    contrastScalefactors: list[int] = field(default_factory=list)
-    contrastDomainRatios: list[int] = field(default_factory=list)
-    contrastBackgrounds: list[int] = field(default_factory=list)
-    contrastBackgroundsActions: list[int] = field(default_factory=list)
-    contrastResolutions: list[int] = field(default_factory=list)
-    contrastCustomFiles: list[Union[int, float]] = field(default_factory=list)
-    resample: list[int] = field(default_factory=list)
-    dataPresent: list[int] = field(default_factory=list)
-    oilChiDataPresent: list[int] = field(default_factory=list)
-    numberOfContrasts: int = 0
-    # Other
-    numberOfLayers: int = 0
-    numberOfDomainContrasts: int = 0
-    fitParams: list = field(default_factory=list)
-    otherParams: list = field(default_factory=list)
-    fitLimits: list = field(default_factory=list)
-    otherLimits: list = field(default_factory=list)
