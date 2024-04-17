@@ -57,6 +57,7 @@ class Hydration(StrEnum):
 
 
 class Languages(StrEnum):
+    Cpp = 'cpp'
     Python = 'python'
     Matlab = 'matlab'
 

@@ -229,7 +229,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         return self
 
     @model_validator(mode='after')
-    def set_calc(self) -> 'Project':
+    def set_calculation(self) -> 'Project':
         """Apply the calc setting to the project."""
         contrast_list = []
         handle = getattr(self.contrasts, '_class_handle').__name__
