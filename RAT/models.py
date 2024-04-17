@@ -4,7 +4,7 @@ import numpy as np
 from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
 from typing import Any
 
-from RAT.utils.enums import Hydration, Languages, Priors, Types
+from RAT.utils.enums import Actions, Hydration, Languages, Priors, Types
 
 try:
     from enum import StrEnum
@@ -59,6 +59,7 @@ class Contrast(RATModel):
     name: str = Field(default_factory=lambda: 'New Contrast ' + next(contrast_number), min_length=1)
     data: str = ''
     background: str = ''
+    background_action: Actions = Actions.Add
     bulk_in: str = ''
     bulk_out: str = ''
     scalefactor: str = ''
@@ -72,6 +73,7 @@ class ContrastWithRatio(RATModel):
     name: str = Field(default_factory=lambda: 'New Contrast ' + next(contrast_number), min_length=1)
     data: str = ''
     background: str = ''
+    background_action: Actions = Actions.Add
     bulk_in: str = ''
     bulk_out: str = ''
     scalefactor: str = ''

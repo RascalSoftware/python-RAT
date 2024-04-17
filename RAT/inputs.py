@@ -98,6 +98,7 @@ def make_problem(project: RAT.Project) -> ProblemDefinition:
     problem : RAT.rat_core.ProblemDefinition
         The problem input used in the compiled RAT code.
     """
+    action_id = {'add': 1, 'subtract': 2}
 
     # Set contrast parameters according to model type
     if project.model == Models.StandardLayers:
@@ -126,7 +127,7 @@ def make_problem(project: RAT.Project) -> ProblemDefinition:
     problem.contrastDomainRatios = [project.domain_ratios.index(contrast.domain_ratio, 1)
                                     if hasattr(contrast, 'domain_ratio') else 0 for contrast in project.contrasts]
     problem.contrastBackgrounds = [project.backgrounds.index(contrast.background, 1) for contrast in project.contrasts]
-    problem.contrastBackgroundActions = [1] * len(project.contrasts)
+    problem.contrastBackgroundActions = [action_id[contrast.background_action] for contrast in project.contrasts]
     problem.contrastResolutions = [project.resolutions.index(contrast.resolution, 1) for contrast in project.contrasts]
     problem.contrastCustomFiles = contrast_custom_files
     problem.resample = [contrast.resample for contrast in project.contrasts]

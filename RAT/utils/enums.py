@@ -72,6 +72,11 @@ class Types(StrEnum):
     Function = 'function'
 
 
+class Actions(StrEnum):
+    Add = 'add'
+    Subtract = 'subtract'
+
+
 # Project
 class Calculations(StrEnum):
     NonPolarised = 'non polarised'
