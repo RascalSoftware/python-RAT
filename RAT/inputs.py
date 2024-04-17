@@ -5,7 +5,7 @@ from typing import Union
 import RAT
 import RAT.project
 import RAT.utils.dataclasses
-from RAT.utils.enums import Calc, Models
+from RAT.utils.enums import Calculations, Models
 
 from RAT.rat_core import Cells, Checks, Control, Limits, Priors, ProblemDefinition
 
@@ -167,7 +167,7 @@ def make_cells(project: RAT.Project) -> Cells:
 
     # Set contrast parameters according to model type
     if project.model == Models.StandardLayers:
-        if project.calculation == Calc.Domains:
+        if project.calculation == Calculations.Domains:
             contrast_models = [[project.domain_contrasts.index(domain_contrast, 1) for domain_contrast in contrast.model]
                                for contrast in project.contrasts]
         else:

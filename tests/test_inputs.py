@@ -28,7 +28,7 @@ def test_project():
 def test_problem():
     """The expected problem object from "test_project"."""
     problem = ProblemDefinition()
-    problem.TF = RAT.utils.enums.Calc.NonPolarised
+    problem.TF = RAT.utils.enums.Calculations.NonPolarised
     problem.modelType = RAT.utils.enums.Models.StandardLayers
     problem.geometry = RAT.utils.enums.Geometries.AirSubstrate
     problem.useImaginary = False

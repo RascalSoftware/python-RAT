@@ -11,7 +11,7 @@ from typing import Any, Callable
 from RAT.classlist import ClassList
 import RAT.models
 from RAT.utils.custom_errors import custom_pydantic_validation_error
-from RAT.utils.enums import Calc, Geometries, Models
+from RAT.utils.enums import Calculations, Geometries, Models
 
 
 # Map project fields to pydantic models
@@ -86,7 +86,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
     inputs required for a reflectivity calculation.
     """
     name: str = ''
-    calculation: Calc = Calc.NonPolarised
+    calculation: Calculations = Calculations.NonPolarised
     model: Models = Models.StandardLayers
     geometry: Geometries = Geometries.AirSubstrate
     absorption: bool = False
@@ -147,7 +147,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         # Correct model name if necessary
         if info.field_name == 'layers' and info.data['absorption']:
             model_name = 'AbsorptionLayer'
-        if info.field_name == 'contrasts' and info.data['calculation'] == Calc.Domains:
+        if info.field_name == 'contrasts' and info.data['calculation'] == Calculations.Domains:
             model_name = 'ContrastWithRatio'
 
         model = getattr(RAT.models, model_name)
@@ -170,7 +170,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
 
         contrast_field = getattr(self, 'contrasts')
         if not hasattr(contrast_field, "_class_handle"):
-            if self.calculation == Calc.Domains:
+            if self.calculation == Calculations.Domains:
                 setattr(contrast_field, "_class_handle", getattr(RAT.models, 'ContrastWithRatio'))
             else:
                 setattr(contrast_field, "_class_handle", getattr(RAT.models, 'Contrast'))
@@ -208,7 +208,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
     @model_validator(mode='after')
     def set_domain_ratios(self) -> 'Project':
         """If we are not running a domains calculation, ensure the domain_ratios component of the model is empty."""
-        if self.calculation != Calc.Domains:
+        if self.calculation != Calculations.Domains:
             self.domain_ratios.data = []
         return self
 
@@ -217,7 +217,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         """If we are not running a domains calculation with standard layers, ensure the domain_contrasts component of
         the model is empty.
         """
-        if not (self.calculation == Calc.Domains and self.model == Models.StandardLayers):
+        if not (self.calculation == Calculations.Domains and self.model == Models.StandardLayers):
             self.domain_contrasts.data = []
         return self
 
@@ -233,7 +233,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         """Apply the calc setting to the project."""
         contrast_list = []
         handle = getattr(self.contrasts, '_class_handle').__name__
-        if self.calculation == Calc.Domains and handle == 'Contrast':
+        if self.calculation == Calculations.Domains and handle == 'Contrast':
             for contrast in self.contrasts:
                 contrast_list.append(RAT.models.ContrastWithRatio(**contrast.model_dump()))
             self.contrasts.data = contrast_list
@@ -241,7 +241,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
                                                             fit=False, prior_type=RAT.models.Priors.Uniform, mu=0.0,
                                                             sigma=np.inf)]
             setattr(self.contrasts, '_class_handle', getattr(RAT.models, 'ContrastWithRatio'))
-        elif self.calculation != Calc.Domains and handle == 'ContrastWithRatio':
+        elif self.calculation != Calculations.Domains and handle == 'ContrastWithRatio':
             for contrast in self.contrasts:
                 contrast_params = contrast.model_dump()
                 del contrast_params['domain_ratio']
@@ -267,7 +267,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         """Given certain values of the "calc" and "model" defined in the project, the "model" field of "contrasts"
         may be constrained in its length.
         """
-        if self.model == Models.StandardLayers and self.calculation == Calc.Domains:
+        if self.model == Models.StandardLayers and self.calculation == Calculations.Domains:
             for contrast in self.contrasts:
                 if contrast.model and len(contrast.model) != 2:
                     raise ValueError('For a standard layers domains calculation the "model" field of "contrasts" must '
@@ -435,7 +435,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
             The name of the field used to define the contrasts' model field.
         """
         if self.model == Models.StandardLayers:
-            if self.calculation == Calc.Domains:
+            if self.calculation == Calculations.Domains:
                 model_field = 'domain_contrasts'
             else:
                 model_field = 'layers'

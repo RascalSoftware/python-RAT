@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 
 from RAT.utils.enums import Parallel, Procedures, Display, BoundHandling, Strategies
 
+
 @dataclass(frozen=True)
 class Controls:
     """The full set of controls parameters required for RATMain."""

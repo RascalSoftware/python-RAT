@@ -142,7 +142,7 @@ def test_classlists_specific_cases() -> None:
     """The ClassLists in the "Project" model should contain instances of specific models given various non-default
     options.
     """
-    project = RAT.project.Project(calculation=RAT.project.Calc.Domains, absorption=True)
+    project = RAT.project.Project(calculation=RAT.project.Calculations.Domains, absorption=True)
     assert project.layers._class_handle.__name__ == 'AbsorptionLayer'
     assert project.contrasts._class_handle.__name__ == 'ContrastWithRatio'
 
@@ -181,11 +181,11 @@ def test_initialise_wrong_layers(input_model: Callable, absorption: bool, actual
 
 
 @pytest.mark.parametrize(["input_model", "calculation", "actual_model_name"], [
-    (RAT.models.Contrast, RAT.project.Calc.Domains, "ContrastWithRatio"),
-    (RAT.models.ContrastWithRatio, RAT.project.Calc.NonPolarised, "Contrast"),
+    (RAT.models.Contrast, RAT.project.Calculations.Domains, "ContrastWithRatio"),
+    (RAT.models.ContrastWithRatio, RAT.project.Calculations.NonPolarised, "Contrast"),
 ])
-def test_initialise_wrong_contrasts(input_model: Callable, calculation: 'RAT.project.Calc', actual_model_name: str)\
-        -> None:
+def test_initialise_wrong_contrasts(input_model: Callable, calculation: 'RAT.project.Calculations',
+                                    actual_model_name: str) -> None:
     """If the "Project" model is initialised with the incorrect contrast model given the value of calculation, we should
     raise a ValidationError.
     """
@@ -239,10 +239,10 @@ def test_assign_wrong_layers(wrong_input_model: Callable, absorption: bool, actu
 
 
 @pytest.mark.parametrize(["wrong_input_model", "calculation", "actual_model_name"], [
-    (RAT.models.Contrast, RAT.project.Calc.Domains, "ContrastWithRatio"),
-    (RAT.models.ContrastWithRatio, RAT.project.Calc.NonPolarised, "Contrast"),
+    (RAT.models.Contrast, RAT.project.Calculations.Domains, "ContrastWithRatio"),
+    (RAT.models.ContrastWithRatio, RAT.project.Calculations.NonPolarised, "Contrast"),
 ])
-def test_assign_wrong_contrasts(wrong_input_model: Callable, calculation: 'RAT.project.Calc',
+def test_assign_wrong_contrasts(wrong_input_model: Callable, calculation: 'RAT.project.Calculations',
                                 actual_model_name: str) -> None:
     """If we assign incorrect classes to the "Project" model, we should raise a ValidationError."""
     project = RAT.project.Project(calculation=calculation)
@@ -287,11 +287,11 @@ def test_set_domain_ratios(test_project) -> None:
 
 
 @pytest.mark.parametrize("project_parameters", [
-    ({'calculation': RAT.project.Calc.NonPolarised, 'model': RAT.project.Models.StandardLayers}),
-    ({'calculation': RAT.project.Calc.NonPolarised, 'model': RAT.project.Models.CustomLayers}),
-    ({'calculation': RAT.project.Calc.NonPolarised, 'model': RAT.project.Models.CustomXY}),
-    ({'calculation': RAT.project.Calc.Domains, 'model': RAT.project.Models.CustomLayers}),
-    ({'calculation': RAT.project.Calc.Domains, 'model': RAT.project.Models.CustomXY}),
+    ({'calculation': RAT.project.Calculations.NonPolarised, 'model': RAT.project.Models.StandardLayers}),
+    ({'calculation': RAT.project.Calculations.NonPolarised, 'model': RAT.project.Models.CustomLayers}),
+    ({'calculation': RAT.project.Calculations.NonPolarised, 'model': RAT.project.Models.CustomXY}),
+    ({'calculation': RAT.project.Calculations.Domains, 'model': RAT.project.Models.CustomLayers}),
+    ({'calculation': RAT.project.Calculations.Domains, 'model': RAT.project.Models.CustomXY}),
 ])
 def test_set_domain_contrasts(project_parameters: dict) -> None:
     """If we are not running a domains calculation with standard layers, the "domain_contrasts" field of the model
@@ -317,11 +317,12 @@ def test_set_domain_contrasts(project_parameters: dict) -> None:
 
 @pytest.mark.parametrize(["input_calculation", "input_contrast", "new_calculation", "new_contrast_model",
                           "num_domain_ratios"], [
-    (RAT.project.Calc.NonPolarised, RAT.models.Contrast, RAT.project.Calc.Domains, "ContrastWithRatio", 1),
-    (RAT.project.Calc.Domains, RAT.models.ContrastWithRatio, RAT.project.Calc.NonPolarised, "Contrast", 0),
+    (RAT.project.Calculations.NonPolarised, RAT.models.Contrast, RAT.project.Calculations.Domains, "ContrastWithRatio", 1),
+    (RAT.project.Calculations.Domains, RAT.models.ContrastWithRatio, RAT.project.Calculations.NonPolarised, "Contrast", 0),
 ])
-def test_set_calculation(input_calculation: 'RAT.project.Calc', input_contrast: Callable,
-                         new_calculation: 'RAT.project.Calc', new_contrast_model: str, num_domain_ratios: int) -> None:
+def test_set_calculation(input_calculation: 'RAT.project.Calculations', input_contrast: Callable,
+                         new_calculation: 'RAT.project.Calculations', new_contrast_model: str,
+                         num_domain_ratios: int) -> None:
     """When changing the value of the calculation option, the "contrasts" ClassList should switch to using the
     appropriate Contrast model.
     """
@@ -335,14 +336,14 @@ def test_set_calculation(input_calculation: 'RAT.project.Calc', input_contrast: 
 
 
 @pytest.mark.parametrize(["new_calc", "new_model", "expected_contrast_model"], [
-    (RAT.project.Calc.NonPolarised, RAT.project.Models.StandardLayers, ['Test Layer']),
-    (RAT.project.Calc.NonPolarised, RAT.project.Models.CustomLayers, []),
-    (RAT.project.Calc.NonPolarised, RAT.project.Models.CustomXY, []),
-    (RAT.project.Calc.Domains, RAT.project.Models.StandardLayers, []),
-    (RAT.project.Calc.Domains, RAT.project.Models.CustomLayers, []),
-    (RAT.project.Calc.Domains, RAT.project.Models.CustomXY, []),
+    (RAT.project.Calculations.NonPolarised, RAT.project.Models.StandardLayers, ['Test Layer']),
+    (RAT.project.Calculations.NonPolarised, RAT.project.Models.CustomLayers, []),
+    (RAT.project.Calculations.NonPolarised, RAT.project.Models.CustomXY, []),
+    (RAT.project.Calculations.Domains, RAT.project.Models.StandardLayers, []),
+    (RAT.project.Calculations.Domains, RAT.project.Models.CustomLayers, []),
+    (RAT.project.Calculations.Domains, RAT.project.Models.CustomXY, []),
 ])
-def test_set_contrast_model_field(test_project, new_calc: 'RAT.project.Calc', new_model: 'RAT.project.Models',
+def test_set_contrast_model_field(test_project, new_calc: 'RAT.project.Calculations', new_model: 'RAT.project.Models',
                                   expected_contrast_model: list[str]) -> None:
     """If we change the calculation and model such that the values of the "model" field of the "contrasts" model come
     from a different field of the project, we should clear the contrast "model" field.
@@ -369,7 +370,7 @@ def test_check_contrast_model_length(test_project, input_model: 'RAT.project.Mod
     test_contrasts = ClassList(RAT.models.ContrastWithRatio(model=test_contrast_model))
     with pytest.raises(pydantic.ValidationError,
                        match=f'1 validation error for Project\n  Value error, {error_message}'):
-        RAT.project.Project(calculation=RAT.project.Calc.Domains, model=input_model,
+        RAT.project.Project(calculation=RAT.project.Calculations.Domains, model=input_model,
                             domain_ratios=test_domain_ratios, contrasts=test_contrasts)
 
 
@@ -512,7 +513,7 @@ def test_allowed_contrasts(field: str, model_name: str) -> None:
     with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\n  Value error, The value '
                                                        f'"undefined" in the "{field}" field of "contrasts" must be '
                                                        f'defined in "{model_name}".'):
-        RAT.project.Project(calculation=RAT.project.Calc.NonPolarised, contrasts=ClassList(test_contrast))
+        RAT.project.Project(calculation=RAT.project.Calculations.NonPolarised, contrasts=ClassList(test_contrast))
 
 
 @pytest.mark.parametrize(["field", "model_name"], [
@@ -532,24 +533,24 @@ def test_allowed_contrasts_with_ratio(field: str, model_name: str) -> None:
     with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\n  Value error, The value '
                                                        f'"undefined" in the "{field}" field of "contrasts" must be '
                                                        f'defined in "{model_name}".'):
-        RAT.project.Project(calculation=RAT.project.Calc.Domains, contrasts=ClassList(test_contrast))
+        RAT.project.Project(calculation=RAT.project.Calculations.Domains, contrasts=ClassList(test_contrast))
 
 
 @pytest.mark.parametrize(["input_calc", "input_model", "test_contrast", "field_name"], [
-    (RAT.project.Calc.Domains, RAT.project.Models.StandardLayers,
+    (RAT.project.Calculations.Domains, RAT.project.Models.StandardLayers,
      RAT.models.ContrastWithRatio(name='Test Contrast', model=['undefined', 'undefined']), 'domain_contrasts'),
-    (RAT.project.Calc.Domains, RAT.project.Models.CustomLayers,
+    (RAT.project.Calculations.Domains, RAT.project.Models.CustomLayers,
      RAT.models.ContrastWithRatio(name='Test Contrast', model=['undefined']), 'custom_files'),
-    (RAT.project.Calc.Domains, RAT.project.Models.CustomXY,
+    (RAT.project.Calculations.Domains, RAT.project.Models.CustomXY,
      RAT.models.ContrastWithRatio(name='Test Contrast', model=['undefined']), 'custom_files'),
-    (RAT.project.Calc.NonPolarised, RAT.project.Models.StandardLayers,
+    (RAT.project.Calculations.NonPolarised, RAT.project.Models.StandardLayers,
      RAT.models.Contrast(name='Test Contrast', model=['undefined', 'undefined', 'undefined']), 'layers'),
-    (RAT.project.Calc.NonPolarised, RAT.project.Models.CustomLayers,
+    (RAT.project.Calculations.NonPolarised, RAT.project.Models.CustomLayers,
      RAT.models.Contrast(name='Test Contrast', model=['undefined']), 'custom_files'),
-    (RAT.project.Calc.NonPolarised, RAT.project.Models.CustomXY,
+    (RAT.project.Calculations.NonPolarised, RAT.project.Models.CustomXY,
      RAT.models.Contrast(name='Test Contrast', model=['undefined']), 'custom_files'),
 ])
-def test_allowed_contrast_models(input_calc: 'RAT.project.Calc', input_model: 'RAT.project.Models',
+def test_allowed_contrast_models(input_calc: 'RAT.project.Calculations', input_model: 'RAT.project.Models',
                                  test_contrast: 'RAT.models', field_name: str) -> None:
     """If any value in the model field of the contrasts is set to a value not specified in the appropriate part of the
     project, we should raise a ValidationError.
@@ -568,7 +569,7 @@ def test_allowed_domain_contrast_models() -> None:
     with pytest.raises(pydantic.ValidationError, match='1 validation error for Project\n  Value error, The values: '
                                                        '"undefined" in the "model" field of "domain_contrasts" must be '
                                                        'defined in "layers".'):
-        RAT.project.Project(calculation=RAT.project.Calc.Domains, domain_contrasts=ClassList(test_contrast))
+        RAT.project.Project(calculation=RAT.project.Calculations.Domains, domain_contrasts=ClassList(test_contrast))
 
 
 def test_repr(default_project_repr: str) -> None:
@@ -659,14 +660,14 @@ def test_check_allowed_values_not_on_list(test_values: list[str]) -> None:
 
 
 @pytest.mark.parametrize(["input_calc", "input_model", "expected_field_name"], [
-    (RAT.project.Calc.Domains, RAT.project.Models.StandardLayers, 'domain_contrasts'),
-    (RAT.project.Calc.NonPolarised, RAT.project.Models.StandardLayers, 'layers'),
-    (RAT.project.Calc.Domains, RAT.project.Models.CustomLayers, 'custom_files'),
-    (RAT.project.Calc.NonPolarised, RAT.project.Models.CustomLayers, 'custom_files'),
-    (RAT.project.Calc.Domains, RAT.project.Models.CustomXY, 'custom_files'),
-    (RAT.project.Calc.NonPolarised, RAT.project.Models.CustomXY, 'custom_files'),
+    (RAT.project.Calculations.Domains, RAT.project.Models.StandardLayers, 'domain_contrasts'),
+    (RAT.project.Calculations.NonPolarised, RAT.project.Models.StandardLayers, 'layers'),
+    (RAT.project.Calculations.Domains, RAT.project.Models.CustomLayers, 'custom_files'),
+    (RAT.project.Calculations.NonPolarised, RAT.project.Models.CustomLayers, 'custom_files'),
+    (RAT.project.Calculations.Domains, RAT.project.Models.CustomXY, 'custom_files'),
+    (RAT.project.Calculations.NonPolarised, RAT.project.Models.CustomXY, 'custom_files'),
 ])
-def test_get_contrast_model_field(input_calc: 'RAT.project.Calc', input_model: 'RAT.project.Models',
+def test_get_contrast_model_field(input_calc: 'RAT.project.Calculations', input_model: 'RAT.project.Models',
                                   expected_field_name: str) -> None:
     """Each combination of calculation and model determines the field where the values of "model" field of "contrasts"
     are defined.

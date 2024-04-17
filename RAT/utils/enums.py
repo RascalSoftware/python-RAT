@@ -73,7 +73,7 @@ class Types(StrEnum):
 
 
 # Project
-class Calc(StrEnum):
+class Calculations(StrEnum):
     NonPolarised = 'non polarised'
     Domains = 'domains'
 
