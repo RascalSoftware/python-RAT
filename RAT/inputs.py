@@ -106,7 +106,7 @@ def make_problem(project: RAT.Project) -> ProblemDefinition:
     if project.model == Models.StandardLayers:
         contrast_custom_files = [float('NaN')] * len(project.contrasts)
     else:
-        contrast_custom_files = [project.custom_files.index(contrast.model, 1) for contrast in project.contrasts]
+        contrast_custom_files = [project.custom_files.index(contrast.model[0], 1) for contrast in project.contrasts]
 
     problem = ProblemDefinition()
 
