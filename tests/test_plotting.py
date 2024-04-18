@@ -1,18 +1,20 @@
 import os
 import re
+import csv
 import pytest
 from unittest.mock import patch
-import csv
+from unittest.mock import MagicMock
 import numpy as np
 import matplotlib.pyplot as plt
 from RAT.rat_core import PlotEventData
 from RAT.plotting import RATPlots
 
+
 TEST_DIR_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                             'plotting_test_data')
+                             'test_data', 'plotting')
 
 
-def import_data(filename):
+def import_data(filename:  str):
     """
     Imports data from the csv files
     """
@@ -26,9 +28,7 @@ def import_data(filename):
         all_data.append([np.array(data_csv)])
     return all_data
 
-
-@pytest.fixture
-def rat_plots():
+def data() -> PlotEventData:
     """
     Creates the fixture for the tests.
     """
@@ -41,14 +41,20 @@ def rat_plots():
     data.reflectivity = import_data('reflectivity')
     data.shiftedData = import_data('shifted_data')
     data.sldProfiles = import_data('sld_profiles')
+    return data
 
+
+@pytest.fixture
+def rat_plots() -> RATPlots:
+    """
+    Creates the fixture for the tests.
+    """
     rat_plots = RATPlots()
-    rat_plots._plot(data)
-
+    rat_plots._plot(data())
     return rat_plots
 
 
-def test_figure_axis_formating(rat_plots):
+def test_figure_axis_formating(rat_plots: RATPlots) -> None:
     """
     Tests the axis formating of the figure.
     """
@@ -68,7 +74,7 @@ def test_figure_axis_formating(rat_plots):
     assert [label._text for label in rat_plots._sld_plot.get_legend().texts] == ['sld 1', 'sld 2', 'sld 3']
 
 
-def test_figure_color_formating(rat_plots):
+def test_figure_color_formating(rat_plots: RATPlots) -> None:
     """
     Tests the color formating of the figure.
     """
@@ -90,7 +96,7 @@ def test_figure_color_formating(rat_plots):
                 rat_plots._sld_plot.get_lines()[ax2].get_color())
 
 
-def test_eventhandlers_linked_to_figure(rat_plots):
+def test_eventhandlers_linked_to_figure(rat_plots: RATPlots) -> None:
     """
     Tests whether the eventhandlers for close_event
     and key_press_event in the figure are linked to the
@@ -111,13 +117,13 @@ def test_eventhandlers_linked_to_figure(rat_plots):
         if str(type(val)) == "<class 'weakref.WeakMethod'>":
             break
     canvas_key_press_event_callback = rat_plots._fig.canvas.callbacks.callbacks['key_press_event'][ix]._func_ref.__repr__()
-    button_press_event_callback = re.findall(pattern,
-                                             canvas_key_press_event_callback)[0]
-    assert button_press_event_callback == "_process_button_press"
+    key_press_event_callback = re.findall(pattern,
+                                          canvas_key_press_event_callback)[0]
+    assert key_press_event_callback == "_process_button_press"
     assert hasattr(RATPlots, "_process_button_press")
 
 
-def test_eventhandler_variable_update(rat_plots):
+def test_eventhandler_variable_update(rat_plots: RATPlots) -> None:
     """
     Tests whether the eventhandlers for close_event
     and key_press_event update variables to stop
@@ -131,26 +137,39 @@ def test_eventhandler_variable_update(rat_plots):
     assert rat_plots._close_clicked
 
 
-def test_eventhandler_variable_update(rat_plots):
+def test_wait_for_close(rat_plots: RATPlots) -> None:
     """
-    Tests whether the eventhandlers for close_event
-    and key_press_event update variables to stop
-    while loop.
+    Tests whether method closes figure.
     """
-    on_key_mock_event = type('MockEvent', (object,), {'key': 'escape'})
-    rat_plots._process_button_press(on_key_mock_event)
-    assert rat_plots._esc_pressed
-
-    plt.close(rat_plots._fig)
+    rat_plots._esc_pressed = True
+    rat_plots.wait_for_close()
     assert rat_plots._close_clicked
 
     
-# @patch("RAT." +
-#         "base_controller.Controller.eval_confidence",
-#             return_value=2)   
-# def test_matplotlib_figure_formating(data):
-#     """
-#     Tests the formating of the figure
-#     """
-#     rat_plots = RATPlots()
-#     rat_plots._plot(data)
+@patch("RAT.plotting.makeSLDProfileXY")   
+def test_sld_profile_function_call(mock: MagicMock) -> None:
+    """
+    Tests the makeSLDProfileXY function called with
+    correct args.
+    """
+    rat_plots = RATPlots()
+    rat_plots._plot(data())
+
+    assert mock.call_count == 3
+    assert mock.call_args_list[0].args[0] == 2.07e-06
+    assert mock.call_args_list[0].args[1] == 6.28e-06
+    assert mock.call_args_list[0].args[2] == 0.0
+    assert mock.call_args_list[0].args[4] == 82
+    assert mock.call_args_list[0].args[5] == 1.0
+
+    assert mock.call_args_list[1].args[0] == 2.07e-06
+    assert mock.call_args_list[1].args[1] == 1.83e-06
+    assert mock.call_args_list[1].args[2] == 0.0
+    assert mock.call_args_list[1].args[4] == 128
+    assert mock.call_args_list[1].args[5] == 1.0
+
+    assert mock.call_args_list[2].args[0] == 2.07e-06
+    assert mock.call_args_list[2].args[1] == -5.87e-07
+    assert mock.call_args_list[2].args[2] == 0.0
+    assert mock.call_args_list[2].args[4] == 153
+    assert mock.call_args_list[2].args[5] == 1.0
