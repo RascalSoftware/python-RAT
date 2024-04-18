@@ -75,7 +75,7 @@ class RATPlots:
             if data.resample[i] == 1 or data.modelType == 'custom xy':
                 new = makeSLDProfileXY(layer[0, 1],
                                        layer[-1, 1],
-                                       data.ssubs[i],
+                                       data.subRoughs[i],
                                        layer,
                                        len(layer),
                                        1.0)

@@ -35,7 +35,7 @@ def data() -> PlotEventData:
     data = PlotEventData()
     data.modelType = 'custom xy'
     data.dataPresent = [1, 1, 1]
-    data.ssubs = [0, 0, 0]
+    data.subRoughs = [0, 0, 0]
     data.resample = [0, 0, 0]
     data.allLayers = import_data('all_layers')
     data.reflectivity = import_data('reflectivity')
