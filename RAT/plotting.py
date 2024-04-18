@@ -48,7 +48,7 @@ class RATPlots:
         for i, (r, sd, sld, layer) in enumerate(zip(data.reflectivity,
                                                     data.shiftedData,
                                                     data.sldProfiles,
-                                                    data.allLayers)):
+                                                    data.resampledLayers)):
 
             r, sd, sld, layer = map(lambda x: x[0], (r, sd, sld, layer))
 

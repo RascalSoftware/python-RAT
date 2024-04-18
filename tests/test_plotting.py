@@ -37,7 +37,7 @@ def data() -> PlotEventData:
     data.dataPresent = [1, 1, 1]
     data.subRoughs = [0, 0, 0]
     data.resample = [0, 0, 0]
-    data.allLayers = import_data('all_layers')
+    data.resampledLayers = import_data('all_layers')
     data.reflectivity = import_data('reflectivity')
     data.shiftedData = import_data('shifted_data')
     data.sldProfiles = import_data('sld_profiles')
