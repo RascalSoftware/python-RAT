@@ -207,21 +207,6 @@ def make_cells(project: RAT.Project) -> Cells:
             data_limits.append([0.0, 0.0])
             simulation_limits.append([0.0, 0.0])
 
-    # Set wrappers for custom function files
-    file_list = []
-    for custom_file in project.custom_files:
-
-        if custom_file.language == Languages.Matlab:
-            wrapper = RAT.wrappers.MatlabWrapper(custom_file.filename)
-            file = wrapper.getHandle()
-        elif custom_file.language == Languages.Cpp:
-            wrapper = RAT.wrappers.DylibWrapper(custom_file.filename, pathlib.PurePath(custom_file.filename).stem)
-            file = wrapper.getHandle()
-        else:
-            file = custom_file.filename
-
-        file_list.append(pathlib.PurePath(file).stem)
-
     # Populate the set of cells
     cells = Cells()
     cells.f1 = [[0, 1]] * len(project.contrasts)  # This is marked as "to do" in RAT
@@ -237,7 +222,7 @@ def make_cells(project: RAT.Project) -> Cells:
     cells.f11 = [param.name for param in project.bulk_in]
     cells.f12 = [param.name for param in project.bulk_out]
     cells.f13 = [param.name for param in project.resolution_parameters]
-    cells.f14 = file_list
+    cells.f14 = [pathlib.Path(file.filename).stem for file in project.custom_files]
     cells.f15 = [param.type for param in project.backgrounds]
     cells.f16 = [param.type for param in project.resolutions]
 

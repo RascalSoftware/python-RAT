@@ -16,7 +16,7 @@ def standard_layers_project():
     """Add parameters to the default project for a non polarised calculation."""
     test_project = RAT.Project(data=RAT.ClassList([RAT.models.Data(name='Simulation', data=np.array([[1.0, 1.0, 1.0]]))]))
     test_project.parameters.append(name='Test SLD')
-    test_project.custom_files.append(name='Test Custom File')
+    test_project.custom_files.append(name='Test Custom File', filename='matlab_test.m', language='matlab')
     test_project.layers.append(name='Test Layer', SLD='Test SLD')
     test_project.contrasts.append(name='Test Contrast', data='Simulation', background='Background 1', bulk_in='SLD Air',
                                   bulk_out='SLD D2O', scalefactor='Scalefactor 1', resolution='Resolution 1',
@@ -30,7 +30,7 @@ def domains_project():
     test_project = RAT.Project(calculation=RAT.utils.enums.Calculations.Domains,
                                data=RAT.ClassList([RAT.models.Data(name='Simulation', data=np.array([[1.0, 1.0, 1.0]]))]))
     test_project.parameters.append(name='Test SLD')
-    test_project.custom_files.append(name='Test Custom File')
+    test_project.custom_files.append(name='Test Custom File', filename='matlab_test.m', language='matlab')
     test_project.layers.append(name='Test Layer', SLD='Test SLD')
     test_project.domain_contrasts.append(name='up', model=['Test Layer'])
     test_project.domain_contrasts.append(name='down', model=['Test Layer'])
@@ -45,7 +45,7 @@ def custom_xy_project():
     """Add parameters to the default project for a non polarised calculation and use the custom xy model."""
     test_project = RAT.Project(model=RAT.utils.enums.Models.CustomXY)
     test_project.parameters.append(name='Test SLD')
-    test_project.custom_files.append(name='Test Custom File')
+    test_project.custom_files.append(name='Test Custom File', filename='matlab_test.m', language='matlab')
     test_project.contrasts.append(name='Test Contrast', data='Simulation', background='Background 1', bulk_in='SLD Air',
                                   bulk_out='SLD D2O', scalefactor='Scalefactor 1', resolution='Resolution 1',
                                   model=['Test Custom File'])
@@ -189,7 +189,7 @@ def standard_layers_cells():
     cells.f11 = ['SLD Air']
     cells.f12 = ['SLD D2O']
     cells.f13 = ['Resolution Param 1']
-    cells.f14 = ['']
+    cells.f14 = ['matlab_test']
     cells.f15 = [RAT.models.Types.Constant]
     cells.f16 = [RAT.models.Types.Constant]
     cells.f17 = [[0.0, 0.0, 0.0]]
@@ -217,7 +217,7 @@ def domains_cells():
     cells.f11 = ['SLD Air']
     cells.f12 = ['SLD D2O']
     cells.f13 = ['Resolution Param 1']
-    cells.f14 = ['']
+    cells.f14 = ['matlab_test']
     cells.f15 = [RAT.models.Types.Constant]
     cells.f16 = [RAT.models.Types.Constant]
     cells.f17 = [[0.0, 0.0, 0.0]]
@@ -245,7 +245,7 @@ def custom_xy_cells():
     cells.f11 = ['SLD Air']
     cells.f12 = ['SLD D2O']
     cells.f13 = ['Resolution Param 1']
-    cells.f14 = ['']
+    cells.f14 = ['matlab_test']
     cells.f15 = [RAT.models.Types.Constant]
     cells.f16 = [RAT.models.Types.Constant]
     cells.f17 = [[0.0, 0.0, 0.0]]
