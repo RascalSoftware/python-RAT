@@ -252,7 +252,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
 
     @model_validator(mode='after')
     def set_contrast_model_field(self) -> 'Project':
-        """The contents of the "model" field of "contrasts" depend on the values of the "calc" and "model_type"
+        """The contents of the "model" field of "contrasts" depend on the values of the "calculation" and "model_type"
         defined in the project. If they have changed, clear the contrast models.
         """
         model_field = self.get_contrast_model_field()
@@ -264,7 +264,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
 
     @model_validator(mode='after')
     def check_contrast_model_length(self) -> 'Project':
-        """Given certain values of the "calc" and "model" defined in the project, the "model" field of "contrasts"
+        """Given certain values of the "calculation" and "model" defined in the project, the "model" field of "contrasts"
         may be constrained in its length.
         """
         if self.model == Models.StandardLayers and self.calculation == Calculations.Domains:

@@ -16,8 +16,12 @@ And finally create a separate branch to begin work
 
     git checkout -b new-feature
 
+If there are updates to the C++ RAT submodule, run the following command to update the local branch
+
+    git submodule update --remote
+
 Once complete submit a [pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork) via GitHub. 
-Ensure to rebase your branch to include the latest changes on your branch and resolve possible merge conflicts.
+Ensure to rebase your branch to include the latest changes on your branch and resolve possible merge conflicts. 
 
 Unit-testing and coverage
 -------------------------

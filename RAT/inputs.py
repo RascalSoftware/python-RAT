@@ -34,7 +34,7 @@ def make_input(project: RAT.Project, controls: Union[RAT.controls.Calculate, RAT
         A list of min/max values for each parameter defined in the project.
     priors : RAT.rat_core.Priors
         The priors defined for each parameter in the project.
-    controls : RAT.rat_core.Control
+    cpp_controls : RAT.rat_core.Control
         The controls object used in the compiled RAT code.
     """
 
