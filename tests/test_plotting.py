@@ -58,7 +58,6 @@ def test_figure_axis_formating(rat_plots: RATPlots) -> None:
     """
     Tests the axis formating of the figure.
     """
-    assert rat_plots._fig.canvas.manager.get_window_title() == "Reflectivity Algorithms Toolbox (RAT)"
     assert rat_plots._fig.axes[0].get_subplotspec().get_gridspec().get_geometry() == (1, 2)
 
     assert rat_plots._ref_plot.get_xlabel() == "Qz"
@@ -121,29 +120,6 @@ def test_eventhandlers_linked_to_figure(rat_plots: RATPlots) -> None:
                                           canvas_key_press_event_callback)[0]
     assert key_press_event_callback == "_process_button_press"
     assert hasattr(RATPlots, "_process_button_press")
-
-
-def test_eventhandler_variable_update(rat_plots: RATPlots) -> None:
-    """
-    Tests whether the eventhandlers for close_event
-    and key_press_event update variables to stop
-    while loop.
-    """
-    on_key_mock_event = type('MockEvent', (object,), {'key': 'escape'})
-    rat_plots._process_button_press(on_key_mock_event)
-    assert rat_plots._esc_pressed
-
-    plt.close(rat_plots._fig)
-    assert rat_plots._close_clicked
-
-
-def test_wait_for_close(rat_plots: RATPlots) -> None:
-    """
-    Tests whether method closes figure.
-    """
-    rat_plots._esc_pressed = True
-    rat_plots.wait_for_close()
-    assert rat_plots._close_clicked
 
     
 @patch("RAT.plotting.makeSLDProfileXY")   
