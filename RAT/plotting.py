@@ -1,7 +1,6 @@
 """
 Plots using the matplotlib library
 """
-from itertools import cycle
 import matplotlib.pyplot as plt
 import numpy as np
 from RAT.rat_core import PlotEventData, makeSLDProfileXY
@@ -17,17 +16,17 @@ class RATPlots:
         """
         Initializes the figure and the subplots
         """
-        self.fig, (self._ref_plot, self._sld_plot) = \
+        self._fig, (self._ref_plot, self._sld_plot) = \
             plt.subplots(1, 2, num="Reflectivity Algorithms Toolbox (RAT)")
         plt.get_current_fig_manager().set_icon("images/RAT-logo.png")
         plt.show(block=False)
         self._delay = delay
         self._esc_pressed = False
-        self._cross_pressed = False
-        self.fig.canvas.mpl_connect("key_press_event",
-                                    self._process_button_press)
-        self.fig.canvas.mpl_connect('close_event',
-                                    self._close)
+        self._close_clicked = False
+        self._fig.canvas.mpl_connect("key_press_event",
+                                     self._process_button_press)
+        self._fig.canvas.mpl_connect('close_event',
+                                     self._close)
 
     def _plot(self, data: PlotEventData):
         """
@@ -43,16 +42,12 @@ class RATPlots:
         self._ref_plot.cla()
         self._sld_plot.cla()
 
-        colors = cycle(['r', 'g', 'b', 'c', 'm', 'y'])
-
         for i, (r, sd, sld, layer) in enumerate(zip(data.reflectivity,
                                                     data.shiftedData,
                                                     data.sldProfiles,
                                                     data.allLayers)):
 
             r, sd, sld, layer = map(lambda x: x[0], (r, sd, sld, layer))
-
-            self.color = next(colors)
 
             # Calculate the divisor
             div = 1 if i == 0 else 2**(4*(i+1))
@@ -61,8 +56,8 @@ class RATPlots:
             self._ref_plot.plot(r[:, 0],
                                 r[:, 1]/div,
                                 label=f'ref {i+1}',
-                                linewidth=2,
-                                color=self.color)
+                                linewidth=2)
+            self.color = self._ref_plot.get_lines()[-1].get_color()
             if data.dataPresent[i]:
                 self._plot_shifted_data(sd, div)
 
@@ -172,9 +167,9 @@ class RATPlots:
         Waits for the user to close the figure
         using the esc key.
         """
-        while not (self._esc_pressed or self._cross_pressed):
+        while not (self._esc_pressed or self._close_clicked):
             plt.waitforbuttonpress(timeout=0.005)
-        plt.close(self.fig)
+        plt.close(self._fig)
 
     def _process_button_press(self, event):
         """
@@ -187,4 +182,4 @@ class RATPlots:
         """
         Process the close_event.
         """
-        self._cross_pressed = True
+        self._close_clicked = True
