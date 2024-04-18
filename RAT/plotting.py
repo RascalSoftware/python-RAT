@@ -27,7 +27,7 @@ class RATPlots:
                                      self._process_button_press)
         self._fig.canvas.mpl_connect('close_event',
                                      self._close)
-        if callable(plt.get_current_fig_manager().set_icon):
+        if 'set_icon' in dir(plt.get_current_fig_manager()) :
             logo_path = os.path.join('images', 'RAT-logo.png')
             plt.get_current_fig_manager().set_icon(logo_path)
 
