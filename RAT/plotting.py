@@ -1,6 +1,7 @@
 """
 Plots using the matplotlib library
 """
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 from RAT.rat_core import PlotEventData, makeSLDProfileXY
@@ -18,7 +19,6 @@ class RATPlots:
         """
         self._fig, (self._ref_plot, self._sld_plot) = \
             plt.subplots(1, 2, num="Reflectivity Algorithms Toolbox (RAT)")
-        plt.get_current_fig_manager().set_icon("images/RAT-logo.png")
         plt.show(block=False)
         self._delay = delay
         self._esc_pressed = False
@@ -27,6 +27,9 @@ class RATPlots:
                                      self._process_button_press)
         self._fig.canvas.mpl_connect('close_event',
                                      self._close)
+        if callable(plt.get_current_fig_manager().set_icon):
+            logo_path = os.path.join('images', 'RAT-logo.png')
+            plt.get_current_fig_manager().set_icon(logo_path)
 
     def _plot(self, data: PlotEventData):
         """
