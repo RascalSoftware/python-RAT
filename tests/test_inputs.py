@@ -3,10 +3,10 @@
 import numpy as np
 import pytest
 
-from RAT.controls import set_controls
+import RAT
 from RAT.inputs import make_input, make_problem, make_cells, make_controls
-import RAT.project
-import RAT.utils.enums
+from RAT.utils.enums import (BoundHandling, Calculations, Display, Geometries, LayerModels, Parallel, Procedures,
+                             TypeOptions)
 
 from RAT.rat_core import Cells, Checks, Control, Limits, Priors, ProblemDefinition
 
@@ -27,7 +27,7 @@ def standard_layers_project():
 @pytest.fixture
 def domains_project():
     """Add parameters to the default project for a domains calculation."""
-    test_project = RAT.Project(calculation=RAT.utils.enums.Calculations.Domains,
+    test_project = RAT.Project(calculation=Calculations.Domains,
                                data=RAT.ClassList([RAT.models.Data(name='Simulation', data=np.array([[1.0, 1.0, 1.0]]))]))
     test_project.parameters.append(name='Test SLD')
     test_project.custom_files.append(name='Test Custom File', filename='matlab_test.m', language='matlab')
@@ -43,7 +43,7 @@ def domains_project():
 @pytest.fixture
 def custom_xy_project():
     """Add parameters to the default project for a non polarised calculation and use the custom xy model."""
-    test_project = RAT.Project(model=RAT.utils.enums.Models.CustomXY)
+    test_project = RAT.Project(model=LayerModels.CustomXY)
     test_project.parameters.append(name='Test SLD')
     test_project.custom_files.append(name='Test Custom File', filename='matlab_test.m', language='matlab')
     test_project.contrasts.append(name='Test Contrast', data='Simulation', background='Background 1', bulk_in='SLD Air',
@@ -56,9 +56,9 @@ def custom_xy_project():
 def standard_layers_problem():
     """The expected problem object from "standard_layers_project"."""
     problem = ProblemDefinition()
-    problem.TF = RAT.utils.enums.Calculations.NonPolarised
-    problem.modelType = RAT.utils.enums.Models.StandardLayers
-    problem.geometry = RAT.utils.enums.Geometries.AirSubstrate
+    problem.TF = Calculations.NonPolarised
+    problem.modelType = LayerModels.StandardLayers
+    problem.geometry = Geometries.AirSubstrate
     problem.useImaginary = False
     problem.params = [3.0, 0.0]
     problem.bulkIn = [0.0]
@@ -96,9 +96,9 @@ def standard_layers_problem():
 def domains_problem():
     """The expected problem object from "standard_layers_project"."""
     problem = ProblemDefinition()
-    problem.TF = RAT.utils.enums.Calculations.Domains
-    problem.modelType = RAT.utils.enums.Models.StandardLayers
-    problem.geometry = RAT.utils.enums.Geometries.AirSubstrate
+    problem.TF = Calculations.Domains
+    problem.modelType = LayerModels.StandardLayers
+    problem.geometry = Geometries.AirSubstrate
     problem.useImaginary = False
     problem.params = [3.0, 0.0]
     problem.bulkIn = [0.0]
@@ -136,9 +136,9 @@ def domains_problem():
 def custom_xy_problem():
     """The expected problem object from "custom_xy_project"."""
     problem = ProblemDefinition()
-    problem.TF = RAT.utils.enums.Calculations.NonPolarised
-    problem.modelType = RAT.utils.enums.Models.CustomXY
-    problem.geometry = RAT.utils.enums.Geometries.AirSubstrate
+    problem.TF = Calculations.NonPolarised
+    problem.modelType = LayerModels.CustomXY
+    problem.geometry = Geometries.AirSubstrate
     problem.useImaginary = False
     problem.params = [3.0, 0.0]
     problem.bulkIn = [0.0]
@@ -190,8 +190,8 @@ def standard_layers_cells():
     cells.f12 = ['SLD D2O']
     cells.f13 = ['Resolution Param 1']
     cells.f14 = ['matlab_test']
-    cells.f15 = [RAT.models.Types.Constant]
-    cells.f16 = [RAT.models.Types.Constant]
+    cells.f15 = [TypeOptions.Constant]
+    cells.f16 = [TypeOptions.Constant]
     cells.f17 = [[0.0, 0.0, 0.0]]
     cells.f18 = []
     cells.f19 = []
@@ -218,8 +218,8 @@ def domains_cells():
     cells.f12 = ['SLD D2O']
     cells.f13 = ['Resolution Param 1']
     cells.f14 = ['matlab_test']
-    cells.f15 = [RAT.models.Types.Constant]
-    cells.f16 = [RAT.models.Types.Constant]
+    cells.f15 = [TypeOptions.Constant]
+    cells.f16 = [TypeOptions.Constant]
     cells.f17 = [[0.0, 0.0, 0.0]]
     cells.f18 = [[0, 1], [0, 1]]
     cells.f19 = [[1], [1]]
@@ -246,8 +246,8 @@ def custom_xy_cells():
     cells.f12 = ['SLD D2O']
     cells.f13 = ['Resolution Param 1']
     cells.f14 = ['matlab_test']
-    cells.f15 = [RAT.models.Types.Constant]
-    cells.f16 = [RAT.models.Types.Constant]
+    cells.f15 = [TypeOptions.Constant]
+    cells.f16 = [TypeOptions.Constant]
     cells.f17 = [[0.0, 0.0, 0.0]]
     cells.f18 = []
     cells.f19 = []
@@ -292,14 +292,14 @@ def domains_limits():
 def non_polarised_priors():
     """The expected priors object from "standard_layers_project" and "custom_xy_project"."""
     priors = Priors()
-    priors.param = [['Substrate Roughness', RAT.models.Priors.Uniform, 0.0, np.inf],
-                    ['Test SLD', RAT.models.Priors.Uniform, 0.0, np.inf]]
-    priors.backgroundParam = [['Background Param 1', RAT.models.Priors.Uniform, 0.0, np.inf]]
-    priors.qzshift = [['Qz shift 1', RAT.models.Priors.Uniform, 0.0, np.inf]]
-    priors.scalefactor = [['Scalefactor 1', RAT.models.Priors.Uniform, 0.0, np.inf]]
-    priors.bulkIn = [['SLD Air', RAT.models.Priors.Uniform, 0.0, np.inf]]
-    priors.bulkOut = [['SLD D2O', RAT.models.Priors.Uniform, 0.0, np.inf]]
-    priors.resolutionParam = [['Resolution Param 1', RAT.models.Priors.Uniform, 0.0, np.inf]]
+    priors.param = [['Substrate Roughness', RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
+                    ['Test SLD', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.backgroundParam = [['Background Param 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.qzshift = [['Qz shift 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.scalefactor = [['Scalefactor 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.bulkIn = [['SLD Air', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.bulkOut = [['SLD D2O', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.resolutionParam = [['Resolution Param 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.domainRatio = []
     priors.priorNames = ['Substrate Roughness', 'Test SLD', 'Background Param 1', 'Scalefactor 1', 'Qz shift 1',
                          'SLD Air', 'SLD D2O', 'Resolution Param 1']
@@ -313,15 +313,15 @@ def non_polarised_priors():
 def domains_priors():
     """The expected priors object from "domains_project"."""
     priors = Priors()
-    priors.param = [['Substrate Roughness', RAT.models.Priors.Uniform, 0.0, np.inf],
-                    ['Test SLD', RAT.models.Priors.Uniform, 0.0, np.inf]]
-    priors.backgroundParam = [['Background Param 1', RAT.models.Priors.Uniform, 0.0, np.inf]]
-    priors.qzshift = [['Qz shift 1', RAT.models.Priors.Uniform, 0.0, np.inf]]
-    priors.scalefactor = [['Scalefactor 1', RAT.models.Priors.Uniform, 0.0, np.inf]]
-    priors.bulkIn = [['SLD Air', RAT.models.Priors.Uniform, 0.0, np.inf]]
-    priors.bulkOut = [['SLD D2O', RAT.models.Priors.Uniform, 0.0, np.inf]]
-    priors.resolutionParam = [['Resolution Param 1', RAT.models.Priors.Uniform, 0.0, np.inf]]
-    priors.domainRatio = [['Domain Ratio 1', RAT.models.Priors.Uniform, 0.0, np.inf]]
+    priors.param = [['Substrate Roughness', RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
+                    ['Test SLD', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.backgroundParam = [['Background Param 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.qzshift = [['Qz shift 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.scalefactor = [['Scalefactor 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.bulkIn = [['SLD Air', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.bulkOut = [['SLD D2O', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.resolutionParam = [['Resolution Param 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.domainRatio = [['Domain Ratio 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.priorNames = ['Substrate Roughness', 'Test SLD', 'Background Param 1', 'Scalefactor 1', 'Qz shift 1',
                          'SLD Air', 'SLD D2O', 'Resolution Param 1', 'Domain Ratio 1']
     priors.priorValues = [[1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf],
@@ -336,11 +336,11 @@ def standard_layers_controls():
     "standard_layers_project".
     """
     controls = Control()
-    controls.procedure = RAT.utils.enums.Procedures.Calculate
-    controls.parallel = RAT.utils.enums.Parallel.Single
+    controls.procedure = Procedures.Calculate
+    controls.parallel = Parallel.Single
     controls.calcSldDuringFit = False
     controls.resampleParams = [0.9, 50.0]
-    controls.display = RAT.utils.enums.Display.Iter
+    controls.display = Display.Iter
     controls.xTolerance = 1.0e-6
     controls.funcTolerance = 1.0e-6
     controls.maxFuncEvals = 10000
@@ -361,7 +361,7 @@ def standard_layers_controls():
     controls.nChains = 10
     controls.jumpProbability = 0.5
     controls.pUnitGamma = 0.2
-    controls.boundHandling = RAT.utils.enums.BoundHandling.Fold
+    controls.boundHandling = BoundHandling.Fold
     controls.checks.fitParam = [1, 0]
     controls.checks.fitBackgroundParam = [0]
     controls.checks.fitQzshift = [0]
@@ -379,11 +379,11 @@ def custom_xy_controls():
     """The expected controls object for input to the compiled RAT code given the default inputs and "custom_xy_project".
     """
     controls = Control()
-    controls.procedure = RAT.utils.enums.Procedures.Calculate
-    controls.parallel = RAT.utils.enums.Parallel.Single
+    controls.procedure = Procedures.Calculate
+    controls.parallel = Parallel.Single
     controls.calcSldDuringFit = True
     controls.resampleParams = [0.9, 50.0]
-    controls.display = RAT.utils.enums.Display.Iter
+    controls.display = Display.Iter
     controls.xTolerance = 1.0e-6
     controls.funcTolerance = 1.0e-6
     controls.maxFuncEvals = 10000
@@ -404,7 +404,7 @@ def custom_xy_controls():
     controls.nChains = 10
     controls.jumpProbability = 0.5
     controls.pUnitGamma = 0.2
-    controls.boundHandling = RAT.utils.enums.BoundHandling.Fold
+    controls.boundHandling = BoundHandling.Fold
     controls.checks.fitParam = [1, 0]
     controls.checks.fitBackgroundParam = [0]
     controls.checks.fitQzshift = [0]
@@ -455,7 +455,7 @@ def test_make_input(test_project, test_problem, test_cells, test_limits, test_pr
     parameter_fields = ["param", "backgroundParam", "scalefactor", "qzshift", "bulkIn", "bulkOut", "resolutionParam",
                         "domainRatio"]
 
-    problem, cells, limits, priors, controls = make_input(test_project, set_controls())
+    problem, cells, limits, priors, controls = make_input(test_project, RAT.set_controls())
 
     check_problem_equal(problem, test_problem)
     check_cells_equal(cells, test_cells)
@@ -504,7 +504,7 @@ def test_make_controls(standard_layers_controls, test_checks) -> None:
     """The controls object should contain the full set of controls parameters, with the appropriate set defined by the
     input controls.
     """
-    controls = make_controls(set_controls(), test_checks)
+    controls = make_controls(RAT.set_controls(), test_checks)
     check_controls_equal(controls, standard_layers_controls)
 
 

@@ -4,10 +4,8 @@ import pathlib
 from typing import Union
 
 import RAT
-import RAT.project
-import RAT.wrappers
-import RAT.utils.dataclasses
-from RAT.utils.enums import Calculations, Languages, Models
+import RAT.controls
+from RAT.utils.enums import Calculations, LayerModels
 
 from RAT.rat_core import Cells, Checks, Control, Limits, Priors, ProblemDefinition
 
@@ -79,7 +77,7 @@ def make_input(project: RAT.Project, controls: Union[RAT.controls.Calculate, RAT
                           for class_list in RAT.project.parameter_class_lists
                           for param in getattr(project, class_list)]
 
-    if project.model == Models.CustomXY:
+    if project.model == LayerModels.CustomXY:
         controls.calcSldDuringFit = True
 
     cpp_controls = make_controls(controls, checks)
@@ -103,10 +101,10 @@ def make_problem(project: RAT.Project) -> ProblemDefinition:
     action_id = {'add': 1, 'subtract': 2}
 
     # Set contrast parameters according to model type
-    if project.model == Models.StandardLayers:
+    if project.model == LayerModels.StandardLayers:
         contrast_custom_files = [float('NaN')] * len(project.contrasts)
     else:
-        contrast_custom_files = [project.custom_files.index(contrast.model[0], 1) for contrast in project.contrasts]
+        contrast_custom_files = [project.custom_files.index(contrast.model[0], True) for contrast in project.contrasts]
 
     problem = ProblemDefinition()
 
@@ -122,15 +120,15 @@ def make_problem(project: RAT.Project) -> ProblemDefinition:
     problem.domainRatio = [param.value for param in project.domain_ratios]
     problem.backgroundParams = [param.value for param in project.background_parameters]
     problem.resolutionParams = [param.value for param in project.resolution_parameters]
-    problem.contrastBulkIns = [project.bulk_in.index(contrast.bulk_in, 1) for contrast in project.contrasts]
-    problem.contrastBulkOuts = [project.bulk_out.index(contrast.bulk_out, 1) for contrast in project.contrasts]
+    problem.contrastBulkIns = [project.bulk_in.index(contrast.bulk_in, True) for contrast in project.contrasts]
+    problem.contrastBulkOuts = [project.bulk_out.index(contrast.bulk_out, True) for contrast in project.contrasts]
     problem.contrastQzshifts = [1] * len(project.contrasts)  # This is marked as "to do" in RAT
-    problem.contrastScalefactors = [project.scalefactors.index(contrast.scalefactor, 1) for contrast in project.contrasts]
-    problem.contrastDomainRatios = [project.domain_ratios.index(contrast.domain_ratio, 1)
+    problem.contrastScalefactors = [project.scalefactors.index(contrast.scalefactor, True) for contrast in project.contrasts]
+    problem.contrastDomainRatios = [project.domain_ratios.index(contrast.domain_ratio, True)
                                     if hasattr(contrast, 'domain_ratio') else 0 for contrast in project.contrasts]
-    problem.contrastBackgrounds = [project.backgrounds.index(contrast.background, 1) for contrast in project.contrasts]
+    problem.contrastBackgrounds = [project.backgrounds.index(contrast.background, True) for contrast in project.contrasts]
     problem.contrastBackgroundActions = [action_id[contrast.background_action] for contrast in project.contrasts]
-    problem.contrastResolutions = [project.resolutions.index(contrast.resolution, 1) for contrast in project.contrasts]
+    problem.contrastResolutions = [project.resolutions.index(contrast.resolution, True) for contrast in project.contrasts]
     problem.contrastCustomFiles = contrast_custom_files
     problem.resample = [contrast.resample for contrast in project.contrasts]
     problem.dataPresent = [1 if contrast.data else 0 for contrast in project.contrasts]
@@ -169,12 +167,12 @@ def make_cells(project: RAT.Project) -> Cells:
     hydrate_id = {'bulk in': 1, 'bulk out': 2}
 
     # Set contrast parameters according to model type
-    if project.model == Models.StandardLayers:
+    if project.model == LayerModels.StandardLayers:
         if project.calculation == Calculations.Domains:
-            contrast_models = [[project.domain_contrasts.index(domain_contrast, 1) for domain_contrast in contrast.model]
+            contrast_models = [[project.domain_contrasts.index(domain_contrast, True) for domain_contrast in contrast.model]
                                for contrast in project.contrasts]
         else:
-            contrast_models = [[project.layers.index(layer, 1) for layer in contrast.model]
+            contrast_models = [[project.layers.index(layer, True) for layer in contrast.model]
                                for contrast in project.contrasts]
     else:
         contrast_models = [[]] * len(project.contrasts)
@@ -183,8 +181,8 @@ def make_cells(project: RAT.Project) -> Cells:
     layer_details = []
     for layer in project.layers:
 
-        layer_params = []#[project.parameters.index(getattr(layer, attribute), 1) for attribute in list(layer.model_fields.keys())[1:-2]]
-        layer_params.append(project.parameters.index(layer.hydration, 1) if layer.hydration else float('NaN'))
+        layer_params = []#[project.parameters.index(getattr(layer, attribute), True) for attribute in list(layer.model_fields.keys())[1:-2]]
+        layer_params.append(project.parameters.index(layer.hydration, True) if layer.hydration else float('NaN'))
         layer_params.append(hydrate_id[layer.hydrate_with])
 
         layer_details.append(layer_params)
@@ -214,7 +212,7 @@ def make_cells(project: RAT.Project) -> Cells:
     cells.f3 = data_limits
     cells.f4 = simulation_limits
     cells.f5 = [contrast_model if contrast_model else 0 for contrast_model in contrast_models]
-    #cells.f6 = layer_details if project.model == Models.StandardLayers else [0]
+    #cells.f6 = layer_details if project.model == LayerModels.StandardLayers else [0]
     cells.f7 = [param.name for param in project.parameters]
     cells.f8 = [param.name for param in project.background_parameters]
     cells.f9 = [param.name for param in project.scalefactors]
@@ -229,7 +227,7 @@ def make_cells(project: RAT.Project) -> Cells:
     cells.f17 = [[0.0, 0.0, 0.0]] * len(project.contrasts)  # Placeholder for oil chi data
     cells.f18 = [[0, 1]] * len(project.domain_contrasts)  # This is marked as "to do" in RAT
 
-    domain_contrast_models = [[project.layers.index(layer, 1) for layer in domain_contrast.model]
+    domain_contrast_models = [[project.layers.index(layer, True) for layer in domain_contrast.model]
                               for domain_contrast in project.domain_contrasts]
     cells.f19 = [domain_contrast_model if domain_contrast_model else 0
                  for domain_contrast_model in domain_contrast_models]
@@ -256,7 +254,7 @@ def make_controls(controls: Union[RAT.controls.Calculate, RAT.controls.Simplex, 
         The controls object used in the compiled RAT code.
     """
 
-    full_controls = RAT.utils.dataclasses.Controls(**controls.model_dump())
+    full_controls = RAT.controls.Controls(**controls.model_dump())
     cpp_controls = Control()
 
     cpp_controls.procedure = full_controls.procedure

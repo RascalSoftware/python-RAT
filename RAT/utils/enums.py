@@ -67,13 +67,13 @@ class Priors(StrEnum):
     Gaussian = 'gaussian'
 
 
-class Types(StrEnum):
+class TypeOptions(StrEnum):
     Constant = 'constant'
     Data = 'data'
     Function = 'function'
 
 
-class Actions(StrEnum):
+class BackgroundActions(StrEnum):
     Add = 'add'
     Subtract = 'subtract'
 
@@ -89,7 +89,7 @@ class Geometries(StrEnum):
     SubstrateLiquid = 'substrate/liquid'
 
 
-class Models(StrEnum):
+class LayerModels(StrEnum):
     CustomLayers = 'custom layers'
     CustomXY = 'custom xy'
     StandardLayers = 'standard layers'

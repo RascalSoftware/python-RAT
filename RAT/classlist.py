@@ -198,13 +198,12 @@ class ClassList(collections.UserList):
         item = self._get_item_from_name_field(item)
         return self.data.count(item)
 
-    def index(self, item: Union[object, str], offset: int = 0, *args) -> int:
+    def index(self, item: Union[object, str], offset: bool = False, *args) -> int:
         """Return the index of a particular object in the ClassList using either the object itself or its
-        name_field value. If an offset is specified, add this value to the index. This is used to account for one-based
-        indexing.
+        name_field value. If offset is specified, add one to the index. This is used to account for one-based indexing.
         """
         item = self._get_item_from_name_field(item)
-        return self.data.index(item, *args) + offset
+        return self.data.index(item, *args) + int(offset)
 
     def extend(self, other: Sequence[object]) -> None:
         """Extend the ClassList by adding another sequence."""

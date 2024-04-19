@@ -4,7 +4,7 @@ import numpy as np
 from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
 from typing import Any
 
-from RAT.utils.enums import Actions, Hydration, Languages, Priors, Types
+from RAT.utils.enums import BackgroundActions, Hydration, Languages, Priors, TypeOptions
 
 try:
     from enum import StrEnum
@@ -46,7 +46,7 @@ class RATModel(BaseModel, validate_assignment=True, extra='forbid'):
 class Background(RATModel):
     """Defines the Backgrounds in RAT."""
     name: str = Field(default_factory=lambda: 'New Background ' + next(background_number), min_length=1)
-    type: Types = Types.Constant
+    type: TypeOptions = TypeOptions.Constant
     value_1: str = ''
     value_2: str = ''
     value_3: str = ''
@@ -59,7 +59,7 @@ class Contrast(RATModel):
     name: str = Field(default_factory=lambda: 'New Contrast ' + next(contrast_number), min_length=1)
     data: str = ''
     background: str = ''
-    background_action: Actions = Actions.Add
+    background_action: BackgroundActions = BackgroundActions.Add
     bulk_in: str = ''
     bulk_out: str = ''
     scalefactor: str = ''
@@ -73,7 +73,7 @@ class ContrastWithRatio(RATModel):
     name: str = Field(default_factory=lambda: 'New Contrast ' + next(contrast_number), min_length=1)
     data: str = ''
     background: str = ''
-    background_action: Actions = Actions.Add
+    background_action: BackgroundActions = BackgroundActions.Add
     bulk_in: str = ''
     bulk_out: str = ''
     scalefactor: str = ''
@@ -233,7 +233,7 @@ class ProtectedParameter(Parameter):
 class Resolution(RATModel):
     """Defines Resolutions in RAT."""
     name: str = Field(default_factory=lambda: 'New Resolution ' + next(resolution_number), min_length=1)
-    type: Types = Types.Constant
+    type: TypeOptions = TypeOptions.Constant
     value_1: str = ''
     value_2: str = ''
     value_3: str = ''

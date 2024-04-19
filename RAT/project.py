@@ -11,7 +11,7 @@ from typing import Any, Callable
 from RAT.classlist import ClassList
 import RAT.models
 from RAT.utils.custom_errors import custom_pydantic_validation_error
-from RAT.utils.enums import Calculations, Geometries, Models
+from RAT.utils.enums import Calculations, Geometries, LayerModels, Priors, TypeOptions
 
 
 # Map project fields to pydantic models
@@ -87,44 +87,44 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
     """
     name: str = ''
     calculation: Calculations = Calculations.NonPolarised
-    model: Models = Models.StandardLayers
+    model: LayerModels = LayerModels.StandardLayers
     geometry: Geometries = Geometries.AirSubstrate
     absorption: bool = False
 
     parameters: ClassList = ClassList()
 
     bulk_in: ClassList = ClassList(RAT.models.Parameter(name='SLD Air', min=0.0, value=0.0, max=0.0, fit=False,
-                                                        prior_type=RAT.models.Priors.Uniform, mu=0.0, sigma=np.inf))
+                                                        prior_type=Priors.Uniform, mu=0.0, sigma=np.inf))
 
     bulk_out: ClassList = ClassList(RAT.models.Parameter(name='SLD D2O', min=6.2e-6, value=6.35e-6, max=6.35e-6,
-                                                         fit=False, prior_type=RAT.models.Priors.Uniform, mu=0.0,
+                                                         fit=False, prior_type=Priors.Uniform, mu=0.0,
                                                          sigma=np.inf))
 
     qz_shifts: ClassList = ClassList(RAT.models.Parameter(name='Qz shift 1', min=-1e-4, value=0.0, max=1e-4, fit=False,
-                                                          prior_type=RAT.models.Priors.Uniform, mu=0.0, sigma=np.inf))
+                                                          prior_type=Priors.Uniform, mu=0.0, sigma=np.inf))
 
     scalefactors: ClassList = ClassList(RAT.models.Parameter(name='Scalefactor 1', min=0.02, value=0.23, max=0.25,
-                                                             fit=False, prior_type=RAT.models.Priors.Uniform, mu=0.0,
+                                                             fit=False, prior_type=Priors.Uniform, mu=0.0,
                                                              sigma=np.inf))
 
     domain_ratios: ClassList = ClassList(RAT.models.Parameter(name='Domain Ratio 1', min=0.4, value=0.5, max=0.6,
-                                                              fit=False, prior_type=RAT.models.Priors.Uniform, mu=0.0,
+                                                              fit=False, prior_type=Priors.Uniform, mu=0.0,
                                                               sigma=np.inf))
 
     background_parameters: ClassList = ClassList(RAT.models.Parameter(name='Background Param 1', min=1e-7, value=1e-6,
                                                                       max=1e-5, fit=False,
-                                                                      prior_type=RAT.models.Priors.Uniform, mu=0.0,
+                                                                      prior_type=Priors.Uniform, mu=0.0,
                                                                       sigma=np.inf))
 
-    backgrounds: ClassList = ClassList(RAT.models.Background(name='Background 1', type=RAT.models.Types.Constant,
+    backgrounds: ClassList = ClassList(RAT.models.Background(name='Background 1', type=TypeOptions.Constant,
                                                              value_1='Background Param 1'))
 
     resolution_parameters: ClassList = ClassList(RAT.models.Parameter(name='Resolution Param 1', min=0.01, value=0.03,
                                                                       max=0.05, fit=False,
-                                                                      prior_type=RAT.models.Priors.Uniform, mu=0.0,
+                                                                      prior_type=Priors.Uniform, mu=0.0,
                                                                       sigma=np.inf))
 
-    resolutions: ClassList = ClassList(RAT.models.Resolution(name='Resolution 1', type=RAT.models.Types.Constant,
+    resolutions: ClassList = ClassList(RAT.models.Resolution(name='Resolution 1', type=TypeOptions.Constant,
                                                              value_1='Resolution Param 1'))
 
     custom_files: ClassList = ClassList()
@@ -217,14 +217,14 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         """If we are not running a domains calculation with standard layers, ensure the domain_contrasts component of
         the model is empty.
         """
-        if not (self.calculation == Calculations.Domains and self.model == Models.StandardLayers):
+        if not (self.calculation == Calculations.Domains and self.model == LayerModels.StandardLayers):
             self.domain_contrasts.data = []
         return self
 
     @model_validator(mode='after')
     def set_layers(self) -> 'Project':
         """If we are not using a standard layers model, ensure the layers component of the model is empty."""
-        if self.model != Models.StandardLayers:
+        if self.model != LayerModels.StandardLayers:
             self.layers.data = []
         return self
 
@@ -267,12 +267,12 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         """Given certain values of the "calculation" and "model" defined in the project, the "model" field of "contrasts"
         may be constrained in its length.
         """
-        if self.model == Models.StandardLayers and self.calculation == Calculations.Domains:
+        if self.model == LayerModels.StandardLayers and self.calculation == Calculations.Domains:
             for contrast in self.contrasts:
                 if contrast.model and len(contrast.model) != 2:
                     raise ValueError('For a standard layers domains calculation the "model" field of "contrasts" must '
                                      'contain exactly two values.')
-        elif self.model != Models.StandardLayers:
+        elif self.model != LayerModels.StandardLayers:
             for contrast in self.contrasts:
                 if len(contrast.model) > 1:
                     raise ValueError('For a custom model calculation the "model" field of "contrasts" cannot contain '
@@ -434,7 +434,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         model_field : str
             The name of the field used to define the contrasts' model field.
         """
-        if self.model == Models.StandardLayers:
+        if self.model == LayerModels.StandardLayers:
             if self.calculation == Calculations.Domains:
                 model_field = 'domain_contrasts'
             else:
@@ -480,7 +480,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
                     f.write(f'{indent}{class_list}=RAT.ClassList({contents}),\n')
             f.write(f'{indent})\n')
 
-    def _classlist_wrapper(self, class_list: 'ClassList', func: Callable):
+    def _classlist_wrapper(self, class_list: ClassList, func: Callable):
         """Defines the function used to wrap around ClassList routines to force revalidation.
 
         Parameters
