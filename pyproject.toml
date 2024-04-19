@@ -9,7 +9,7 @@ build-backend = 'setuptools.build_meta'
 dependencies = [
     'numpy >= 1.20',
     'prettytable>=3.9.0',
-    'pydantic==2.6.4',
+    'pydantic>=2.4.2,<=2.6.4',
     'StrEnum>=0.4.15; python_version<"3.11"',
 ]
 
