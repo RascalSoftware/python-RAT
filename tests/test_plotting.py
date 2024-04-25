@@ -2,6 +2,7 @@ import os
 import re
 import csv
 import pytest
+import pickle
 from unittest.mock import patch
 from unittest.mock import MagicMock
 import numpy as np
@@ -11,36 +12,26 @@ from RAT.utils.plotting import RATPlots
 
 
 TEST_DIR_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                             'test_data', 'plotting')
+                             'test_data')
 
-
-def import_data(filename:  str):
-    """
-    Imports data from the csv files
-    """
-    all_data = []
-    for num in ['1', '2', '3']:
-        file_path = os.path.join(TEST_DIR_PATH, f'{filename}_{num}.csv')
-        with open(file_path, mode='r', encoding='utf-8-sig') as csvfile:
-            data_csv = list(csv.reader(csvfile,
-                                       delimiter=',',
-                                       quoting=csv.QUOTE_NONNUMERIC))
-        all_data.append([np.array(data_csv)])
-    return all_data
 
 def data() -> PlotEventData:
     """
     Creates the fixture for the tests.
     """
+    data_path = os.path.join(TEST_DIR_PATH, 'plotting_data.pickle')    
+    with open(data_path, 'rb') as f:
+        loaded_data = pickle.load(f)
+    
     data = PlotEventData()
-    data.modelType = 'custom xy'
-    data.dataPresent = [1, 1, 1]
-    data.subRoughs = [0, 0, 0]
-    data.resample = [0, 0, 0]
-    data.resampledLayers = import_data('all_layers')
-    data.reflectivity = import_data('reflectivity')
-    data.shiftedData = import_data('shifted_data')
-    data.sldProfiles = import_data('sld_profiles')
+    data.modelType = loaded_data['modelType']
+    data.dataPresent = loaded_data['dataPresent']
+    data.subRoughs = loaded_data['subRoughs']
+    data.resample = loaded_data['resample']
+    data.resampledLayers = loaded_data['resampledLayers']
+    data.reflectivity = loaded_data['reflectivity']
+    data.shiftedData = loaded_data['shiftedData']
+    data.sldProfiles = loaded_data['sldProfiles']
     return data
 
 
