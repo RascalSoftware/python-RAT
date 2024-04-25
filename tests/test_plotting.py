@@ -7,7 +7,7 @@ from unittest.mock import MagicMock
 import numpy as np
 import matplotlib.pyplot as plt
 from RAT.rat_core import PlotEventData
-from RAT.plotting import RATPlots
+from RAT.utils.plotting import RATPlots
 
 
 TEST_DIR_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)),
@@ -121,8 +121,38 @@ def test_eventhandlers_linked_to_figure(rat_plots: RATPlots) -> None:
     assert key_press_event_callback == "_process_button_press"
     assert hasattr(RATPlots, "_process_button_press")
 
-    
-@patch("RAT.plotting.makeSLDProfileXY")   
+def test_eventhandler_variable_update(rat_plots: RATPlots) -> None:
+    """
+    Tests whether the eventhandlers for close_event
+    and key_press_event update variables that stop
+    while loop in wait_for_close.
+    """
+    assert not rat_plots._esc_pressed
+    on_key_mock_event = type('MockEvent', (object,), {'key': 'escape'})
+    rat_plots._process_button_press(on_key_mock_event)
+    assert rat_plots._esc_pressed
+
+    assert not rat_plots._close_clicked
+    plt.close(rat_plots._fig)
+    assert rat_plots._close_clicked
+
+
+@patch("RAT.utils.plotting.plt.waitforbuttonpress")  
+def test_wait_for_close(mock: MagicMock, rat_plots: RATPlots) -> None:
+    """
+    Tests the _wait_for_close method stops the
+    while loop when _esc_pressed is True.
+    """
+    def mock_wait_for_button_press(timeout):
+        rat_plots._esc_pressed = True
+
+    mock.side_effect = mock_wait_for_button_press
+    assert not rat_plots._esc_pressed
+    rat_plots.wait_for_close()
+    assert rat_plots._esc_pressed
+
+
+@patch("RAT.utils.plotting.makeSLDProfileXY")   
 def test_sld_profile_function_call(mock: MagicMock) -> None:
     """
     Tests the makeSLDProfileXY function called with

@@ -1,7 +1,6 @@
 """
 Plots using the matplotlib library
 """
-import os
 import matplotlib.pyplot as plt
 import numpy as np
 from RAT.rat_core import PlotEventData, makeSLDProfileXY
@@ -27,9 +26,6 @@ class RATPlots:
                                      self._process_button_press)
         self._fig.canvas.mpl_connect('close_event',
                                      self._close)
-        if 'set_icon' in dir(plt.get_current_fig_manager()) :
-            logo_path = os.path.join('images', 'RAT-logo.png')
-            plt.get_current_fig_manager().set_icon(logo_path)
 
     def _plot(self, data: PlotEventData):
         """
@@ -96,7 +92,7 @@ class RATPlots:
 
         Parameters
         ----------
-        sd : nparray
+        sd : np.ndarray
             The shifted data containing the x, y, e data
         div : int
             The divisor for the data
@@ -125,11 +121,11 @@ class RATPlots:
 
         Parameters
         ----------
-        x : nparray
+        x : np.ndarray
             The shifted data x axis data
-        y : nparray
+        y : np.ndarray
             The shifted data y axis data
-        err : nparray
+        err : np.ndarray
               The shifted data e data
         onesided : bool
             A boolean to indicate whether
