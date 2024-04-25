@@ -15,8 +15,7 @@ import RAT.models
     (RAT.models.CustomFile, "Custom File", {}),
     (RAT.models.Data, "Data", {}),
     (RAT.models.DomainContrast, "Domain Contrast", {}),
-    (RAT.models.Layer, "Layer", {'thickness': 'Test Thickness', 'SLD': 'Test SLD', 'roughness': 'Test Roughness',
-                                 'hydration': 'Test Hydration'}),
+    (RAT.models.Layer, "Layer", {'thickness': 'Test Thickness', 'SLD': 'Test SLD', 'roughness': 'Test Roughness'}),
     (RAT.models.Parameter, "Parameter", {}),
     (RAT.models.Resolution, "Resolution", {}),
 ])
@@ -42,10 +41,9 @@ def test_default_names(model: Callable, model_name: str, model_params: dict) -> 
     (RAT.models.CustomFile, {}),
     (RAT.models.Data, {}),
     (RAT.models.DomainContrast, {}),
-    (RAT.models.Layer, {'thickness': 'Test Thickness', 'SLD': 'Test SLD', 'roughness': 'Test Roughness',
-                        'hydration': 'Test Hydration'}),
+    (RAT.models.Layer, {'thickness': 'Test Thickness', 'SLD': 'Test SLD', 'roughness': 'Test Roughness'}),
     (RAT.models.AbsorptionLayer, {'thickness': 'Test Thickness', 'SLD_real': 'Test SLD', 'SLD_imaginary': 'Test SLD',
-                                  'roughness': 'Test Roughness', 'hydration': 'Test Hydration'}),
+                                  'roughness': 'Test Roughness'}),
     (RAT.models.Parameter, {}),
     (RAT.models.Resolution, {}),
 ])

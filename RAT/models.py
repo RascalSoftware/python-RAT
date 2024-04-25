@@ -191,7 +191,7 @@ class Layer(RATModel, populate_by_name=True):
     thickness: str
     SLD: str = Field(validation_alias='SLD_real')
     roughness: str
-    hydration: str
+    hydration: str = ''
     hydrate_with: Hydration = Hydration.BulkOut
 
 
@@ -202,7 +202,7 @@ class AbsorptionLayer(RATModel, populate_by_name=True):
     SLD_real: str = Field(validation_alias='SLD')
     SLD_imaginary: str = ''
     roughness: str
-    hydration: str
+    hydration: str = ''
     hydrate_with: Hydration = Hydration.BulkOut
 
 

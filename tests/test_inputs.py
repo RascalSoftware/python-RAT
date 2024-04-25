@@ -1,5 +1,6 @@
 """Test the inputs module."""
 
+from itertools import chain
 import numpy as np
 import pytest
 
@@ -18,10 +19,8 @@ def standard_layers_project():
     test_project.parameters.append(name='Test Thickness')
     test_project.parameters.append(name='Test SLD')
     test_project.parameters.append(name='Test Roughness')
-    test_project.parameters.append(name='Test Hydration')
     test_project.custom_files.append(name='Test Custom File', filename='matlab_test.m', language='matlab')
-    test_project.layers.append(name='Test Layer', thickness='Test Thickness', SLD='Test SLD', roughness='Test Roughness',
-                               hydration='Test Hydration')
+    test_project.layers.append(name='Test Layer', thickness='Test Thickness', SLD='Test SLD', roughness='Test Roughness')
     test_project.contrasts.append(name='Test Contrast', data='Simulation', background='Background 1', bulk_in='SLD Air',
                                   bulk_out='SLD D2O', scalefactor='Scalefactor 1', resolution='Resolution 1',
                                   model=['Test Layer'])
@@ -36,10 +35,8 @@ def domains_project():
     test_project.parameters.append(name='Test Thickness')
     test_project.parameters.append(name='Test SLD')
     test_project.parameters.append(name='Test Roughness')
-    test_project.parameters.append(name='Test Hydration')
     test_project.custom_files.append(name='Test Custom File', filename='matlab_test.m', language='matlab')
-    test_project.layers.append(name='Test Layer', thickness='Test Thickness', SLD='Test SLD', roughness='Test Roughness',
-                               hydration='Test Hydration')
+    test_project.layers.append(name='Test Layer', thickness='Test Thickness', SLD='Test SLD', roughness='Test Roughness')
     test_project.domain_contrasts.append(name='up', model=['Test Layer'])
     test_project.domain_contrasts.append(name='down', model=['Test Layer'])
     test_project.contrasts.append(name='Test Contrast', data='Simulation', background='Background 1', bulk_in='SLD Air',
@@ -55,7 +52,6 @@ def custom_xy_project():
     test_project.parameters.append(name='Test Thickness')
     test_project.parameters.append(name='Test SLD')
     test_project.parameters.append(name='Test Roughness')
-    test_project.parameters.append(name='Test Hydration')
     test_project.custom_files.append(name='Test Custom File', filename='matlab_test.m', language='matlab')
     test_project.contrasts.append(name='Test Contrast', data='Simulation', background='Background 1', bulk_in='SLD Air',
                                   bulk_out='SLD D2O', scalefactor='Scalefactor 1', resolution='Resolution 1',
@@ -71,7 +67,7 @@ def standard_layers_problem():
     problem.modelType = LayerModels.StandardLayers
     problem.geometry = Geometries.AirSubstrate
     problem.useImaginary = False
-    problem.params = [3.0, 0.0, 0.0, 0.0, 0.0]
+    problem.params = [3.0, 0.0, 0.0, 0.0]
     problem.bulkIn = [0.0]
     problem.bulkOut = [6.35e-06]
     problem.qzshifts = [0.0]
@@ -95,10 +91,10 @@ def standard_layers_problem():
     problem.numberOfLayers = 1
     problem.numberOfDomainContrasts = 0
     problem.fitParams = [3.0]
-    problem.otherParams = [0.0, 0.0, 0.0, 0.0, 1e-06, 0.23, 0.0, 0.0, 6.35e-06, 0.03]
+    problem.otherParams = [0.0, 0.0, 0.0, 1e-06, 0.23, 0.0, 0.0, 6.35e-06, 0.03]
     problem.fitLimits = [[1.0, 5.0]]
-    problem.otherLimits = [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [1e-07, 1e-05], [0.02, 0.25],
-                           [-0.0001, 0.0001], [0.0, 0.0], [6.2e-06, 6.35e-06], [0.01, 0.05]]
+    problem.otherLimits = [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [1e-07, 1e-05], [0.02, 0.25], [-0.0001, 0.0001],
+                           [0.0, 0.0], [6.2e-06, 6.35e-06], [0.01, 0.05]]
 
     return problem
 
@@ -111,7 +107,7 @@ def domains_problem():
     problem.modelType = LayerModels.StandardLayers
     problem.geometry = Geometries.AirSubstrate
     problem.useImaginary = False
-    problem.params = [3.0, 0.0, 0.0, 0.0, 0.0]
+    problem.params = [3.0, 0.0, 0.0, 0.0]
     problem.bulkIn = [0.0]
     problem.bulkOut = [6.35e-06]
     problem.qzshifts = [0.0]
@@ -135,10 +131,10 @@ def domains_problem():
     problem.numberOfLayers = 1
     problem.numberOfDomainContrasts = 2
     problem.fitParams = [3.0]
-    problem.otherParams = [0.0, 0.0, 0.0, 0.0, 1e-06, 0.23, 0.0, 0.0, 6.35e-06, 0.03, 0.5]
+    problem.otherParams = [0.0, 0.0, 0.0, 1e-06, 0.23, 0.0, 0.0, 6.35e-06, 0.03, 0.5]
     problem.fitLimits = [[1.0, 5.0]]
-    problem.otherLimits = [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [1e-07, 1e-05], [0.02, 0.25],
-                           [-0.0001, 0.0001], [0.0, 0.0], [6.2e-06, 6.35e-06], [0.01, 0.05], [0.4, 0.6]]
+    problem.otherLimits = [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [1e-07, 1e-05], [0.02, 0.25], [-0.0001, 0.0001],
+                           [0.0, 0.0], [6.2e-06, 6.35e-06], [0.01, 0.05], [0.4, 0.6]]
 
     return problem
 
@@ -151,7 +147,7 @@ def custom_xy_problem():
     problem.modelType = LayerModels.CustomXY
     problem.geometry = Geometries.AirSubstrate
     problem.useImaginary = False
-    problem.params = [3.0, 0.0, 0.0, 0.0, 0.0]
+    problem.params = [3.0, 0.0, 0.0, 0.0]
     problem.bulkIn = [0.0]
     problem.bulkOut = [6.35e-06]
     problem.qzshifts = [0.0]
@@ -175,10 +171,10 @@ def custom_xy_problem():
     problem.numberOfLayers = 0
     problem.numberOfDomainContrasts = 0
     problem.fitParams = [3.0]
-    problem.otherParams = [0.0, 0.0, 0.0, 0.0, 1e-06, 0.23, 0.0, 0.0, 6.35e-06, 0.03]
+    problem.otherParams = [0.0, 0.0, 0.0, 1e-06, 0.23, 0.0, 0.0, 6.35e-06, 0.03]
     problem.fitLimits = [[1.0, 5.0]]
-    problem.otherLimits = [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [1e-07, 1e-05], [0.02, 0.25],
-                           [-0.0001, 0.0001], [0.0, 0.0], [6.2e-06, 6.35e-06], [0.01, 0.05]]
+    problem.otherLimits = [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [1e-07, 1e-05], [0.02, 0.25], [-0.0001, 0.0001],
+                           [0.0, 0.0], [6.2e-06, 6.35e-06], [0.01, 0.05]]
 
     return problem
 
@@ -192,8 +188,8 @@ def standard_layers_cells():
     cells.f3 = [[1.0, 1.0]]
     cells.f4 = [[1.0, 1.0]]
     cells.f5 = [[1]]
-    cells.f6 = [[2, 3, 4, 5, 2]]
-    cells.f7 = ['Substrate Roughness', 'Test Thickness', 'Test SLD', 'Test Roughness', 'Test Hydration']
+    cells.f6 = [[2, 3, 4, float('nan'), 2]]
+    cells.f7 = ['Substrate Roughness', 'Test Thickness', 'Test SLD', 'Test Roughness']
     cells.f8 = ['Background Param 1']
     cells.f9 = ['Scalefactor 1']
     cells.f10 = ['Qz shift 1']
@@ -220,8 +216,8 @@ def domains_cells():
     cells.f3 = [[1.0, 1.0]]
     cells.f4 = [[1.0, 1.0]]
     cells.f5 = [[2, 1]]
-    cells.f6 = [[2, 3, 4, 5, 2]]
-    cells.f7 = ['Substrate Roughness', 'Test Thickness', 'Test SLD', 'Test Roughness', 'Test Hydration']
+    cells.f6 = [[2, 3, 4, float('nan'), 2]]
+    cells.f7 = ['Substrate Roughness', 'Test Thickness', 'Test SLD', 'Test Roughness']
     cells.f8 = ['Background Param 1']
     cells.f9 = ['Scalefactor 1']
     cells.f10 = ['Qz shift 1']
@@ -249,7 +245,7 @@ def custom_xy_cells():
     cells.f4 = [[0.0, 0.0]]
     cells.f5 = [0]
     cells.f6 = [0]
-    cells.f7 = ['Substrate Roughness', 'Test Thickness', 'Test SLD', 'Test Roughness', 'Test Hydration']
+    cells.f7 = ['Substrate Roughness', 'Test Thickness', 'Test SLD', 'Test Roughness']
     cells.f8 = ['Background Param 1']
     cells.f9 = ['Scalefactor 1']
     cells.f10 = ['Qz shift 1']
@@ -271,7 +267,7 @@ def custom_xy_cells():
 def non_polarised_limits():
     """The expected limits object from "standard_layers_project" and "custom_xy_project"."""
     limits = Limits()
-    limits.param = [[1.0, 5.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]
+    limits.param = [[1.0, 5.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]
     limits.backgroundParam = [[1e-7, 1e-5]]
     limits.qzshift = [[-1e-4, 1e-4]]
     limits.scalefactor = [[0.02, 0.25]]
@@ -287,7 +283,7 @@ def non_polarised_limits():
 def domains_limits():
     """The expected limits object from "domains_project"."""
     limits = Limits()
-    limits.param = [[1.0, 5.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]
+    limits.param = [[1.0, 5.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]
     limits.backgroundParam = [[1e-7, 1e-5]]
     limits.qzshift = [[-1e-4, 1e-4]]
     limits.scalefactor = [[0.02, 0.25]]
@@ -306,8 +302,7 @@ def non_polarised_priors():
     priors.param = [['Substrate Roughness', RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
                     ['Test Thickness', RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
                     ['Test SLD', RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
-                    ['Test Roughness', RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
-                    ['Test Hydration', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+                    ['Test Roughness', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.backgroundParam = [['Background Param 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.qzshift = [['Qz shift 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.scalefactor = [['Scalefactor 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
@@ -315,11 +310,10 @@ def non_polarised_priors():
     priors.bulkOut = [['SLD D2O', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.resolutionParam = [['Resolution Param 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.domainRatio = []
-    priors.priorNames = ['Substrate Roughness', 'Test Thickness', 'Test SLD', 'Test Roughness', 'Test Hydration',
-                         'Background Param 1', 'Scalefactor 1', 'Qz shift 1', 'SLD Air', 'SLD D2O', 'Resolution Param 1']
+    priors.priorNames = ['Substrate Roughness', 'Test Thickness', 'Test SLD', 'Test Roughness', 'Background Param 1',
+                         'Scalefactor 1', 'Qz shift 1', 'SLD Air', 'SLD D2O', 'Resolution Param 1']
     priors.priorValues = [[1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf],
-                          [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf],
-                          [1, 0.0, np.inf]]
+                          [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf]]
 
     return priors
 
@@ -331,8 +325,7 @@ def domains_priors():
     priors.param = [['Substrate Roughness', RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
                     ['Test Thickness', RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
                     ['Test SLD', RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
-                    ['Test Roughness', RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
-                    ['Test Hydration', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+                    ['Test Roughness', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.backgroundParam = [['Background Param 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.qzshift = [['Qz shift 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.scalefactor = [['Scalefactor 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
@@ -340,12 +333,11 @@ def domains_priors():
     priors.bulkOut = [['SLD D2O', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.resolutionParam = [['Resolution Param 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.domainRatio = [['Domain Ratio 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.priorNames = ['Substrate Roughness', 'Test Thickness', 'Test SLD', 'Test Roughness', 'Test Hydration',
-                         'Background Param 1', 'Scalefactor 1', 'Qz shift 1', 'SLD Air', 'SLD D2O',
-                         'Resolution Param 1', 'Domain Ratio 1']
+    priors.priorNames = ['Substrate Roughness', 'Test Thickness', 'Test SLD', 'Test Roughness', 'Background Param 1',
+                         'Scalefactor 1', 'Qz shift 1', 'SLD Air', 'SLD D2O', 'Resolution Param 1', 'Domain Ratio 1']
     priors.priorValues = [[1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf],
                           [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf],
-                          [1, 0.0, np.inf], [1, 0.0, np.inf]]
+                          [1, 0.0, np.inf]]
 
     return priors
 
@@ -382,7 +374,7 @@ def standard_layers_controls():
     controls.jumpProbability = 0.5
     controls.pUnitGamma = 0.2
     controls.boundHandling = BoundHandling.Fold
-    controls.checks.fitParam = [1, 0, 0, 0, 0]
+    controls.checks.fitParam = [1, 0, 0, 0]
     controls.checks.fitBackgroundParam = [0]
     controls.checks.fitQzshift = [0]
     controls.checks.fitScalefactor = [0]
@@ -425,7 +417,7 @@ def custom_xy_controls():
     controls.jumpProbability = 0.5
     controls.pUnitGamma = 0.2
     controls.boundHandling = BoundHandling.Fold
-    controls.checks.fitParam = [1, 0, 0, 0, 0]
+    controls.checks.fitParam = [1, 0, 0, 0]
     controls.checks.fitBackgroundParam = [0]
     controls.checks.fitQzshift = [0]
     controls.checks.fitScalefactor = [0]
@@ -441,7 +433,7 @@ def custom_xy_controls():
 def test_checks():
     """The expected checks object from "standard_layers_project", "domains_project" and "custom_xy_project"."""
     checks = Checks()
-    checks.fitParam = [1, 0, 0, 0, 0]
+    checks.fitParam = [1, 0, 0, 0]
     checks.fitBackgroundParam = [0]
     checks.fitQzshift = [0]
     checks.fitScalefactor = [0]
@@ -543,6 +535,7 @@ def check_problem_equal(actual_problem, expected_problem) -> None:
     for scalar_field in scalar_fields:
         assert getattr(actual_problem, scalar_field) == getattr(expected_problem, scalar_field)
     for array_field in array_fields:
+        print(array_field)
         assert (getattr(actual_problem, array_field) == getattr(expected_problem, array_field)).all()
 
     # Need to account for "NaN" entries in contrastCustomFiles field
@@ -562,7 +555,12 @@ def check_cells_equal(actual_cells, expected_cells) -> None:
     for (a, b) in zip(actual_cells.f2, expected_cells.f2):
         assert (a == b).all()
 
-    for index in range(3, 21):
+    # f6 may contain "NaN" values, so consider separately
+    assert (actual_cells.f6 == expected_cells.f6 or
+            ['NaN' if np.isnan(el) else el for entry in actual_cells.f6 for el in entry] ==
+            ['NaN' if np.isnan(el) else el for entry in expected_cells.f6 for el in entry])
+
+    for index in chain(range(3, 6), range(7, 21)):
         field = f"f{index}"
         assert getattr(actual_cells, field) == getattr(expected_cells, field)
 

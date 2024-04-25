@@ -13,6 +13,10 @@ import RAT
 from RAT.utils.enums import Calculations, LayerModels
 
 
+layer_params = {'thickness': 'Test Thickness', 'SLD': 'Test SLD', 'roughness': 'Test Roughness'}
+absorption_layer_params = {'thickness': 'Test Thickness', 'SLD_real': 'Test SLD', 'SLD_imaginary': 'Test SLD',
+                           'roughness': 'Test Roughness'}
+
 @pytest.fixture
 def test_project():
     """Add parameters to the default project, so each ClassList can be tested properly."""
@@ -20,9 +24,8 @@ def test_project():
     test_project.parameters.append(name='Test Thickness')
     test_project.parameters.append(name='Test SLD')
     test_project.parameters.append(name='Test Roughness')
-    test_project.parameters.append(name='Test Hydration')
     test_project.custom_files.append(name='Test Custom File')
-    test_project.layers.append(name='Test Layer', thickness='Test Thickness', SLD='Test SLD', roughness='Test Roughness', hydration='Test Hydration')
+    test_project.layers.append(name='Test Layer', thickness='Test Thickness', SLD='Test SLD', roughness='Test Roughness')
     test_project.contrasts.append(name='Test Contrast', data='Simulation', background='Background 1', bulk_in='SLD Air',
                                   bulk_out='SLD D2O', scalefactor='Scalefactor 1', resolution='Resolution 1',
                                   model=['Test Layer'])
@@ -110,8 +113,7 @@ def test_project_script():
         "    parameters=RAT.ClassList([ProtectedParameter(name='Substrate Roughness', min=1.0, value=3.0, max=5.0, fit=True, prior_type='uniform', mu=0.0, sigma=inf),"
         " Parameter(name='Test Thickness', min=0.0, value=0.0, max=0.0, fit=False, prior_type='uniform', mu=0.0, sigma=inf),"
         " Parameter(name='Test SLD', min=0.0, value=0.0, max=0.0, fit=False, prior_type='uniform', mu=0.0, sigma=inf),"
-        " Parameter(name='Test Roughness', min=0.0, value=0.0, max=0.0, fit=False, prior_type='uniform', mu=0.0, sigma=inf),"
-        " Parameter(name='Test Hydration', min=0.0, value=0.0, max=0.0, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
+        " Parameter(name='Test Roughness', min=0.0, value=0.0, max=0.0, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
         "    background_parameters=RAT.ClassList([Parameter(name='Background Param 1', min=1e-07, value=1e-06, max=1e-05, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
         "    scalefactors=RAT.ClassList([Parameter(name='Scalefactor 1', min=0.02, value=0.23, max=0.25, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
         "    qz_shifts=RAT.ClassList([Parameter(name='Qz shift 1', min=-0.0001, value=0.0, max=0.0001, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
@@ -122,7 +124,7 @@ def test_project_script():
         "    resolutions=RAT.ClassList([Resolution(name='Resolution 1', type='constant', value_1='Resolution Param 1', value_2='', value_3='', value_4='', value_5='')]),\n"
         "    custom_files=RAT.ClassList([CustomFile(name='Test Custom File', filename='', language='python', path='pwd')]),\n"
         "    data=RAT.ClassList([Data(name='Simulation', data=array([[1., 1., 1.]]), data_range=[1.0, 1.0], simulation_range=[1.0, 1.0])]),\n"
-        "    layers=RAT.ClassList([Layer(name='Test Layer', thickness='Test Thickness', SLD='Test SLD', roughness='Test Roughness', hydration='Test Hydration', hydrate_with='bulk out')]),\n"
+        "    layers=RAT.ClassList([Layer(name='Test Layer', thickness='Test Thickness', SLD='Test SLD', roughness='Test Roughness', hydration='', hydrate_with='bulk out')]),\n"
         "    contrasts=RAT.ClassList([Contrast(name='Test Contrast', data='Simulation', background='Background 1', background_action='add', bulk_in='SLD Air', bulk_out='SLD D2O', scalefactor='Scalefactor 1', resolution='Resolution 1', resample=False, model=['Test Layer'])]),\n"
         "    )\n"
     )
@@ -160,10 +162,8 @@ def test_classlists_specific_cases() -> None:
     (RAT.models.CustomFile, {}),
     (RAT.models.Data, {}),
     (RAT.models.DomainContrast, {}),
-    (RAT.models.Layer, {'thickness': 'Test Thickness', 'SLD': 'Test SLD', 'roughness': 'Test Roughness',
-                        'hydration': 'Test Hydration'}),
-    (RAT.models.AbsorptionLayer, {'thickness': 'Test Thickness', 'SLD_real': 'Test SLD', 'SLD_imaginary': 'Test SLD',
-                                  'roughness': 'Test Roughness', 'hydration': 'Test Hydration'}),
+    (RAT.models.Layer, layer_params),
+    (RAT.models.AbsorptionLayer, absorption_layer_params),
     (RAT.models.Resolution, {}),
 ])
 def test_initialise_wrong_classes(input_model: Callable, model_params: dict) -> None:
@@ -175,10 +175,8 @@ def test_initialise_wrong_classes(input_model: Callable, model_params: dict) -> 
 
 
 @pytest.mark.parametrize(["input_model", "model_params", "absorption", "actual_model_name"], [
-    (RAT.models.Layer, {'thickness': 'Test Thickness', 'SLD': 'Test SLD', 'roughness': 'Test Roughness',
-                        'hydration': 'Test Hydration'}, True, "AbsorptionLayer"),
-    (RAT.models.AbsorptionLayer, {'thickness': 'Test Thickness', 'SLD_real': 'Test SLD', 'SLD_imaginary': 'Test SLD',
-                                  'roughness': 'Test Roughness', 'hydration': 'Test Hydration'}, False, "Layer"),
+    (RAT.models.Layer, layer_params, True, "AbsorptionLayer"),
+    (RAT.models.AbsorptionLayer, absorption_layer_params, False, "Layer"),
 ])
 def test_initialise_wrong_layers(input_model: Callable, model_params: dict, absorption: bool,
                                  actual_model_name: str) -> None:
@@ -220,8 +218,7 @@ def test_initialise_without_substrate_roughness(input_parameter: Callable) -> No
 
 @pytest.mark.parametrize(["field", "wrong_input_model", "model_params"], [
     ('backgrounds', RAT.models.Resolution, {}),
-    ('contrasts', RAT.models.Layer, {'thickness': 'Test Thickness', 'SLD': 'Test SLD', 'roughness': 'Test Roughness',
-                                     'hydration': 'Test Hydration'}),
+    ('contrasts', RAT.models.Layer, layer_params),
     ('domain_contrasts', RAT.models.Parameter, {}),
     ('custom_files', RAT.models.Data, {}),
     ('data', RAT.models.Contrast, {}),
@@ -238,10 +235,8 @@ def test_assign_wrong_classes(test_project, field: str, wrong_input_model: Calla
 
 
 @pytest.mark.parametrize(["wrong_input_model", "model_params", "absorption", "actual_model_name"], [
-    (RAT.models.Layer, {'thickness': 'Test Thickness', 'SLD': 'Test SLD', 'roughness': 'Test Roughness',
-                        'hydration': 'Test Hydration'}, True, "AbsorptionLayer"),
-    (RAT.models.AbsorptionLayer, {'thickness': 'Test Thickness', 'SLD_real': 'Test SLD', 'SLD_imaginary': 'Test SLD',
-                                  'roughness': 'Test Roughness', 'hydration': 'Test Hydration'}, False, "Layer"),
+    (RAT.models.Layer, layer_params, True, "AbsorptionLayer"),
+    (RAT.models.AbsorptionLayer, absorption_layer_params, False, "Layer"),
 ])
 def test_assign_wrong_layers(wrong_input_model: Callable, model_params: dict, absorption: bool,
                              actual_model_name: str) -> None:
@@ -271,8 +266,7 @@ def test_assign_wrong_contrasts(wrong_input_model: Callable, calculation: Calcul
     ('contrasts', {}),
     ('custom_files', {}),
     ('data', {}),
-    ('layers', {'thickness': 'Test Thickness', 'SLD': 'Test SLD', 'roughness': 'Test Roughness',
-                'hydration': 'Test Hydration'}),
+    ('layers', layer_params),
     ('parameters', {}),
     ('resolutions', {}),
 ])
@@ -326,8 +320,7 @@ def test_set_layers(project_parameters: dict) -> None:
     """If we are not using a standard layers model, the "layers" field of the model should always be empty."""
     project = RAT.Project(**project_parameters)
     assert project.layers == []
-    project.layers.append(name='New Layer', thickness='Test Thickness', SLD='Test SLD', roughness='Test Roughness',
-                          hydration='Test Hydration')
+    project.layers.append(name='New Layer', thickness='Test Thickness', SLD='Test SLD', roughness='Test Roughness')
     assert project.layers == []
 
 
@@ -390,10 +383,8 @@ def test_check_contrast_model_length(test_project, input_model: LayerModels, tes
 
 
 @pytest.mark.parametrize(["input_layer", "model_params", "input_absorption", "new_layer_model"], [
-    (RAT.models.Layer, {'thickness': 'Test Thickness', 'SLD': 'Test SLD', 'roughness': 'Test Roughness',
-                        'hydration': 'Test Hydration'}, False, "AbsorptionLayer"),
-    (RAT.models.AbsorptionLayer, {'thickness': 'Test Thickness', 'SLD_real': 'Test SLD', 'SLD_imaginary': 'Test SLD',
-                                  'roughness': 'Test Roughness', 'hydration': 'Test Hydration'}, True, "Layer"),
+    (RAT.models.Layer, layer_params, False, "AbsorptionLayer"),
+    (RAT.models.AbsorptionLayer, absorption_layer_params, True, "Layer"),
 ])
 def test_set_absorption(input_layer: Callable, model_params: dict, input_absorption: bool, new_layer_model: str) -> None:
     """When changing the value of the absorption option, the "layers" ClassList should switch to using the appropriate
@@ -402,8 +393,7 @@ def test_set_absorption(input_layer: Callable, model_params: dict, input_absorpt
     project = RAT.Project(absorption=input_absorption,
                           parameters=RAT.ClassList([RAT.models.Parameter(name='Test Thickness'),
                                                     RAT.models.Parameter(name='Test SLD'),
-                                                    RAT.models.Parameter(name='Test Roughness'),
-                                                    RAT.models.Parameter(name='Test Hydration')]),
+                                                    RAT.models.Parameter(name='Test Roughness')]),
                           layers=RAT.ClassList(input_layer(**model_params)))
     project.absorption = not input_absorption
 
@@ -433,7 +423,7 @@ def test_check_protected_parameters(delete_operation) -> None:
 @pytest.mark.parametrize(["model", "field"], [
     ('background_parameters', 'value_1'),
     ('resolution_parameters', 'value_1'),
-    ('parameters', 'hydration'),
+    ('parameters', 'roughness'),
     ('data', 'data'),
     ('backgrounds', 'background'),
     ('bulk_in', 'bulk_in'),
@@ -477,18 +467,14 @@ def test_allowed_layers(field: str) -> None:
     """If the "thickness", "SLD", or "roughness" fields of the Layer model are set to values that are not specified in
     the parameters, we should raise a ValidationError.
     """
-    layer_params = {'thickness': 'Test Thickness', 'SLD': 'Test SLD', 'roughness': 'Test Roughness', 'hydration': 'Test Hydration'}
-    layer_params.update({field: 'undefined'})
-
-    test_layer = RAT.models.Layer(**layer_params)
+    test_layer = RAT.models.Layer(**{**layer_params, field: 'undefined'})
 
     with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\n  Value error, The value '
                                                        f'"undefined" in the "{field}" field of "layers" must be '
                                                        f'defined in "parameters".'):
         RAT.Project(absorption=False, parameters=RAT.ClassList([RAT.models.Parameter(name='Test Thickness'),
                                                                 RAT.models.Parameter(name='Test SLD'),
-                                                                RAT.models.Parameter(name='Test Roughness'),
-                                                                RAT.models.Parameter(name='Test Hydration')]),
+                                                                RAT.models.Parameter(name='Test Roughness')]),
                     layers=RAT.ClassList(test_layer))
 
 
@@ -502,19 +488,14 @@ def test_allowed_absorption_layers(field: str) -> None:
     """If the "thickness", "SLD_real", "SLD_imaginary", or "roughness" fields of the AbsorptionLayer model are set to
     values that are not specified in the parameters, we should raise a ValidationError.
     """
-    layer_params = {'thickness': 'Test Thickness', 'SLD_real': 'Test SLD', 'SLD_imaginary': 'Test SLD',
-                    'roughness': 'Test Roughness', 'hydration': 'Test Hydration'}
-    layer_params.update({field: 'undefined'})
-
-    test_layer = RAT.models.AbsorptionLayer(**layer_params)
+    test_layer = RAT.models.AbsorptionLayer(**{**absorption_layer_params, field: 'undefined'})
 
     with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\n  Value error, The value '
                                                        f'"undefined" in the "{field}" field of "layers" must be '
                                                        f'defined in "parameters".'):
         RAT.Project(absorption=True, parameters=RAT.ClassList([RAT.models.Parameter(name='Test Thickness'),
                                                                RAT.models.Parameter(name='Test SLD'),
-                                                               RAT.models.Parameter(name='Test Roughness'),
-                                                               RAT.models.Parameter(name='Test Hydration')]),
+                                                               RAT.models.Parameter(name='Test Roughness')]),
                     layers=RAT.ClassList(test_layer))
 
 
@@ -619,7 +600,7 @@ def test_repr(default_project_repr: str) -> None:
 def test_get_all_names(test_project) -> None:
     """We should be able to get the names of all the models defined in the project."""
     assert test_project.get_all_names() == {'parameters': ['Substrate Roughness', 'Test Thickness', 'Test SLD',
-                                                           'Test Roughness', 'Test Hydration'],
+                                                           'Test Roughness'],
                                             'bulk_in': ['SLD Air'],
                                             'bulk_out': ['SLD D2O'],
                                             'qz_shifts': ['Qz shift 1'],
@@ -648,7 +629,6 @@ def test_get_all_protected_parameters(test_project) -> None:
                                                            'background_parameters': [],
                                                            'resolution_parameters': []
                                                            }
-
 
 
 @pytest.mark.parametrize("test_value", [
@@ -827,12 +807,9 @@ def test_wrap_del(test_project, class_list: str, parameter: str, field: str) -> 
     ('resolutions', 'value_3', {}),
     ('resolutions', 'value_4', {}),
     ('resolutions', 'value_5', {}),
-    ('layers', 'thickness', {'thickness': 'Test Thickness', 'SLD': 'Test SLD', 'roughness': 'Test Roughness',
-                             'hydration': 'Test Hydration'}),
-    ('layers', 'SLD', {'thickness': 'Test Thickness', 'SLD': 'Test SLD', 'roughness': 'Test Roughness',
-                       'hydration': 'Test Hydration'}),
-    ('layers', 'roughness', {'thickness': 'Test Thickness', 'SLD': 'Test SLD', 'roughness': 'Test Roughness',
-                             'hydration': 'Test Hydration'}),
+    ('layers', 'thickness', layer_params),
+    ('layers', 'SLD', layer_params),
+    ('layers', 'roughness', layer_params),
     ('contrasts', 'data', {}),
     ('contrasts', 'background', {}),
     ('contrasts', 'bulk_in', {}),
@@ -845,13 +822,12 @@ def test_wrap_iadd(test_project, class_list: str, field: str, model_params: dict
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
     input_model = getattr(RAT.models, RAT.project.model_in_classlist[class_list])
-    model_params.update({field: 'undefined'})
 
     with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\n  Value error, The value '
                                                        f'"undefined" in the "{field}" field of "{class_list}" must be '
                                                        f'defined in '
                                                        f'"{RAT.project.values_defined_in[f"{class_list}.{field}"]}".'):
-        test_attribute += [input_model(**model_params)]
+        test_attribute += [input_model(**{**model_params, field: 'undefined'})]
 
     # Ensure invalid model was not added
     assert test_attribute == orig_class_list
@@ -868,12 +844,9 @@ def test_wrap_iadd(test_project, class_list: str, field: str, model_params: dict
     ('resolutions', 'value_3', {}),
     ('resolutions', 'value_4', {}),
     ('resolutions', 'value_5', {}),
-    ('layers', 'thickness', {'thickness': 'Test Thickness', 'SLD': 'Test SLD', 'roughness': 'Test Roughness',
-                             'hydration': 'Test Hydration'}),
-    ('layers', 'SLD', {'thickness': 'Test Thickness', 'SLD': 'Test SLD', 'roughness': 'Test Roughness',
-                       'hydration': 'Test Hydration'}),
-    ('layers', 'roughness', {'thickness': 'Test Thickness', 'SLD': 'Test SLD', 'roughness': 'Test Roughness',
-                             'hydration': 'Test Hydration'}),
+    ('layers', 'thickness', layer_params),
+    ('layers', 'SLD', layer_params),
+    ('layers', 'roughness', layer_params),
     ('contrasts', 'data', {}),
     ('contrasts', 'background', {}),
     ('contrasts', 'bulk_in', {}),
@@ -886,13 +859,12 @@ def test_wrap_append(test_project, class_list: str, field: str, model_params: di
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
     input_model = getattr(RAT.models, RAT.project.model_in_classlist[class_list])
-    model_params.update({field: 'undefined'})
 
     with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\n  Value error, The value '
                                                        f'"undefined" in the "{field}" field of "{class_list}" must be '
                                                        f'defined in '
                                                        f'"{RAT.project.values_defined_in[f"{class_list}.{field}"]}".'):
-        test_attribute.append(input_model(**model_params))
+        test_attribute.append(input_model(**{**model_params, field: 'undefined'}))
 
     # Ensure invalid model was not appended
     assert test_attribute == orig_class_list
@@ -909,12 +881,9 @@ def test_wrap_append(test_project, class_list: str, field: str, model_params: di
     ('resolutions', 'value_3', {}),
     ('resolutions', 'value_4', {}),
     ('resolutions', 'value_5', {}),
-    ('layers', 'thickness', {'thickness': 'Test Thickness', 'SLD': 'Test SLD', 'roughness': 'Test Roughness',
-                             'hydration': 'Test Hydration'}),
-    ('layers', 'SLD', {'thickness': 'Test Thickness', 'SLD': 'Test SLD', 'roughness': 'Test Roughness',
-                       'hydration': 'Test Hydration'}),
-    ('layers', 'roughness', {'thickness': 'Test Thickness', 'SLD': 'Test SLD', 'roughness': 'Test Roughness',
-                             'hydration': 'Test Hydration'}),
+    ('layers', 'thickness', layer_params),
+    ('layers', 'SLD', layer_params),
+    ('layers', 'roughness', layer_params),
     ('contrasts', 'data', {}),
     ('contrasts', 'background', {}),
     ('contrasts', 'bulk_in', {}),
@@ -927,13 +896,12 @@ def test_wrap_insert(test_project, class_list: str, field: str, model_params: di
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
     input_model = getattr(RAT.models, RAT.project.model_in_classlist[class_list])
-    model_params.update({field: 'undefined'})
 
     with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\n  Value error, The value '
                                                        f'"undefined" in the "{field}" field of "{class_list}" must be '
                                                        f'defined in '
                                                        f'"{RAT.project.values_defined_in[f"{class_list}.{field}"]}".'):
-        test_attribute.insert(0, input_model(**model_params))
+        test_attribute.insert(0, input_model(**{**model_params, field: 'undefined'}))
 
     # Ensure invalid model was not inserted
     assert test_attribute == orig_class_list
@@ -1060,12 +1028,9 @@ def test_wrap_clear(test_project, class_list: str, parameter: str, field: str) -
     ('resolutions', 'value_3', {}),
     ('resolutions', 'value_4', {}),
     ('resolutions', 'value_5', {}),
-    ('layers', 'thickness', {'thickness': 'Test Thickness', 'SLD': 'Test SLD', 'roughness': 'Test Roughness',
-                             'hydration': 'Test Hydration'}),
-    ('layers', 'SLD', {'thickness': 'Test Thickness', 'SLD': 'Test SLD', 'roughness': 'Test Roughness',
-                       'hydration': 'Test Hydration'}),
-    ('layers', 'roughness', {'thickness': 'Test Thickness', 'SLD': 'Test SLD', 'roughness': 'Test Roughness',
-                             'hydration': 'Test Hydration'}),
+    ('layers', 'thickness', layer_params),
+    ('layers', 'SLD', layer_params),
+    ('layers', 'roughness', layer_params),
     ('contrasts', 'data', {}),
     ('contrasts', 'background', {}),
     ('contrasts', 'bulk_in', {}),
@@ -1078,13 +1043,12 @@ def test_wrap_extend(test_project, class_list: str, field: str, model_params: di
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
     input_model = getattr(RAT.models, RAT.project.model_in_classlist[class_list])
-    model_params.update({field: 'undefined'})
 
     with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\n  Value error, The value '
                                                        f'"undefined" in the "{field}" field of "{class_list}" must be '
                                                        f'defined in '
                                                        f'"{RAT.project.values_defined_in[f"{class_list}.{field}"]}".'):
-        test_attribute.extend([input_model(**model_params)])
+        test_attribute.extend([input_model(**{**model_params, field: 'undefined'})])
 
     # Ensure invalid model was not appended
     assert test_attribute == orig_class_list
