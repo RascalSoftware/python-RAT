@@ -98,6 +98,11 @@ def plot_ref_sld(data: PlotEventData, fig: Figure = None, delay: bool = True):
           The figure class that has two subplots
     delay : bool
             Controls whether to delay 0.005s after plot is created
+
+    Returns
+    -------
+    fig : Figure
+          The figure class that has two subplots
     """
     if fig is None:
         fig = Figure()
@@ -181,3 +186,5 @@ def plot_ref_sld(data: PlotEventData, fig: Figure = None, delay: bool = True):
 
     if delay:
         plt.pause(0.005)
+    
+    return fig

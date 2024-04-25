@@ -40,8 +40,7 @@ def fig() -> Figure:
     """
     Creates the fixture for the tests.
     """
-    fig = Figure(row=1, col=2)
-    plot_ref_sld(data(), fig)
+    fig = plot_ref_sld(data=data())
     return fig
 
 
@@ -116,6 +115,7 @@ def test_eventhandlers_linked_to_figure(fig: Figure) -> None:
                                           canvas_key_press_event_callback)[0]
     assert key_press_event_callback == "_process_button_press"
     assert hasattr(Figure, "_process_button_press")
+
 
 def test_eventhandler_variable_update(fig: Figure) -> None:
     """
