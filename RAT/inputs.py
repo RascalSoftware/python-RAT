@@ -181,7 +181,7 @@ def make_cells(project: RAT.Project) -> Cells:
     layer_details = []
     for layer in project.layers:
 
-        layer_params = []#[project.parameters.index(getattr(layer, attribute), True) for attribute in list(layer.model_fields.keys())[1:-2]]
+        layer_params = [project.parameters.index(getattr(layer, attribute), True) for attribute in list(layer.model_fields.keys())[1:-2]]
         layer_params.append(project.parameters.index(layer.hydration, True) if layer.hydration else float('NaN'))
         layer_params.append(hydrate_id[layer.hydrate_with])
 
@@ -212,7 +212,7 @@ def make_cells(project: RAT.Project) -> Cells:
     cells.f3 = data_limits
     cells.f4 = simulation_limits
     cells.f5 = [contrast_model if contrast_model else 0 for contrast_model in contrast_models]
-    #cells.f6 = layer_details if project.model == LayerModels.StandardLayers else [0]
+    cells.f6 = layer_details if project.model == LayerModels.StandardLayers else [0]
     cells.f7 = [param.name for param in project.parameters]
     cells.f8 = [param.name for param in project.background_parameters]
     cells.f9 = [param.name for param in project.scalefactors]

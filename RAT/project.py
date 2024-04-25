@@ -62,7 +62,7 @@ model_names_used_in = {'background_parameters': AllFields('backgrounds', ['value
                        'resolution_parameters': AllFields('resolutions', ['value_1', 'value_2', 'value_3', 'value_4',
                                                                           'value_5']),
                        'parameters': AllFields('layers', ['thickness', 'SLD', 'SLD_real', 'SLD_imaginary',
-                                                          'roughness']),
+                                                          'roughness', 'hydration']),
                        'data': AllFields('contrasts', ['data']),
                        'backgrounds': AllFields('contrasts', ['background']),
                        'bulk_in': AllFields('contrasts', ['bulk_in']),

@@ -188,21 +188,21 @@ class DomainContrast(RATModel):
 class Layer(RATModel, populate_by_name=True):
     """Combines parameters into defined layers."""
     name: str = Field(default_factory=lambda: 'New Layer ' + next(layer_number), min_length=1)
-    thickness: str = ''
-    SLD: str = Field('', validation_alias='SLD_real')
-    roughness: str = ''
-    hydration: str = ''
+    thickness: str
+    SLD: str = Field(validation_alias='SLD_real')
+    roughness: str
+    hydration: str
     hydrate_with: Hydration = Hydration.BulkOut
 
 
 class AbsorptionLayer(RATModel, populate_by_name=True):
     """Combines parameters into defined layers including absorption terms."""
     name: str = Field(default_factory=lambda: 'New Layer ' + next(layer_number), min_length=1)
-    thickness: str = ''
-    SLD_real: str = Field('', validation_alias='SLD')
+    thickness: str
+    SLD_real: str = Field(validation_alias='SLD')
     SLD_imaginary: str = ''
-    roughness: str = ''
-    hydration: str = ''
+    roughness: str
+    hydration: str
     hydrate_with: Hydration = Hydration.BulkOut
 
 
