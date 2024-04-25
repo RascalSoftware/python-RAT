@@ -129,7 +129,7 @@ def test_eventhandler_variable_update(fig: Figure) -> None:
     assert fig._esc_pressed
 
     assert not fig._close_clicked
-    plt.close(fig._fig)
+    fig._close('test')
     assert fig._close_clicked
 
 
