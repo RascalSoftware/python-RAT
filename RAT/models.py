@@ -4,6 +4,8 @@ import numpy as np
 from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
 from typing import Any
 
+from RAT.utils.enums import BackgroundActions, Hydration, Languages, Priors, TypeOptions
+
 try:
     from enum import StrEnum
 except ImportError:
@@ -29,30 +31,7 @@ parameter_number = int_sequence()
 resolution_number = int_sequence()
 
 
-class Hydration(StrEnum):
-    None_ = 'none'
-    BulkIn = 'bulk in'
-    BulkOut = 'bulk out'
-    Oil = 'oil'
-
-
-class Languages(StrEnum):
-    Python = 'python'
-    Matlab = 'matlab'
-
-
-class Priors(StrEnum):
-    Uniform = 'uniform'
-    Gaussian = 'gaussian'
-
-
-class Types(StrEnum):
-    Constant = 'constant'
-    Data = 'data'
-    Function = 'function'
-
-
-class RATModel(BaseModel):
+class RATModel(BaseModel, validate_assignment=True, extra='forbid'):
     """A BaseModel where enums are represented by their value."""
     def __repr__(self):
         fields_repr = (', '.join(repr(v) if a is None else
@@ -64,10 +43,10 @@ class RATModel(BaseModel):
         return f'{self.__repr_name__()}({fields_repr})'
 
 
-class Background(RATModel, validate_assignment=True, extra='forbid'):
+class Background(RATModel):
     """Defines the Backgrounds in RAT."""
     name: str = Field(default_factory=lambda: 'New Background ' + next(background_number), min_length=1)
-    type: Types = Types.Constant
+    type: TypeOptions = TypeOptions.Constant
     value_1: str = ''
     value_2: str = ''
     value_3: str = ''
@@ -75,26 +54,28 @@ class Background(RATModel, validate_assignment=True, extra='forbid'):
     value_5: str = ''
 
 
-class Contrast(RATModel, validate_assignment=True, extra='forbid'):
+class Contrast(RATModel):
     """Groups together all of the components of the model."""
     name: str = Field(default_factory=lambda: 'New Contrast ' + next(contrast_number), min_length=1)
     data: str = ''
     background: str = ''
-    nba: str = ''
-    nbs: str = ''
+    background_action: BackgroundActions = BackgroundActions.Add
+    bulk_in: str = ''
+    bulk_out: str = ''
     scalefactor: str = ''
     resolution: str = ''
     resample: bool = False
     model: list[str] = []
 
 
-class ContrastWithRatio(RATModel, validate_assignment=True, extra='forbid'):
+class ContrastWithRatio(RATModel):
     """Groups together all of the components of the model including domain terms."""
     name: str = Field(default_factory=lambda: 'New Contrast ' + next(contrast_number), min_length=1)
     data: str = ''
     background: str = ''
-    nba: str = ''
-    nbs: str = ''
+    background_action: BackgroundActions = BackgroundActions.Add
+    bulk_in: str = ''
+    bulk_out: str = ''
     scalefactor: str = ''
     resolution: str = ''
     resample: bool = False
@@ -102,7 +83,7 @@ class ContrastWithRatio(RATModel, validate_assignment=True, extra='forbid'):
     model: list[str] = []
 
 
-class CustomFile(RATModel, validate_assignment=True, extra='forbid'):
+class CustomFile(RATModel):
     """Defines the files containing functions to run when using custom models."""
     name: str = Field(default_factory=lambda: 'New Custom File ' + next(custom_file_number), min_length=1)
     filename: str = ''
@@ -110,7 +91,7 @@ class CustomFile(RATModel, validate_assignment=True, extra='forbid'):
     path: str = 'pwd'  # Should later expand to find current file path
 
 
-class Data(RATModel, validate_assignment=True, extra='forbid', arbitrary_types_allowed=True):
+class Data(RATModel, arbitrary_types_allowed=True):
     """Defines the dataset required for each contrast."""
     name: str = Field(default_factory=lambda: 'New Data ' + next(data_number), min_length=1)
     data: np.ndarray[np.float64] = np.empty([0, 3])
@@ -152,7 +133,7 @@ class Data(RATModel, validate_assignment=True, extra='forbid', arbitrary_types_a
     @model_validator(mode='after')
     def check_ranges(self) -> 'Data':
         """The limits of the "data_range" field must lie within the range of the supplied data, whilst the limits
-        of the "simulation_range" field must lie outside of the range of the supplied data.
+        of the "simulation_range" field must lie outside the range of the supplied data.
         """
         if len(self.data[:, 0]) > 0:
             data_min = np.min(self.data[:, 0])
@@ -198,34 +179,34 @@ class Data(RATModel, validate_assignment=True, extra='forbid', arbitrary_types_a
         return f'{self.__repr_name__()}({fields_repr})'
 
 
-class DomainContrast(RATModel, validate_assignment=True, extra='forbid'):
+class DomainContrast(RATModel):
     """Groups together the layers required for each domain."""
     name: str = Field(default_factory=lambda: 'New Domain Contrast ' + next(domain_contrast_number), min_length=1)
     model: list[str] = []
 
 
-class Layer(RATModel, validate_assignment=True, extra='forbid', populate_by_name=True):
+class Layer(RATModel, populate_by_name=True):
     """Combines parameters into defined layers."""
     name: str = Field(default_factory=lambda: 'New Layer ' + next(layer_number), min_length=1)
-    thickness: str = ''
-    SLD: str = Field('', validation_alias='SLD_real')
-    roughness: str = ''
+    thickness: str
+    SLD: str = Field(validation_alias='SLD_real')
+    roughness: str
     hydration: str = ''
     hydrate_with: Hydration = Hydration.BulkOut
 
 
-class AbsorptionLayer(RATModel, validate_assignment=True, extra='forbid', populate_by_name=True):
+class AbsorptionLayer(RATModel, populate_by_name=True):
     """Combines parameters into defined layers including absorption terms."""
     name: str = Field(default_factory=lambda: 'New Layer ' + next(layer_number), min_length=1)
-    thickness: str = ''
-    SLD_real: str = Field('', validation_alias='SLD')
+    thickness: str
+    SLD_real: str = Field(validation_alias='SLD')
     SLD_imaginary: str = ''
-    roughness: str = ''
+    roughness: str
     hydration: str = ''
     hydrate_with: Hydration = Hydration.BulkOut
 
 
-class Parameter(RATModel, validate_assignment=True, extra='forbid'):
+class Parameter(RATModel):
     """Defines parameters needed to specify the model."""
     name: str = Field(default_factory=lambda: 'New Parameter ' + next(parameter_number), min_length=1)
     min: float = 0.0
@@ -244,15 +225,15 @@ class Parameter(RATModel, validate_assignment=True, extra='forbid'):
         return self
 
 
-class ProtectedParameter(Parameter, validate_assignment=True, extra='forbid'):
+class ProtectedParameter(Parameter):
     """A Parameter with a fixed name."""
     name: str = Field(frozen=True, min_length=1)
 
 
-class Resolution(RATModel, validate_assignment=True, extra='forbid'):
+class Resolution(RATModel):
     """Defines Resolutions in RAT."""
     name: str = Field(default_factory=lambda: 'New Resolution ' + next(resolution_number), min_length=1)
-    type: Types = Types.Constant
+    type: TypeOptions = TypeOptions.Constant
     value_1: str = ''
     value_2: str = ''
     value_3: str = ''

@@ -159,7 +159,7 @@ setup(
     libraries = [libevent],
     ext_modules = ext_modules,
     python_requires = '>=3.9',
-    install_requires = ['numpy >= 1.20', 'prettytable >= 3.9.0', 'pydantic >= 2.4.2'],
+    install_requires = ['numpy >= 1.20', 'prettytable >= 3.9.0', 'pydantic >= 2.4.2, <= 2.6.4'],
     extras_require = {':python_version < "3.11"': ['StrEnum >= 0.4.15'],
                       'Dev': ['pytest>=7.4.0', 'pytest-cov>=4.1.0'],
                       'Matlab_latest': ['matlabengine'],

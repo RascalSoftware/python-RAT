@@ -1,6 +1,5 @@
 from typing import Callable, Union, List
-import RAT.rat_core
-from RAT.rat_core import EventTypes, PlotEventData, ProgressEventData
+from RAT.rat_core import EventBridge, EventTypes, PlotEventData, ProgressEventData
 
 
 def notify(event_type: EventTypes, data: Union[str, PlotEventData, ProgressEventData]) -> None:
@@ -17,6 +16,7 @@ def notify(event_type: EventTypes, data: Union[str, PlotEventData, ProgressEvent
     callbacks = __event_callbacks[event_type]
     for callback in callbacks:
         callback(data)
+
 
 def get_event_callback(event_type: EventTypes) -> List[Callable[[Union[str, PlotEventData, ProgressEventData]], None]]:
     """Returns all callbacks registered for the given event type.
@@ -59,5 +59,5 @@ def clear() -> None:
         __event_callbacks[key] = set()
 
 
-__event_impl = RAT.rat_core.EventBridge(notify)
+__event_impl = EventBridge(notify)
 __event_callbacks = {EventTypes.Message: set(), EventTypes.Plot: set(), EventTypes.Progress: set()}

@@ -9,24 +9,24 @@ from typing import Callable
 import RAT.models
 
 
-@pytest.mark.parametrize(["model", "model_name"], [
-    (RAT.models.Background, "Background"),
-    (RAT.models.Contrast, "Contrast"),
-    (RAT.models.CustomFile, "Custom File"),
-    (RAT.models.Data, "Data"),
-    (RAT.models.DomainContrast, "Domain Contrast"),
-    (RAT.models.Layer, "Layer"),
-    (RAT.models.Parameter, "Parameter"),
-    (RAT.models.Resolution, "Resolution"),
+@pytest.mark.parametrize(["model", "model_name", "model_params"], [
+    (RAT.models.Background, "Background", {}),
+    (RAT.models.Contrast, "Contrast", {}),
+    (RAT.models.CustomFile, "Custom File", {}),
+    (RAT.models.Data, "Data", {}),
+    (RAT.models.DomainContrast, "Domain Contrast", {}),
+    (RAT.models.Layer, "Layer", {'thickness': 'Test Thickness', 'SLD': 'Test SLD', 'roughness': 'Test Roughness'}),
+    (RAT.models.Parameter, "Parameter", {}),
+    (RAT.models.Resolution, "Resolution", {}),
 ])
-def test_default_names(model: Callable, model_name: str) -> None:
+def test_default_names(model: Callable, model_name: str, model_params: dict) -> None:
     """When initialising multiple models without specifying a name, they should be given a default name with the
     format: "New <model name> <integer>".
     """
-    model_1 = model()
-    model_2 = model()
-    model_3 = model(name='Given Name')
-    model_4 = model()
+    model_1 = model(**model_params)
+    model_2 = model(**model_params)
+    model_3 = model(name='Given Name', **model_params)
+    model_4 = model(**model_params)
 
     assert model_1.name == f"New {model_name} 1"
     assert model_2.name == f"New {model_name} 2"
@@ -34,39 +34,40 @@ def test_default_names(model: Callable, model_name: str) -> None:
     assert model_4.name == f"New {model_name} 3"
 
 
-@pytest.mark.parametrize("model", [
-    RAT.models.Background,
-    RAT.models.Contrast,
-    RAT.models.ContrastWithRatio,
-    RAT.models.CustomFile,
-    RAT.models.Data,
-    RAT.models.DomainContrast,
-    RAT.models.Layer,
-    RAT.models.AbsorptionLayer,
-    RAT.models.Parameter,
-    RAT.models.Resolution,
+@pytest.mark.parametrize(["model", "model_params"], [
+    (RAT.models.Background, {}),
+    (RAT.models.Contrast, {}),
+    (RAT.models.ContrastWithRatio, {}),
+    (RAT.models.CustomFile, {}),
+    (RAT.models.Data, {}),
+    (RAT.models.DomainContrast, {}),
+    (RAT.models.Layer, {'thickness': 'Test Thickness', 'SLD': 'Test SLD', 'roughness': 'Test Roughness'}),
+    (RAT.models.AbsorptionLayer, {'thickness': 'Test Thickness', 'SLD_real': 'Test SLD', 'SLD_imaginary': 'Test SLD',
+                                  'roughness': 'Test Roughness'}),
+    (RAT.models.Parameter, {}),
+    (RAT.models.Resolution, {}),
 ])
 class TestModels(object):
-    def test_initialise_with_wrong_type(self, model: Callable) -> None:
+    def test_initialise_with_wrong_type(self, model: Callable, model_params: dict) -> None:
         """When initialising a model with the wrong type for the "name" field, we should raise a ValidationError."""
         with pytest.raises(pydantic.ValidationError, match=f'1 validation error for {model.__name__}\nname\n  Input should be a valid string'):
-            model(name=1)
+            model(name=1, **model_params)
 
-    def test_assignment_with_wrong_type(self, model: Callable) -> None:
+    def test_assignment_with_wrong_type(self, model: Callable, model_params: dict) -> None:
         """When assigning the "name" field of a model with the wrong type, we should raise a ValidationError."""
-        test_model = model()
+        test_model = model(**model_params)
         with pytest.raises(pydantic.ValidationError, match=f'1 validation error for {model.__name__}\nname\n  Input should be a valid string'):
             test_model.name = 1
 
-    def test_initialise_with_zero_length_name(self, model: Callable) -> None:
+    def test_initialise_with_zero_length_name(self, model: Callable, model_params: dict) -> None:
         """When initialising a model with a zero length name, we should raise a ValidationError."""
         with pytest.raises(pydantic.ValidationError, match=f'1 validation error for {model.__name__}\nname\n  String should have at least 1 character'):
-            model(name='')
+            model(name='', **model_params)
 
-    def test_initialise_with_extra_fields(self, model: Callable) -> None:
+    def test_initialise_with_extra_fields(self, model: Callable, model_params: dict) -> None:
         """When initialising a model with unspecified fields, we should raise a ValidationError."""
         with pytest.raises(pydantic.ValidationError, match=f'1 validation error for {model.__name__}\nnew_field\n  Extra inputs are not permitted'):
-            model(new_field=1)
+            model(new_field=1, **model_params)
 
 
 def test_data_eq() -> None:

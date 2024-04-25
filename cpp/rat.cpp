@@ -426,7 +426,7 @@ struct Cells {
 
 struct ProblemDefinition {
     py::array_t<real_T> contrastBackgrounds;
-    py::array_t<real_T> contrastBackgroundsType;
+    py::array_t<real_T> contrastBackgroundActions;
     std::string TF {};
     py::array_t<real_T> resample;
     py::array_t<real_T> dataPresent;
@@ -626,7 +626,7 @@ RAT::struct0_T createStruct0(const ProblemDefinition& problem)
     stringToRatArray(problem.TF, problem_struct.TF.data, problem_struct.TF.size);
     
     problem_struct.contrastBackgrounds = pyArrayToRatArray1d(problem.contrastBackgrounds);
-    problem_struct.contrastBackgroundsType = pyArrayToRatArray1d(problem.contrastBackgroundsType);
+    problem_struct.contrastBackgroundActions = pyArrayToRatArray1d(problem.contrastBackgroundActions);
     problem_struct.resample = pyArrayToRatArray1d(problem.resample);
     problem_struct.dataPresent = pyArrayToRatArray1d(problem.dataPresent);
     problem_struct.oilChiDataPresent = pyArrayToRatArray1d(problem.oilChiDataPresent);
@@ -1003,7 +1003,7 @@ ProblemDefinition problemDefinitionFromStruct0T(const RAT::struct0_T problem)
     memcpy(&problem_def.TF[0], problem.TF.data, problem.TF.size[1]);
     
     problem_def.contrastBackgrounds = pyArrayFromRatArray1d(problem.contrastBackgrounds);
-    problem_def.contrastBackgroundsType = pyArrayFromRatArray1d(problem.contrastBackgroundsType);
+    problem_def.contrastBackgroundActions = pyArrayFromRatArray1d(problem.contrastBackgroundActions);
     problem_def.resample = pyArrayFromRatArray1d(problem.resample);
     problem_def.dataPresent = pyArrayFromRatArray1d(problem.dataPresent);
     problem_def.oilChiDataPresent = pyArrayFromRatArray1d(problem.oilChiDataPresent);
@@ -1403,7 +1403,7 @@ PYBIND11_MODULE(rat_core, m) {
     py::class_<ProblemDefinition>(m, "ProblemDefinition")
         .def(py::init<>())
         .def_readwrite("contrastBackgrounds", &ProblemDefinition::contrastBackgrounds)
-        .def_readwrite("contrastBackgroundsType", &ProblemDefinition::contrastBackgroundsType)
+        .def_readwrite("contrastBackgroundActions", &ProblemDefinition::contrastBackgroundActions)
         .def_readwrite("TF", &ProblemDefinition::TF)
         .def_readwrite("resample", &ProblemDefinition::resample)
         .def_readwrite("dataPresent", &ProblemDefinition::dataPresent)
