@@ -106,7 +106,7 @@ def plot_ref_sld(data: PlotEventData, fig: Figure = None, delay: bool = True):
     """
     if fig is None:
         fig = Figure()
-    elif fig._ax.shape != (1, 2):
+    elif fig._ax.shape != (2,):
         fig._fig.clf()
         fig._ax = fig._fig.subplots(1, 2)
 

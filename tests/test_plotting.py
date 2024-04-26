@@ -54,6 +54,7 @@ def test_figure_axis_formating(fig: Figure) -> None:
     sld_plot = fig._ax[1]
 
     assert fig._fig.axes[0].get_subplotspec().get_gridspec().get_geometry() == (1, 2)
+    assert fig._ax.shape == (2,)
 
     assert ref_plot.get_xlabel() == "Qz"
     assert ref_plot.get_xscale() == "log"
