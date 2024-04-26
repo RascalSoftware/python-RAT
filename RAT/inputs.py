@@ -39,7 +39,6 @@ def make_input(project: RAT.Project, controls: Union[RAT.controls.Calculate, RAT
     parameter_field = {'parameters': 'param',
                        'bulk_in': 'bulkIn',
                        'bulk_out': 'bulkOut',
-                       'qz_shifts': 'qzshift',
                        'scalefactors': 'scalefactor',
                        'domain_ratios': 'domainRatio',
                        'background_parameters': 'backgroundParam',
@@ -48,7 +47,6 @@ def make_input(project: RAT.Project, controls: Union[RAT.controls.Calculate, RAT
     checks_field = {'parameters': 'fitParam',
                     'bulk_in': 'fitBulkIn',
                     'bulk_out': 'fitBulkOut',
-                    'qz_shifts': 'fitQzshift',
                     'scalefactors': 'fitScalefactor',
                     'domain_ratios': 'fitDomainRatio',
                     'background_parameters': 'fitBackgroundParam',
@@ -70,6 +68,11 @@ def make_input(project: RAT.Project, controls: Union[RAT.controls.Calculate, RAT
                                                       for element in getattr(project, class_list)])
         setattr(priors, parameter_field[class_list], [[element.name, element.prior_type, element.mu, element.sigma]
                                                       for element in getattr(project, class_list)])
+
+    # Use dummy values for qzshifts
+    checks.fitQzshift = []
+    limits.qzshift = []
+    priors.qzshift = []
 
     priors.priorNames = [param.name for class_list in RAT.project.parameter_class_lists
                          for param in getattr(project, class_list)]
@@ -115,7 +118,7 @@ def make_problem(project: RAT.Project) -> ProblemDefinition:
     problem.params = [param.value for param in project.parameters]
     problem.bulkIn = [param.value for param in project.bulk_in]
     problem.bulkOut = [param.value for param in project.bulk_out]
-    problem.qzshifts = [param.value for param in project.qz_shifts]
+    problem.qzshifts = []
     problem.scalefactors = [param.value for param in project.scalefactors]
     problem.domainRatio = [param.value for param in project.domain_ratios]
     problem.backgroundParams = [param.value for param in project.background_parameters]
@@ -216,7 +219,7 @@ def make_cells(project: RAT.Project) -> Cells:
     cells.f7 = [param.name for param in project.parameters]
     cells.f8 = [param.name for param in project.background_parameters]
     cells.f9 = [param.name for param in project.scalefactors]
-    cells.f10 = [param.name for param in project.qz_shifts]
+    cells.f10 = []  # Placeholder for qzshifts
     cells.f11 = [param.name for param in project.bulk_in]
     cells.f12 = [param.name for param in project.bulk_out]
     cells.f13 = [param.name for param in project.resolution_parameters]

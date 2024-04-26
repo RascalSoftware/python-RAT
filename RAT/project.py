@@ -18,7 +18,6 @@ from RAT.utils.enums import Calculations, Geometries, LayerModels, Priors, TypeO
 model_in_classlist = {'parameters': 'Parameter',
                       'bulk_in': 'Parameter',
                       'bulk_out': 'Parameter',
-                      'qz_shifts': 'Parameter',
                       'scalefactors': 'Parameter',
                       'domain_ratios': 'Parameter',
                       'background_parameters': 'Parameter',
@@ -73,7 +72,7 @@ model_names_used_in = {'background_parameters': AllFields('backgrounds', ['value
                        }
 
 # Note that the order of these parameters is hard-coded into RAT
-parameter_class_lists = ['parameters', 'background_parameters', 'scalefactors', 'qz_shifts', 'bulk_in', 'bulk_out',
+parameter_class_lists = ['parameters', 'background_parameters', 'scalefactors', 'bulk_in', 'bulk_out',
                          'resolution_parameters', 'domain_ratios']
 class_lists = [*parameter_class_lists, 'backgrounds', 'resolutions', 'custom_files', 'data', 'layers',
                'domain_contrasts', 'contrasts']
@@ -99,9 +98,6 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
     bulk_out: ClassList = ClassList(RAT.models.Parameter(name='SLD D2O', min=6.2e-6, value=6.35e-6, max=6.35e-6,
                                                          fit=False, prior_type=Priors.Uniform, mu=0.0,
                                                          sigma=np.inf))
-
-    qz_shifts: ClassList = ClassList(RAT.models.Parameter(name='Qz shift 1', min=-1e-4, value=0.0, max=1e-4, fit=False,
-                                                          prior_type=Priors.Uniform, mu=0.0, sigma=np.inf))
 
     scalefactors: ClassList = ClassList(RAT.models.Parameter(name='Scalefactor 1', min=0.02, value=0.23, max=0.25,
                                                              fit=False, prior_type=Priors.Uniform, mu=0.0,
@@ -137,7 +133,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
     _contrast_model_field: str
     _protected_parameters: dict
 
-    @field_validator('parameters', 'bulk_in', 'bulk_out', 'qz_shifts', 'scalefactors', 'background_parameters',
+    @field_validator('parameters', 'bulk_in', 'bulk_out', 'scalefactors', 'background_parameters',
                      'backgrounds', 'resolution_parameters', 'resolutions', 'custom_files', 'data', 'layers',
                      'domain_contrasts', 'contrasts')
     @classmethod

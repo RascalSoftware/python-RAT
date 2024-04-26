@@ -60,12 +60,6 @@ def default_project_repr():
         '+-------+---------+---------+----------+----------+-------+------------+-----+-------+\n'
         '|   0   | SLD D2O | 6.2e-06 | 6.35e-06 | 6.35e-06 | False |  uniform   | 0.0 |  inf  |\n'
         '+-------+---------+---------+----------+----------+-------+------------+-----+-------+\n\n'
-        'Qz Shifts: -----------------------------------------------------------------------------------------\n\n'
-        '+-------+------------+---------+-------+--------+-------+------------+-----+-------+\n'
-        '| index |    name    |   min   | value |  max   |  fit  | prior type |  mu | sigma |\n'
-        '+-------+------------+---------+-------+--------+-------+------------+-----+-------+\n'
-        '|   0   | Qz shift 1 | -0.0001 |  0.0  | 0.0001 | False |  uniform   | 0.0 |  inf  |\n'
-        '+-------+------------+---------+-------+--------+-------+------------+-----+-------+\n\n'
         'Scalefactors: --------------------------------------------------------------------------------------\n\n'
         '+-------+---------------+------+-------+------+-------+------------+-----+-------+\n'
         '| index |      name     | min  | value | max  |  fit  | prior type |  mu | sigma |\n'
@@ -116,7 +110,6 @@ def test_project_script():
         " Parameter(name='Test Roughness', min=0.0, value=0.0, max=0.0, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
         "    background_parameters=RAT.ClassList([Parameter(name='Background Param 1', min=1e-07, value=1e-06, max=1e-05, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
         "    scalefactors=RAT.ClassList([Parameter(name='Scalefactor 1', min=0.02, value=0.23, max=0.25, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
-        "    qz_shifts=RAT.ClassList([Parameter(name='Qz shift 1', min=-0.0001, value=0.0, max=0.0001, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
         "    bulk_in=RAT.ClassList([Parameter(name='SLD Air', min=0.0, value=0.0, max=0.0, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
         "    bulk_out=RAT.ClassList([Parameter(name='SLD D2O', min=6.2e-06, value=6.35e-06, max=6.35e-06, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
         "    resolution_parameters=RAT.ClassList([Parameter(name='Resolution Param 1', min=0.01, value=0.03, max=0.05, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
@@ -603,7 +596,6 @@ def test_get_all_names(test_project) -> None:
                                                            'Test Roughness'],
                                             'bulk_in': ['SLD Air'],
                                             'bulk_out': ['SLD D2O'],
-                                            'qz_shifts': ['Qz shift 1'],
                                             'scalefactors': ['Scalefactor 1'],
                                             'domain_ratios': [],
                                             'background_parameters': ['Background Param 1'],
@@ -623,7 +615,6 @@ def test_get_all_protected_parameters(test_project) -> None:
     assert test_project.get_all_protected_parameters() == {'parameters': ['Substrate Roughness'],
                                                            'bulk_in': [],
                                                            'bulk_out': [],
-                                                           'qz_shifts': [],
                                                            'scalefactors': [],
                                                            'domain_ratios': [],
                                                            'background_parameters': [],
