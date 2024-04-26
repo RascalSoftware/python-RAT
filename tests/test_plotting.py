@@ -40,7 +40,9 @@ def fig() -> Figure:
     """
     Creates the fixture for the tests.
     """
-    fig = plot_ref_sld(data=data())
+    plt.close('all')
+    figure = Figure(1, 3)
+    fig = plot_ref_sld(fig=figure, data=data())
     return fig
 
 
@@ -154,8 +156,7 @@ def test_sld_profile_function_call(mock: MagicMock) -> None:
     Tests the makeSLDProfileXY function called with
     correct args.
     """
-    fig = Figure(row=1, col=2)
-    plot_ref_sld(data(), fig)
+    plot_ref_sld(data())
 
     assert mock.call_count == 3
     assert mock.call_args_list[0].args[0] == 2.07e-06

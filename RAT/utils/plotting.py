@@ -106,6 +106,9 @@ def plot_ref_sld(data: PlotEventData, fig: Figure = None, delay: bool = True):
     """
     if fig is None:
         fig = Figure()
+    elif fig._fig.axes[0].get_subplotspec().get_gridspec().get_geometry() != (1, 2):
+        plt.close(fig._fig)
+        fig = Figure()
 
     ref_plot = fig._ax[0]
     sld_plot = fig._ax[1]
