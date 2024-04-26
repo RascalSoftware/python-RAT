@@ -70,14 +70,14 @@ def standard_layers_problem():
     problem.params = [3.0, 0.0, 0.0, 0.0]
     problem.bulkIn = [0.0]
     problem.bulkOut = [6.35e-06]
-    problem.qzshifts = [0.0]
+    problem.qzshifts = []
     problem.scalefactors = [0.23]
     problem.domainRatio = []
     problem.backgroundParams = [1e-06]
     problem.resolutionParams = [0.03]
     problem.contrastBulkIns = [1]
     problem.contrastBulkOuts = [1]
-    problem.contrastQzshifts = [1]
+    problem.contrastQzshifts = []
     problem.contrastScalefactors = [1]
     problem.contrastBackgrounds = [1]
     problem.contrastBackgroundActions = [1]
@@ -91,10 +91,10 @@ def standard_layers_problem():
     problem.numberOfLayers = 1
     problem.numberOfDomainContrasts = 0
     problem.fitParams = [3.0]
-    problem.otherParams = [0.0, 0.0, 0.0, 1e-06, 0.23, 0.0, 0.0, 6.35e-06, 0.03]
+    problem.otherParams = [0.0, 0.0, 0.0, 1e-06, 0.23, 0.0, 6.35e-06, 0.03]
     problem.fitLimits = [[1.0, 5.0]]
-    problem.otherLimits = [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [1e-07, 1e-05], [0.02, 0.25], [-0.0001, 0.0001],
-                           [0.0, 0.0], [6.2e-06, 6.35e-06], [0.01, 0.05]]
+    problem.otherLimits = [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [1e-07, 1e-05], [0.02, 0.25], [0.0, 0.0],
+                           [6.2e-06, 6.35e-06], [0.01, 0.05]]
 
     return problem
 
@@ -110,14 +110,14 @@ def domains_problem():
     problem.params = [3.0, 0.0, 0.0, 0.0]
     problem.bulkIn = [0.0]
     problem.bulkOut = [6.35e-06]
-    problem.qzshifts = [0.0]
+    problem.qzshifts = []
     problem.scalefactors = [0.23]
     problem.domainRatio = [0.5]
     problem.backgroundParams = [1e-06]
     problem.resolutionParams = [0.03]
     problem.contrastBulkIns = [1]
     problem.contrastBulkOuts = [1]
-    problem.contrastQzshifts = [1]
+    problem.contrastQzshifts = []
     problem.contrastScalefactors = [1]
     problem.contrastBackgrounds = [1]
     problem.contrastBackgroundActions = [1]
@@ -131,10 +131,10 @@ def domains_problem():
     problem.numberOfLayers = 1
     problem.numberOfDomainContrasts = 2
     problem.fitParams = [3.0]
-    problem.otherParams = [0.0, 0.0, 0.0, 1e-06, 0.23, 0.0, 0.0, 6.35e-06, 0.03, 0.5]
+    problem.otherParams = [0.0, 0.0, 0.0, 1e-06, 0.23, 0.0, 6.35e-06, 0.03, 0.5]
     problem.fitLimits = [[1.0, 5.0]]
-    problem.otherLimits = [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [1e-07, 1e-05], [0.02, 0.25], [-0.0001, 0.0001],
-                           [0.0, 0.0], [6.2e-06, 6.35e-06], [0.01, 0.05], [0.4, 0.6]]
+    problem.otherLimits = [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [1e-07, 1e-05], [0.02, 0.25], [0.0, 0.0],
+                           [6.2e-06, 6.35e-06], [0.01, 0.05], [0.4, 0.6]]
 
     return problem
 
@@ -150,14 +150,14 @@ def custom_xy_problem():
     problem.params = [3.0, 0.0, 0.0, 0.0]
     problem.bulkIn = [0.0]
     problem.bulkOut = [6.35e-06]
-    problem.qzshifts = [0.0]
+    problem.qzshifts = []
     problem.scalefactors = [0.23]
     problem.domainRatio = []
     problem.backgroundParams = [1e-06]
     problem.resolutionParams = [0.03]
     problem.contrastBulkIns = [1]
     problem.contrastBulkOuts = [1]
-    problem.contrastQzshifts = [1]
+    problem.contrastQzshifts = []
     problem.contrastScalefactors = [1]
     problem.contrastBackgrounds = [1]
     problem.contrastBackgroundActions = [1]
@@ -171,10 +171,10 @@ def custom_xy_problem():
     problem.numberOfLayers = 0
     problem.numberOfDomainContrasts = 0
     problem.fitParams = [3.0]
-    problem.otherParams = [0.0, 0.0, 0.0, 1e-06, 0.23, 0.0, 0.0, 6.35e-06, 0.03]
+    problem.otherParams = [0.0, 0.0, 0.0, 1e-06, 0.23, 0.0, 6.35e-06, 0.03]
     problem.fitLimits = [[1.0, 5.0]]
-    problem.otherLimits = [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [1e-07, 1e-05], [0.02, 0.25], [-0.0001, 0.0001],
-                           [0.0, 0.0], [6.2e-06, 6.35e-06], [0.01, 0.05]]
+    problem.otherLimits = [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [1e-07, 1e-05], [0.02, 0.25], [0.0, 0.0],
+                           [6.2e-06, 6.35e-06], [0.01, 0.05]]
 
     return problem
 
@@ -192,7 +192,7 @@ def standard_layers_cells():
     cells.f7 = ['Substrate Roughness', 'Test Thickness', 'Test SLD', 'Test Roughness']
     cells.f8 = ['Background Param 1']
     cells.f9 = ['Scalefactor 1']
-    cells.f10 = ['Qz shift 1']
+    cells.f10 = []
     cells.f11 = ['SLD Air']
     cells.f12 = ['SLD D2O']
     cells.f13 = ['Resolution Param 1']
@@ -220,7 +220,7 @@ def domains_cells():
     cells.f7 = ['Substrate Roughness', 'Test Thickness', 'Test SLD', 'Test Roughness']
     cells.f8 = ['Background Param 1']
     cells.f9 = ['Scalefactor 1']
-    cells.f10 = ['Qz shift 1']
+    cells.f10 = []
     cells.f11 = ['SLD Air']
     cells.f12 = ['SLD D2O']
     cells.f13 = ['Resolution Param 1']
@@ -248,7 +248,7 @@ def custom_xy_cells():
     cells.f7 = ['Substrate Roughness', 'Test Thickness', 'Test SLD', 'Test Roughness']
     cells.f8 = ['Background Param 1']
     cells.f9 = ['Scalefactor 1']
-    cells.f10 = ['Qz shift 1']
+    cells.f10 = []
     cells.f11 = ['SLD Air']
     cells.f12 = ['SLD D2O']
     cells.f13 = ['Resolution Param 1']
@@ -269,7 +269,7 @@ def non_polarised_limits():
     limits = Limits()
     limits.param = [[1.0, 5.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]
     limits.backgroundParam = [[1e-7, 1e-5]]
-    limits.qzshift = [[-1e-4, 1e-4]]
+    limits.qzshift = []
     limits.scalefactor = [[0.02, 0.25]]
     limits.bulkIn = [[0.0, 0.0]]
     limits.bulkOut = [[6.2e-6, 6.35e-6]]
@@ -285,7 +285,7 @@ def domains_limits():
     limits = Limits()
     limits.param = [[1.0, 5.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]
     limits.backgroundParam = [[1e-7, 1e-5]]
-    limits.qzshift = [[-1e-4, 1e-4]]
+    limits.qzshift = []
     limits.scalefactor = [[0.02, 0.25]]
     limits.bulkIn = [[0.0, 0.0]]
     limits.bulkOut = [[6.2e-6, 6.35e-6]]
@@ -304,16 +304,16 @@ def non_polarised_priors():
                     ['Test SLD', RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
                     ['Test Roughness', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.backgroundParam = [['Background Param 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.qzshift = [['Qz shift 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.qzshift = []
     priors.scalefactor = [['Scalefactor 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.bulkIn = [['SLD Air', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.bulkOut = [['SLD D2O', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.resolutionParam = [['Resolution Param 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.domainRatio = []
     priors.priorNames = ['Substrate Roughness', 'Test Thickness', 'Test SLD', 'Test Roughness', 'Background Param 1',
-                         'Scalefactor 1', 'Qz shift 1', 'SLD Air', 'SLD D2O', 'Resolution Param 1']
+                         'Scalefactor 1', 'SLD Air', 'SLD D2O', 'Resolution Param 1']
     priors.priorValues = [[1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf],
-                          [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf]]
+                          [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf]]
 
     return priors
 
@@ -327,17 +327,16 @@ def domains_priors():
                     ['Test SLD', RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
                     ['Test Roughness', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.backgroundParam = [['Background Param 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.qzshift = [['Qz shift 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.qzshift = []
     priors.scalefactor = [['Scalefactor 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.bulkIn = [['SLD Air', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.bulkOut = [['SLD D2O', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.resolutionParam = [['Resolution Param 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.domainRatio = [['Domain Ratio 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.priorNames = ['Substrate Roughness', 'Test Thickness', 'Test SLD', 'Test Roughness', 'Background Param 1',
-                         'Scalefactor 1', 'Qz shift 1', 'SLD Air', 'SLD D2O', 'Resolution Param 1', 'Domain Ratio 1']
+                         'Scalefactor 1', 'SLD Air', 'SLD D2O', 'Resolution Param 1', 'Domain Ratio 1']
     priors.priorValues = [[1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf],
-                          [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf],
-                          [1, 0.0, np.inf]]
+                          [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf]]
 
     return priors
 
@@ -376,7 +375,7 @@ def standard_layers_controls():
     controls.boundHandling = BoundHandling.Fold
     controls.checks.fitParam = [1, 0, 0, 0]
     controls.checks.fitBackgroundParam = [0]
-    controls.checks.fitQzshift = [0]
+    controls.checks.fitQzshift = []
     controls.checks.fitScalefactor = [0]
     controls.checks.fitBulkIn = [0]
     controls.checks.fitBulkOut = [0]
@@ -419,7 +418,7 @@ def custom_xy_controls():
     controls.boundHandling = BoundHandling.Fold
     controls.checks.fitParam = [1, 0, 0, 0]
     controls.checks.fitBackgroundParam = [0]
-    controls.checks.fitQzshift = [0]
+    controls.checks.fitQzshift = []
     controls.checks.fitScalefactor = [0]
     controls.checks.fitBulkIn = [0]
     controls.checks.fitBulkOut = [0]
@@ -435,7 +434,7 @@ def test_checks():
     checks = Checks()
     checks.fitParam = [1, 0, 0, 0]
     checks.fitBackgroundParam = [0]
-    checks.fitQzshift = [0]
+    checks.fitQzshift = []
     checks.fitScalefactor = [0]
     checks.fitBulkIn = [0]
     checks.fitBulkOut = [0]
@@ -535,7 +534,6 @@ def check_problem_equal(actual_problem, expected_problem) -> None:
     for scalar_field in scalar_fields:
         assert getattr(actual_problem, scalar_field) == getattr(expected_problem, scalar_field)
     for array_field in array_fields:
-        print(array_field)
         assert (getattr(actual_problem, array_field) == getattr(expected_problem, array_field)).all()
 
     # Need to account for "NaN" entries in contrastCustomFiles field
