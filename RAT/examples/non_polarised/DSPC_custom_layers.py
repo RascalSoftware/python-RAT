@@ -34,9 +34,9 @@ problem.bulk_out.set_fields(0, min=5.0e-6, fit=True)
 # and H2O.Load these datafiles in and put them in the data block
 
 # Read in the datafiles
-D2O_data = np.loadtxt("c_PLP0016596.dat", delimiter=',')
-SMW_data = np.loadtxt("c_PLP0016601.dat", delimiter=',')
-H2O_data = np.loadtxt("c_PLP0016607.dat", delimiter=',')
+D2O_data = np.loadtxt("c_PLP0016596.dat", delimiter=",")
+SMW_data = np.loadtxt("c_PLP0016601.dat", delimiter=",")
+H2O_data = np.loadtxt("c_PLP0016607.dat", delimiter=",")
 
 # Add the data to the project - note this data has a resolution 4th column
 problem.data.append(name="Bilayer / D2O", data=D2O_data)#, data_range=[0.013, 0.37]) # data range is incorrect
@@ -47,17 +47,17 @@ problem.data.append(name="Bilayer / H2O", data=H2O_data)#, data_range=[0.013, 0.
 problem.custom_files.append(name="DSPC Model", filename="customBilayerDSPC.m", language="matlab", path="pwd") # how to get pwd?
 
 # Also, add the relevant background parameters - one each for each contrast:
-problem.background_parameters.set_fields(0, name="Backs par D2O", fit=True, min=1.0e-10, max=1.0e-5, value=1.0e-07)
+problem.background_parameters.set_fields(0, name="Background parameter D2O", fit=True, min=1.0e-10, max=1.0e-5, value=1.0e-07)
 
-problem.background_parameters.append(name="Backs par SMW", min=1.0e-10, value=1.0e-7, max=1.0e-5, fit=True)
-problem.background_parameters.append(name="Backs par H2O", min=1.0e-10, value=1.0e-7, max=1.0e-5, fit=True)
+problem.background_parameters.append(name="Background parameter SMW", min=1.0e-10, value=1.0e-7, max=1.0e-5, fit=True)
+problem.background_parameters.append(name="Background parameter H2O", min=1.0e-10, value=1.0e-7, max=1.0e-5, fit=True)
 
 # And add the two new constant backgrounds
-problem.backgrounds.append(name="Background SMW", type="constant", value_1="Backs par SMW")
-problem.backgrounds.append(name="Background H2O", type="constant", value_1="Backs par H2O")
+problem.backgrounds.append(name="Background SMW", type="constant", value_1="Background parameter SMW")
+problem.backgrounds.append(name="Background H2O", type="constant", value_1="Background parameter H2O")
 
 # And edit the other one....
-problem.backgrounds.set_fields(0, name="Background D2O", value_1="Backs par D2O")
+problem.backgrounds.set_fields(0, name="Background D2O", value_1="Background parameter D2O")
 
 # Finally modify some of the other parameters to be more suitable values for a solid / liquid experiment
 problem.scalefactors.set_fields(0, value=1.0, min=0.5, max=2.0, fit=True)

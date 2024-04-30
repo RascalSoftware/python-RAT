@@ -65,11 +65,11 @@ problem.scalefactors.append(name="Scalefactor 2", min=0.05, value=0.15, max=0.2,
 # Now deal with the backgrounds
 del problem.backgrounds[0]
 del problem.background_parameters[0]
-problem.background_parameters.append(name="Backs parameter D2O", min=5.0e-10, value=2.23e-06, max=7.0e-06, fit=True)
-problem.background_parameters.append(name="Backs parameter SMW", min=1.0e-10, value=3.38e-06, max=4.99e-06, fit=True)
+problem.background_parameters.append(name="Background parameter D2O", min=5.0e-10, value=2.23e-06, max=7.0e-06, fit=True)
+problem.background_parameters.append(name="Background parameter SMW", min=1.0e-10, value=3.38e-06, max=4.99e-06, fit=True)
 
-problem.backgrounds.append(name="D2O Background", type="constant", value_1="Backs parameter D2O")
-problem.backgrounds.append(name="SMW Background", type="constant", value_1="Backs parameter SMW")
+problem.backgrounds.append(name="D2O Background", type="constant", value_1="Background parameter D2O")
+problem.backgrounds.append(name="SMW Background", type="constant", value_1="Background parameter SMW")
 
 # Now add the data....
 d2o_dat = np.loadtxt("DSPC_D2O.dat", delimiter=",")

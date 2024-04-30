@@ -70,15 +70,15 @@ problem.custom_files.append(name="DSPC Model", filename="customBilayerDSPC.m", l
 # Also, add the relevant background parameters - one each for each contrast:
 problem.background_parameters.set_fields(0, name="Backs par D2O", fit=True, min=1.0e-10, max=1.0e-5, value=1.0e-07)
 
-problem.background_parameters.append(name="Backs par SMW", min=0.0, value=1.0e-7, max=1.0e-5, fit=True)
-problem.background_parameters.append(name="Backs par H2O", min=0.0, value=1.0e-7, max=1.0e-5, fit=True)
+problem.background_parameters.append(name="Background parameter SMW", min=0.0, value=1.0e-7, max=1.0e-5, fit=True)
+problem.background_parameters.append(name="Background parameter H2O", min=0.0, value=1.0e-7, max=1.0e-5, fit=True)
 
 # And add the two new constant backgrounds
-problem.backgrounds.append(name="Background SMW", type="constant", value_1="Backs par SMW")
-problem.backgrounds.append(name="Background H2O", type="constant", value_1="Backs par H2O")
+problem.backgrounds.append(name="Background SMW", type="constant", value_1="Background parameter SMW")
+problem.backgrounds.append(name="Background H2O", type="constant", value_1="Background parameter H2O")
 
 # And edit the other one....
-problem.backgrounds.set_fields(0, name="Background D2O", value_1="Backs par D2O")
+problem.backgrounds.set_fields(0, name="Background D2O", value_1="Background parameter D2O")
 
 
 # Finally modify some of the other parameters to be more suitable values for a solid / liquid experiment
