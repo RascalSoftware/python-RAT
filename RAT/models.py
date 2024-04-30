@@ -218,6 +218,13 @@ class Parameter(RATModel):
     sigma: float = np.inf
 
     @model_validator(mode='after')
+    def check_min_max(self) -> 'Parameter':
+        """The maximum value of a parameter must be greater than the minimum."""
+        if self.min > self.max:
+            raise ValueError(f'The maximum value {self.max} must be greater than the minimum value {self.min}')
+        return self
+
+    @model_validator(mode='after')
     def check_value_in_range(self) -> 'Parameter':
         """The value of a parameter must lie within its defined bounds."""
         if self.value < self.min or self.value > self.max:
