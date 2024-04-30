@@ -21,4 +21,4 @@ problem.custom_files.append(name="Alloy domains", filename="alloyDomains.m", lan
 # Make a contrast...
 problem.contrasts.append(name="D2O Contrast", data="Simulation", background="Background 1", bulk_in="Silicon",
                          bulk_out="SLD D2O", scalefactor="Scalefactor 1", resolution="Resolution 1", resample=False,
-                         domain_ratio='Domain Ratio 1', model=["Alloy domains"])
+                         domain_ratio="Domain Ratio 1", model=["Alloy domains"])

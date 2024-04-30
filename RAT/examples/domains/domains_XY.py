@@ -12,8 +12,8 @@ problem.parameters.append(name="Domain SLD", min=1.0e-6, value=1.0e-6, max=5.0e-
 problem.bulk_in.set_fields(0, name="Silicon", value=2.073e-6, max=1.0, fit=False)
 problem.scalefactors.set_fields(0, min=0.8, value=1.0, max=1.1, fit=True)
 
-problem.bulk_out.append(name='SLD SMW', min=2.0e-6, value=2.073e-6, max=2.1e-6)
-problem.bulk_out.append(name='SLD H2O', min=-0.6e-6, value=-0.56e-6, max=-0.5e-6)
+problem.bulk_out.append(name="SLD SMW", min=2.0e-6, value=2.073e-6, max=2.1e-6)
+problem.bulk_out.append(name="SLD H2O", min=-0.6e-6, value=-0.56e-6, max=-0.5e-6)
 
 # Add the custom file
 problem.custom_files.append(name="Domain Layer", filename="domainsXY", language="matlab", path="pwd")
