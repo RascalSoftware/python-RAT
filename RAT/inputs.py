@@ -242,8 +242,8 @@ def make_cells(project: RAT.Project) -> Cells:
     cells.f2 = all_data
     cells.f3 = data_limits
     cells.f4 = simulation_limits
-    cells.f5 = [contrast_model if contrast_model else 0 for contrast_model in contrast_models]
-    cells.f6 = layer_details if project.model == LayerModels.StandardLayers else [0]
+    cells.f5 = [contrast_model if contrast_model else [0] for contrast_model in contrast_models]
+    cells.f6 = layer_details if project.model == LayerModels.StandardLayers else [[0]]
     cells.f7 = [param.name for param in project.parameters]
     cells.f8 = [param.name for param in project.background_parameters]
     cells.f9 = [param.name for param in project.scalefactors]
@@ -255,7 +255,7 @@ def make_cells(project: RAT.Project) -> Cells:
     cells.f15 = [param.type for param in project.backgrounds]
     cells.f16 = [param.type for param in project.resolutions]
 
-    cells.f17 = [[0.0, 0.0, 0.0]] * len(project.contrasts)  # Placeholder for oil chi data
+    cells.f17 = [[[]]] * len(project.contrasts)  # Placeholder for oil chi data
     cells.f18 = [[0, 1]] * len(project.domain_contrasts)  # This is marked as "to do" in RAT
 
     domain_contrast_models = [[project.layers.index(layer, True) for layer in domain_contrast.model]
