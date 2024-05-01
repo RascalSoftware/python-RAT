@@ -1,6 +1,7 @@
 """Standard Layers fit of a DSPC floating bilayer"""
 
 import RAT
+import RAT.rat_core
 import numpy as np
 
 problem = RAT.Project(name="original_dspc_bilayer", calculation="non polarised", model="standard layers",
@@ -88,3 +89,11 @@ problem.contrasts.append(name="D2O", bulk_in="Silicon", bulk_out="D2O", backgrou
 
 problem.contrasts.append(name="SMW", bulk_in="Silicon", bulk_out="SMW", background="SMW Background",
                          resolution="Resolution 1", scalefactor="Scalefactor 2", data="dspc_bil_smw", model=stack)
+
+
+controls = RAT.set_controls()
+
+problem2, cells, limits, priors, cpp_controls = RAT.make_input(problem, controls)
+
+# Python
+problem2, results, bayes = RAT.rat_core.RATMain(problem2, cells, limits, cpp_controls, priors)
