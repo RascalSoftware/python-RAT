@@ -2,6 +2,7 @@
 
 import numpy as np
 from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
+import pathlib
 from typing import Any
 
 from RAT.utils.enums import BackgroundActions, Hydration, Languages, Priors, TypeOptions
@@ -87,8 +88,16 @@ class CustomFile(RATModel):
     """Defines the files containing functions to run when using custom models."""
     name: str = Field(default_factory=lambda: 'New Custom File ' + next(custom_file_number), min_length=1)
     filename: str = ''
+    function_name: str = ''
     language: Languages = Languages.Python
     path: str = 'pwd'  # Should later expand to find current file path
+
+    def model_post_init(self, __context: Any) -> None:
+        """If a "filename" is supplied but the "function_name" field is not set, the "function_name" should be set to
+        the file name without the extension.
+        """
+        if "filename" in self.model_fields_set and "function_name" not in self.model_fields_set:
+            self.function_name = pathlib.Path(self.filename).stem
 
 
 class Data(RATModel, arbitrary_types_allowed=True):
