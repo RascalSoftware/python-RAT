@@ -46,7 +46,7 @@ def make_example_problem():
     problem.data.append(name="Bilayer / H2O", data=H2O_data)#, data_range=[0.013, 0.37]) # data range is incorrect
 
     # Add the custom file to the project
-    problem.custom_files.append(name="DSPC Model", filename="customBilayerDSPC.py", language="python", path="pwd") # how to get pwd?
+    problem.custom_files.append(name="DSPC Model", filename="customBilayer.py", language="python", path="pwd") # how to get pwd?
 
     # Also, add the relevant background parameters - one each for each contrast:
     problem.background_parameters.set_fields(0, name="Background parameter D2O", fit=True, min=1.0e-10, max=1.0e-5, value=1.0e-07)

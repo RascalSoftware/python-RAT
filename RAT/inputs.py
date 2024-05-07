@@ -1,11 +1,12 @@
 """Converts python models to the necessary inputs for the compiled RAT code"""
-
+import importlib
 import pathlib
 from typing import Union
 
 import RAT
 import RAT.controls
-from RAT.utils.enums import Calculations, LayerModels
+from RAT.utils.enums import Calculations, Languages, LayerModels
+import RAT.wrappers
 
 from RAT.rat_core import Cells, Checks, Control, Limits, Priors, ProblemDefinition
 
@@ -236,6 +237,15 @@ def make_cells(project: RAT.Project) -> Cells:
         simulation_limits.append(project.data[data_index].simulation_range)
 
 
+    file_handles = []
+    for custom_file in project.custom_files:
+        if custom_file.language == Languages.Python:
+            file_handles.append(getattr(importlib.import_module(pathlib.Path(custom_file.filename).stem), custom_file.function_name))
+        elif custom_file.language == Languages.Matlab:
+            file_handles.append(RAT.wrappers.MatlabWrapper(custom_file.filename).getHandle())
+        elif custom_file.language == Languages.Cpp:
+            file_handles.append(RAT.wrappers.DylibWrapper(custom_file.filename, custom_file.function_name).getHandle())
+
     # Populate the set of cells
     cells = Cells()
     cells.f1 = [[0, 1]] * len(project.contrasts)  # This is marked as "to do" in RAT
@@ -251,7 +261,7 @@ def make_cells(project: RAT.Project) -> Cells:
     cells.f11 = [param.name for param in project.bulk_in]
     cells.f12 = [param.name for param in project.bulk_out]
     cells.f13 = [param.name for param in project.resolution_parameters]
-    cells.f14 = [pathlib.Path(file.filename).stem for file in project.custom_files]
+    cells.f14 = file_handles
     cells.f15 = [param.type for param in project.backgrounds]
     cells.f16 = [param.type for param in project.resolutions]
 
