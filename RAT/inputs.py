@@ -118,14 +118,14 @@ def make_problem(project: RAT.Project) -> ProblemDefinition:
     problem.params = [param.value for param in project.parameters]
     problem.bulkIn = [param.value for param in project.bulk_in]
     problem.bulkOut = [param.value for param in project.bulk_out]
-    problem.qzshifts = []
+    problem.qzshifts = [0.0]
     problem.scalefactors = [param.value for param in project.scalefactors]
     problem.domainRatio = [param.value for param in project.domain_ratios]
     problem.backgroundParams = [param.value for param in project.background_parameters]
     problem.resolutionParams = [param.value for param in project.resolution_parameters]
     problem.contrastBulkIns = [project.bulk_in.index(contrast.bulk_in, True) for contrast in project.contrasts]
     problem.contrastBulkOuts = [project.bulk_out.index(contrast.bulk_out, True) for contrast in project.contrasts]
-    problem.contrastQzshifts = [1] * len(project.contrasts)  # This is marked as "to do" in RAT
+    problem.contrastQzshifts = [0] * len(project.contrasts)  # This is marked as "to do" in RAT
     problem.contrastScalefactors = [project.scalefactors.index(contrast.scalefactor, True) for contrast in project.contrasts]
     problem.contrastDomainRatios = [project.domain_ratios.index(contrast.domain_ratio, True)
                                     if hasattr(contrast, 'domain_ratio') else 0 for contrast in project.contrasts]
