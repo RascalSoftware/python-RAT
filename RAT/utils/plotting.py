@@ -122,12 +122,13 @@ def plot_ref_sld(data: PlotEventData, fig: Figure = None, delay: bool = True):
                                                 data.sldProfiles,
                                                 data.resampledLayers)):
 
-        r, sd, sld, layer = map(lambda x: x[0], (r, sd, sld, layer))
+        sld, layer = map(lambda x: x[0], (sld, layer))
 
         # Calculate the divisor
         div = 1 if i == 0 else 2**(4*(i+1))
 
         # Plot the reflectivity on plot (1,1)
+        print(r)
         ref_plot.plot(r[:, 0],
                       r[:, 1]/div,
                       label=f'ref {i+1}',
