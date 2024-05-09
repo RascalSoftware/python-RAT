@@ -916,36 +916,24 @@ OutputResult OutputResultFromStruct5T(const RAT::struct5_T result)
     // Copy problem to output
     OutputResult output_result;
     for (int32_T idx0{0}; idx0 < result.reflectivity.size(0); idx0++) {
-        py::list inner_list;
-        for (int32_T idx1{0}; idx1 < result.reflectivity.size(1); idx1++) {
-            auto tmp = result.reflectivity[idx0 +  result.reflectivity.size(0) * idx1];
-            auto array = py::array_t<real_T, py::array::f_style>({tmp.f1.size(0), tmp.f1.size(1)});
-            std::memcpy(array.request().ptr, tmp.f1.data(), array.nbytes());
-            inner_list.append(array);       
-        }
-        output_result.reflectivity.append(inner_list);
+        auto tmp = result.reflectivity[idx0];
+        auto array = py::array_t<real_T, py::array::f_style>({tmp.f1.size(0), tmp.f1.size(1)});
+        std::memcpy(array.request().ptr, tmp.f1.data(), array.nbytes());     
+        output_result.reflectivity.append(array);
     }
 
     for (int32_T idx0{0}; idx0 < result.simulation.size(0); idx0++) {
-        py::list inner_list;
-        for (int32_T idx1{0}; idx1 < result.simulation.size(1); idx1++) {
-            auto tmp = result.simulation[idx0 +  result.simulation.size(0) * idx1];
+            auto tmp = result.simulation[idx0];
             auto array = py::array_t<real_T, py::array::f_style>({tmp.f1.size(0), tmp.f1.size(1)});
             std::memcpy(array.request().ptr, tmp.f1.data(), array.nbytes());
-            inner_list.append(array);
-        }
-        output_result.simulation.append(inner_list);
+            output_result.simulation.append(array);
     }
 
     for (int32_T idx0{0}; idx0 < result.shiftedData.size(0); idx0++) {
-        py::list inner_list;
-        for (int32_T idx1{0}; idx1 < result.shiftedData.size(1); idx1++) {
-            auto tmp = result.shiftedData[idx0 +  result.shiftedData.size(0) * idx1];
+            auto tmp = result.shiftedData[idx0];
             auto array = py::array_t<real_T, py::array::f_style>({tmp.f1.size(0), tmp.f1.size(1)});
             std::memcpy(array.request().ptr, tmp.f1.data(), array.nbytes());
-            inner_list.append(array);
-        }
-        output_result.shiftedData.append(inner_list);
+            output_result.shiftedData.append(array);
     }
 
     for (int32_T idx0{0}; idx0 < result.layerSlds.size(0); idx0++) {
@@ -981,8 +969,18 @@ OutputResult OutputResultFromStruct5T(const RAT::struct5_T result)
         output_result.resampledLayers.append(inner_list);
     }
 
+    for (int32_T idx0{0}; idx0 < result.fitNames.size(0); idx0++) {
+        auto tmp = result.fitNames[idx0];
+        std::string str(tmp.f1.data(), tmp.f1.size(1));        
+        output_result.fitNames.append(str);
+    }    
+
+    output_result.fitParams = py::array_t<real_T>(result.fitParams.size(1));
+    auto buffer = output_result.fitParams.request();
+    std::memcpy(buffer.ptr, result.fitParams.data(), output_result.fitParams.size()*sizeof(real_T));
+
     output_result.contrastParams.backgroundParams = py::array_t<real_T>(result.contrastParams.backgroundParams.size(0));
-    auto buffer = output_result.contrastParams.backgroundParams.request();
+    buffer = output_result.contrastParams.backgroundParams.request();
     std::memcpy(buffer.ptr, result.contrastParams.backgroundParams.data(), output_result.contrastParams.backgroundParams.size()*sizeof(real_T));
 
     output_result.contrastParams.scalefactors = py::array_t<real_T>(result.contrastParams.scalefactors.size(0));
@@ -1357,7 +1355,7 @@ PYBIND11_MODULE(rat_core, m) {
         .def_readwrite("shiftedData", &OutputResult::shiftedData)
         .def_readwrite("layerSlds", &OutputResult::layerSlds)
         .def_readwrite("sldProfiles", &OutputResult::sldProfiles)
-        .def_readwrite("resampledLayers)", &OutputResult::resampledLayers)
+        .def_readwrite("resampledLayers", &OutputResult::resampledLayers)
         .def_readwrite("calculationResults", &OutputResult::calculationResults)
         .def_readwrite("contrastParams", &OutputResult::contrastParams)        
         .def_readwrite("bestFitParams", &OutputResult::fitParams)

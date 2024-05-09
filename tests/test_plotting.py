@@ -1,11 +1,9 @@
 import os
 import re
-import csv
 import pytest
 import pickle
 from unittest.mock import patch
 from unittest.mock import MagicMock
-import numpy as np
 import matplotlib.pyplot as plt
 from RAT.rat_core import PlotEventData
 from RAT.utils.plotting import Figure, plot_ref_sld
