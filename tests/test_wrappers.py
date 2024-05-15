@@ -5,8 +5,9 @@ import RAT.wrappers
 
 
 def test_matlab_wrapper() -> None:
-    with pytest.raises(ImportError):
-        RAT.wrappers.MatlabWrapper('demo.m')
+    with mock.patch.dict('sys.modules', {'matlab': mock.MagicMock(side_effect=ImportError)}):
+        with pytest.raises(ImportError):
+            RAT.wrappers.MatlabWrapper('demo.m')
     mocked_matlab_module = mock.MagicMock()
     mocked_engine = mock.MagicMock()
     mocked_matlab_module.engine.start_matlab.return_value = mocked_engine
