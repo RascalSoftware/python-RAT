@@ -1,4 +1,5 @@
 from RAT.inputs import make_input
+from RAT.outputs import make_result
 import RAT.rat_core
 
 
@@ -16,9 +17,12 @@ def run(project, controls):
 
     problem_definition, cells, limits, priors, cpp_controls = make_input(project, controls)
 
-    problem_definition, results, bayes = RAT.rat_core.RATMain(problem_definition, cells, limits, cpp_controls, priors)
+    problem_definition, output_results, bayes_results = RAT.rat_core.RATMain(problem_definition, cells, limits,
+                                                                             cpp_controls, priors)
 
-    # Parse out to project
+    results = RAT.outputs.make_result(controls.procedure, output_results, bayes_results)
+
+    # Update parameter values in project
     for class_list in RAT.project.parameter_class_lists:
         for (index, value) in enumerate(getattr(problem_definition, parameter_field[class_list])):
             setattr(getattr(project, class_list)[index], 'value', value)
