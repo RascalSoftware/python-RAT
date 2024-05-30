@@ -37,15 +37,12 @@ class TestCalculate:
         setattr(self.calculate, control_property, value)
         assert getattr(self.calculate, control_property) == value
 
-    @pytest.mark.parametrize("var1, var2", [('test', True), ('ALL', 1), ("Contrast", 3.0)])
-    def test_calculate_parallel_validation(self, var1: str, var2: Any) -> None:
+    @pytest.mark.parametrize("value", ['test', 'ALL', 'Contrast', True, 1, 3.0])
+    def test_calculate_parallel_validation(self, value: Any) -> None:
         """Tests the parallel setter validation in Calculate class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.calculate, 'parallel', var1)
+            setattr(self.calculate, 'parallel', value)
         assert exp.value.errors()[0]['msg'] == "Input should be 'single', 'points' or 'contrasts'"
-        with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.calculate, 'parallel', var2)
-        assert exp.value.errors()[0]['msg'] == "Input should be a valid string"
 
     @pytest.mark.parametrize("value", [5.0, 12])
     def test_calculate_calcSldDuringFit_validation(self, value: Union[int, float]) -> None:
@@ -54,15 +51,12 @@ class TestCalculate:
             setattr(self.calculate, 'calcSldDuringFit', value)
         assert exp.value.errors()[0]['msg'] == "Input should be a valid boolean, unable to interpret input"
 
-    @pytest.mark.parametrize("var1, var2", [('test', True), ('iterate', 1), ("FINAL", 3.0)])
-    def test_calculate_display_validation(self, var1: str, var2: Any) -> None:
+    @pytest.mark.parametrize("value", ['test', 'iterate', "FINAL", True, 1, 3.0])
+    def test_calculate_display_validation(self, value: Any) -> None:
         """Tests the display setter validation in Calculate class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.calculate, 'display', var1)
+            setattr(self.calculate, 'display', value)
         assert exp.value.errors()[0]['msg'] == "Input should be 'off', 'iter', 'notify' or 'final'"
-        with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.calculate, 'display', var2)
-        assert exp.value.errors()[0]['msg'] == "Input should be a valid string"
 
     @pytest.mark.parametrize("value, msg", [
         ([5.0], "List should have at least 2 items after validation, not 1"),
