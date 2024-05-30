@@ -6,7 +6,7 @@ from unittest.mock import patch
 from unittest.mock import MagicMock
 import matplotlib.pyplot as plt
 from RAT.rat_core import PlotEventData
-from RAT.utils.plotting import Figure, plot_ref_sld
+from RAT.utils.plotting import Figure, plot_ref_sld_helper
 
 
 TEST_DIR_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)),
@@ -40,7 +40,7 @@ def fig() -> Figure:
     """
     plt.close('all')
     figure = Figure(1, 3)
-    fig = plot_ref_sld(fig=figure, data=data())
+    fig = plot_ref_sld_helper(fig=figure, data=data())
     return fig
 
 
@@ -155,7 +155,7 @@ def test_sld_profile_function_call(mock: MagicMock) -> None:
     Tests the makeSLDProfileXY function called with
     correct args.
     """
-    plot_ref_sld(data())
+    plot_ref_sld_helper(data())
 
     assert mock.call_count == 3
     assert mock.call_args_list[0].args[0] == 2.07e-06
