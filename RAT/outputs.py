@@ -9,19 +9,19 @@ import RAT.rat_core
 
 @dataclass
 class CalculationResults:
-    chiValues: np.ndarray[float]
+    chiValues: np.ndarray
     sumChi: float
 
 
 @dataclass
 class ContrastParams:
-    backgroundParams: np.ndarray[float]
-    scalefactors: np.ndarray[float]
-    bulkIn: np.ndarray[float]
-    bulkOut: np.ndarray[float]
-    resolutionParams: np.ndarray[float]
-    subRoughs: np.ndarray[float]
-    resample: np.ndarray[float]
+    backgroundParams: np.ndarray
+    scalefactors: np.ndarray
+    bulkIn: np.ndarray
+    bulkOut: np.ndarray
+    resolutionParams: np.ndarray
+    subRoughs: np.ndarray
+    resample: np.ndarray
 
 
 @dataclass
@@ -34,7 +34,7 @@ class Results:
     resampledLayers: list
     calculationResults: CalculationResults
     contrastParams: ContrastParams
-    fitParams: np.ndarray[float]
+    fitParams: np.ndarray
     fitNames: list[str]
 
 
@@ -52,14 +52,14 @@ class PredictionIntervals:
     sld: list
     reflectivityXData: list
     sldXData: list
-    sampleChi: np.ndarray[float]
+    sampleChi: np.ndarray
 
 
 @dataclass
 class ConfidenceIntervals:
-    percentile95: np.ndarray[float]
-    percentile65: np.ndarray[float]
-    mean: np.ndarray[float]
+    percentile95: np.ndarray
+    percentile65: np.ndarray
+    mean: np.ndarray
 
 
 @dataclass
@@ -82,26 +82,26 @@ class DreamParams:
     ABC: bool
     IO: bool
     storeOutput: bool
-    R: np.ndarray[float]
+    R: np.ndarray
 
 
 @dataclass
 class DreamOutput:
-    allChains: np.ndarray[float]
-    outlierChains: np.ndarray[float]
+    allChains: np.ndarray
+    outlierChains: np.ndarray
     runtime: float
     iteration: float
     modelOutput: float
-    AR: np.ndarray[float]
-    R_stat: np.ndarray[float]
-    CR: np.ndarray[float]
+    AR: np.ndarray
+    R_stat: np.ndarray
+    CR: np.ndarray
 
 
 @dataclass
 class NestedSamplerOutput:
     logZ: float
-    nestSamples: np.ndarray[float]
-    postSamples: np.ndarray[float]
+    nestSamples: np.ndarray
+    postSamples: np.ndarray
 
 
 @dataclass
@@ -122,11 +122,12 @@ class BayesResults:
     dreamParams: DreamParams
     dreamOutput: DreamOutput
     nestedSamplerOutput: NestedSamplerOutput
-    chain: np.ndarray[float]
+    chain: np.ndarray
 
 
-def make_result(procedure: Procedures, output_results: RAT.rat_core.OutputResult,
-                bayes_results: Optional[RAT.rat_core.BayesResults] = None) -> Union[Results, BayesResults]:
+def make_results(procedure: Procedures, output_results: RAT.rat_core.OutputResult,
+                 bayes_results: Optional[RAT.rat_core.BayesResults] = None) -> Union[Results, BayesResults]:
+    """Initialise a python Results or BayesResults object using the outputs from a RAT calculation."""
 
     calculation_results = CalculationResults(chiValues=output_results.calculationResults.chiValues,
                                              sumChi=output_results.calculationResults.sumChi
@@ -212,7 +213,7 @@ def make_result(procedure: Procedures, output_results: RAT.rat_core.OutputResult
             resampledLayers=output_results.resampledLayers,
             calculationResults=calculation_results,
             contrastParams=contrast_params,
-            fitParams=output_results.bestFitParams,
+            fitParams=output_results.fitParams,
             fitNames=output_results.fitNames,
             bestFitMean=best_fit_mean,
             predictionIntervals=prediction_intervals,
@@ -234,7 +235,7 @@ def make_result(procedure: Procedures, output_results: RAT.rat_core.OutputResult
             resampledLayers=output_results.resampledLayers,
             calculationResults=calculation_results,
             contrastParams=contrast_params,
-            fitParams=output_results.bestFitParams,
+            fitParams=output_results.fitParams,
             fitNames=output_results.fitNames
         )
 

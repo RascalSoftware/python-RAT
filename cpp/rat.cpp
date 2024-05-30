@@ -1358,7 +1358,7 @@ PYBIND11_MODULE(rat_core, m) {
         .def_readwrite("resampledLayers", &OutputResult::resampledLayers)
         .def_readwrite("calculationResults", &OutputResult::calculationResults)
         .def_readwrite("contrastParams", &OutputResult::contrastParams)        
-        .def_readwrite("bestFitParams", &OutputResult::fitParams)
+        .def_readwrite("fitParams", &OutputResult::fitParams)
         .def_readwrite("fitNames", &OutputResult::fitNames);
 
     py::class_<Checks>(m, "Checks")

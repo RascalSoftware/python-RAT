@@ -530,7 +530,6 @@ def check_problem_equal(actual_problem, expected_problem) -> None:
                     "contrastDomainRatios", "resample", "dataPresent", "oilChiDataPresent", "fitParams", "otherParams",
                     "fitLimits", "otherLimits"]
 
-    fields_equal = []
     for scalar_field in scalar_fields:
         assert getattr(actual_problem, scalar_field) == getattr(expected_problem, scalar_field)
     for array_field in array_fields:
