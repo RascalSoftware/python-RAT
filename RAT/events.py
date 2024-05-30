@@ -26,8 +26,8 @@ def get_event_callback(event_type: EventTypes) -> List[Callable[[Union[str, Plot
     event_type : EventTypes
         The event type.
 
-    Retuns
-    ------
+    Returns
+    -------
     callback : Callable[[Union[str, PlotEventData, ProgressEventData]], None]
         The callback for the event type.
     """

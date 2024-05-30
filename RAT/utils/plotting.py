@@ -12,7 +12,7 @@ class Figure:
     Creates a plotting figure.
     """
 
-    def __init__(self, row: int = 1, col: int = 2):
+    def __init__(self, row: int = 1, col: int = 1):
         """
         Initializes the figure and the subplots.
 
@@ -20,7 +20,7 @@ class Figure:
         ----------
         row : int, default: 1
               The number of rows in subplot
-        col : int, default: 2
+        col : int, default: 1
               The number of columns in subplot
         """
         self._fig, self._ax = \
@@ -107,7 +107,7 @@ def plot_ref_sld_helper(data: PlotEventData, fig: Optional[Figure] = None, delay
           The figure class that has two subplots
     """
     if fig is None:
-        fig = Figure()
+        fig = Figure(1, 2)
     elif fig._ax.shape != (2,):
         fig._fig.clf()
         fig._ax = fig._fig.subplots(1, 2)
@@ -202,9 +202,9 @@ def plot_ref_sld(problem, results, block: bool = False):
 
     Parameters
     ----------
-    problem : Project
-              An instance of the Project class
-    results : Result
+    problem : ProblemDefinition
+              An instance of the ProblemDefinition class
+    results : OutputResult
               The result from the calculation
     block : bool, default: False
             Indicates the plot should block until it is closed
@@ -219,7 +219,7 @@ def plot_ref_sld(problem, results, block: bool = False):
     data.subRoughs = results.contrastParams.subRoughs
     data.resample = problem.resample
 
-    figure = Figure()
+    figure = Figure(1, 2)
 
     plot_ref_sld_helper(data, figure)
     if block:
