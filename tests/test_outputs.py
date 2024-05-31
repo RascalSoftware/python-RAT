@@ -1085,8 +1085,8 @@ def reflectivity_calculation_output_results():
     results.contrastParams.subRoughs = np.array([3.0, 3.0])
     results.contrastParams.resample = np.array([0.0, 0.0])
     results.fitParams = np.array([3.000e+00, 1.954e+01, 2.266e+01, 5.252e+00, 5.640e+00, 1.712e+01, 8.560e+00,
-                                      4.545e+01, 1.070e+01, 6.014e+00, 1.782e+01, 1.764e+01, 3.615e+01, 2.361e+01,
-                                      2.230e-06, 3.380e-06, 5.980e-06, 2.210e-06])
+                                  4.545e+01, 1.070e+01, 6.014e+00, 1.782e+01, 1.764e+01, 3.615e+01, 2.361e+01,
+                                  2.230e-06, 3.380e-06, 5.980e-06, 2.210e-06])
     results.fitNames = ['Substrate Roughness', 'Oxide Thickness', 'SAM Tails Thickness', 'SAM Tails Hydration',
                         'SAM Roughness', 'CW Thickness', 'SAM Heads Thickness', 'SAM Heads Hydration',
                         'Bilayer Heads Thickness', 'Bilayer Roughness', 'Bilayer Tails Thickness',

@@ -133,8 +133,8 @@ def make_problem(project: RAT.Project) -> ProblemDefinition:
     problem.contrastBackgroundActions = [action_id[contrast.background_action] for contrast in project.contrasts]
     problem.contrastResolutions = [project.resolutions.index(contrast.resolution, True) for contrast in project.contrasts]
     problem.contrastCustomFiles = contrast_custom_files
-    problem.resample = [contrast.resample for contrast in project.contrasts]
-    problem.dataPresent = [1 if contrast.data else 0 for contrast in project.contrasts]
+    problem.resample = make_resample(project)
+    problem.dataPresent = make_data_present(project)
     problem.oilChiDataPresent = [0] * len(project.contrasts)
     problem.numberOfContrasts = len(project.contrasts)
     problem.numberOfLayers = len(project.layers)
@@ -149,6 +149,38 @@ def make_problem(project: RAT.Project) -> ProblemDefinition:
                            for param in getattr(project, class_list) if not param.fit]
 
     return problem
+
+
+def make_resample(project: RAT.Project) -> list[int]:
+    """Constructs the "resample" field of the problem input required for the compiled RAT code.
+
+    Parameters
+    ----------
+    project : RAT.Project
+        The project model, which defines the physical system under study.
+
+    Returns
+    -------
+     : list[int]
+        The "resample" field of the problem input used in the compiled RAT code.
+    """
+    return [contrast.resample for contrast in project.contrasts]
+
+
+def make_data_present(project: RAT.Project) -> list[int]:
+    """Constructs the "dataPresent" field of the problem input required for the compiled RAT code.
+
+    Parameters
+    ----------
+    project : RAT.Project
+        The project model, which defines the physical system under study.
+
+    Returns
+    -------
+     : list[int]
+        The "dataPresent" field of the problem input used in the compiled RAT code.
+    """
+    return [1 if project.data[project.data.index(contrast.data)].data.size != 0 else 0 for contrast in project.contrasts]
 
 
 def make_cells(project: RAT.Project) -> Cells:
