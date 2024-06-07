@@ -105,17 +105,7 @@ class NestedSamplerOutput:
 
 
 @dataclass
-class BayesResults:
-    reflectivity: list[float]
-    simulation: list[float]
-    shiftedData: list[float]
-    layerSlds: list[float]
-    sldProfiles: list[float]
-    resampledLayers: list[float]
-    calculationResults: CalculationResults
-    contrastParams: ContrastParams
-    fitParams: list[float]
-    fitNames: list[str]
+class BayesResults(Results):
     bestFitMean: BestFitMean
     predictionIntervals: PredictionIntervals
     confidenceIntervals: ConfidenceIntervals
@@ -169,7 +159,7 @@ def make_results(procedure: Procedures, output_results: RAT.rat_core.OutputResul
             nParams=bayes_results.dreamParams.nParams,
             nChains=bayes_results.dreamParams.nChains,
             nGenerations=bayes_results.dreamParams.nGenerations,
-            parallel=bayes_results.dreamParams.parallel,
+            parallel=bool(bayes_results.dreamParams.parallel),
             CPU=bayes_results.dreamParams.CPU,
             jumpProbability=bayes_results.dreamParams.jumpProbability,
             pUnitGamma=bayes_results.dreamParams.pUnitGamma,
@@ -178,12 +168,12 @@ def make_results(procedure: Procedures, output_results: RAT.rat_core.OutputResul
             steps=bayes_results.dreamParams.steps,
             zeta=bayes_results.dreamParams.zeta,
             outlier=bayes_results.dreamParams.outlier,
-            adaptPCR=bayes_results.dreamParams.adaptPCR,
+            adaptPCR=bool(bayes_results.dreamParams.adaptPCR),
             thinning=bayes_results.dreamParams.thinning,
             epsilon=bayes_results.dreamParams.epsilon,
-            ABC=bayes_results.dreamParams.ABC,
-            IO=bayes_results.dreamParams.IO,
-            storeOutput=bayes_results.dreamParams.storeOutput,
+            ABC=bool(bayes_results.dreamParams.ABC),
+            IO=bool(bayes_results.dreamParams.IO),
+            storeOutput=bool(bayes_results.dreamParams.storeOutput),
             R=bayes_results.dreamParams.R
         )
 
