@@ -15,13 +15,13 @@ from RAT.rat_core import Cells, Checks, Control, Limits, Priors, ProblemDefiniti
 @pytest.fixture
 def standard_layers_project():
     """Add parameters to the default project for a non polarised calculation."""
-    test_project = RAT.Project(data=RAT.ClassList([RAT.models.Data(name='Simulation', data=np.array([[1.0, 1.0, 1.0]]))]))
+    test_project = RAT.Project(data=RAT.ClassList([RAT.models.Data(name='Test Data', data=np.array([[1.0, 1.0, 1.0]]))]))
     test_project.parameters.append(name='Test Thickness')
     test_project.parameters.append(name='Test SLD')
     test_project.parameters.append(name='Test Roughness')
     test_project.custom_files.append(name='Test Custom File', filename='matlab_test.m', language='matlab')
     test_project.layers.append(name='Test Layer', thickness='Test Thickness', SLD='Test SLD', roughness='Test Roughness')
-    test_project.contrasts.append(name='Test Contrast', data='Simulation', background='Background 1', bulk_in='SLD Air',
+    test_project.contrasts.append(name='Test Contrast', data='Test Data', background='Background 1', bulk_in='SLD Air',
                                   bulk_out='SLD D2O', scalefactor='Scalefactor 1', resolution='Resolution 1',
                                   model=['Test Layer'])
     return test_project
@@ -31,7 +31,7 @@ def standard_layers_project():
 def domains_project():
     """Add parameters to the default project for a domains calculation."""
     test_project = RAT.Project(calculation=Calculations.Domains,
-                               data=RAT.ClassList([RAT.models.Data(name='Simulation', data=np.array([[1.0, 1.0, 1.0]]))]))
+                               data=RAT.ClassList([RAT.models.Data(name='Test Data', data=np.array([[1.0, 1.0, 1.0]]))]))
     test_project.parameters.append(name='Test Thickness')
     test_project.parameters.append(name='Test SLD')
     test_project.parameters.append(name='Test Roughness')
@@ -39,7 +39,7 @@ def domains_project():
     test_project.layers.append(name='Test Layer', thickness='Test Thickness', SLD='Test SLD', roughness='Test Roughness')
     test_project.domain_contrasts.append(name='up', model=['Test Layer'])
     test_project.domain_contrasts.append(name='down', model=['Test Layer'])
-    test_project.contrasts.append(name='Test Contrast', data='Simulation', background='Background 1', bulk_in='SLD Air',
+    test_project.contrasts.append(name='Test Contrast', data='Test Data', background='Background 1', bulk_in='SLD Air',
                                   bulk_out='SLD D2O', scalefactor='Scalefactor 1', resolution='Resolution 1',
                                   domain_ratio='Domain Ratio 1', model=['down', 'up'])
     return test_project
@@ -165,7 +165,7 @@ def custom_xy_problem():
     problem.contrastCustomFiles = [1]
     problem.contrastDomainRatios = [0]
     problem.resample = [False]
-    problem.dataPresent = [1]
+    problem.dataPresent = [0]
     problem.oilChiDataPresent = [0]
     problem.numberOfContrasts = 1
     problem.numberOfLayers = 0
@@ -240,9 +240,9 @@ def custom_xy_cells():
     """The expected cells object from "custom_xy_project"."""
     cells = Cells()
     cells.f1 = [[0, 1]]
-    cells.f2 = [np.array([[0.0, 0.0, 0.0]])]
-    cells.f3 = [[0.0, 0.0]]
-    cells.f4 = [[0.0, 0.0]]
+    cells.f2 = [np.empty([0, 3])]
+    cells.f3 = [[]]
+    cells.f4 = [[]]
     cells.f5 = [0]
     cells.f6 = [0]
     cells.f7 = ['Substrate Roughness', 'Test Thickness', 'Test SLD', 'Test Roughness']

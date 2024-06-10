@@ -231,14 +231,10 @@ def make_cells(project: RAT.Project) -> Cells:
 
         data_index = project.data.index(contrast.data)
 
-        if 'data' in project.data[data_index].model_fields_set:
-            all_data.append(project.data[data_index].data)
-            data_limits.append(project.data[data_index].data_range)
-            simulation_limits.append(project.data[data_index].simulation_range)
-        else:
-            all_data.append([0.0, 0.0, 0.0])
-            data_limits.append([0.0, 0.0])
-            simulation_limits.append([0.0, 0.0])
+        all_data.append(project.data[data_index].data)
+        data_limits.append(project.data[data_index].data_range)
+        simulation_limits.append(project.data[data_index].simulation_range)
+
 
     # Populate the set of cells
     cells = Cells()
