@@ -124,7 +124,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
                                                              value_1='Resolution Param 1'))
 
     custom_files: ClassList = ClassList()
-    data: ClassList = ClassList(RAT.models.Data(name='Simulation'))
+    data: ClassList = ClassList()
     layers: ClassList = ClassList()
     domain_contrasts: ClassList = ClassList()
     contrasts: ClassList = ClassList()
@@ -186,6 +186,9 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
             substrate_roughness_values = self.parameters[self.parameters.index('Substrate Roughness')].model_dump()
             self.parameters.remove('Substrate Roughness')
             self.parameters.insert(0, RAT.models.ProtectedParameter(**substrate_roughness_values))
+
+        if 'Simulation' not in self.data.get_names():
+            self.data.insert(0, RAT.models.Data(name='Simulation'))
 
         self._all_names = self.get_all_names()
         self._contrast_model_field = self.get_contrast_model_field()

@@ -123,7 +123,7 @@ class Data(RATModel, arbitrary_types_allowed=True):
         """If the "data_range" and "simulation_range" fields are not set, but "data" is supplied, the ranges should be
         set to the min and max values of the first column (assumed to be q) of the supplied data.
         """
-        if len(self.data[:, 0]) > 0:
+        if self.data.shape[0] > 0:
             data_min = np.min(self.data[:, 0])
             data_max = np.max(self.data[:, 0])
             for field in ["data_range", "simulation_range"]:
@@ -135,7 +135,7 @@ class Data(RATModel, arbitrary_types_allowed=True):
         """The limits of the "data_range" field must lie within the range of the supplied data, whilst the limits
         of the "simulation_range" field must lie outside the range of the supplied data.
         """
-        if len(self.data[:, 0]) > 0:
+        if self.data.shape[0] > 0:
             data_min = np.min(self.data[:, 0])
             data_max = np.max(self.data[:, 0])
             if "data_range" in self.model_fields_set and (self.data_range[0] < data_min or

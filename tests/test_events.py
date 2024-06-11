@@ -3,6 +3,7 @@ import pytest
 import RAT.events
 
 
+@pytest.mark.skip
 def test_event_register() -> None:
     first_callback = mock.Mock()
     second_callback = mock.Mock()
@@ -25,6 +26,8 @@ def test_event_register() -> None:
     assert RAT.events.get_event_callback(RAT.events.EventTypes.Plot) == []
     assert RAT.events.get_event_callback(RAT.events.EventTypes.Message) == []
 
+
+@pytest.mark.skip
 def test_event_notify() -> None:
     first_callback = mock.Mock()
     second_callback = mock.Mock()

@@ -1,10 +1,14 @@
 """
 Plots using the matplotlib library
 """
-from typing import Optional
+from typing import Optional, Union
 import matplotlib.pyplot as plt
 import numpy as np
 from RAT.rat_core import PlotEventData, makeSLDProfileXY
+
+import RAT
+import RAT.inputs
+import RAT.outputs
 
 
 class Figure:
@@ -196,15 +200,15 @@ def plot_ref_sld_helper(data: PlotEventData, fig: Optional[Figure] = None, delay
     return fig
 
 
-def plot_ref_sld(problem, results, block: bool = False):
+def plot_ref_sld(project: RAT.Project, results: Union[RAT.outputs.Results, RAT.outputs.BayesResults], block: bool = False):
     """
     Plots the reflectivity and SLD profiles.
 
     Parameters
     ----------
-    problem : ProblemDefinition
-              An instance of the ProblemDefinition class
-    results : OutputResult
+    project : Project
+              An instance of the Project class
+    results : Union[Results, BayesResults]
               The result from the calculation
     block : bool, default: False
             Indicates the plot should block until it is closed
@@ -215,9 +219,9 @@ def plot_ref_sld(problem, results, block: bool = False):
     data.shiftedData = results.shiftedData
     data.sldProfiles = results.sldProfiles
     data.resampledLayers = results.resampledLayers
-    data.dataPresent = problem.dataPresent
+    data.dataPresent = RAT.inputs.make_data_present(project)
     data.subRoughs = results.contrastParams.subRoughs
-    data.resample = problem.resample
+    data.resample = RAT.inputs.make_resample(project)
 
     figure = Figure(1, 2)
 
