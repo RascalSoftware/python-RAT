@@ -76,11 +76,9 @@ def check_bayes_fields_equal(actual_results, expected_results) -> None:
     """
 
     # The BayesResults object consists of a number of subclasses, each containing fields of differing formats.
-    subclasses = ["bestFitMean", "predictionIntervals", "confidenceIntervals", "dreamParams", "dreamOutput",
-                  "nestedSamplerOutput"]
+    subclasses = ["predictionIntervals", "confidenceIntervals", "dreamParams", "dreamOutput", "nestedSamplerOutput"]
 
-    param_fields = {"bestFitMean": ["chi"],
-                    "predictionIntervals": [],
+    param_fields = {"predictionIntervals": [],
                     "confidenceIntervals": [],
                     "dreamParams": ["nParams", "nChains", "nGenerations", "parallel", "CPU", "jumpProbability",
                                     "pUnitGamma", "nCR", "delta", "steps", "zeta", "outlier", "adaptPCR", "thinning",
@@ -89,24 +87,21 @@ def check_bayes_fields_equal(actual_results, expected_results) -> None:
                     "nestedSamplerOutput": ["logZ"]
                     }
 
-    list_fields = {"bestFitMean": ["reflectivity", "data"],
-                   "predictionIntervals": ["reflectivity", "reflectivityXData"],
+    list_fields = {"predictionIntervals": ["reflectivity", "reflectivityXData"],
                    "confidenceIntervals": [],
                    "dreamParams": [],
                    "dreamOutput": [],
                    "nestedSamplerOutput": []
                    }
 
-    double_list_fields = {"bestFitMean": ["sld"],
-                          "predictionIntervals": ["sld", "sldXData"],
+    double_list_fields = {"predictionIntervals": ["sld", "sldXData"],
                           "confidenceIntervals": [],
                           "dreamParams": [],
                           "dreamOutput": [],
                           "nestedSamplerOutput": []
                           }
 
-    array_fields = {"bestFitMean": [],
-                    "predictionIntervals": ["sampleChi"],
+    array_fields = {"predictionIntervals": ["sampleChi"],
                     "confidenceIntervals": ["percentile65", "percentile95", "mean"],
                     "dreamParams": ["R"],
                     "dreamOutput": ["allChains", "outlierChains", "AR", "R_stat", "CR"],

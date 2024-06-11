@@ -39,14 +39,6 @@ class Results:
 
 
 @dataclass
-class BestFitMean:
-    reflectivity: list
-    sld: list
-    chi: float
-    data: list
-
-
-@dataclass
 class PredictionIntervals:
     reflectivity: list
     sld: list
@@ -106,7 +98,6 @@ class NestedSamplerOutput:
 
 @dataclass
 class BayesResults(Results):
-    bestFitMean: BestFitMean
     predictionIntervals: PredictionIntervals
     confidenceIntervals: ConfidenceIntervals
     dreamParams: DreamParams
@@ -133,13 +124,6 @@ def make_results(procedure: Procedures, output_results: RAT.rat_core.OutputResul
     )
 
     if procedure in [Procedures.NS, Procedures.Dream]:
-
-        best_fit_mean = BestFitMean(
-            reflectivity=bayes_results.bestFitMean.reflectivity,
-            sld=bayes_results.bestFitMean.sld,
-            chi=bayes_results.bestFitMean.chi,
-            data=bayes_results.bestFitMean.data
-        )
 
         prediction_intervals = PredictionIntervals(
             reflectivity=bayes_results.predictionIntervals.reflectivity,
@@ -205,7 +189,6 @@ def make_results(procedure: Procedures, output_results: RAT.rat_core.OutputResul
             contrastParams=contrast_params,
             fitParams=output_results.fitParams,
             fitNames=output_results.fitNames,
-            bestFitMean=best_fit_mean,
             predictionIntervals=prediction_intervals,
             confidenceIntervals=confidence_intervals,
             dreamParams=dream_params,

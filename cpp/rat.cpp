@@ -292,14 +292,6 @@ struct PredictionIntervals
     py::array_t<real_T> sampleChi; 
 };
 
-struct BestFitMean
-{
-    py::list reflectivity;
-    py::list sld;
-    real_T chi;
-    py::list data;
-};
-
 struct ConfidenceIntervals
 {
     py::array_t<real_T> percentile95;
@@ -351,7 +343,6 @@ struct DreamOutput
 
 struct BayesResults
 {
-    BestFitMean bestFitMean;
     PredictionIntervals predictionIntervals;
     ConfidenceIntervals confidenceIntervals;
     DreamParams dreamParams;
@@ -1121,11 +1112,6 @@ BayesResults bayesResultsFromStruct8T(const RAT::struct8_T results)
 
     bayesResults.chain = pyArrayFromRatArray2d(results.chain);
 
-    bayesResults.bestFitMean.reflectivity = pyList1DFromRatCellWrap(results.bestFitMean.reflectivity);
-    bayesResults.bestFitMean.sld = pyList2dFromRatCellWrap(results.bestFitMean.sld);
-    bayesResults.bestFitMean.chi = results.bestFitMean.chi;
-    bayesResults.bestFitMean.data = pyList1DFromRatCellWrap(results.bestFitMean.data);
-
     bayesResults.predictionIntervals.reflectivity = pyList1DFromRatCellWrap(results.predictionIntervals.reflectivity);
     bayesResults.predictionIntervals.sld = pyList2dFromRatCellWrap(results.predictionIntervals.sld);
     bayesResults.predictionIntervals.reflectivityXData = pyList1DFromRatCellWrap(results.predictionIntervals.reflectivityXData);
@@ -1271,13 +1257,6 @@ PYBIND11_MODULE(rat_core, m) {
         .def_readwrite("message", &ProgressEventData::message)
         .def_readwrite("percent", &ProgressEventData::percent);
 
-    py::class_<BestFitMean>(m, "BestFitMean")
-        .def(py::init<>())
-        .def_readwrite("reflectivity", &BestFitMean::reflectivity)
-        .def_readwrite("sld", &BestFitMean::sld)
-        .def_readwrite("chi", &BestFitMean::chi)
-        .def_readwrite("data", &BestFitMean::data);    
-
     py::class_<ConfidenceIntervals>(m, "ConfidenceIntervals")
         .def(py::init<>())
         .def_readwrite("percentile95", &ConfidenceIntervals::percentile95)
@@ -1325,7 +1304,6 @@ PYBIND11_MODULE(rat_core, m) {
 
     py::class_<BayesResults>(m, "BayesResults")
         .def(py::init<>())
-        .def_readwrite("bestFitMean", &BayesResults::bestFitMean)
         .def_readwrite("predictionIntervals", &BayesResults::predictionIntervals)
         .def_readwrite("confidenceIntervals", &BayesResults::confidenceIntervals)
         .def_readwrite("dreamParams", &BayesResults::dreamParams)
