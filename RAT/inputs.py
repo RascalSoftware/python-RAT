@@ -5,7 +5,7 @@ from typing import Union
 
 import RAT
 import RAT.controls
-from RAT.utils.enums import Calculations, Languages, LayerModels
+from RAT.utils.enums import Calculations, Languages, LayerModels, TypeOptions
 import RAT.wrappers
 
 from RAT.rat_core import Cells, Checks, Control, Limits, Priors, ProblemDefinition
@@ -132,7 +132,9 @@ def make_problem(project: RAT.Project) -> ProblemDefinition:
                                     if hasattr(contrast, 'domain_ratio') else 0 for contrast in project.contrasts]
     problem.contrastBackgrounds = [project.backgrounds.index(contrast.background, True) for contrast in project.contrasts]
     problem.contrastBackgroundActions = [action_id[contrast.background_action] for contrast in project.contrasts]
-    problem.contrastResolutions = [project.resolutions.index(contrast.resolution, True) for contrast in project.contrasts]
+    problem.contrastResolutions = [project.resolutions.index(contrast.resolution, True)
+                                   if project.resolutions[project.resolutions.index(contrast.resolution)].type != TypeOptions.Data
+                                   else -1 for contrast in project.contrasts]
     problem.contrastCustomFiles = contrast_custom_files
     problem.resample = make_resample(project)
     problem.dataPresent = make_data_present(project)
