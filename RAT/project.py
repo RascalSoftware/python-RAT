@@ -188,7 +188,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
             self.parameters.insert(0, RAT.models.ProtectedParameter(**substrate_roughness_values))
 
         if 'Simulation' not in self.data.get_names():
-            self.data.insert(0, RAT.models.Data(name='Simulation'))
+            self.data.insert(0, RAT.models.Data(name='Simulation', simulation_range=[0.005, 0.7]))
 
         self._all_names = self.get_all_names()
         self._contrast_model_field = self.get_contrast_model_field()

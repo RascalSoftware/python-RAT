@@ -231,10 +231,19 @@ def make_cells(project: RAT.Project) -> Cells:
     for contrast in project.contrasts:
 
         data_index = project.data.index(contrast.data)
-
         all_data.append(project.data[data_index].data)
-        data_limits.append(project.data[data_index].data_range)
-        simulation_limits.append(project.data[data_index].simulation_range)
+        data_range = project.data[data_index].data_range
+        simulation_range = project.data[data_index].simulation_range
+
+        if data_range:
+            data_limits.append(data_range)
+        else:
+            data_limits.append([0.0, 0.0])
+
+        if simulation_range:
+            simulation_limits.append(simulation_range)
+        else:
+            simulation_limits.append([0.0, 0.0])
 
 
     file_handles = []
