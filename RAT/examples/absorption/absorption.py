@@ -1,6 +1,7 @@
 """Custom layers model including absorption"""
 
-import RAT
+import RAT.utils.plotting
+import RAT.rat_core
 import numpy as np
 
 problem = RAT.Project(name="Absorption example", calculation="non polarised", model="custom layers",
@@ -61,19 +62,20 @@ problem.resolution_parameters.set_fields(0, fit=True)
 
 # Now add the data we need
 data_1 = np.loadtxt("D2O_spin_down.dat")
-problem.data.append(name="D2O_dn", data=data_1)#, data_range=[0.012, 0.22], simulation_range=[0.012, 0.22])
+problem.data.append(name="D2O_dn", data=data_1)
 
 data_2 = np.loadtxt("D2O_spin_up.dat")
-problem.data.append(name="D2O_up", data=data_2)#, data_range=[0.012, 0.22], simulation_range=[0.012, 0.22])
+problem.data.append(name="D2O_up", data=data_2)
 
 data_3 = np.loadtxt("H2O_spin_down.dat")
-problem.data.append(name="H2O_dn", data=data_3)#, data_range=[0.012, 0.22], simulation_range=[0.012, 0.22])
+problem.data.append(name="H2O_dn", data=data_3)
 
 data_4 = np.loadtxt("H2O_spin_up.dat")
-problem.data.append(name="H2O_up", data=data_4)#, data_range=[0.012, 0.22], simulation_range=[0.012, 0.22])
+problem.data.append(name="H2O_up", data=data_4)
 
 # Add the custom file
-problem.custom_files.append(name="DPPC absorption", filename="volumeThiolBilayer.m", language="matlab", path="pwd")
+#problem.custom_files.append(name="DPPC absorption", filename="volumeThiolBilayer.m", language="matlab")
+problem.custom_files.append(name="DPPC absorption", filename="volumeThiolBilayer.py", language="python")
 
 # Finally add the contrasts
 problem.contrasts.append(name="D2O Down", data="D2O_dn", background="Background 1", bulk_in="Silicon",
@@ -94,3 +96,7 @@ problem.contrasts.append(name="H2O Up", data="H2O_up", background="Background 4"
 
 # Now make a controls block....
 controls = RAT.set_controls(parallel="contrasts", resampleParams=[0.9, 150.0])
+
+problem, results = RAT.run(problem, controls)
+
+RAT.utils.plotting.plot_ref_sld(problem, results, True)

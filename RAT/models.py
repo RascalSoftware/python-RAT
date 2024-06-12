@@ -90,7 +90,7 @@ class CustomFile(RATModel):
     filename: str = ''
     function_name: str = ''
     language: Languages = Languages.Python
-    path: str = 'pwd'  # Should later expand to find current file path
+    path: str = ''
 
     def model_post_init(self, __context: Any) -> None:
         """If a "filename" is supplied but the "function_name" field is not set, the "function_name" should be set to

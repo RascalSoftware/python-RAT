@@ -1,6 +1,7 @@
 """Standard Layers fit of a DSPC floating bilayer"""
 
 import RAT
+import RAT.utils.plotting
 import RAT.rat_core
 import numpy as np
 
@@ -92,8 +93,6 @@ problem.contrasts.append(name="SMW", bulk_in="Silicon", bulk_out="SMW", backgrou
 
 
 controls = RAT.set_controls()
+problem, results = RAT.run(problem, controls)
 
-problem2, cells, limits, priors, cpp_controls = RAT.make_input(problem, controls)
-
-# Python
-problem2, results, bayes = RAT.rat_core.RATMain(problem2, cells, limits, cpp_controls, priors)
+RAT.utils.plotting.plot_ref_sld(problem, results, True)

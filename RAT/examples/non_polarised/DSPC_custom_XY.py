@@ -25,6 +25,8 @@ where VFn is the Volume Fraction of the n'th layer.
 """
 
 import RAT
+import RAT.utils.plotting
+import RAT.rat_core
 import numpy as np
 
 # Start by making the class and setting it to a custom layers type:
@@ -58,17 +60,18 @@ SMW_data = np.loadtxt("c_PLP0016601.dat", delimiter=",")
 H2O_data = np.loadtxt("c_PLP0016607.dat", delimiter=",")
 
 # Add the data to the project - note this data has a resolution 4th column
-problem.data.append(name="Bilayer / D2O", data=D2O_data)#, data_range=[0.013, 0.37]) # data range is incorrect
-problem.data.append(name="Bilayer / SMW", data=SMW_data)#, data_range=[0.013, 0.37]) # data range is incorrect
-problem.data.append(name="Bilayer / H2O", data=H2O_data)#, data_range=[0.013, 0.37]) # data range is incorrect
+problem.data.append(name="Bilayer / D2O", data=D2O_data)
+problem.data.append(name="Bilayer / SMW", data=SMW_data)
+problem.data.append(name="Bilayer / H2O", data=H2O_data)
 
 # Add the custom file to the project
 # (Note that here we are making an optional third output parameter, which we need later just for plotting, but not for
 # the RAT fit. So, we make this output optional using a global flag, so that we can control it from outside our function)
-problem.custom_files.append(name="DSPC Model", filename="customBilayerDSPC.m", language="matlab", path="pwd")
+#problem.custom_files.append(name="DSPC Model", filename="customXYDSPC.m", language="matlab")
+problem.custom_files.append(name="DSPC Model", filename="customXYDSPC.py", language="python")
 
 # Also, add the relevant background parameters - one each for each contrast:
-problem.background_parameters.set_fields(0, name="Backs par D2O", fit=True, min=1.0e-10, max=1.0e-5, value=1.0e-07)
+problem.background_parameters.set_fields(0, name="Background parameter D2O", fit=True, min=1.0e-10, max=1.0e-5, value=1.0e-07)
 
 problem.background_parameters.append(name="Background parameter SMW", min=0.0, value=1.0e-7, max=1.0e-5, fit=True)
 problem.background_parameters.append(name="Background parameter H2O", min=0.0, value=1.0e-7, max=1.0e-5, fit=True)
@@ -79,7 +82,6 @@ problem.backgrounds.append(name="Background H2O", type="constant", value_1="Back
 
 # And edit the other one....
 problem.backgrounds.set_fields(0, name="Background D2O", value_1="Background parameter D2O")
-
 
 # Finally modify some of the other parameters to be more suitable values for a solid / liquid experiment
 problem.scalefactors.set_fields(0, value=1.0, min=0.5, max=2.0, fit=True)
@@ -102,118 +104,7 @@ problem.contrasts.append(name="Bilayer / H2O", background="Background H2O", reso
                          model=["DSPC Model"])
 
 
-# Running the Model.
-# We do this by first making a controls block as previously. We'll run a Differential  Evolution, and then a Bayesian
-# analysis.
+controls = RAT.set_controls()
+problem, results = RAT.run(problem, controls)
 
-# controls = RAT.set_controls(procedure = RAT.controls.Procedures.DE, parallel = 'contrasts', display = 'final')
-#
-#
-# [problem,results] = RAT(problem,controls);
-# %%
-# % Plot what we have....
-#
-# plotRefSLD(problem,results);
-# %%
-# % This is not too bad..... now run Bayes...
-#
-# controls.procedure = 'dream';
-# controls.adaptPCR = true;
-# [problem,results] = RAT(problem,controls);
-#
-# %%
-# % ..and plot this out....
-#
-#     figure(30); clf;
-#     bayesShadedPlot(problem, results,'fit','average','KeepAxes',true,'interval',65,'q4',false)
-#
-#     h3 = figure(40); clf
-#     plotHists(results,h3,'smooth',true)
-#
-#     h4 = figure(50); clf
-#     cornerPlot(results,h4,'smooth',false)
-# %% A Slightly Deeper Analysys - Plotting The Bayes Result as Volume Fractions
-# % The model we're using here is built using Volume Fractions. It's convenient
-# % to be able to use these as outputs, so that the result of our Bayesian analysis
-# % in terms of the VF's of the various components can be visualised. To do this,
-# % we make our global output flag true....
-#
-# outputVF = true;
-# %%
-# % Now we have an output for our VF's.
-# %
-# % We want to see how these are distributed in our Bayesian analysis. All the
-# % information comes from our chain....
-#
-#     chain = results.chain;
-# %%
-# % Now, calculate the Volume Fractions for each sample of our Markov Chain, and
-# % store our VF outputs as a cell array....
-#
-#     % Find the size of the chain
-#     nSamples = size(chain,1);
-#
-#     % We don't need to calculate all of it, just take a random 1000 points
-#     % from the chain. Make a set of indices...
-#     samples = randsample(nSamples,1000);
-#
-#     % Make some empty arrays to store our data....
-#     vfSi = []; vfOxide = []; vfHeadL = []; vfTails = []; vfHeadR = []; vfWat = [];
-#
-#     % Loop over all the samples...
-#     for n = 1:length(samples)
-#         % Take the n'th value from of set of indicies...
-#         i = samples(n);
-#
-#         % Get these parameter values....
-#         thisParams = chain(i,:);
-#
-#         % Run our model.....
-#         [~,~,thisRes] = customXYDSPC(thisParams,2.07e-6,6.35e-6,1);
-#
-#         % Store them...
-#         thisVfs = thisRes(:,2:end); % Column 1 is the z value...
-#
-#         % Add them to the arrays for storage...
-#         vfSi = [vfSi ; thisVfs(:,1)'];  % Note the transpose.....
-#         vfOxide  = [vfOxide ; thisVfs(:,2)'];
-#         vfHeadL  = [vfHeadL ; thisVfs(:,3)'];
-#         vfTails  = [vfTails ; thisVfs(:,4)'];
-#         vfHeadR  = [vfHeadR ; thisVfs(:,5)'];
-#         vfWat  = [vfWat ; thisVfs(:,6)'];
-#     end
-# %%
-# %
-# %%
-# % For each collection of volume fractions, we need the mean and the 65% Percentile.....
-#
-# z = thisRes(:,1); nPoints = length(z);
-#
-# % Make some empty arrays....
-# ciSi = []; ciOxide = []; ciHeadL = []; ciTails = []; ciHeadR = [];
-# avSi = []; avOxide = []; avHeadL = []; avTails = []; avHeadR = [];
-#
-# % Make an inline function for calculating confidence intervals...
-# CIFn = @(x,p)prctile(x,abs([0,100]-(100-p)/2)); % Percentile function
-#
-# % Work out average and confidence intervals...
-# avSi = mean(vfSi); ciSi = CIFn(vfSi,65);
-# avOxide = mean(vfOxide); ciOxide = CIFn(vfOxide,65);
-# avHeadL = mean(vfHeadL); ciHeadL = CIFn(vfHeadL,65);
-# avTails = mean(vfTails); ciTails = CIFn(vfTails,65);
-# avHeadR = mean(vfHeadR); ciHeadR = CIFn(vfHeadR,65);
-#
-# % Make a plot.....
-# figure; hold on; box on
-#
-# % In RAT, there is a useful function called 'shade' that we can use
-# % here.....
-# cols = get(gca,'ColorOrder');
-# shade(z,ciSi(1,:),z,ciSi(2,:),'FillColor',cols(1,:),'FillType',[1 2;2 1],'FillAlpha',0.3);
-# shade(z,ciOxide(1,:),z,ciOxide(2,:),'FillColor',cols(2,:),'FillType',[1 2;2 1],'FillAlpha',0.3);
-# shade(z,ciHeadL(1,:),z,ciHeadL(2,:),'FillColor',cols(3,:),'FillType',[1 2;2 1],'FillAlpha',0.3);
-# shade(z,ciTails(1,:),z,ciTails(2,:),'FillColor',cols(4,:),'FillType',[1 2;2 1],'FillAlpha',0.3);
-# shade(z,ciHeadR(1,:),z,ciHeadR(2,:),'FillColor',cols(5,:),'FillType',[1 2;2 1],'FillAlpha',0.3);
-# title('Volume Fractions');
-# %%
-# % .. and we are done.
+RAT.utils.plotting.plot_ref_sld(problem, results, True)

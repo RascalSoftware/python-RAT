@@ -4,6 +4,10 @@ Custom Layers example for Supported DSPC layer.
 Example of using custom layers to model a DSPC supported bilayer.
 """
 import RAT
+import RAT.inputs
+import RAT.outputs
+import RAT.utils.plotting
+import RAT.rat_core
 import numpy as np
 
 problem = RAT.Project(name="Orso lipid example - custom layers", model="custom layers", geometry="substrate/liquid")
@@ -15,7 +19,7 @@ problem = RAT.Project(name="Orso lipid example - custom layers", model="custom l
 problem.parameters.append(name="Oxide Thickness", min=5.0, value=20.0, max=60.0, fit=True)
 problem.parameters.append(name="Oxide Hydration", min=0.0, value=0.2, max=0.5, fit=True)
 problem.parameters.append(name="Lipid APM", min=45.0, value=55.0, max=65.0, fit=True)
-problem.parameters.append(name="Head Hydration", min=00.0, value=0.2, max=0.5, fit=True)
+problem.parameters.append(name="Head Hydration", min=0.0, value=0.2, max=0.5, fit=True)
 problem.parameters.append(name="Bilayer Hydration", min=0.0, value=0.1, max=0.2, fit=True)
 problem.parameters.append(name="Bilayer Roughness", min=2.0, value=4.0, max=8.0, fit=True)
 problem.parameters.append(name="Water Thickness", min=0.0, value=2.0, max=10.0, fit=True)
@@ -39,12 +43,13 @@ SMW_data = np.loadtxt("c_PLP0016601.dat", delimiter=",")
 H2O_data = np.loadtxt("c_PLP0016607.dat", delimiter=",")
 
 # Add the data to the project - note this data has a resolution 4th column
-problem.data.append(name="Bilayer / D2O", data=D2O_data)#, data_range=[0.013, 0.37]) # data range is incorrect
-problem.data.append(name="Bilayer / SMW", data=SMW_data)#, data_range=[0.013, 0.37]) # data range is incorrect
-problem.data.append(name="Bilayer / H2O", data=H2O_data)#, data_range=[0.013, 0.37]) # data range is incorrect
+problem.data.append(name="Bilayer / D2O", data=D2O_data, data_range=[0.013, 0.37])
+problem.data.append(name="Bilayer / SMW", data=SMW_data, data_range=[0.013, 0.32996])
+problem.data.append(name="Bilayer / H2O", data=H2O_data, data_range=[0.013, 0.33048])
 
 # Add the custom file to the project
-problem.custom_files.append(name="DSPC Model", filename="customBilayerDSPC.m", language="matlab", path="pwd") # how to get pwd?
+#problem.custom_files.append(name="DSPC Model", filename="customBilayerDSPC.m", language="matlab")
+problem.custom_files.append(name="DSPC Model", filename="customBilayerDSPC.py", language="python")
 
 # Also, add the relevant background parameters - one each for each contrast:
 problem.background_parameters.set_fields(0, name="Background parameter D2O", fit=True, min=1.0e-10, max=1.0e-5, value=1.0e-07)
@@ -78,3 +83,9 @@ problem.contrasts.append(name="Bilayer / SMW", background="Background SMW", reso
 problem.contrasts.append(name="Bilayer / H2O", background="Background H2O", resolution="Data Resolution",
                          scalefactor="Scalefactor 1", bulk_out="SLD H2O", bulk_in="Silicon", data="Bilayer / H2O",
                          model=["DSPC Model"])
+
+controls = RAT.set_controls()
+
+problem, results = RAT.run(problem, controls)
+
+RAT.utils.plotting.plot_ref_sld(problem, results, True)

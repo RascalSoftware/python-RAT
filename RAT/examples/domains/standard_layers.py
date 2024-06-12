@@ -1,4 +1,6 @@
 import RAT
+import RAT.utils.plotting
+import RAT.rat_core
 
 problem = RAT.Project(calculation="domains")
 
@@ -26,8 +28,10 @@ problem.layers.append(name="Layer 1", thickness="L1 Thickness", SLD="L1 SLD", ro
 problem.layers.append(name="Layer 2", thickness="L2 Thickness", SLD="L2 SLD", roughness="L2 Roughness",
                       hydration="L2 Hydration", hydrate_with="bulk out")
 
-problem.layers.append(name="Layer 3", thickness="L3 Thickness", SLD="L3 SLD", roughness="L3 Roughness",
-                      hydration="L3 Hydration", hydrate_with="bulk out")
+#problem.layers.append(name="Layer 3", thickness="L3 Thickness", SLD="L3 SLD", roughness="L3 Roughness",
+#                      hydration="L3 Hydration", hydrate_with="bulk out")
+problem.layers.append(name="Layer 3", thickness="L2 Thickness", SLD="L2 SLD", roughness="L2 Roughness",
+                      hydration="L2 Hydration", hydrate_with="bulk out")
 
 
 # If we look at the project, there are two extra groups as compared to a normal standard layers calculation:
@@ -42,11 +46,7 @@ problem.contrasts.append(name="Domain Test", background="Background 1", resoluti
 
 
 # Now we can run our simulation as usual, and plot the results....
-
-# Make a controls class....
 controls = RAT.set_controls()
+problem, results = RAT.run(problem, controls)
 
-# Send everything to RAT....
-#[problem,results] = RAT(problem,controls);
-
-#plotRefSLD(problem,results);
+RAT.utils.plotting.plot_ref_sld(problem, results, True)

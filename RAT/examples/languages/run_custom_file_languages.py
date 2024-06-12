@@ -1,30 +1,35 @@
 """Test custom function languages."""
-import RAT.rat_core
 import RAT.utils.plotting
 import setup_problem
+import time
 
-problem = setup_problem.make_example_problem()
+project = setup_problem.make_example_problem()
 controls = RAT.set_controls()
 
-problem, cells, limits, priors, cpp_controls = RAT.make_input(problem, controls)
-
 # Python
-problem, results, bayes = RAT.rat_core.RATMain(problem, cells, limits, cpp_controls, priors)
-# figure(1)
-# plot_ref_sld(problem, results)
+start = time.time()
+project, results = RAT.run(project, controls)
+end = time.time()
+print(f"Python time is: {end-start}s")
+
+RAT.utils.plotting.plot_ref_sld(project, results)
 
 # Matlab
-# problem.setCustomFile(1,'filename', 'customBilayer.m')
-# problem.setCustomFile(1,'language','matlab')
-#
-# [problem, results] = RAT(problem,controls)
-# figure(2); clf
-# plotRefSLD(problem,results);
-#
-# # C++
-# problem.setCustomFile(1,'filename', 'customBilayer.dll')
-# problem.setCustomFile(1,'language','cpp')
-#
-# [problem, results] = RAT(problem,controls)
-# figure(3); clf
-# plotRefSLD(problem,results);
+project.custom_files.set_fields(0, filename='customBilayer.m', language='matlab')
+
+start = time.time()
+project, results = RAT.run(project, controls)
+end = time.time()
+print(f"Matlab time is: {end-start}s")
+
+RAT.utils.plotting.plot_ref_sld(project, results)
+
+# C++
+project.custom_files.set_fields(0, filename='customBilayer.dll', language='cpp')
+
+start = time.time()
+project, results = RAT.run(project, controls)
+end = time.time()
+print(f"C++ time is: {end-start}s")
+
+RAT.utils.plotting.plot_ref_sld(project, results)
