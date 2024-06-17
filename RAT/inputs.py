@@ -110,6 +110,26 @@ def make_problem(project: RAT.Project) -> ProblemDefinition:
     else:
         contrast_custom_files = [project.custom_files.index(contrast.model[0], True) for contrast in project.contrasts]
 
+    # Set background parameters, with -1 used to indicate a data background
+    contrast_background_params = []
+
+    for contrast in project.contrasts:
+        background = project.backgrounds[project.backgrounds.index(contrast.background)]
+        if background.type == TypeOptions.Data:
+            contrast_background_params.append(-1)
+        else:
+            contrast_background_params.append(project.background_parameters.index(background.value_1, True))
+
+    # Set resolution parameters, with -1 used to indicate a data resolution
+    contrast_resolution_params = []
+
+    for contrast in project.contrasts:
+        resolution = project.resolutions[project.resolutions.index(contrast.resolution)]
+        if resolution.type == TypeOptions.Data:
+            contrast_resolution_params.append(-1)
+        else:
+            contrast_resolution_params.append(project.resolution_parameters.index(resolution.value_1, True))
+
     problem = ProblemDefinition()
 
     problem.TF = project.calculation
@@ -130,11 +150,9 @@ def make_problem(project: RAT.Project) -> ProblemDefinition:
     problem.contrastScalefactors = [project.scalefactors.index(contrast.scalefactor, True) for contrast in project.contrasts]
     problem.contrastDomainRatios = [project.domain_ratios.index(contrast.domain_ratio, True)
                                     if hasattr(contrast, 'domain_ratio') else 0 for contrast in project.contrasts]
-    problem.contrastBackgrounds = [project.backgrounds.index(contrast.background, True) for contrast in project.contrasts]
+    problem.contrastBackgroundParams = contrast_background_params
     problem.contrastBackgroundActions = [action_id[contrast.background_action] for contrast in project.contrasts]
-    problem.contrastResolutions = [project.resolutions.index(contrast.resolution, True)
-                                   if project.resolutions[project.resolutions.index(contrast.resolution)].type != TypeOptions.Data
-                                   else -1 for contrast in project.contrasts]
+    problem.contrastResolutionParams = contrast_resolution_params
     problem.contrastCustomFiles = contrast_custom_files
     problem.resample = make_resample(project)
     problem.dataPresent = make_data_present(project)
@@ -246,7 +264,6 @@ def make_cells(project: RAT.Project) -> Cells:
             simulation_limits.append(simulation_range)
         else:
             simulation_limits.append([0.0, 0.0])
-
 
     file_handles = []
     for custom_file in project.custom_files:

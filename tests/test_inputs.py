@@ -79,9 +79,9 @@ def standard_layers_problem():
     problem.contrastBulkOuts = [1]
     problem.contrastQzshifts = []
     problem.contrastScalefactors = [1]
-    problem.contrastBackgrounds = [1]
+    problem.contrastBackgroundParams = [1]
     problem.contrastBackgroundActions = [1]
-    problem.contrastResolutions = [1]
+    problem.contrastResolutionParams = [1]
     problem.contrastCustomFiles = [float('NaN')]
     problem.contrastDomainRatios = [0]
     problem.resample = [False]
@@ -119,9 +119,9 @@ def domains_problem():
     problem.contrastBulkOuts = [1]
     problem.contrastQzshifts = []
     problem.contrastScalefactors = [1]
-    problem.contrastBackgrounds = [1]
+    problem.contrastBackgroundParams = [1]
     problem.contrastBackgroundActions = [1]
-    problem.contrastResolutions = [1]
+    problem.contrastResolutionParams = [1]
     problem.contrastCustomFiles = [float('NaN')]
     problem.contrastDomainRatios = [1]
     problem.resample = [False]
@@ -159,9 +159,9 @@ def custom_xy_problem():
     problem.contrastBulkOuts = [1]
     problem.contrastQzshifts = []
     problem.contrastScalefactors = [1]
-    problem.contrastBackgrounds = [1]
+    problem.contrastBackgroundParams = [1]
     problem.contrastBackgroundActions = [1]
-    problem.contrastResolutions = [1]
+    problem.contrastResolutionParams = [1]
     problem.contrastCustomFiles = [1]
     problem.contrastDomainRatios = [0]
     problem.resample = [False]
@@ -241,8 +241,8 @@ def custom_xy_cells():
     cells = Cells()
     cells.f1 = [[0, 1]]
     cells.f2 = [np.empty([0, 3])]
-    cells.f3 = [[]]
-    cells.f4 = [[]]
+    cells.f3 = [[0.0, 0.0]]
+    cells.f4 = [[0.005, 0.7]]
     cells.f5 = [[0]]
     cells.f6 = [[0]]
     cells.f7 = ['Substrate Roughness', 'Test Thickness', 'Test SLD', 'Test Roughness']
@@ -525,8 +525,8 @@ def check_problem_equal(actual_problem, expected_problem) -> None:
                      "numberOfDomainContrasts"]
 
     array_fields = ["params", "backgroundParams", "qzshifts", "scalefactors", "bulkIn", "bulkOut", "resolutionParams",
-                    "domainRatio", "contrastBackgrounds", "contrastBackgroundActions", "contrastQzshifts",
-                    "contrastScalefactors", "contrastBulkIns", "contrastBulkOuts", "contrastResolutions",
+                    "domainRatio", "contrastBackgroundParams", "contrastBackgroundActions", "contrastQzshifts",
+                    "contrastScalefactors", "contrastBulkIns", "contrastBulkOuts", "contrastResolutionParams",
                     "contrastDomainRatios", "resample", "dataPresent", "oilChiDataPresent", "fitParams", "otherParams",
                     "fitLimits", "otherLimits"]
 

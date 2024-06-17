@@ -13,7 +13,7 @@ class MatlabWrapper:
     filename : string
         The path of the file containing MATLAB function
     """
-    def __init__(self, filename: str) -> None :
+    def __init__(self, filename: str) -> None:
         self.engine = None
         try:
             import matlab.engine
@@ -66,14 +66,13 @@ class DylibWrapper:
         self.engine = RAT.rat_core.DylibEngine(filename, function_name)
     
     def getHandle(self) -> Callable[[ArrayLike, ArrayLike, ArrayLike, int, int], Tuple[ArrayLike, float]]:
-            
         """Returns a wrapper for the custom dynamic library function
 
         Returns
         -------
         wrapper : Callable[[ArrayLike, ArrayLike, ArrayLike, int, int], Tuple[ArrayLike, float]]
             The wrapper function for the dynamic library callback
-        """                           
+        """
         def handle(params, bulk_in, bulk_out, contrast, domain=-1):
             if domain == -1: 
                 output, sub_rough = self.engine.invoke(params, bulk_in, bulk_out, contrast)
