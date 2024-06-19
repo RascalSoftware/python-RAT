@@ -1,10 +1,10 @@
 
-def alloyDomains(params, bulkIn, bulkOut, contrast, domain):
-    """Simple custom model for testing incoherent summing...
-    Simple two layer of permalloy / gold, with up/down domains..
+def alloy_domains(params, bulkIn, bulkOut, contrast, domain):
+    """Simple custom model for testing incoherent summing.
+    Simple two layer of permalloy / gold, with up/down domains.
     """
 
-    # Split up the parameters....
+    # Split up the parameters
     subRough = params[0]
     alloyThick = params[1]
     alloySLDup = params[2]
@@ -14,7 +14,7 @@ def alloyDomains(params, bulkIn, bulkOut, contrast, domain):
     goldSLD = params[6]
     goldRough = params[7]
 
-    # Make the layers....
+    # Make the layers
     alloyUp = [alloyThick, alloySLDup, alloyRough]
     alloyDn = [alloyThick, alloySLDdn, alloyRough]
     gold = [goldThick, goldSLD, goldRough]

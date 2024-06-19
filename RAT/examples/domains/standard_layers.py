@@ -1,10 +1,9 @@
 import RAT
 import RAT.utils.plotting
-import RAT.rat_core
 
 problem = RAT.Project(calculation="domains")
 
-# Define the parameters we need to define our two domains...
+# Define the parameters we need to define our two domains
 problem.parameters.append(name="L1 Thickness", min=5.0, value=20.0, max=60.0, fit=True)
 problem.parameters.append(name="L1 SLD", min=3.0e-6, value=4.1e-6, max=5.0e-6, fit=False)
 problem.parameters.append(name="L1 Roughness", min=2.0, value=5.0, max=20.0, fit=True)
@@ -28,10 +27,8 @@ problem.layers.append(name="Layer 1", thickness="L1 Thickness", SLD="L1 SLD", ro
 problem.layers.append(name="Layer 2", thickness="L2 Thickness", SLD="L2 SLD", roughness="L2 Roughness",
                       hydration="L2 Hydration", hydrate_with="bulk out")
 
-#problem.layers.append(name="Layer 3", thickness="L3 Thickness", SLD="L3 SLD", roughness="L3 Roughness",
-#                      hydration="L3 Hydration", hydrate_with="bulk out")
-problem.layers.append(name="Layer 3", thickness="L2 Thickness", SLD="L2 SLD", roughness="L2 Roughness",
-                      hydration="L2 Hydration", hydrate_with="bulk out")
+problem.layers.append(name="Layer 3", thickness="L3 Thickness", SLD="L3 SLD", roughness="L3 Roughness",
+                      hydration="L3 Hydration", hydrate_with="bulk out")
 
 
 # If we look at the project, there are two extra groups as compared to a normal standard layers calculation:
@@ -45,8 +42,8 @@ problem.contrasts.append(name="Domain Test", background="Background 1", resoluti
                          domain_ratio="Domain Ratio 1", data="Simulation", model=["Domain 1", "Domain 2"])
 
 
-# Now we can run our simulation as usual, and plot the results....
+# Now we can run our simulation as usual, and plot the results
 controls = RAT.set_controls()
-problem, results = RAT.run(problem, controls)
 
+problem, results = RAT.run(problem, controls)
 RAT.utils.plotting.plot_ref_sld(problem, results, True)

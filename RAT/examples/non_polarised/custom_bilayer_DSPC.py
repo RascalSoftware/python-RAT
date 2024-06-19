@@ -1,6 +1,6 @@
 import numpy as np
 
-def customBilayerDSPC(params,bulk_in,bulk_out,contrast):
+def custom_bilayer_DSPC(params, bulk_in, bulk_out, contrast):
     """
     CUSTOMBILAYER RAT Custom Layer Model File.
 
@@ -47,7 +47,7 @@ def customBilayerDSPC(params,bulk_in,bulk_out,contrast):
     bn = 0.936e-4    # Nitrogen
     bd = 0.6671e-4   # Deuterium
 
-    # Now make the lipid groups..
+    # Now make the lipid groups
     COO = (4*bo) + (2*bc)
     GLYC = (3*bc) + (5*bh)
     CH3 = (2*bc) + (6*bh)
@@ -63,11 +63,11 @@ def customBilayerDSPC(params,bulk_in,bulk_out,contrast):
     vHead = 319
     vTail = 782
 
-    # we use the volumes to calculate the SLD's
+    # We use the volumes to calculate the SLDs
     SLDhead = Head / vHead
     SLDtail = Tails / vTail
 
-    # We calculate the layer thickness' from the volumes and the APM...
+    # We calculate the layer thickness' from the volumes and the APM
     headThick = vHead / lipidAPM
     tailThick = vTail / lipidAPM
 

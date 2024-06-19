@@ -1,13 +1,13 @@
 """Custom layers model including absorption"""
 
+import RAT
 import RAT.utils.plotting
-import RAT.rat_core
 import numpy as np
 
 problem = RAT.Project(name="Absorption example", calculation="non polarised", model="custom layers",
                       geometry="substrate/liquid", absorption=True)
 
-# Add the required parameters (substrate roughness as already there by default)
+# Add the required parameters (substrate roughness is already there by default)
 problem.parameters.append(name="Alloy Thickness", min=100.0, value=135.6, max=200.0, fit=True)
 problem.parameters.append(name="Alloy SLD up", min=6.0e-6, value=9.87e-6, max=1.2e-5, fit=True)
 problem.parameters.append(name="Alloy SLD imaginary up", min=1.0e-9, value=4.87e-8, max=1.0e-7, fit=True)
@@ -43,7 +43,7 @@ problem.scalefactors.append(name="Scalefactor 2", min=0.5, value=1, max=1.5, fit
 problem.scalefactors.append(name="Scalefactor 3", min=0.5, value=1, max=1.5, fit=True)
 problem.scalefactors.append(name="Scalefactor 4", min=0.5, value=1, max=1.5, fit=True)
 
-# Similarly, use an individual background for each dataset....
+# Similarly, use an individual background for each dataset
 del problem.backgrounds[0]
 del problem.background_parameters[0]
 
@@ -57,7 +57,7 @@ problem.backgrounds.append(name="Background 2", type="constant", value_1="Backgr
 problem.backgrounds.append(name="Background 3", type="constant", value_1="Background parameter 3")
 problem.backgrounds.append(name="Background 4", type="constant", value_1="Background parameter 4")
 
-# Make the resolution fittable...
+# Make the resolution fittable
 problem.resolution_parameters.set_fields(0, fit=True)
 
 # Now add the data we need
@@ -74,8 +74,7 @@ data_4 = np.loadtxt("H2O_spin_up.dat")
 problem.data.append(name="H2O_up", data=data_4)
 
 # Add the custom file
-#problem.custom_files.append(name="DPPC absorption", filename="volumeThiolBilayer.m", language="matlab")
-problem.custom_files.append(name="DPPC absorption", filename="volumeThiolBilayer.py", language="python")
+problem.custom_files.append(name="DPPC absorption", filename="volume_thiol_bilayer.py", language="python")
 
 # Finally add the contrasts
 problem.contrasts.append(name="D2O Down", data="D2O_dn", background="Background 1", bulk_in="Silicon",
@@ -94,9 +93,9 @@ problem.contrasts.append(name="H2O Up", data="H2O_up", background="Background 4"
                          bulk_out="H2O", scalefactor="Scalefactor 4", resolution="Resolution 1", resample=True,
                          model=["DPPC absorption"])
 
-# Now make a controls block....
+# Now make a controls block
 controls = RAT.set_controls(parallel="contrasts", resampleParams=[0.9, 150.0])
 
+# Run the code and plot the results
 problem, results = RAT.run(problem, controls)
-
 RAT.utils.plotting.plot_ref_sld(problem, results, True)

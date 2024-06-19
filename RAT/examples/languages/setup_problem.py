@@ -11,10 +11,9 @@ def make_example_problem():
 
     problem = RAT.Project(name="Orso lipid example - custom layers", model="custom layers", geometry="substrate/liquid")
 
-    # First we need to set up a parameters group. We will be using a pre-prepared custom model file, so we need to add the
-    # relevant parameters we are going to need to define the model (note that Substrate Roughness always exists as
+    # First we need to set up a parameters group. We will be using a pre-prepared custom model file, so we need to add
+    # the relevant parameters we are going to need to define the model (note that Substrate Roughness always exists as
     # parameter 1).
-
     problem.parameters.append(name="Oxide Thickness", min=5.0, value=20.0, max=60.0, fit=True)
     problem.parameters.append(name="Oxide Hydration", min=0.0, value=0.2, max=0.5, fit=True)
     problem.parameters.append(name="Lipid APM", min=45.0, value=55.0, max=65.0, fit=True)
@@ -25,7 +24,7 @@ def make_example_problem():
 
     problem.parameters.set_fields(0, min=1.0, max=10.0)
 
-    # Need to add the relevant Bulk SLD's. Change the bulk in from air to silicon, and add two additional water contrasts:
+    # Need to add the relevant Bulk SLDs. Change the bulk in from air to silicon, and add two additional water contrasts:
     problem.bulk_in.set_fields(0, name="Silicon", min=2.07e-6, value=2.073e-6, max=2.08e-6, fit=False)
 
     problem.bulk_out.append(name="SLD SMW", min=1.0e-6, value=2.073e-6, max=3.0e-6, fit=True)
@@ -33,8 +32,8 @@ def make_example_problem():
 
     problem.bulk_out.set_fields(0, min=5.0e-6, fit=True)
 
-    # Now add the datafiles. We have three datasets we need to consider - the bilayer against D2O, Silicon Matched water
-    # and H2O.Load these datafiles in and put them in the data block
+    # Now add the datafiles. We have three datasets we need to consider - the bilayer against D2O, Silicon Matched Water
+    # and H2O. Load these datafiles in and put them in the data block
 
     # Read in the datafiles
     D2O_data = np.loadtxt("c_PLP0016596.dat", delimiter=",")
@@ -47,7 +46,7 @@ def make_example_problem():
     problem.data.append(name="Bilayer / H2O", data=H2O_data)
 
     # Add the custom file to the project
-    problem.custom_files.append(name="DSPC Model", filename="customBilayer.py", language="python")
+    problem.custom_files.append(name="DSPC Model", filename="custom_bilayer.py", language="python")
 
     # Also, add the relevant background parameters - one each for each contrast:
     problem.background_parameters.set_fields(0, name="Background parameter D2O", fit=True, min=1.0e-10, max=1.0e-5,
@@ -62,7 +61,7 @@ def make_example_problem():
     problem.backgrounds.append(name="Background SMW", type="constant", value_1="Background parameter SMW")
     problem.backgrounds.append(name="Background H2O", type="constant", value_1="Background parameter H2O")
 
-    # And edit the other one....
+    # And edit the other one
     problem.backgrounds.set_fields(0, name="Background D2O", value_1="Background parameter D2O")
 
     # Finally modify some of the other parameters to be more suitable values for a solid / liquid experiment

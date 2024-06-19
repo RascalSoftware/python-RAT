@@ -2,7 +2,6 @@
 
 import RAT
 import RAT.utils.plotting
-import RAT.rat_core
 import numpy as np
 
 problem = RAT.Project(name="original_dspc_bilayer", calculation="non polarised", model="standard layers",
@@ -32,7 +31,7 @@ problem.parameters.append(name="Oxide Hydration", min=0.0, value=23.61, max=60.0
 
 problem.parameters.set_fields(0, max=10)
 
-# Group these into layers....
+# Group these into layers
 problem.layers.append(name="Oxide", thickness="Oxide Thickness", SLD="Oxide SLD", roughness="Substrate Roughness",
                       hydration="Oxide Hydration", hydrate_with="bulk out")
 
@@ -73,7 +72,7 @@ problem.background_parameters.append(name="Background parameter SMW", min=1.0e-1
 problem.backgrounds.append(name="D2O Background", type="constant", value_1="Background parameter D2O")
 problem.backgrounds.append(name="SMW Background", type="constant", value_1="Background parameter SMW")
 
-# Now add the data....
+# Now add the data
 d2o_dat = np.loadtxt("DSPC_D2O.dat", delimiter=",")
 problem.data.append(name="dspc_bil_D2O", data=d2o_dat)
 
@@ -91,8 +90,7 @@ problem.contrasts.append(name="D2O", bulk_in="Silicon", bulk_out="D2O", backgrou
 problem.contrasts.append(name="SMW", bulk_in="Silicon", bulk_out="SMW", background="SMW Background",
                          resolution="Resolution 1", scalefactor="Scalefactor 2", data="dspc_bil_smw", model=stack)
 
-
 controls = RAT.set_controls()
-problem, results = RAT.run(problem, controls)
 
+problem, results = RAT.run(problem, controls)
 RAT.utils.plotting.plot_ref_sld(problem, results, True)

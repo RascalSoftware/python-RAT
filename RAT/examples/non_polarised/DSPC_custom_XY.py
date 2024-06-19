@@ -26,14 +26,13 @@ where VFn is the Volume Fraction of the n'th layer.
 
 import RAT
 import RAT.utils.plotting
-import RAT.rat_core
 import numpy as np
 
 # Start by making the class and setting it to a custom layers type:
 problem = RAT.Project(name="Orso lipid example - custom XY", model="custom xy", geometry="substrate/liquid")
 
-# We need to add the relevant parameters we are going to need to define the model (note that Substrate Roughness
-# always exists as parameter 1
+# We need to add the relevant parameters we are going to need to define the model
+# (note that Substrate Roughness always exists as parameter 1).
 problem.parameters.append(name="Oxide Thickness", min=10.0, value=15.0, max=30.0, fit=True)
 problem.parameters.append(name="Oxide Hydration", min=0.1, value=0.2, max=0.4, fit=True)
 problem.parameters.append(name="Water Thickness", min=0.0, value=5.0, max=20.0, fit=True)
@@ -51,7 +50,7 @@ problem.bulk_out.append(name="SLD H2O", min=-0.6e-6, value=-0.56e-6, max=-0.3e-6
 
 problem.bulk_out.set_fields(0, min=5.0e-6, value=6.1e-6, fit=True)
 
-# Now add the datafiles. We have three datasets we need to consider - the bilayer against D2O, Silicon Matched water
+# Now add the datafiles. We have three datasets we need to consider - the bilayer against D2O, Silicon Matched Water
 # and H2O.Load these datafiles in and put them in the data block
 
 # Read in the datafiles
@@ -65,13 +64,11 @@ problem.data.append(name="Bilayer / SMW", data=SMW_data)
 problem.data.append(name="Bilayer / H2O", data=H2O_data)
 
 # Add the custom file to the project
-# (Note that here we are making an optional third output parameter, which we need later just for plotting, but not for
-# the RAT fit. So, we make this output optional using a global flag, so that we can control it from outside our function)
-#problem.custom_files.append(name="DSPC Model", filename="customXYDSPC.m", language="matlab")
-problem.custom_files.append(name="DSPC Model", filename="customXYDSPC.py", language="python")
+problem.custom_files.append(name="DSPC Model", filename="custom_XY_DSPC.py", language="python")
 
 # Also, add the relevant background parameters - one each for each contrast:
-problem.background_parameters.set_fields(0, name="Background parameter D2O", fit=True, min=1.0e-10, max=1.0e-5, value=1.0e-07)
+problem.background_parameters.set_fields(0, name="Background parameter D2O", fit=True, min=1.0e-10, max=1.0e-5,
+                                         value=1.0e-07)
 
 problem.background_parameters.append(name="Background parameter SMW", min=0.0, value=1.0e-7, max=1.0e-5, fit=True)
 problem.background_parameters.append(name="Background parameter H2O", min=0.0, value=1.0e-7, max=1.0e-5, fit=True)
@@ -80,17 +77,16 @@ problem.background_parameters.append(name="Background parameter H2O", min=0.0, v
 problem.backgrounds.append(name="Background SMW", type="constant", value_1="Background parameter SMW")
 problem.backgrounds.append(name="Background H2O", type="constant", value_1="Background parameter H2O")
 
-# And edit the other one....
+# And edit the other one
 problem.backgrounds.set_fields(0, name="Background D2O", value_1="Background parameter D2O")
 
 # Finally modify some of the other parameters to be more suitable values for a solid / liquid experiment
 problem.scalefactors.set_fields(0, value=1.0, min=0.5, max=2.0, fit=True)
 
-# Also, we are going to use the data resolution.
+# Also, we are going to use the data resolution
 problem.resolutions.append(name="Data Resolution", type="data")
 
 # Now add the three contrasts
-
 problem.contrasts.append(name="Bilayer / D2O", background="Background D2O", resolution="Data Resolution",
                          scalefactor="Scalefactor 1", bulk_out="SLD D2O", bulk_in="Silicon", data="Bilayer / D2O",
                          model=["DSPC Model"])
@@ -103,8 +99,7 @@ problem.contrasts.append(name="Bilayer / H2O", background="Background H2O", reso
                          scalefactor="Scalefactor 1", bulk_out="SLD H2O", bulk_in="Silicon", data="Bilayer / H2O",
                          model=["DSPC Model"])
 
-
 controls = RAT.set_controls()
-problem, results = RAT.run(problem, controls)
 
+problem, results = RAT.run(problem, controls)
 RAT.utils.plotting.plot_ref_sld(problem, results, True)

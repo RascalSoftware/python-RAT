@@ -1,4 +1,4 @@
-//customBilayer.cpp
+//custom_bilayer.cpp
 
 #include <vector>
 
@@ -8,10 +8,10 @@
 #define LIB_EXPORT
 #endif
 
-// We user extern "C" decorator to avoid name mangling....
+// We user extern "C" decorator to avoid name mangling
 extern "C" {
 
-    LIB_EXPORT void customBilayer(std::vector<double>& params, std::vector<double>& bulkIn, std::vector<double>& bulkOut, int contrast, std::vector<double>& output, double* outputSize, double* rough)
+    LIB_EXPORT void custom_bilayer(std::vector<double>& params, std::vector<double>& bulkIn, std::vector<double>& bulkOut, int contrast, std::vector<double>& output, double* outputSize, double* rough)
     {
         double subRough = params[0];
         double oxideThick = params[1];
@@ -25,11 +25,11 @@ extern "C" {
         // We have a constant SLD for the oxide
         double oxideSLD = 3.41e-6;
 
-        // Now make the lipid layers..
+        // Now make the lipid layers
         // Use known lipid volume and compositions
         // to make the layers
 
-        // define all the neutron b's.
+        // define all the neutron b's
         double bc = 0.6646e-4;     //Carbon
         double bo = 0.5843e-4;     //Oxygen
         double bh = -0.3739e-4;	   //Hydrogen
@@ -37,7 +37,7 @@ extern "C" {
         double bn = 0.936e-4;      //Nitrogen
         double bd = 0.6671e-4;     //Deuterium
 
-        // Now make the lipid groups..
+        // Now make the lipid groups
         double COO = (4*bo) + (2*bc);
         double GLYC = (3*bc) + (5*bh);
         double CH3 = (2*bc) + (6*bh);
@@ -54,12 +54,12 @@ extern "C" {
         double vHead = 319;
         double vTail = 782;
 
-        // we use the volumes to calculate the SLD's
+        // we use the volumes to calculate the SLDs
         double SLDhead = Head / vHead;
         double SLDtail = Tails / vTail;
 
-        // We calculate the layer thickness' from
-        // the volumes and the APM...
+        // We calculate the layer thickness from
+        // the volumes and the APM
         double headThick = vHead / lipidAPM;
         double tailThick = vTail / lipidAPM;
 
@@ -102,7 +102,7 @@ extern "C" {
 
         *rough = subRough;
         
-        outputSize[0] = 6;     // row - Necessary to ouptut how many layers in stack
+        outputSize[0] = 6;     // row - Necessary to output how many layers in stack
         outputSize[1] = 3;     // col - Should be different depending on calculation 
     }
 } // extern "C"

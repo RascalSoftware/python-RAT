@@ -1,4 +1,4 @@
-def volumeThiolBilayer(params, bulk_in, bulk_out, contrast):
+def volume_thiol_bilayer(params, bulk_in, bulk_out, contrast):
     """
     volumeThiolBilayer  RAT Custom Layer Model File.
 
@@ -21,10 +21,6 @@ def volumeThiolBilayer(params, bulk_in, bulk_out, contrast):
 
     The second output parameter should be the substrate roughness.
     """
-    #params = np.array(params)
-    #bulk_in = np.array(bulk_in)
-    #bulk_out = np.array(bulk_out)
-
     subRough = params[0]
     alloyThick = params[1]
     alloySLDUp = params[2]
@@ -59,9 +55,9 @@ def volumeThiolBilayer(params, bulk_in, bulk_out, contrast):
     bn = 0.936e-4    # Nitrogen
     bd = 0.6671e-4   # Deuterium
 
-    # Work out the total scattering length in each fragment....
-    # Define scattering lengths..
-    # Hydrogenated version....
+    # Work out the total scattering length in each fragment
+    # Define scattering lengths
+    # Hydrogenated version
     COO = (2*bo) + (bc)
     GLYC = (3*bc) + (5*bh)
     CH3 = (1*bc) + (3*bh)
@@ -72,8 +68,8 @@ def volumeThiolBilayer(params, bulk_in, bulk_out, contrast):
     H2O = (2*bh) + (1*bo)
     D2O = (2*bd) + (1*bo)
 
-    # And also volumes....
-    vCH3 = 52.7  # CH3 volume in the paper appears to be for 2* CH3's
+    # And also volumes
+    vCH3 = 52.7  # CH3 volume in the paper appears to be for 2 * CH3's
     vCH2 = 28.1
     vCOO = 39.0
     vGLYC = 68.8
@@ -83,13 +79,13 @@ def volumeThiolBilayer(params, bulk_in, bulk_out, contrast):
     vCHCH = 42.14
 
     vHead = vCHOL + vPO4 + vGLYC + 2*vCOO
-    vTail = (28*vCH2) + (1*vCHCH) + (2*vCH3)  # Tail_volume
+    vTail = (28*vCH2) + (1*vCHCH) + (2*vCH3)  # Tail volume
 
     # Calculate sum_b's for other fragments
     sumbHead = CHOL + PO4 + GLYC + 2*COO
     sumbTail = (28*CH2) + (2*CH) + 2*CH3
 
-    # Calculate SLD's and Thickness'
+    # Calculate SLDs and Thickness
     sldHead = sumbHead/vHead
     thickHead = vHead/thiolAPM
 
@@ -100,7 +96,7 @@ def volumeThiolBilayer(params, bulk_in, bulk_out, contrast):
     thiolHeadHydr = thiolHeadHydr/100
     sldHead = (sldHead * (1 - thiolHeadHydr) + (thiolHeadHydr * bulk_out[contrast]))
 
-    # Now correct both the SLD's for the coverage parameter
+    # Now correct both the SLDs for the coverage parameter
     sldTail = (thiolCoverage*sldTail) + ((1-thiolCoverage) * bulk_out[contrast])
     sldHead = (thiolCoverage*sldHead) + ((1-thiolCoverage) * bulk_out[contrast])
 
@@ -109,7 +105,7 @@ def volumeThiolBilayer(params, bulk_in, bulk_out, contrast):
 
     # Now do the same for the bilayer
     vHead = vCHOL + vPO4 + vGLYC + 2*vCOO
-    vTail = (28*vCH2)  # Tail_volume
+    vTail = (28*vCH2)  # Tail volume
     vMe = (2*vCH3)
 
     sumbHead = CHOL + PO4 + GLYC + 2*COO
