@@ -3,11 +3,15 @@
 from itertools import chain
 import numpy as np
 import pytest
+import unittest.mock as mock
 
 import RAT
 from RAT.inputs import make_input, make_problem, make_cells, make_controls
 from RAT.utils.enums import (BoundHandling, Calculations, Display, Geometries, LayerModels, Parallel, Procedures,
                              TypeOptions)
+import RAT.utils.misc
+import RAT.wrappers
+from tests.utils import dummy_function
 
 from RAT.rat_core import Cells, Checks, Control, Limits, Priors, ProblemDefinition
 
@@ -19,7 +23,8 @@ def standard_layers_project():
     test_project.parameters.append(name='Test Thickness')
     test_project.parameters.append(name='Test SLD')
     test_project.parameters.append(name='Test Roughness')
-    test_project.custom_files.append(name='Test Custom File', filename='matlab_test.m', language='matlab')
+    test_project.custom_files.append(name='Test Custom File', filename='python_test.py', function_name='dummy_function',
+                                     language='python')
     test_project.layers.append(name='Test Layer', thickness='Test Thickness', SLD='Test SLD', roughness='Test Roughness')
     test_project.contrasts.append(name='Test Contrast', data='Test Data', background='Background 1', bulk_in='SLD Air',
                                   bulk_out='SLD D2O', scalefactor='Scalefactor 1', resolution='Resolution 1',
@@ -52,7 +57,7 @@ def custom_xy_project():
     test_project.parameters.append(name='Test Thickness')
     test_project.parameters.append(name='Test SLD')
     test_project.parameters.append(name='Test Roughness')
-    test_project.custom_files.append(name='Test Custom File', filename='matlab_test.m', language='matlab')
+    test_project.custom_files.append(name='Test Custom File', filename='cpp_test.dll', language='cpp')
     test_project.contrasts.append(name='Test Contrast', data='Simulation', background='Background 1', bulk_in='SLD Air',
                                   bulk_out='SLD D2O', scalefactor='Scalefactor 1', resolution='Resolution 1',
                                   model=['Test Custom File'])
@@ -196,7 +201,7 @@ def standard_layers_cells():
     cells.f11 = ['SLD Air']
     cells.f12 = ['SLD D2O']
     cells.f13 = ['Resolution Param 1']
-    cells.f14 = ['matlab_test']
+    cells.f14 = [dummy_function]
     cells.f15 = [TypeOptions.Constant]
     cells.f16 = [TypeOptions.Constant]
     cells.f17 = [[[]]]
@@ -224,7 +229,7 @@ def domains_cells():
     cells.f11 = ['SLD Air']
     cells.f12 = ['SLD D2O']
     cells.f13 = ['Resolution Param 1']
-    cells.f14 = ['matlab_test']
+    cells.f14 = [dummy_function]
     cells.f15 = [TypeOptions.Constant]
     cells.f16 = [TypeOptions.Constant]
     cells.f17 = [[[]]]
@@ -252,7 +257,7 @@ def custom_xy_cells():
     cells.f11 = ['SLD Air']
     cells.f12 = ['SLD D2O']
     cells.f13 = ['Resolution Param 1']
-    cells.f14 = ['matlab_test']
+    cells.f14 = [dummy_function]
     cells.f15 = [TypeOptions.Constant]
     cells.f16 = [TypeOptions.Constant]
     cells.f17 = [[[]]]
@@ -466,7 +471,17 @@ def test_make_input(test_project, test_problem, test_cells, test_limits, test_pr
     parameter_fields = ["param", "backgroundParam", "scalefactor", "qzshift", "bulkIn", "bulkOut", "resolutionParam",
                         "domainRatio"]
 
-    problem, cells, limits, priors, controls = make_input(test_project, RAT.set_controls())
+    mocked_matlab_module = mock.MagicMock()
+    mocked_engine = mock.MagicMock()
+    mocked_matlab_module.engine.start_matlab.return_value = mocked_engine
+
+    with mock.patch.dict('sys.modules', {'matlab': mocked_matlab_module,
+                                         'matlab.engine': mocked_matlab_module.engine}), \
+            mock.patch.object(RAT.rat_core, "DylibEngine", mock.MagicMock()), \
+            mock.patch.object(RAT.utils.misc, "get_python_handle", mock.MagicMock(return_value=dummy_function)), \
+            mock.patch.object(RAT.wrappers.MatlabWrapper, "getHandle", mock.MagicMock(return_value=dummy_function)), \
+            mock.patch.object(RAT.wrappers.DylibWrapper, "getHandle", mock.MagicMock(return_value=dummy_function)):
+        problem, cells, limits, priors, controls = make_input(test_project, RAT.set_controls())
 
     check_problem_equal(problem, test_problem)
     check_cells_equal(cells, test_cells)
@@ -507,7 +522,18 @@ def test_make_cells(test_project, test_cells, request) -> None:
     test_project = request.getfixturevalue(test_project)
     test_cells = request.getfixturevalue(test_cells)
 
-    cells = make_cells(test_project)
+    mocked_matlab_module = mock.MagicMock()
+    mocked_matlab_engine = mock.MagicMock()
+    mocked_matlab_module.engine.start_matlab.return_value = mocked_matlab_engine
+
+    with mock.patch.dict('sys.modules', {'matlab': mocked_matlab_module,
+                                         'matlab.engine': mocked_matlab_module.engine}), \
+            mock.patch.object(RAT.rat_core, "DylibEngine", mock.MagicMock()), \
+            mock.patch.object(RAT.utils.misc, "get_python_handle", mock.MagicMock(return_value=dummy_function)), \
+            mock.patch.object(RAT.wrappers.MatlabWrapper, "getHandle", mock.MagicMock(return_value=dummy_function)), \
+            mock.patch.object(RAT.wrappers.DylibWrapper, "getHandle", mock.MagicMock(return_value=dummy_function)):
+        cells = make_cells(test_project)
+
     check_cells_equal(cells, test_cells)
 
 

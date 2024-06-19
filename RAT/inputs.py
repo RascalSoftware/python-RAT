@@ -1,11 +1,11 @@
 """Converts python models to the necessary inputs for the compiled RAT code"""
-import importlib
-import pathlib
+import os
 from typing import Union
 
 import RAT
 import RAT.controls
 from RAT.utils.enums import Calculations, Languages, LayerModels, TypeOptions
+import RAT.utils.misc
 import RAT.wrappers
 
 from RAT.rat_core import Cells, Checks, Control, Limits, Priors, ProblemDefinition
@@ -237,7 +237,8 @@ def make_cells(project: RAT.Project) -> Cells:
     layer_details = []
     for layer in project.layers:
 
-        layer_params = [project.parameters.index(getattr(layer, attribute), True) for attribute in list(layer.model_fields.keys())[1:-2]]
+        layer_params = [project.parameters.index(getattr(layer, attribute), True)
+                        for attribute in list(layer.model_fields.keys())[1:-2]]
         layer_params.append(project.parameters.index(layer.hydration, True) if layer.hydration else float('NaN'))
         layer_params.append(hydrate_id[layer.hydrate_with])
 
@@ -267,12 +268,14 @@ def make_cells(project: RAT.Project) -> Cells:
 
     file_handles = []
     for custom_file in project.custom_files:
+        full_path = os.path.join(custom_file.path, custom_file.filename)
         if custom_file.language == Languages.Python:
-            file_handles.append(getattr(importlib.import_module(pathlib.Path(custom_file.filename).stem), custom_file.function_name))
+            file_handles.append(RAT.utils.misc.get_python_handle(custom_file.filename, custom_file.function_name,
+                                                                 custom_file.path))
         elif custom_file.language == Languages.Matlab:
-            file_handles.append(RAT.wrappers.MatlabWrapper(custom_file.filename).getHandle())
+            file_handles.append(RAT.wrappers.MatlabWrapper(full_path).getHandle())
         elif custom_file.language == Languages.Cpp:
-            file_handles.append(RAT.wrappers.DylibWrapper(custom_file.filename, custom_file.function_name).getHandle())
+            file_handles.append(RAT.wrappers.DylibWrapper(full_path, custom_file.function_name).getHandle())
 
     # Populate the set of cells
     cells = Cells()
