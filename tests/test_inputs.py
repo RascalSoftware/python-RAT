@@ -6,7 +6,7 @@ import pytest
 import unittest.mock as mock
 
 import RAT
-from RAT.inputs import make_input, make_problem, make_cells, make_controls
+from RAT.inputs import make_input, make_problem, make_cells, make_controls, check_indices
 from RAT.utils.enums import (BoundHandling, Calculations, Display, Geometries, LayerModels, Parallel, Procedures,
                              TypeOptions)
 import RAT.utils.misc
@@ -510,6 +510,71 @@ def test_make_problem(test_project, test_problem, request) -> None:
 
     problem = make_problem(test_project)
     check_problem_equal(problem, test_problem)
+
+
+@pytest.mark.parametrize("test_problem", [
+    "standard_layers_problem",
+    "custom_xy_problem",
+    "domains_problem",
+])
+def test_check_indices(test_problem, request) -> None:
+    """The check_indices routine should not raise errors for a properly defined ProblemDefinition object."""
+    test_problem = request.getfixturevalue(test_problem)
+
+    check_indices(test_problem)
+
+
+@pytest.mark.parametrize(["test_problem", "index_list", "bad_value"], [
+    ("standard_layers_problem", "contrastBulkIns", [0.0]),
+    ("standard_layers_problem", "contrastBulkIns", [2.0]),
+    ("standard_layers_problem", "contrastBulkOuts", [0.0]),
+    ("standard_layers_problem", "contrastBulkOuts", [2.0]),
+    ("standard_layers_problem", "contrastScalefactors", [0.0]),
+    ("standard_layers_problem", "contrastScalefactors", [2.0]),
+    ("standard_layers_problem", "contrastBackgroundParams", [0.0]),
+    ("standard_layers_problem", "contrastBackgroundParams", [2.0]),
+    ("standard_layers_problem", "contrastResolutionParams", [0.0]),
+    ("standard_layers_problem", "contrastResolutionParams", [2.0]),
+    ("custom_xy_problem", "contrastBulkIns", [0.0]),
+    ("custom_xy_problem", "contrastBulkIns", [2.0]),
+    ("custom_xy_problem", "contrastBulkOuts", [0.0]),
+    ("custom_xy_problem", "contrastBulkOuts", [2.0]),
+    ("custom_xy_problem", "contrastScalefactors", [0.0]),
+    ("custom_xy_problem", "contrastScalefactors", [2.0]),
+    ("custom_xy_problem", "contrastBackgroundParams", [0.0]),
+    ("custom_xy_problem", "contrastBackgroundParams", [2.0]),
+    ("custom_xy_problem", "contrastResolutionParams", [0.0]),
+    ("custom_xy_problem", "contrastResolutionParams", [2.0]),
+    ("domains_problem", "contrastBulkIns", [0.0]),
+    ("domains_problem", "contrastBulkIns", [2.0]),
+    ("domains_problem", "contrastBulkOuts", [0.0]),
+    ("domains_problem", "contrastBulkOuts", [2.0]),
+    ("domains_problem", "contrastScalefactors", [0.0]),
+    ("domains_problem", "contrastScalefactors", [2.0]),
+    ("domains_problem", "contrastDomainRatios", [0.0]),
+    ("domains_problem", "contrastDomainRatios", [2.0]),
+    ("domains_problem", "contrastBackgroundParams", [0.0]),
+    ("domains_problem", "contrastBackgroundParams", [2.0]),
+    ("domains_problem", "contrastResolutionParams", [0.0]),
+    ("domains_problem", "contrastResolutionParams", [2.0]),
+])
+def test_check_indices(test_problem, index_list, bad_value, request) -> None:
+    """The check_indices routine should raise an IndexError if a contrast list contains an index that is out of the
+    range of the corresponding parameter list in a ProblemDefinition object."""
+    param_list = {'contrastBulkIns': 'bulkIn',
+                  'contrastBulkOuts': 'bulkOut',
+                  'contrastScalefactors': 'scalefactors',
+                  'contrastDomainRatios': 'domainRatio',
+                  'contrastBackgroundParams': 'backgroundParams',
+                  'contrastResolutionParams': 'resolutionParams',
+                  }
+
+    test_problem = request.getfixturevalue(test_problem)
+    setattr(test_problem, index_list, bad_value)
+
+    with pytest.raises(IndexError, match=f'The problem field "{index_list}" contains: {bad_value[0]}, which lie '
+                                         f'outside of the range of "{param_list[index_list]}"'):
+        check_indices(test_problem)
 
 
 @pytest.mark.parametrize(["test_project", "test_cells"], [

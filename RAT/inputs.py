@@ -169,6 +169,8 @@ def make_problem(project: RAT.Project) -> ProblemDefinition:
     problem.otherLimits = [[param.min, param.max] for class_list in RAT.project.parameter_class_lists
                            for param in getattr(project, class_list) if not param.fit]
 
+    check_indices(problem)
+
     return problem
 
 
@@ -202,6 +204,36 @@ def make_data_present(project: RAT.Project) -> list[int]:
         The "dataPresent" field of the problem input used in the compiled RAT code.
     """
     return [1 if project.data[project.data.index(contrast.data)].data.size != 0 else 0 for contrast in project.contrasts]
+
+
+def check_indices(problem: ProblemDefinition) -> None:
+    """Checks the indices in contrast lists in a ProblemDefinition object lie within the range of the corresponding
+    parameter lists.
+
+    Parameters
+    ----------
+    problem : RAT.rat_core.ProblemDefinition
+        The problem input used in the compiled RAT code.
+    """
+    index_list = {'bulkIn': 'contrastBulkIns',
+                  'bulkOut': 'contrastBulkOuts',
+                  'scalefactors': 'contrastScalefactors',
+                  'domainRatio': 'contrastDomainRatios',
+                  'backgroundParams': 'contrastBackgroundParams',
+                  'resolutionParams': 'contrastResolutionParams',
+                  }
+
+    # Check the indices -- note we have switched to 1-based indexing at this point
+    for params in index_list.keys():
+        param_list = getattr(problem, params)
+        if len(param_list) > 0 and not all((element > 0 or element == -1) and element <= len(param_list)
+                                           for element in getattr(problem, index_list[params])):
+            elements = [element for element in getattr(problem, index_list[params])
+                        if not ((element > 0 or element == -1) and element <= len(param_list))]
+            raise IndexError(f'The problem field "{index_list[params]}" contains: {", ".join(str(i) for i in elements)}'
+                             f', which lie outside of the range of "{params}"')
+
+    return None
 
 
 def make_cells(project: RAT.Project) -> Cells:
