@@ -133,8 +133,8 @@ class Data(RATModel, arbitrary_types_allowed=True):
         set to the min and max values of the first column (assumed to be q) of the supplied data.
         """
         if self.data.shape[0] > 0:
-            data_min = np.min(self.data[:, 0])
-            data_max = np.max(self.data[:, 0])
+            data_min = float(np.min(self.data[:, 0]))
+            data_max = float(np.max(self.data[:, 0]))
             for field in ["data_range", "simulation_range"]:
                 if field not in self.model_fields_set:
                     getattr(self, field).extend([data_min, data_max])
