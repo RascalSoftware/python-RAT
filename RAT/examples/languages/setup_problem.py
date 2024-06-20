@@ -51,7 +51,7 @@ def make_example_problem():
 
     # Add the custom file to the project
     problem.custom_files.append(name="DSPC Model", filename="custom_bilayer.py", language="python",
-                                path=str(pathlib.Path(__file__).parent.resolve()))
+                                path=pathlib.Path(__file__).parent.resolve())
 
     # Also, add the relevant background parameters - one each for each contrast:
     problem.background_parameters.set_fields(0, name="Background parameter D2O", fit=True, min=1.0e-10, max=1.0e-5,

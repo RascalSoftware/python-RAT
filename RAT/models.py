@@ -3,7 +3,7 @@
 import numpy as np
 from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
 import pathlib
-from typing import Any
+from typing import Any, Union
 
 from RAT.utils.enums import BackgroundActions, Hydration, Languages, Priors, TypeOptions
 
@@ -90,7 +90,7 @@ class CustomFile(RATModel):
     filename: str = ''
     function_name: str = ''
     language: Languages = Languages.Python
-    path: str = ''
+    path: Union[str, pathlib.Path] = ''
 
     def model_post_init(self, __context: Any) -> None:
         """If a "filename" is supplied but the "function_name" field is not set, the "function_name" should be set to

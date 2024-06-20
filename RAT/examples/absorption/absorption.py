@@ -80,7 +80,7 @@ problem.data.append(name="H2O_up", data=data_4)
 
 # Add the custom file
 problem.custom_files.append(name="DPPC absorption", filename="volume_thiol_bilayer.py", language="python",
-                            path=str(pathlib.Path(__file__).parent.resolve()))
+                            path=pathlib.Path(__file__).parent.resolve())
 
 # Finally add the contrasts
 problem.contrasts.append(name="D2O Down", data="D2O_dn", background="Background 1", bulk_in="Silicon",

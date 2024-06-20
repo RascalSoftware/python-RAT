@@ -21,7 +21,7 @@ problem.bulk_out.append(name="SLD H2O", min=-0.6e-6, value=-0.56e-6, max=-0.5e-6
 
 # Add the custom file
 problem.custom_files.append(name="Domain Layer", filename="domains_XY_model.py", language="python",
-                            path=str(pathlib.Path(__file__).parent.resolve()))
+                            path=pathlib.Path(__file__).parent.resolve())
 
 # Make contrasts
 problem.contrasts.append(name="D2O", background="Background 1", resolution="Resolution 1", scalefactor="Scalefactor 1",
