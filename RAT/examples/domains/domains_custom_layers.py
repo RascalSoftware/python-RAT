@@ -1,5 +1,7 @@
 """An example custom layers domains project involving incoherent summing on a permalloy layer"""
 
+import pathlib
+
 import RAT
 import RAT.utils.plotting
 
@@ -18,7 +20,8 @@ problem.parameters.append(name="Gold Roughness", min=5.0, value=7.0, max=11.0, f
 problem.bulk_in.set_fields(0, name="Silicon", value=2.073e-6, max=1.0)
 
 # Add the custom file
-problem.custom_files.append(name="Alloy domains", filename="alloy_domains.py", language="python")
+problem.custom_files.append(name="Alloy domains", filename="alloy_domains.py", language="python",
+                            path=str(pathlib.Path(__file__).parent.resolve()))
 
 # Make a contrast
 problem.contrasts.append(name="D2O Contrast", data="Simulation", background="Background 1", bulk_in="Silicon",

@@ -1,8 +1,11 @@
 """Standard Layers fit of a DSPC floating bilayer"""
 
+import numpy as np
+import os
+import pathlib
+
 import RAT
 import RAT.utils.plotting
-import numpy as np
 
 problem = RAT.Project(name="original_dspc_bilayer", calculation="non polarised", model="standard layers",
                       geometry="substrate/liquid", absorption=False)
@@ -73,10 +76,12 @@ problem.backgrounds.append(name="D2O Background", type="constant", value_1="Back
 problem.backgrounds.append(name="SMW Background", type="constant", value_1="Background parameter SMW")
 
 # Now add the data
-d2o_dat = np.loadtxt("DSPC_D2O.dat", delimiter=",")
+data_path = os.path.join(pathlib.Path(__file__).parents[1].resolve(), "data")
+
+d2o_dat = np.loadtxt(os.path.join(data_path, "DSPC_D2O.dat"), delimiter=",")
 problem.data.append(name="dspc_bil_D2O", data=d2o_dat)
 
-smw_dat = np.loadtxt("DSPC_SMW.dat", delimiter=",")
+smw_dat = np.loadtxt(os.path.join(data_path, "DSPC_SMW.dat"), delimiter=",")
 problem.data.append(name="dspc_bil_smw", data=smw_dat)
 
 # Set the model

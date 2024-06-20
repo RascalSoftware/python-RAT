@@ -24,9 +24,12 @@ $${\textrm{VF}}_{\textrm{wat}} =1-\sum_n {\textrm{VF}}_n$$
 where VFn is the Volume Fraction of the n'th layer.
 """
 
+import numpy as np
+import os
+import pathlib
+
 import RAT
 import RAT.utils.plotting
-import numpy as np
 
 # Start by making the class and setting it to a custom layers type:
 problem = RAT.Project(name="Orso lipid example - custom XY", model="custom xy", geometry="substrate/liquid")
@@ -54,9 +57,10 @@ problem.bulk_out.set_fields(0, min=5.0e-6, value=6.1e-6, fit=True)
 # and H2O.Load these datafiles in and put them in the data block
 
 # Read in the datafiles
-D2O_data = np.loadtxt("c_PLP0016596.dat", delimiter=",")
-SMW_data = np.loadtxt("c_PLP0016601.dat", delimiter=",")
-H2O_data = np.loadtxt("c_PLP0016607.dat", delimiter=",")
+data_path = os.path.join(pathlib.Path(__file__).parents[1].resolve(), "data")
+D2O_data = np.loadtxt(os.path.join(data_path, "c_PLP0016596.dat"), delimiter=",")
+SMW_data = np.loadtxt(os.path.join(data_path, "c_PLP0016601.dat"), delimiter=",")
+H2O_data = np.loadtxt(os.path.join(data_path, "c_PLP0016607.dat"), delimiter=",")
 
 # Add the data to the project - note this data has a resolution 4th column
 problem.data.append(name="Bilayer / D2O", data=D2O_data)
@@ -64,7 +68,8 @@ problem.data.append(name="Bilayer / SMW", data=SMW_data)
 problem.data.append(name="Bilayer / H2O", data=H2O_data)
 
 # Add the custom file to the project
-problem.custom_files.append(name="DSPC Model", filename="custom_XY_DSPC.py", language="python")
+problem.custom_files.append(name="DSPC Model", filename="custom_XY_DSPC.py", language="python",
+                            path=str(pathlib.Path(__file__).parent.resolve()))
 
 # Also, add the relevant background parameters - one each for each contrast:
 problem.background_parameters.set_fields(0, name="Background parameter D2O", fit=True, min=1.0e-10, max=1.0e-5,

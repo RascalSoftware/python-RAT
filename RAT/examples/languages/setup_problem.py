@@ -3,9 +3,12 @@ Custom Layers example for Supported DSPC layer.
 
 Example of using custom layers to model a DSPC supported bilayer.
 """
-import RAT
-import numpy as np
 
+import numpy as np
+import os
+import pathlib
+
+import RAT
 
 def make_example_problem():
 
@@ -36,9 +39,10 @@ def make_example_problem():
     # and H2O. Load these datafiles in and put them in the data block
 
     # Read in the datafiles
-    D2O_data = np.loadtxt("c_PLP0016596.dat", delimiter=",")
-    SMW_data = np.loadtxt("c_PLP0016601.dat", delimiter=",")
-    H2O_data = np.loadtxt("c_PLP0016607.dat", delimiter=",")
+    data_path = os.path.join(pathlib.Path(__file__).parents[1].resolve(), "data")
+    D2O_data = np.loadtxt(os.path.join(data_path, "c_PLP0016596.dat"), delimiter=",")
+    SMW_data = np.loadtxt(os.path.join(data_path, "c_PLP0016601.dat"), delimiter=",")
+    H2O_data = np.loadtxt(os.path.join(data_path, "c_PLP0016607.dat"), delimiter=",")
 
     # Add the data to the project - note this data has a resolution 4th column
     problem.data.append(name="Bilayer / D2O", data=D2O_data)
@@ -46,7 +50,8 @@ def make_example_problem():
     problem.data.append(name="Bilayer / H2O", data=H2O_data)
 
     # Add the custom file to the project
-    problem.custom_files.append(name="DSPC Model", filename="custom_bilayer.py", language="python")
+    problem.custom_files.append(name="DSPC Model", filename="custom_bilayer.py", language="python",
+                                path=str(pathlib.Path(__file__).parent.resolve()))
 
     # Also, add the relevant background parameters - one each for each contrast:
     problem.background_parameters.set_fields(0, name="Background parameter D2O", fit=True, min=1.0e-10, max=1.0e-5,
