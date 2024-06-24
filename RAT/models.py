@@ -1,7 +1,7 @@
 """The models module. Contains the pydantic models used by RAT to store project parameters."""
 
 import numpy as np
-from pydantic import BaseModel, Field, ValidationInfo, ValidationError, field_validator, model_validator, computed_field
+from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
 import pathlib
 from typing import Any, Union
 
@@ -91,6 +91,14 @@ class CustomFile(RATModel):
     function_name: str = ''
     language: Languages = Languages.Python
     path: Union[str, pathlib.Path] = ''
+
+    def model_post_init(self, __context: Any) -> None:
+        """If a "filename" is supplied but the "function_name" field is not set, the "function_name" should be set to
+        the file name without the extension.
+        """
+
+        if "filename" in self.model_fields_set and "function_name" not in self.model_fields_set:
+            self.function_name = pathlib.Path(self.filename).stem
 
     @model_validator(mode='after')
     def set_matlab_function_name(self):
