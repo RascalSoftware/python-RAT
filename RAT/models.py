@@ -105,8 +105,6 @@ class CustomFile(RATModel):
         """If we have a matlab custom function, the "function_name" should be set to the filename without the extension.
         """
         if self.language == Languages.Matlab and self.function_name != pathlib.Path(self.filename).stem:
-            print("WARNING -- For Matlab custom functions, the function name must be the same as filename without the "
-                  ".m extension.")
             self.function_name = pathlib.Path(self.filename).stem
 
         return self
