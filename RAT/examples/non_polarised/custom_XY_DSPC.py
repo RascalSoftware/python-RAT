@@ -1,5 +1,5 @@
+import math
 import numpy as np
-import scipy as sp
 
 
 def custom_XY_DSPC(params, bulk_in, bulk_out, contrast):
@@ -130,6 +130,10 @@ def layer(z, prevLaySurf, thickness, height, Sigma_L, Sigma_R):
     # Make our heaviside
     a = (z-l) / ((2**0.5) * Sigma_L)
     b = (z-r) / ((2**0.5) * Sigma_R)
-    VF = np.array((height/2)*(sp.special.erf(a)-sp.special.erf(b)))
+
+    erf_a = np.array([math.erf(value) for value in a])
+    erf_b = np.array([math.erf(value) for value in b])
+
+    VF = np.array((height / 2) * (erf_a - erf_b))
 
     return VF, r

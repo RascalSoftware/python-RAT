@@ -1,11 +1,12 @@
 """Converts python models to the necessary inputs for the compiled RAT code"""
+import importlib
 import os
-from typing import Union
+import pathlib
+from typing import Callable, Union
 
 import RAT
 import RAT.controls
 from RAT.utils.enums import Calculations, Languages, LayerModels, TypeOptions
-import RAT.utils.misc
 import RAT.wrappers
 
 from RAT.rat_core import Cells, Checks, Control, Limits, Priors, ProblemDefinition
@@ -302,8 +303,7 @@ def make_cells(project: RAT.Project) -> Cells:
     for custom_file in project.custom_files:
         full_path = os.path.join(custom_file.path, custom_file.filename)
         if custom_file.language == Languages.Python:
-            file_handles.append(RAT.utils.misc.get_python_handle(custom_file.filename, custom_file.function_name,
-                                                                 custom_file.path))
+            file_handles.append(get_python_handle(custom_file.filename, custom_file.function_name, custom_file.path))
         elif custom_file.language == Languages.Matlab:
             file_handles.append(RAT.wrappers.MatlabWrapper(full_path).getHandle())
         elif custom_file.language == Languages.Cpp:
@@ -339,6 +339,30 @@ def make_cells(project: RAT.Project) -> Cells:
     cells.f20 = [param.name for param in project.domain_ratios]
 
     return cells
+
+
+def get_python_handle(file_name: str, function_name: str, path: Union[str, pathlib.Path] = "") -> Callable:
+    """Get the function handle from a function defined in a python module located anywhere within the filesystem.
+
+    Parameters
+    ----------
+    file_name : str
+        The name of the file containing the function of interest.
+    function_name : str
+        The name of the function we wish to obtain the handle for within the module.
+    path : str
+        The path to the file containing the function (default is "", which represent the working directory).
+
+    Returns
+    -------
+    handle : Callable
+        The handle of the function defined in the python module file.
+    """
+    spec = importlib.util.spec_from_file_location(pathlib.Path(file_name).stem, os.path.join(path, file_name))
+    custom_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(custom_module)
+    handle = getattr(custom_module, function_name)
+    return handle
 
 
 def make_controls(controls: Union[RAT.controls.Calculate, RAT.controls.Simplex, RAT.controls.DE, RAT.controls.NS,

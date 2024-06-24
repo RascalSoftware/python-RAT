@@ -215,6 +215,7 @@ def plot_ref_sld(project: RAT.Project, results: Union[RAT.outputs.Results, RAT.o
     """
     data = PlotEventData()
 
+    data.modelType = project.model
     data.reflectivity = results.reflectivity
     data.shiftedData = results.shiftedData
     data.sldProfiles = results.sldProfiles

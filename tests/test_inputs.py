@@ -2,6 +2,7 @@
 
 from itertools import chain
 import numpy as np
+import pathlib
 import pytest
 import unittest.mock as mock
 
@@ -9,7 +10,6 @@ import RAT
 from RAT.inputs import make_input, make_problem, make_cells, make_controls, check_indices
 from RAT.utils.enums import (BoundHandling, Calculations, Display, Geometries, LayerModels, Parallel, Procedures,
                              TypeOptions)
-import RAT.utils.misc
 import RAT.wrappers
 from tests.utils import dummy_function
 
@@ -478,7 +478,7 @@ def test_make_input(test_project, test_problem, test_cells, test_limits, test_pr
     with mock.patch.dict('sys.modules', {'matlab': mocked_matlab_module,
                                          'matlab.engine': mocked_matlab_module.engine}), \
             mock.patch.object(RAT.rat_core, "DylibEngine", mock.MagicMock()), \
-            mock.patch.object(RAT.utils.misc, "get_python_handle", mock.MagicMock(return_value=dummy_function)), \
+            mock.patch.object(RAT.inputs, "get_python_handle", mock.MagicMock(return_value=dummy_function)), \
             mock.patch.object(RAT.wrappers.MatlabWrapper, "getHandle", mock.MagicMock(return_value=dummy_function)), \
             mock.patch.object(RAT.wrappers.DylibWrapper, "getHandle", mock.MagicMock(return_value=dummy_function)):
         problem, cells, limits, priors, controls = make_input(test_project, RAT.set_controls())
@@ -594,12 +594,17 @@ def test_make_cells(test_project, test_cells, request) -> None:
     with mock.patch.dict('sys.modules', {'matlab': mocked_matlab_module,
                                          'matlab.engine': mocked_matlab_module.engine}), \
             mock.patch.object(RAT.rat_core, "DylibEngine", mock.MagicMock()), \
-            mock.patch.object(RAT.utils.misc, "get_python_handle", mock.MagicMock(return_value=dummy_function)), \
+            mock.patch.object(RAT.inputs, "get_python_handle", mock.MagicMock(return_value=dummy_function)), \
             mock.patch.object(RAT.wrappers.MatlabWrapper, "getHandle", mock.MagicMock(return_value=dummy_function)), \
             mock.patch.object(RAT.wrappers.DylibWrapper, "getHandle", mock.MagicMock(return_value=dummy_function)):
         cells = make_cells(test_project)
 
     check_cells_equal(cells, test_cells)
+
+
+def test_get_python_handle():
+    path = pathlib.Path(__file__).parent.resolve()
+    assert RAT.inputs.get_python_handle("utils.py", "dummy_function", path).__code__ == dummy_function.__code__
 
 
 def test_make_controls(standard_layers_controls, test_checks) -> None:

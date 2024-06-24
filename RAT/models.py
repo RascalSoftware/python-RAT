@@ -1,7 +1,7 @@
 """The models module. Contains the pydantic models used by RAT to store project parameters."""
 
 import numpy as np
-from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
+from pydantic import BaseModel, Field, ValidationInfo, ValidationError, field_validator, model_validator, computed_field
 import pathlib
 from typing import Any, Union
 
@@ -92,13 +92,17 @@ class CustomFile(RATModel):
     language: Languages = Languages.Python
     path: Union[str, pathlib.Path] = ''
 
-    def model_post_init(self, __context: Any) -> None:
-        """If a "filename" is supplied but the "function_name" field is not set, the "function_name" should be set to
-        the file name without the extension.
+    @model_validator(mode='after')
+    def set_matlab_function_name(self):
+        """If we have a matlab custom function, the "function_name" should be set to the filename without the extension.
         """
-        if "filename" in self.model_fields_set and "function_name" not in self.model_fields_set:
+        if self.language == Languages.Matlab and self.function_name != pathlib.Path(self.filename).stem:
+            print("WARNING -- For Matlab custom functions, the function name must be the same as filename without the "
+                  ".m extension.")
             self.function_name = pathlib.Path(self.filename).stem
 
+        return self
+        
 
 class Data(RATModel, arbitrary_types_allowed=True):
     """Defines the dataset required for each contrast."""

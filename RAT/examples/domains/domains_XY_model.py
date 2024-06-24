@@ -1,5 +1,5 @@
+import math
 import numpy as np
-import scipy as sp
 
 
 def domains_XY_model(params, bulk_in, bulk_out, contrast, domain):
@@ -61,7 +61,11 @@ def makeLayer(z, prevLaySurf, thickness, height, Sigma_L, Sigma_R):
     # Make our heaviside
     a = (z-l) / ((2**0.5) * Sigma_L)
     b = (z-r) / ((2**0.5) * Sigma_R)
-    VF = (height / 2) * (sp.special.erf(a) - sp.special.erf(b))
+
+    erf_a = np.array([math.erf(value) for value in a])
+    erf_b = np.array([math.erf(value) for value in b])
+
+    VF = np.array((height / 2) * (erf_a - erf_b))
 
     thisLaySurf = r
 
