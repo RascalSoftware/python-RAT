@@ -77,11 +77,11 @@ class BuildExt(build_ext):
             if '-Wstrict-prototypes' in self.compiler.compiler_so:
                 self.compiler.compiler_so.remove('-Wstrict-prototypes')
 
-            opts.append('-DVERSION_INFO="%s"' % self.distribution.get_version())
+            opts.append(f'-DVERSION_INFO="{self.distribution.get_version()}"')
             if has_flag(self.compiler, '-fvisibility=hidden'):
                 opts.append('-fvisibility=hidden')
         elif ct == 'msvc':
-            opts.append('/DVERSION_INFO=\\"%s\\"' % self.distribution.get_version())
+            opts.append(f'/DVERSION_INFO=\\"{self.distribution.get_version()}\\"')
         for ext in self.extensions:
             ext.extra_compile_args = opts
             ext.extra_link_args = link_opts

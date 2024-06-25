@@ -27,13 +27,15 @@ from tests.utils import dummy_function
 @pytest.fixture
 def standard_layers_project():
     """Add parameters to the default project for a non polarised calculation."""
-    test_project = RAT.Project(data=RAT.ClassList([RAT.models.Data(name='Test Data', data=np.array([[1.0, 1.0, 1.0]]))]))
+    test_project = RAT.Project(data=RAT.ClassList([RAT.models.Data(name='Test Data', data=np.array([[1.0, 1.0, 1.0]]))])
+                               )
     test_project.parameters.append(name='Test Thickness')
     test_project.parameters.append(name='Test SLD')
     test_project.parameters.append(name='Test Roughness')
     test_project.custom_files.append(name='Test Custom File', filename='python_test.py', function_name='dummy_function',
                                      language='python')
-    test_project.layers.append(name='Test Layer', thickness='Test Thickness', SLD='Test SLD', roughness='Test Roughness')
+    test_project.layers.append(name='Test Layer', thickness='Test Thickness', SLD='Test SLD', roughness='Test Roughness'
+                               )
     test_project.contrasts.append(name='Test Contrast', data='Test Data', background='Background 1', bulk_in='SLD Air',
                                   bulk_out='SLD D2O', scalefactor='Scalefactor 1', resolution='Resolution 1',
                                   model=['Test Layer'])
@@ -44,12 +46,14 @@ def standard_layers_project():
 def domains_project():
     """Add parameters to the default project for a domains calculation."""
     test_project = RAT.Project(calculation=Calculations.Domains,
-                               data=RAT.ClassList([RAT.models.Data(name='Test Data', data=np.array([[1.0, 1.0, 1.0]]))]))
+                               data=RAT.ClassList([RAT.models.Data(name='Test Data', data=np.array([[1.0, 1.0, 1.0]]))])
+                               )
     test_project.parameters.append(name='Test Thickness')
     test_project.parameters.append(name='Test SLD')
     test_project.parameters.append(name='Test Roughness')
     test_project.custom_files.append(name='Test Custom File', filename='matlab_test.m', language='matlab')
-    test_project.layers.append(name='Test Layer', thickness='Test Thickness', SLD='Test SLD', roughness='Test Roughness')
+    test_project.layers.append(name='Test Layer', thickness='Test Thickness', SLD='Test SLD', roughness='Test Roughness'
+                               )
     test_project.domain_contrasts.append(name='up', model=['Test Layer'])
     test_project.domain_contrasts.append(name='down', model=['Test Layer'])
     test_project.contrasts.append(name='Test Contrast', data='Test Data', background='Background 1', bulk_in='SLD Air',
@@ -457,7 +461,8 @@ def test_checks():
     return checks
 
 
-@pytest.mark.parametrize(["test_project", "test_problem", "test_cells", "test_limits", "test_priors", "test_controls"], [
+@pytest.mark.parametrize(["test_project", "test_problem", "test_cells", "test_limits", "test_priors", "test_controls"],
+                         [
     ("standard_layers_project", "standard_layers_problem", "standard_layers_cells", "non_polarised_limits",
      "non_polarised_priors", "standard_layers_controls"),
     ("custom_xy_project", "custom_xy_problem", "custom_xy_cells", "non_polarised_limits", "non_polarised_priors",
@@ -612,7 +617,8 @@ def test_make_cells(test_project, test_cells, request) -> None:
 
 def test_get_python_handle():
     path = pathlib.Path(__file__).parent.resolve()
-    assert RAT.inputs.get_python_handle("utils.py", "dummy_function", path).__code__ == dummy_function.__code__
+    assert (RAT.inputs.get_python_handle("utils.py", "dummy_function", path).__code__ ==
+            dummy_function.__code__)
 
 
 def test_make_controls(standard_layers_controls, test_checks) -> None:

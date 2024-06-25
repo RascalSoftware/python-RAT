@@ -29,7 +29,8 @@ def make_example_problem():
 
     problem.parameters.set_fields(0, min=1.0, max=10.0)
 
-    # Need to add the relevant Bulk SLDs. Change the bulk in from air to silicon, and add two additional water contrasts:
+    # Need to add the relevant Bulk SLDs.
+    # Change the bulk in from air to silicon, and add two additional water contrasts:
     problem.bulk_in.set_fields(0, name="Silicon", min=2.07e-6, value=2.073e-6, max=2.08e-6, fit=False)
 
     problem.bulk_out.append(name="SLD SMW", min=1.0e-6, value=2.073e-6, max=3.0e-6, fit=True)

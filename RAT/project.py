@@ -263,8 +263,8 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
 
     @model_validator(mode='after')
     def check_contrast_model_length(self) -> 'Project':
-        """Given certain values of the "calculation" and "model" defined in the project, the "model" field of "contrasts"
-        may be constrained in its length.
+        """Given certain values of the "calculation" and "model" defined in the project, the "model" field of
+        "contrasts" may be constrained in its length.
         """
         if self.model == LayerModels.StandardLayers and self.calculation == Calculations.Domains:
             for contrast in self.contrasts:
@@ -357,11 +357,9 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
             if value:
                 output += f'{key.replace("_", " ").title() + ": " :-<100}\n\n'
                 try:
-                    value.value  # For enums
+                    output += value.value + '\n\n'  # For enums
                 except AttributeError:
                     output += repr(value) + '\n\n'
-                else:
-                    output += value.value + '\n\n'
         return output
 
     def get_all_names(self):

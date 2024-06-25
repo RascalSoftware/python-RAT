@@ -202,7 +202,8 @@ def plot_ref_sld_helper(data: PlotEventData, fig: Optional[Figure] = None, delay
     return fig
 
 
-def plot_ref_sld(project: RAT.Project, results: Union[RAT.outputs.Results, RAT.outputs.BayesResults], block: bool = False):
+def plot_ref_sld(project: RAT.Project, results: Union[RAT.outputs.Results, RAT.outputs.BayesResults],
+                 block: bool = False):
     """
     Plots the reflectivity and SLD profiles.
 

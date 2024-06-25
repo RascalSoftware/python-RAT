@@ -125,10 +125,10 @@ class Data(RATModel, arbitrary_types_allowed=True):
         try:
             data.shape[1]
         except IndexError:
-            raise ValueError('"data" must have at least two dimensions')
+            raise ValueError('"data" must have at least two dimensions') from None
         else:
             if data.shape[1] < 3:
-                raise ValueError('"data" must have at least three columns')
+                raise ValueError('"data" must have at least three columns') from None
         return data
 
     @field_validator('data_range', 'simulation_range')

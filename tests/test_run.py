@@ -244,8 +244,10 @@ def dream_problem():
     return problem
 
 
-@pytest.mark.parametrize(["test_procedure", "test_output_problem", "test_output_results", "test_bayes", "test_results"], [
-    (Procedures.Calculate, "reflectivity_calculation_problem", "reflectivity_calculation_output_results", None, "reflectivity_calculation_results"),
+@pytest.mark.parametrize(["test_procedure", "test_output_problem", "test_output_results", "test_bayes", "test_results"],
+                         [
+    (Procedures.Calculate, "reflectivity_calculation_problem", "reflectivity_calculation_output_results", None,
+     "reflectivity_calculation_results"),
     (Procedures.Dream, "dream_problem", "dream_output_results", "dream_bayes", "dream_results"),
 ])
 def test_run(test_procedure, test_output_problem, test_output_results, test_bayes, test_results, request) -> None:

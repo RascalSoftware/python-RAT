@@ -279,7 +279,7 @@ def test_append_object_and_kwargs(two_name_class_list: ClassList,
     class_list = two_name_class_list
     with pytest.warns(SyntaxWarning):
         warnings.warn('ClassList.append() called with both an object and keyword arguments. '
-                      'The keyword arguments will be ignored.', SyntaxWarning)
+                      'The keyword arguments will be ignored.', SyntaxWarning, stacklevel=2)
         class_list.append(new_object, **new_values)
         assert class_list == three_name_class_list
 
@@ -362,7 +362,7 @@ def test_insert_object_and_kwargs(two_name_class_list: ClassList,
     class_list = two_name_class_list
     with pytest.warns(SyntaxWarning):
         warnings.warn('ClassList.insert() called with both an object and keyword arguments. '
-                      'The keyword arguments will be ignored.', SyntaxWarning)
+                      'The keyword arguments will be ignored.', SyntaxWarning, stacklevel=2)
         class_list.insert(1, new_object, **new_values)
         assert class_list == ClassList([InputAttributes(name='Alice'),
                                         InputAttributes(name='Eve'),

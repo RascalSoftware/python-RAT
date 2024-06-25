@@ -53,7 +53,8 @@ problem.custom_files.append(name="DSPC Model", filename="custom_bilayer_DSPC.py"
                             path=pathlib.Path(__file__).parent.resolve())
 
 # Also, add the relevant background parameters - one each for each contrast:
-problem.background_parameters.set_fields(0, name="Background parameter D2O", fit=True, min=1.0e-10, max=1.0e-5, value=1.0e-07)
+problem.background_parameters.set_fields(0, name="Background parameter D2O", min=1.0e-10, max=1.0e-5,
+                                         value=1.0e-07, fit=True)
 
 problem.background_parameters.append(name="Background parameter SMW", min=1.0e-10, value=1.0e-7, max=1.0e-5, fit=True)
 problem.background_parameters.append(name="Background parameter H2O", min=1.0e-10, value=1.0e-7, max=1.0e-5, fit=True)

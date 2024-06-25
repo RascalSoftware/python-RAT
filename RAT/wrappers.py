@@ -20,7 +20,7 @@ class MatlabWrapper:
         try:
             import matlab.engine
         except ImportError:
-            raise ImportError('matlabengine is required to use MatlabWrapper')
+            raise ImportError('matlabengine is required to use MatlabWrapper') from None
         self.engine = matlab.engine.start_matlab()
         path = pathlib.Path(filename)
         self.engine.cd(str(path.parent), nargout=0)

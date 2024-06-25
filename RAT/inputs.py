@@ -14,7 +14,8 @@ from RAT.utils.enums import Calculations, Languages, LayerModels, TypeOptions
 def make_input(project: RAT.Project, controls: Union[RAT.controls.Calculate, RAT.controls.Simplex, RAT.controls.DE,
                                                      RAT.controls.NS, RAT.controls.Dream]
                ) -> tuple[ProblemDefinition, Cells, Limits, Priors, Control]:
-    """Constructs the inputs required for the compiled RAT code using the data defined in the input project and controls.
+    """Constructs the inputs required for the compiled RAT code using the data defined in the input project and
+    controls.
 
     Parameters
     ----------
@@ -147,7 +148,8 @@ def make_problem(project: RAT.Project) -> ProblemDefinition:
     problem.contrastBulkIns = [project.bulk_in.index(contrast.bulk_in, True) for contrast in project.contrasts]
     problem.contrastBulkOuts = [project.bulk_out.index(contrast.bulk_out, True) for contrast in project.contrasts]
     problem.contrastQzshifts = [0] * len(project.contrasts)  # This is marked as "to do" in RAT
-    problem.contrastScalefactors = [project.scalefactors.index(contrast.scalefactor, True) for contrast in project.contrasts]
+    problem.contrastScalefactors = [project.scalefactors.index(contrast.scalefactor, True)
+                                    for contrast in project.contrasts]
     problem.contrastDomainRatios = [project.domain_ratios.index(contrast.domain_ratio, True)
                                     if hasattr(contrast, 'domain_ratio') else 0 for contrast in project.contrasts]
     problem.contrastBackgroundParams = contrast_background_params
@@ -203,7 +205,8 @@ def make_data_present(project: RAT.Project) -> list[int]:
      : list[int]
         The "dataPresent" field of the problem input used in the compiled RAT code.
     """
-    return [1 if project.data[project.data.index(contrast.data)].data.size != 0 else 0 for contrast in project.contrasts]
+    return [1 if project.data[project.data.index(contrast.data)].data.size != 0 else 0
+            for contrast in project.contrasts]
 
 
 def check_indices(problem: ProblemDefinition) -> None:
@@ -257,7 +260,8 @@ def make_cells(project: RAT.Project) -> Cells:
     # Set contrast parameters according to model type
     if project.model == LayerModels.StandardLayers:
         if project.calculation == Calculations.Domains:
-            contrast_models = [[project.domain_contrasts.index(domain_contrast, True) for domain_contrast in contrast.model]
+            contrast_models = [[project.domain_contrasts.index(domain_contrast, True)
+                                for domain_contrast in contrast.model]
                                for contrast in project.contrasts]
         else:
             contrast_models = [[project.layers.index(layer, True) for layer in contrast.model]

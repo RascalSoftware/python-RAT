@@ -12,26 +12,46 @@ problem = RAT.Project(name="original_dspc_bilayer", calculation="non polarised",
                       geometry="substrate/liquid", absorption=False)
 
 # Set up the relevant parameters
-problem.parameters.append(name="Oxide Thickness", min=5.0, value=19.54, max=60.0, fit=True, prior_type="uniform", mu=0.0, sigma=np.inf)
-problem.parameters.append(name="Oxide SLD", min=3.39e-06, value=3.39e-06, max=3.41e-06, fit=False, prior_type="uniform", mu=0.0, sigma=np.inf)
-problem.parameters.append(name="SAM Tails Thickness", min=15.0, value=22.66, max=35.0, fit=True, prior_type="uniform", mu=0.0, sigma=np.inf)
-problem.parameters.append(name="SAM Tails SLD", min=-5e-07, value=-4.01e-07, max=-3e-07, fit=False, prior_type="uniform", mu=0.0, sigma=np.inf)
-problem.parameters.append(name="SAM Tails Hydration", min=1.0, value=5.252, max=50.0, fit=True, prior_type="uniform", mu=0.0, sigma=np.inf)
-problem.parameters.append(name="SAM Roughness", min=1.0, value=5.64, max=15.0, fit=True, prior_type="uniform", mu=0.0, sigma=np.inf)
-problem.parameters.append(name="CW Thickness", min=10.0, value=17.12, max=28.0, fit=True, prior_type="uniform", mu=0.0, sigma=np.inf)
-problem.parameters.append(name="CW SLD", min=0.0, value=0.0, max=1e-09, fit=False, prior_type="uniform", mu=0.0, sigma=np.inf)
-problem.parameters.append(name="SAM Heads Thickness", min=5.0, value=8.56, max=17.0, fit=True, prior_type="gaussian", mu=10.0, sigma=2.0)
-problem.parameters.append(name="SAM Heads SLD", min=1.0e-07, value=1.75e-06, max=2.0e-06, fit=False, prior_type="uniform", mu=0.0, sigma=np.inf)
-problem.parameters.append(name="SAM Heads Hydration", min=10.0, value=45.45, max=50.0, fit=True, prior_type="uniform", mu=30.0, sigma=3.0)
-problem.parameters.append(name="Bilayer Heads Thickness", min=7.0, value=10.7, max=17.0, fit=True, prior_type="gaussian", mu=10.0, sigma=2.0)
-problem.parameters.append(name="Bilayer Heads SLD", min=5.0e-07, value=1.47e-06, max=1.5e-06, fit=False, prior_type="uniform", mu=0.0, sigma=np.inf)
-problem.parameters.append(name="Bilayer Roughness", min=2.0, value=6.014, max=15.0, fit=True, prior_type="uniform", mu=0.0, sigma=np.inf)
-problem.parameters.append(name="Bilayer Tails Thickness", min=14.0, value=17.82, max=22.0, fit=True, prior_type="uniform", mu=0.0, sigma=np.inf)
-problem.parameters.append(name="Bilayer Tails SLD", min=-5.0e-07, value=-4.61e-07, max=0.0, fit=False, prior_type="uniform", mu=0.0, sigma=np.inf)
-problem.parameters.append(name="Bilayer Tails Hydration", min=10.0, value=17.64, max=50.0, fit=True, prior_type="uniform", mu=0.0, sigma=np.inf)
-problem.parameters.append(name="Bilayer Heads Hydration", min=10.0, value=36.15, max=50.0, fit=True, prior_type="gaussian", mu=30.0, sigma=3.0)
-problem.parameters.append(name="CW Hydration", min=99.9, value=100.0, max=100.0, fit=False, prior_type="uniform", mu=0.0, sigma=np.inf)
-problem.parameters.append(name="Oxide Hydration", min=0.0, value=23.61, max=60.0, fit=True, prior_type="uniform", mu=0.0, sigma=np.inf)
+problem.parameters.append(name="Oxide Thickness", min=5.0, value=19.54, max=60.0, fit=True, prior_type="uniform",
+                          mu=0.0, sigma=np.inf)
+problem.parameters.append(name="Oxide SLD", min=3.39e-06, value=3.39e-06, max=3.41e-06, fit=False, prior_type="uniform",
+                          mu=0.0, sigma=np.inf)
+problem.parameters.append(name="SAM Tails Thickness", min=15.0, value=22.66, max=35.0, fit=True, prior_type="uniform",
+                          mu=0.0, sigma=np.inf)
+problem.parameters.append(name="SAM Tails SLD", min=-5e-07, value=-4.01e-07, max=-3e-07, fit=False,
+                          prior_type="uniform", mu=0.0, sigma=np.inf)
+problem.parameters.append(name="SAM Tails Hydration", min=1.0, value=5.252, max=50.0, fit=True, prior_type="uniform",
+                          mu=0.0, sigma=np.inf)
+problem.parameters.append(name="SAM Roughness", min=1.0, value=5.64, max=15.0, fit=True, prior_type="uniform", mu=0.0,
+                          sigma=np.inf)
+problem.parameters.append(name="CW Thickness", min=10.0, value=17.12, max=28.0, fit=True, prior_type="uniform", mu=0.0,
+                          sigma=np.inf)
+problem.parameters.append(name="CW SLD", min=0.0, value=0.0, max=1e-09, fit=False, prior_type="uniform", mu=0.0,
+                          sigma=np.inf)
+problem.parameters.append(name="SAM Heads Thickness", min=5.0, value=8.56, max=17.0, fit=True, prior_type="gaussian",
+                          mu=10.0, sigma=2.0)
+problem.parameters.append(name="SAM Heads SLD", min=1.0e-07, value=1.75e-06, max=2.0e-06, fit=False,
+                          prior_type="uniform", mu=0.0, sigma=np.inf)
+problem.parameters.append(name="SAM Heads Hydration", min=10.0, value=45.45, max=50.0, fit=True, prior_type="uniform",
+                          mu=30.0, sigma=3.0)
+problem.parameters.append(name="Bilayer Heads Thickness", min=7.0, value=10.7, max=17.0, fit=True,
+                          prior_type="gaussian", mu=10.0, sigma=2.0)
+problem.parameters.append(name="Bilayer Heads SLD", min=5.0e-07, value=1.47e-06, max=1.5e-06, fit=False,
+                          prior_type="uniform", mu=0.0, sigma=np.inf)
+problem.parameters.append(name="Bilayer Roughness", min=2.0, value=6.014, max=15.0, fit=True, prior_type="uniform",
+                          mu=0.0, sigma=np.inf)
+problem.parameters.append(name="Bilayer Tails Thickness", min=14.0, value=17.82, max=22.0, fit=True,
+                          prior_type="uniform", mu=0.0, sigma=np.inf)
+problem.parameters.append(name="Bilayer Tails SLD", min=-5.0e-07, value=-4.61e-07, max=0.0, fit=False,
+                          prior_type="uniform", mu=0.0, sigma=np.inf)
+problem.parameters.append(name="Bilayer Tails Hydration", min=10.0, value=17.64, max=50.0, fit=True,
+                          prior_type="uniform", mu=0.0, sigma=np.inf)
+problem.parameters.append(name="Bilayer Heads Hydration", min=10.0, value=36.15, max=50.0, fit=True,
+                          prior_type="gaussian", mu=30.0, sigma=3.0)
+problem.parameters.append(name="CW Hydration", min=99.9, value=100.0, max=100.0, fit=False, prior_type="uniform",
+                          mu=0.0, sigma=np.inf)
+problem.parameters.append(name="Oxide Hydration", min=0.0, value=23.61, max=60.0, fit=True, prior_type="uniform",
+                          mu=0.0, sigma=np.inf)
 
 problem.parameters.set_fields(0, max=10)
 
@@ -70,8 +90,10 @@ problem.scalefactors.append(name="Scalefactor 2", min=0.05, value=0.15, max=0.2,
 # Now deal with the backgrounds
 del problem.backgrounds[0]
 del problem.background_parameters[0]
-problem.background_parameters.append(name="Background parameter D2O", min=5.0e-10, value=2.23e-06, max=7.0e-06, fit=True)
-problem.background_parameters.append(name="Background parameter SMW", min=1.0e-10, value=3.38e-06, max=4.99e-06, fit=True)
+problem.background_parameters.append(name="Background parameter D2O", min=5.0e-10, value=2.23e-06, max=7.0e-06,
+                                     fit=True)
+problem.background_parameters.append(name="Background parameter SMW", min=1.0e-10, value=3.38e-06, max=4.99e-06,
+                                     fit=True)
 
 problem.backgrounds.append(name="D2O Background", type="constant", value_1="Background parameter D2O")
 problem.backgrounds.append(name="SMW Background", type="constant", value_1="Background parameter SMW")

@@ -57,7 +57,7 @@ class ClassList(collections.UserList):
         else:
             if any(model.__dict__ for model in self.data):
                 table = prettytable.PrettyTable()
-                table.field_names = ['index'] + [key.replace('_', ' ') for key in self.data[0].__dict__.keys()]
+                table.field_names = ['index'] + [key.replace('_', ' ') for key in self.data[0].__dict__]
                 table.add_rows([[index] + list(model.__dict__.values()) for index, model in enumerate(self.data)])
                 output = table.get_string()
             else:
@@ -133,7 +133,7 @@ class ClassList(collections.UserList):
         """
         if obj and kwargs:
             warnings.warn('ClassList.append() called with both an object and keyword arguments. '
-                          'The keyword arguments will be ignored.', SyntaxWarning)
+                          'The keyword arguments will be ignored.', SyntaxWarning, stacklevel=2)
         if obj:
             if not hasattr(self, '_class_handle'):
                 self._class_handle = type(obj)
@@ -173,7 +173,7 @@ class ClassList(collections.UserList):
         """
         if obj and kwargs:
             warnings.warn('ClassList.insert() called with both an object and keyword arguments. '
-                          'The keyword arguments will be ignored.', SyntaxWarning)
+                          'The keyword arguments will be ignored.', SyntaxWarning, stacklevel=2)
         if obj:
             if not hasattr(self, '_class_handle'):
                 self._class_handle = type(obj)
