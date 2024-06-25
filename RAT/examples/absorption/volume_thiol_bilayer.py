@@ -1,6 +1,5 @@
 def volume_thiol_bilayer(params, bulk_in, bulk_out, contrast):
-    """
-    volumeThiolBilayer  RAT Custom Layer Model File.
+    """VolumeThiolBilayer  RAT Custom Layer Model File.
 
     This file accepts 3 vectors containing the values for params, bulk in and bulk out.
     The final parameter is an index of the contrast being calculated

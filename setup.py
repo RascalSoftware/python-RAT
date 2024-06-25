@@ -25,7 +25,7 @@ ext_modules = [
             pybind11.get_include(True),
             "cpp/RAT/",
         ],
-        language="c++"
+        language="c++",
     ),
 ]
 
@@ -55,6 +55,7 @@ def get_shared_object_name(lib_name):
 
 class BuildExt(build_ext):
     """A custom build extension for adding compiler-specific options."""
+
     c_opts = {
         "msvc": ["/EHsc"],
         "unix": ["-fopenmp", "-std=c++11"],
@@ -86,15 +87,15 @@ class BuildExt(build_ext):
             ext.extra_compile_args = opts
             ext.extra_link_args = link_opts
         build_ext.build_extensions(self)
-    
+
     def run(self):
         super().run()
         build_py = self.get_finalized_command("build_py")
         package_dir = f"{build_py.build_lib}/RAT/"
         for p in Path(package_dir).glob("**/*"):
             if p.suffix in {".exp", ".a", ".lib"}:
-                p.unlink() 
-                
+                p.unlink()
+
         if self.inplace:
             obj_name = get_shared_object_name(libevent[0])
             src = f"{build_py.build_lib}/RAT/{obj_name}"
@@ -133,18 +134,18 @@ class BuildClib(build_clib):
                             macros=macros,
                             include_dirs=include_dirs,
                             extra_postargs=cflags,
-                            debug=self.debug
+                            debug=self.debug,
                             )
             language = self.compiler.detect_language(sources)
             self.compiler.link_shared_object(
-                objects,                     
+                objects,
                 get_shared_object_name(lib_name),
-                output_dir=self.build_clib, 
-                target_lang=language
+                output_dir=self.build_clib,
+                target_lang=language,
                 )
 
         super().build_libraries(libraries)
-                                           
+
 
 setup(
     name="RAT",

@@ -5,7 +5,6 @@ from RAT.outputs import make_results
 
 def run(project, controls):
     """Run RAT for the given project and controls inputs."""
-
     parameter_field = {"parameters": "params",
                        "bulk_in": "bulkIn",
                        "bulk_out": "bulkOut",

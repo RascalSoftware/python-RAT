@@ -32,7 +32,9 @@ class ClassList(collections.UserList):
         An instance, or list of instance(s), of the class to be used in this ClassList.
     name_field : str, optional
         The field used to define unique objects in the ClassList (default is "name").
+
     """
+
     def __init__(self, init_list: Union[Sequence[object], object] = None, name_field: str = "name") -> None:
         self.name_field = name_field
 
@@ -130,6 +132,7 @@ class ClassList(collections.UserList):
         SyntaxWarning
             Raised if the input arguments contain BOTH an object and keyword arguments. In this situation the object is
             appended to the ClassList and the keyword arguments are discarded.
+
         """
         if obj and kwargs:
             warnings.warn("ClassList.append() called with both an object and keyword arguments. "
@@ -170,6 +173,7 @@ class ClassList(collections.UserList):
         SyntaxWarning
             Raised if the input arguments contain both an object and keyword arguments. In this situation the object is
             inserted into the ClassList and the keyword arguments are discarded.
+
         """
         if obj and kwargs:
             warnings.warn("ClassList.insert() called with both an object and keyword arguments. "
@@ -230,6 +234,7 @@ class ClassList(collections.UserList):
         -------
         names : list [str]
             The value of the name_field attribute of each object in the ClassList.
+
         """
         return [getattr(model, self.name_field) for model in self.data if hasattr(model, self.name_field)]
 
@@ -245,6 +250,7 @@ class ClassList(collections.UserList):
         -------
          : list [tuple]
             A list of (index, field) tuples matching the given value.
+
         """
         return [(index, field) for index, element in enumerate(self.data) for field in vars(element)
                 if getattr(element, field) == value]
@@ -262,6 +268,7 @@ class ClassList(collections.UserList):
         ------
         ValueError
             Raised if the input arguments contain a name_field value already defined in the ClassList.
+
         """
         names = self.get_names()
         with contextlib.suppress(KeyError):
@@ -282,6 +289,7 @@ class ClassList(collections.UserList):
         ------
         ValueError
             Raised if the input list defines more than one object with the same value of name_field.
+
         """
         names = [getattr(model, self.name_field) for model in input_list if hasattr(model, self.name_field)]
         if len(set(names)) != len(names):
@@ -299,6 +307,7 @@ class ClassList(collections.UserList):
         ------
         ValueError
             Raised if the input list defines objects of different types.
+
         """
         if not (all(isinstance(element, self._class_handle) for element in input_list)):
             raise ValueError(f"Input list contains elements of type other than '{self._class_handle.__name__}'")
@@ -316,6 +325,7 @@ class ClassList(collections.UserList):
         instance : object or str
             Either the object with the value of the name_field attribute given by value, or the input value if an
             object with that value of the name_field attribute cannot be found.
+
         """
         return next((model for model in self.data if getattr(model, self.name_field) == value), value)
 
@@ -334,6 +344,7 @@ class ClassList(collections.UserList):
         class_handle : type
             The type object of the element fulfilling the condition of satisfying "issubclass" for all of the other
             elements.
+
         """
         for this_element in input_list:
             if all([issubclass(type(instance), type(this_element)) for instance in input_list]):

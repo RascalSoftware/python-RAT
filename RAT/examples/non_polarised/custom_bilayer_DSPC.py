@@ -2,8 +2,7 @@ import numpy as np
 
 
 def custom_bilayer_DSPC(params, bulk_in, bulk_out, contrast):
-    """
-    CUSTOMBILAYER RAT Custom Layer Model File.
+    """CUSTOMBILAYER RAT Custom Layer Model File.
 
     This file accepts 3 vectors containing the values for params, bulk in and bulk out.
     The final parameter is an index of the contrast being calculated.
@@ -24,7 +23,6 @@ def custom_bilayer_DSPC(params, bulk_in, bulk_out, contrast):
 
     The second output parameter should be the substrate roughness.
     """
-
     sub_rough = params[0]
     oxide_thick = params[1]
     oxide_hydration = params[2]

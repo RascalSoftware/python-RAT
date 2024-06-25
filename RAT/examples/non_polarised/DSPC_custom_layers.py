@@ -1,5 +1,4 @@
-"""
-Custom Layers example for Supported DSPC layer.
+"""Custom Layers example for Supported DSPC layer.
 
 Example of using custom layers to model a DSPC supported bilayer.
 """

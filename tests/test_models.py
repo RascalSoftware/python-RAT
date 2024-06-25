@@ -160,7 +160,7 @@ def test_two_values_in_simulation_range(input_range: list[float]) -> None:
 
 @pytest.mark.parametrize("field", [
     "data_range",
-    "simulation_range"
+    "simulation_range",
 ])
 def test_min_max_in_range(field: str) -> None:
     """If the maximum value of the "data_range" or "simulation_range" fields of the "Data" model is greater than the

@@ -1,4 +1,3 @@
-from typing import Any
 
 import numpy as np
 
@@ -7,11 +6,12 @@ import RAT.outputs
 
 class InputAttributes:
     """Set input arguments as class attributes."""
+
     def __init__(self, **kwargs) -> None:
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-    def __eq__(self, other: Any):
+    def __eq__(self, other: object):
         if isinstance(other, InputAttributes):
             return self.__dict__ == other.__dict__
         return False
@@ -19,12 +19,11 @@ class InputAttributes:
 
 class SubInputAttributes(InputAttributes):
     """Trivial subclass of InputAttributes."""
-    pass
+
 
 
 def dummy_function() -> None:
     """Trivial function for function handle tests."""
-    pass
 
 
 def check_results_equal(actual_results, expected_results) -> None:
@@ -33,7 +32,6 @@ def check_results_equal(actual_results, expected_results) -> None:
     We focus here on the fields common to both results objects, and also check the equality of the subclasses
     "CalculationResults" and "ContrastParams".
     """
-
     list_fields = ["reflectivity", "simulation", "shiftedData"]
     double_list_fields = ["layerSlds", "sldProfiles", "resampledLayers"]
     contrast_param_fields = ["backgroundParams", "scalefactors", "bulkIn", "bulkOut", "resolutionParams", "subRoughs",
@@ -72,7 +70,6 @@ def check_results_equal(actual_results, expected_results) -> None:
     if isinstance(actual_results, RAT.outputs.BayesResults) and isinstance(expected_results, RAT.outputs.BayesResults):
         check_bayes_fields_equal(actual_results, expected_results)
 
-    return None
 
 
 def check_bayes_fields_equal(actual_results, expected_results) -> None:
@@ -80,7 +77,6 @@ def check_bayes_fields_equal(actual_results, expected_results) -> None:
 
     We focus here on the fields and subclasses specific to the Bayesian optimisation.
     """
-
     # The BayesResults object consists of a number of subclasses, each containing fields of differing formats.
     subclasses = ["predictionIntervals", "confidenceIntervals", "dreamParams", "dreamOutput", "nestedSamplerOutput"]
 
@@ -90,21 +86,21 @@ def check_bayes_fields_equal(actual_results, expected_results) -> None:
                                     "pUnitGamma", "nCR", "delta", "steps", "zeta", "outlier", "adaptPCR", "thinning",
                                     "epsilon", "ABC", "IO", "storeOutput"],
                     "dreamOutput": ["runtime", "iteration", "modelOutput"],
-                    "nestedSamplerOutput": ["logZ"]
+                    "nestedSamplerOutput": ["logZ"],
                     }
 
     list_fields = {"predictionIntervals": ["reflectivity", "reflectivityXData"],
                    "confidenceIntervals": [],
                    "dreamParams": [],
                    "dreamOutput": [],
-                   "nestedSamplerOutput": []
+                   "nestedSamplerOutput": [],
                    }
 
     double_list_fields = {"predictionIntervals": ["sld", "sldXData"],
                           "confidenceIntervals": [],
                           "dreamParams": [],
                           "dreamOutput": [],
-                          "nestedSamplerOutput": []
+                          "nestedSamplerOutput": [],
                           }
 
     array_fields = {"predictionIntervals": ["sampleChi"],
@@ -144,4 +140,3 @@ def check_bayes_fields_equal(actual_results, expected_results) -> None:
 
     assert (actual_results.chain == expected_results.chain).all()
 
-    return None

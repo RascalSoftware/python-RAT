@@ -1,5 +1,5 @@
 import pathlib
-import unittest.mock as mock
+from unittest import mock
 
 import pytest
 
@@ -13,7 +13,7 @@ def test_matlab_wrapper() -> None:
     mocked_matlab_module = mock.MagicMock()
     mocked_engine = mock.MagicMock()
     mocked_matlab_module.engine.start_matlab.return_value = mocked_engine
-        
+
     # mocked_matlab_module.engine = mock.MagicMock()
 
     with mock.patch.dict("sys.modules", {"matlab": mocked_matlab_module,
@@ -24,7 +24,7 @@ def test_matlab_wrapper() -> None:
         assert pathlib.Path(mocked_engine.cd.call_args[0][0]).samefile(".")
 
         handle = wrapper.getHandle()
-        
+
         mocked_engine.demo.return_value = ([2], 5)
         result = handle([1], [2], [3], 0)
         assert result == ([2], 5)
@@ -36,7 +36,7 @@ def test_matlab_wrapper() -> None:
         assert result == ([3, 1], 7)
         assert wrapper.engine.demo.call_args[0] == ([4], [5], [6], 2, 2)
         assert mocked_engine.demo.call_count == 2
-    
+
 
 def test_dylib_wrapper() -> None:
     mocked_engine = mock.MagicMock()

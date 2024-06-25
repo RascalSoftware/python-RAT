@@ -84,6 +84,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
     This class combines the data defined in each of the pydantic models included in "models.py" into the full set of
     inputs required for a reflectivity calculation.
     """
+
     name: str = ""
     calculation: Calculations = Calculations.NonPolarised
     model: LayerModels = LayerModels.StandardLayers
@@ -388,6 +389,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
         ------
         ValueError
             Raised if any field in field_list has a value not specified in allowed_values.
+
         """
         class_list = getattr(self, attribute)
         for model in class_list:
@@ -415,6 +417,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
         ------
         ValueError
             Raised if any model in contrast_attribute has a value not specified in allowed_values.
+
         """
         class_list = getattr(self, contrast_attribute)
         for contrast in class_list:
@@ -430,6 +433,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
         -------
         model_field : str
             The name of the field used to define the contrasts' model field.
+
         """
         if self.model == LayerModels.StandardLayers:
             if self.calculation == Calculations.Domains:
@@ -449,6 +453,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
             The name given to the project object under construction (default is "problem").
         script : str, optional
             The filepath of the generated script (default is "project_script.py").
+
         """
         # Need to ensure correct format for script name
         file_parts = os.path.splitext(script)
@@ -491,6 +496,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
         -------
         wrapped_func : Callable
             The wrapped routine.
+
         """
         @functools.wraps(func)
         def wrapped_func(*args, **kwargs):

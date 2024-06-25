@@ -24,7 +24,7 @@ def TestModel():
      "input_value='string', input_type=str]\nstr_field\n  This is another custom error message [type=string_type, "
      "input_value=5, input_type=int]"),
 ])
-def test_custom_pydantic_validation_error(TestModel, custom_errors: dict[str, str], expected_error_message: str
+def test_custom_pydantic_validation_error(TestModel, custom_errors: dict[str, str], expected_error_message: str,
                                           ) -> None:
     """When we call custom_pydantic_validation_error with custom errors, we should return an error list containing
     PydanticCustomErrors, otherwise we return the original set of errors.

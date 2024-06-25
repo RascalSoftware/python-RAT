@@ -101,7 +101,7 @@ def default_project_repr():
 @pytest.fixture
 def test_project_script():
     return (
-        "# THIS FILE IS GENERATED FROM RAT VIA THE \"WRITE_SCRIPT\" ROUTINE. IT IS NOT PART OF THE RAT CODE.\n\n"
+        '# THIS FILE IS GENERATED FROM RAT VIA THE "WRITE_SCRIPT" ROUTINE. IT IS NOT PART OF THE RAT CODE.\n\n'
         "import RAT\nfrom RAT.models import *\nfrom numpy import array, inf\n\n"
         "problem = RAT.Project(\n    name='', calculation='non polarised', model='standard layers', geometry='air/substrate', absorption=False,\n"
         "    parameters=RAT.ClassList([ProtectedParameter(name='Substrate Roughness', min=1.0, value=3.0, max=5.0, fit=True, prior_type='uniform', mu=0.0, sigma=inf),"
@@ -405,7 +405,7 @@ def test_check_protected_parameters(delete_operation) -> None:
     """If we try to remove a protected parameter, we should raise an error."""
     project = RAT.Project()
 
-    with pytest.raises(pydantic.ValidationError, match="1 validation error for Project\n  Value error, Can\'t delete"
+    with pytest.raises(pydantic.ValidationError, match="1 validation error for Project\n  Value error, Can't delete"
                                                        " the protected parameters: Substrate Roughness"):
         eval(delete_operation)
 
@@ -606,7 +606,7 @@ def test_get_all_names(test_project) -> None:
                                             "data": ["Simulation"],
                                             "layers": ["Test Layer"],
                                             "domain_contrasts": [],
-                                            "contrasts": ["Test Contrast"]
+                                            "contrasts": ["Test Contrast"],
                                             }
 
 
@@ -618,7 +618,7 @@ def test_get_all_protected_parameters(test_project) -> None:
                                                            "scalefactors": [],
                                                            "domain_ratios": [],
                                                            "background_parameters": [],
-                                                           "resolution_parameters": []
+                                                           "resolution_parameters": [],
                                                            }
 
 
@@ -688,7 +688,7 @@ def test_get_contrast_model_field(input_calc: Calculations, input_model: LayerMo
 
 @pytest.mark.parametrize("input_filename", [
     "test_script.py",
-    "test_script"
+    "test_script",
 ])
 def test_write_script(test_project, temp_dir, test_project_script, input_filename: str) -> None:
     """Test the script we write to regenerate the project is created and runs as expected."""
@@ -716,7 +716,7 @@ def test_write_script(test_project, temp_dir, test_project_script, input_filenam
     ".txt"
     ".f90"
     ".m"
-    ".pyc"
+    ".pyc",
 ])
 def test_write_script_wrong_extension(test_project, extension: str) -> None:
     """If we try to write the script to anything other than a ".py" file, we raise a ValueError."""

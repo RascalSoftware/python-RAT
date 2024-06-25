@@ -4,7 +4,7 @@ from RAT.rat_core import EventBridge, EventTypes, PlotEventData, ProgressEventDa
 
 
 def notify(event_type: EventTypes, data: Union[str, PlotEventData, ProgressEventData]) -> None:
-    """Calls registered callbacks with the data when event type has 
+    """Calls registered callbacks with the data when event type has
     been triggered.
 
     Parameters
@@ -13,6 +13,7 @@ def notify(event_type: EventTypes, data: Union[str, PlotEventData, ProgressEvent
         The event type that was triggered.
     data : str or PlotEventData or ProgressEventData
         The data sent by the event. The message event data is a string.
+
     """
     callbacks = __event_callbacks[event_type]
     for callback in callbacks:
@@ -31,6 +32,7 @@ def get_event_callback(event_type: EventTypes) -> List[Callable[[Union[str, Plot
     -------
     callback : Callable[[Union[str, PlotEventData, ProgressEventData]], None]
         The callback for the event type.
+
     """
     return list(__event_callbacks[event_type])
 
@@ -44,10 +46,11 @@ def register(event_type: EventTypes, callback: Callable[[Union[str, PlotEventDat
         The event type to register.
     callback : Callable[[Union[str, PlotEventData, ProgressEventData]], None]
         The callback for when the event is triggered.
+
     """
     if not isinstance(event_type, EventTypes):
         raise ValueError("event_type must be a events.EventTypes enum")
-    
+
     if len(__event_callbacks[event_type]) == 0:
         __event_impl.register(event_type)
     __event_callbacks[event_type].add(callback)

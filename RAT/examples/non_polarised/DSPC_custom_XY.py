@@ -1,5 +1,4 @@
-"""
-Custom XY Example for Supported DSPC layer.
+"""Custom XY Example for Supported DSPC layer.
 
 In this example, we model the same data (DSPC supported bilayer) as the Custom Layers example, but this time we will
 use continuous distributions of the volume fractions of each component to build up the SLD profiles (as described in
@@ -19,7 +18,7 @@ Then, the total volume occupied will be given by the sum of the volume fractions
 does not permit any hydration, so to deal with this, we can simply scale the (full occupation) Heaviside functions by
 relevant coverage parameters. When this is correctly done, we can obtain the remaining water distribution as
 
-$${\textrm{VF}}_{\textrm{wat}} =1-\sum_n {\textrm{VF}}_n$$
+$${\textrm{VF}}_{\textrm{wat}} =1-\\sum_n {\textrm{VF}}_n$$
 
 where VFn is the Volume Fraction of the n'th layer.
 """

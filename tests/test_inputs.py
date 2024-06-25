@@ -1,8 +1,8 @@
 """Test the inputs module."""
 
 import pathlib
-import unittest.mock as mock
 from itertools import chain
+from unittest import mock
 
 import numpy as np
 import pytest
@@ -27,14 +27,14 @@ from tests.utils import dummy_function
 @pytest.fixture
 def standard_layers_project():
     """Add parameters to the default project for a non polarised calculation."""
-    test_project = RAT.Project(data=RAT.ClassList([RAT.models.Data(name="Test Data", data=np.array([[1.0, 1.0, 1.0]]))])
+    test_project = RAT.Project(data=RAT.ClassList([RAT.models.Data(name="Test Data", data=np.array([[1.0, 1.0, 1.0]]))]),
                                )
     test_project.parameters.append(name="Test Thickness")
     test_project.parameters.append(name="Test SLD")
     test_project.parameters.append(name="Test Roughness")
     test_project.custom_files.append(name="Test Custom File", filename="python_test.py", function_name="dummy_function",
                                      language="python")
-    test_project.layers.append(name="Test Layer", thickness="Test Thickness", SLD="Test SLD", roughness="Test Roughness"
+    test_project.layers.append(name="Test Layer", thickness="Test Thickness", SLD="Test SLD", roughness="Test Roughness",
                                )
     test_project.contrasts.append(name="Test Contrast", data="Test Data", background="Background 1", bulk_in="SLD Air",
                                   bulk_out="SLD D2O", scalefactor="Scalefactor 1", resolution="Resolution 1",
@@ -46,13 +46,13 @@ def standard_layers_project():
 def domains_project():
     """Add parameters to the default project for a domains calculation."""
     test_project = RAT.Project(calculation=Calculations.Domains,
-                               data=RAT.ClassList([RAT.models.Data(name="Test Data", data=np.array([[1.0, 1.0, 1.0]]))])
+                               data=RAT.ClassList([RAT.models.Data(name="Test Data", data=np.array([[1.0, 1.0, 1.0]]))]),
                                )
     test_project.parameters.append(name="Test Thickness")
     test_project.parameters.append(name="Test SLD")
     test_project.parameters.append(name="Test Roughness")
     test_project.custom_files.append(name="Test Custom File", filename="matlab_test.m", language="matlab")
-    test_project.layers.append(name="Test Layer", thickness="Test Thickness", SLD="Test SLD", roughness="Test Roughness"
+    test_project.layers.append(name="Test Layer", thickness="Test Thickness", SLD="Test SLD", roughness="Test Roughness",
                                )
     test_project.domain_contrasts.append(name="up", model=["Test Layer"])
     test_project.domain_contrasts.append(name="down", model=["Test Layer"])
@@ -573,7 +573,8 @@ def test_check_indices(test_problem, request) -> None:
 ])
 def test_check_indices_error(test_problem, index_list, bad_value, request) -> None:
     """The check_indices routine should raise an IndexError if a contrast list contains an index that is out of the
-    range of the corresponding parameter list in a ProblemDefinition object."""
+    range of the corresponding parameter list in a ProblemDefinition object.
+    """
     param_list = {"contrastBulkIns": "bulkIn",
                   "contrastBulkOuts": "bulkOut",
                   "contrastScalefactors": "scalefactors",
@@ -651,7 +652,6 @@ def check_problem_equal(actual_problem, expected_problem) -> None:
             ["NaN" if np.isnan(el) else el for el in expected_problem.contrastCustomFiles]
             )
 
-    return None
 
 
 def check_cells_equal(actual_cells, expected_cells) -> None:
@@ -671,7 +671,6 @@ def check_cells_equal(actual_cells, expected_cells) -> None:
         field = f"f{index}"
         assert getattr(actual_cells, field) == getattr(expected_cells, field)
 
-    return None
 
 
 def check_controls_equal(actual_controls, expected_controls) -> None:
@@ -691,4 +690,3 @@ def check_controls_equal(actual_controls, expected_controls) -> None:
     for field in checks_fields:
         assert (getattr(actual_controls.checks, field) == getattr(expected_controls.checks, field)).all()
 
-    return None

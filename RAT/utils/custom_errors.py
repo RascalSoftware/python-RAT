@@ -3,7 +3,7 @@ import pydantic_core
 
 
 def custom_pydantic_validation_error(error_list: list[pydantic_core.ErrorDetails],
-                                     custom_error_msgs: dict[str, str] = None
+                                     custom_error_msgs: dict[str, str] = None,
                                      ) -> list[pydantic_core.ErrorDetails]:
     """Run through the list of errors generated from a pydantic ValidationError, substituting the standard error for a
     PydanticCustomError for a given set of error types.
@@ -22,6 +22,7 @@ def custom_pydantic_validation_error(error_list: list[pydantic_core.ErrorDetails
     -------
     new_error : list[pydantic_core.ErrorDetails]
         A list of errors including PydanticCustomErrors in place of the error types in custom_errors.
+
     """
     if custom_error_msgs is None:
         custom_error_msgs = {}

@@ -11,6 +11,7 @@ from RAT.utils.enums import BoundHandling, Display, Parallel, Procedures, Strate
 @dataclass(frozen=True)
 class Controls:
     """The full set of controls parameters required for the compiled RAT code."""
+
     # All Procedures
     procedure: Procedures = Procedures.Calculate
     parallel: Parallel = Parallel.Single
@@ -47,6 +48,7 @@ class Controls:
 
 class Calculate(BaseModel, validate_assignment=True, extra="forbid"):
     """Defines the class for the calculate procedure, which includes the properties used in all five procedures."""
+
     procedure: Literal[Procedures.Calculate] = Procedures.Calculate
     parallel: Parallel = Parallel.Single
     calcSldDuringFit: bool = False
@@ -71,6 +73,7 @@ class Calculate(BaseModel, validate_assignment=True, extra="forbid"):
 
 class Simplex(Calculate):
     """Defines the additional fields for the simplex procedure."""
+
     procedure: Literal[Procedures.Simplex] = Procedures.Simplex
     xTolerance: float = Field(1.0e-6, gt=0.0)
     funcTolerance: float = Field(1.0e-6, gt=0.0)
@@ -82,6 +85,7 @@ class Simplex(Calculate):
 
 class DE(Calculate):
     """Defines the additional fields for the Differential Evolution procedure."""
+
     procedure: Literal[Procedures.DE] = Procedures.DE
     populationSize: int = Field(20, ge=1)
     fWeight: float = 0.5
@@ -93,6 +97,7 @@ class DE(Calculate):
 
 class NS(Calculate):
     """Defines the additional fields for the Nested Sampler procedure."""
+
     procedure: Literal[Procedures.NS] = Procedures.NS
     nLive: int = Field(150, ge=1)
     nMCMC: float = Field(0.0, ge=0.0)
@@ -102,6 +107,7 @@ class NS(Calculate):
 
 class Dream(Calculate):
     """Defines the additional fields for the Dream procedure."""
+
     procedure: Literal[Procedures.Dream] = Procedures.Dream
     nSamples: int = Field(50000, ge=0)
     nChains: int = Field(10, gt=0)
@@ -119,7 +125,7 @@ def set_controls(procedure: Procedures = Procedures.Calculate, **properties)\
         Procedures.Simplex: Simplex,
         Procedures.DE: DE,
         Procedures.NS: NS,
-        Procedures.Dream: Dream
+        Procedures.Dream: Dream,
     }
 
     try:
@@ -131,7 +137,7 @@ def set_controls(procedure: Procedures = Procedures.Calculate, **properties)\
     except ValidationError as exc:
         custom_error_msgs = {"extra_forbidden": f'Extra inputs are not permitted. The fields for the {procedure}'
                                                 f' controls procedure are:\n    '
-                                                f'{", ".join(controls[procedure].model_fields.keys())}\n'
+                                                f'{", ".join(controls[procedure].model_fields.keys())}\n',
                              }
         custom_error_list = custom_pydantic_validation_error(exc.errors(), custom_error_msgs)
         raise ValidationError.from_exception_data(exc.title, custom_error_list) from None

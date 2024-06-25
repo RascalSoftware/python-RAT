@@ -439,7 +439,7 @@ def reflectivity_calculation_results():
                   "SAM Roughness", "CW Thickness", "SAM Heads Thickness", "SAM Heads Hydration",
                   "Bilayer Heads Thickness", "Bilayer Roughness", "Bilayer Tails Thickness",
                   "Bilayer Tails Hydration", "Bilayer Heads Hydration", "Oxide Hydration",
-                  "Background parameter D2O", "Background parameter SMW", "D2O", "SMW"]
+                  "Background parameter D2O", "Background parameter SMW", "D2O", "SMW"],
     )
 
 
@@ -1333,7 +1333,7 @@ def dream_results():
         resampledLayers=[[np.array([[0., 0., 0.]])], [np.array([[0., 0., 0.]])]],
         calculationResults=RAT.outputs.CalculationResults(
             chiValues=np.array([4.6077885, 7.00028098]),
-            sumChi=11.608069475997699
+            sumChi=11.608069475997699,
         ),
         contrastParams=RAT.outputs.ContrastParams(
             backgroundParams=np.array([2.37113128e-06, 1.99006694e-06]),
@@ -1342,7 +1342,7 @@ def dream_results():
             bulkOut=np.array([6.01489149e-06, 1.59371685e-06]),
             resolutionParams=np.array([0.03, 0.03]),
             subRoughs=np.array([6.19503045, 6.19503045]),
-            resample=np.array([0.0, 0.0])
+            resample=np.array([0.0, 0.0]),
         ),
         fitParams=np.array([6.19503045e+00, 1.84420960e+01, 2.11039621e+01, 8.75538121e+00,
                             3.72292994e+00, 1.84624551e+01, 1.02316734e+01, 2.31156093e+01,
@@ -1698,7 +1698,7 @@ def dream_results():
                                 1.12748255e+06, 1.46133559e+16, 1.12748255e+06, 1.12748255e+06,
                                 1.12748255e+06, 1.12748255e+06, 1.12748255e+06, 1.12748255e+06,
                                 1.46133559e+16, 1.46133559e+16, 1.46133559e+16, 1.46133559e+16,
-                                1.46133559e+16, 1.12748255e+06, 1.12748255e+06, 1.46133559e+16])
+                                1.46133559e+16, 1.12748255e+06, 1.12748255e+06, 1.46133559e+16]),
         ),
         confidenceIntervals=RAT.outputs.ConfidenceIntervals(
             percentile65=np.array([[-1.29074586e-231, 8.33251318e+000, 1.75397363e+001, 1.75397363e+001,
@@ -1725,7 +1725,7 @@ def dream_results():
                             2.78042232e+01, 1.08043784e+01, 1.00488530e+01, 2.01086197e+01,
                             2.42251646e+01, 1.55593097e+01, 1.49022278e+01, 3.20423080e+01,
                             4.85551946e+01, 3.87046084e+01, 1.45612723e+01, 3.15508089e-06,
-                            3.29384190e-06, 5.26668495e-06]])
+                            3.29384190e-06, 5.26668495e-06]]),
         ),
         dreamParams=RAT.outputs.DreamParams(
             nParams=18.0,
@@ -1781,7 +1781,7 @@ def dream_results():
         nestedSamplerOutput=RAT.outputs.NestedSamplerOutput(
             logZ=0.0,
             nestSamples=np.array([[0.0, 0.0]]),
-            postSamples=np.array([[0.0, 0.0]])
+            postSamples=np.array([[0.0, 0.0]]),
         ),
         chain=np.array([[-1.29231905e-231, 8.33251318e+000, 5.48185565e+001, 1.75397363e+001,
                          4.57554170e+001, 9.85302945e+000, 1.17557273e+001, 8.34197863e+000,
@@ -1792,5 +1792,5 @@ def dream_results():
                          9.85302945e+000, 1.17557273e+001, 8.34197863e+000, 3.18752608e+001,
                          1.65750684e+001, 1.45435510e+001, 1.52609047e+001, 4.88237113e+001,
                          4.82866779e+001, 2.91225389e+001, 5.60206314e-006, 7.08098641e-007,
-                         5.87958515e-006, 4.65378475e-006]])
+                         5.87958515e-006, 4.65378475e-006]]),
     )

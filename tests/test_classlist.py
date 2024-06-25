@@ -92,7 +92,8 @@ class TestInitialisation:
     @pytest.mark.parametrize("empty_input", [([]), (())])
     def test_empty_input(self, empty_input: Sequence[object]) -> None:
         """If we initialise a ClassList with an empty input (list or tuple), the ClassList should be an empty list, and
-        _class_handle should be unset."""
+        _class_handle should be unset.
+        """
         class_list = ClassList(empty_input)
         assert class_list.data == []
         assert not hasattr(class_list, "_class_handle")
@@ -112,7 +113,8 @@ class TestInitialisation:
     ])
     def test_identical_name_fields(self, input_list: Sequence[object], name_field: str) -> None:
         """If we initialise a ClassList with input objects with identical values of the name_field,
-        we should raise a ValueError."""
+        we should raise a ValueError.
+        """
         with pytest.raises(ValueError,
                            match=f"Input list contains objects with the same value of the {name_field} attribute"):
             ClassList(input_list, name_field=name_field)
@@ -125,7 +127,8 @@ def test_repr_table(two_name_class_list: ClassList, two_name_class_list_table: s
 
 def test_repr_empty_table() -> None:
     """For empty classes with the __dict__ attribute, we should be able to print the contents of the ClassList as a
-    list."""
+    list.
+    """
     empty_attributes = InputAttributes()
     assert repr(ClassList(empty_attributes)) == repr([empty_attributes])
 
@@ -196,7 +199,8 @@ def test_delitem_not_present(two_name_class_list: ClassList) -> None:
 ])
 def test_iadd(two_name_class_list: ClassList, added_list: Iterable, three_name_class_list: ClassList) -> None:
     """We should be able to use the "+=" operator to add iterables to a ClassList. Individual objects should be wrapped
-    in a list before being added."""
+    in a list before being added.
+    """
     class_list = two_name_class_list
     class_list += added_list
     assert class_list == three_name_class_list
@@ -209,7 +213,8 @@ def test_iadd(two_name_class_list: ClassList, added_list: Iterable, three_name_c
 ])
 def test_iadd_empty_classlist(added_list: Sequence, two_name_class_list: ClassList) -> None:
     """We should be able to use the "+=" operator to add iterables to an empty ClassList, whilst also setting
-    _class_handle."""
+    _class_handle.
+    """
     class_list = ClassList()
     class_list += added_list
     assert class_list == two_name_class_list
@@ -275,7 +280,8 @@ def test_append_object_and_kwargs(two_name_class_list: ClassList,
                                   new_values: dict[str, Any],
                                   three_name_class_list: ClassList) -> None:
     """If we append to a ClassList using a new object and keyword arguments, we raise a warning, and append the object,
-    discarding the keyword arguments."""
+    discarding the keyword arguments.
+    """
     class_list = two_name_class_list
     with pytest.warns(SyntaxWarning):
         warnings.warn("ClassList.append() called with both an object and keyword arguments. "
@@ -329,7 +335,7 @@ def test_append_kwargs_same_name_field(two_name_class_list: ClassList, new_value
 
 
 @pytest.mark.parametrize("new_object", [
-    (InputAttributes(name="Eve"))
+    (InputAttributes(name="Eve")),
 ])
 def test_insert_object(two_name_class_list: ClassList, new_object: object) -> None:
     """We should be able to insert an object within a ClassList using a new object."""
@@ -340,7 +346,7 @@ def test_insert_object(two_name_class_list: ClassList, new_object: object) -> No
 
 
 @pytest.mark.parametrize("new_values", [
-    ({"name": "Eve"})
+    ({"name": "Eve"}),
 ])
 def test_insert_kwargs(two_name_class_list: ClassList, new_values: dict[str, Any]) -> None:
     """We should be able to insert an object within a ClassList using keyword arguments."""
@@ -358,7 +364,8 @@ def test_insert_object_and_kwargs(two_name_class_list: ClassList,
                                   new_values: dict[str, Any],
                                   three_name_class_list: ClassList) -> None:
     """If call insert() on a ClassList using a new object and keyword arguments, we raise a warning, and append the
-    object, discarding the keyword arguments."""
+    object, discarding the keyword arguments.
+    """
     class_list = two_name_class_list
     with pytest.warns(SyntaxWarning):
         warnings.warn("ClassList.insert() called with both an object and keyword arguments. "
@@ -393,7 +400,7 @@ def test_insert_kwargs_empty_classlist(new_values: dict[str, Any]) -> None:
 
 
 @pytest.mark.parametrize("new_object", [
-    (InputAttributes(name="Alice"))
+    (InputAttributes(name="Alice")),
 ])
 def test_insert_object_same_name(two_name_class_list: ClassList, new_object: object) -> None:
     """If we insert an object with an already-specified name_field value to a ClassList we should raise a ValueError."""
@@ -403,7 +410,7 @@ def test_insert_object_same_name(two_name_class_list: ClassList, new_object: obj
 
 
 @pytest.mark.parametrize("new_values", [
-    ({"name": "Alice"})
+    ({"name": "Alice"}),
 ])
 def test_insert_kwargs_same_name(two_name_class_list: ClassList, new_values: dict[str, Any]) -> None:
     """If we insert an object with an already-specified name_field value to a ClassList we should raise a ValueError."""
@@ -419,7 +426,8 @@ def test_insert_kwargs_same_name(two_name_class_list: ClassList, new_values: dic
 ])
 def test_remove(two_name_class_list: ClassList, remove_value: Union[object, str]) -> None:
     """We should be able to remove an object either by the value of the name_field or by specifying the object
-    itself."""
+    itself.
+    """
     two_name_class_list.remove(remove_value)
     assert two_name_class_list == ClassList([InputAttributes(name="Alice")])
 
@@ -488,7 +496,8 @@ def test_index_not_present(two_name_class_list: ClassList, index_value: Union[ob
 ])
 def test_extend(two_name_class_list: ClassList, extended_list: Sequence, three_name_class_list: ClassList) -> None:
     """We should be able to extend a ClassList using another ClassList or a sequence. Individual objects should be
-    wrapped in a list before being added."""
+    wrapped in a list before being added.
+    """
     class_list = two_name_class_list
     class_list.extend(extended_list)
     assert class_list == three_name_class_list
@@ -543,7 +552,8 @@ def test_set_fields_same_name_field(two_name_class_list: ClassList, new_values: 
 ])
 def test_get_names(class_list: ClassList, expected_names: list[str]) -> None:
     """We should get a list of the values of the name_field attribute from each object with it defined in the
-    ClassList."""
+    ClassList.
+    """
     assert class_list.get_names() == expected_names
 
 
@@ -564,7 +574,8 @@ def test_get_all_matches(class_list: ClassList, expected_matches: list[tuple]) -
 ])
 def test__validate_name_field(two_name_class_list: ClassList, input_dict: dict[str, Any]) -> None:
     """We should not raise an error if the input values do not contain a name_field value defined in an object in the
-    ClassList."""
+    ClassList.
+    """
     assert two_name_class_list._validate_name_field(input_dict) is None
 
 
@@ -588,7 +599,8 @@ def test__validate_name_field_not_unique(two_name_class_list: ClassList, input_d
 ])
 def test__check_unique_name_fields(two_name_class_list: ClassList, input_list: Iterable) -> None:
     """We should not raise an error if an input list contains objects with different name_field values, or if the
-    name_field is not defined."""
+    name_field is not defined.
+    """
     assert two_name_class_list._check_unique_name_fields(input_list) is None
 
 
@@ -597,7 +609,8 @@ def test__check_unique_name_fields(two_name_class_list: ClassList, input_list: I
 ])
 def test__check_unique_name_fields_not_unique(two_name_class_list: ClassList, input_list: Iterable) -> None:
     """We should raise a ValueError if an input list contains multiple objects with matching name_field values
-    defined."""
+    defined.
+    """
     with pytest.raises(ValueError, match=f"Input list contains objects with the same value of the "
                                          f"{two_name_class_list.name_field} attribute"):
         two_name_class_list._check_unique_name_fields(input_list)

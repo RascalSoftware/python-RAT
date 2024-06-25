@@ -1,5 +1,4 @@
-"""
-Test the outputs module using the example calculation from "DSPC_standard_layers.py".
+"""Test the outputs module using the example calculation from "DSPC_standard_layers.py".
 
 We use the example for both a reflectivity calculation, and Bayesian analysis using the Dream algorithm.
 """

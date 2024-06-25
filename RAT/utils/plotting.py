@@ -1,5 +1,4 @@
-"""
-Plots using the matplotlib library
+"""Plots using the matplotlib library
 """
 from typing import Optional, Union
 
@@ -14,13 +13,11 @@ from RAT.rat_core import PlotEventData, makeSLDProfileXY
 
 
 class Figure:
-    """
-    Creates a plotting figure.
+    """Creates a plotting figure.
     """
 
     def __init__(self, row: int = 1, col: int = 1):
-        """
-        Initializes the figure and the subplots.
+        """Initializes the figure and the subplots.
 
         Parameters
         ----------
@@ -28,6 +25,7 @@ class Figure:
               The number of rows in subplot
         col : int, default: 1
               The number of columns in subplot
+
         """
         self._fig, self._ax = \
             plt.subplots(row, col, num="Reflectivity Algorithms Toolbox (RAT)")
@@ -40,8 +38,7 @@ class Figure:
                                      self._close)
 
     def wait_for_close(self):
-        """
-        Waits for the user to close the figure
+        """Waits for the user to close the figure
         using the esc key.
         """
         while not (self._esc_pressed or self._close_clicked):
@@ -49,23 +46,20 @@ class Figure:
         plt.close(self._fig)
 
     def _process_button_press(self, event):
-        """
-        Process the key_press_event.
+        """Process the key_press_event.
         """
         if event.key == "escape":
             self._esc_pressed = True
 
     def _close(self, _):
-        """
-        Process the close_event.
+        """Process the close_event.
         """
         self._close_clicked = True
 
 
 def plot_errorbars(ax: Axes, x: np.ndarray, y: np.ndarray, err: np.ndarray,
                    one_sided: bool, color: str):
-    """
-    Plots the error bars.
+    """Plots the error bars.
 
     Parameters
     ----------
@@ -81,6 +75,7 @@ def plot_errorbars(ax: Axes, x: np.ndarray, y: np.ndarray, err: np.ndarray,
         A boolean to indicate whether to draw one sided errorbars
     color : str
             The hex representing the color of the errorbars
+
     """
     y_error = [[0]*len(err), err] if one_sided else err
     ax.errorbar(x=x,
@@ -94,8 +89,7 @@ def plot_errorbars(ax: Axes, x: np.ndarray, y: np.ndarray, err: np.ndarray,
 
 
 def plot_ref_sld_helper(data: PlotEventData, fig: Optional[Figure] = None, delay: bool = True):
-    """
-    Clears the previous plots and updates the ref and SLD plots.
+    """Clears the previous plots and updates the ref and SLD plots.
 
     Parameters
     ----------
@@ -111,6 +105,7 @@ def plot_ref_sld_helper(data: PlotEventData, fig: Optional[Figure] = None, delay
     -------
     fig : Figure
           The figure class that has two subplots
+
     """
     if fig is None:
         fig = Figure(1, 2)
@@ -198,14 +193,13 @@ def plot_ref_sld_helper(data: PlotEventData, fig: Optional[Figure] = None, delay
 
     if delay:
         plt.pause(0.005)
-    
+
     return fig
 
 
 def plot_ref_sld(project: RAT.Project, results: Union[RAT.outputs.Results, RAT.outputs.BayesResults],
                  block: bool = False):
-    """
-    Plots the reflectivity and SLD profiles.
+    """Plots the reflectivity and SLD profiles.
 
     Parameters
     ----------
@@ -215,6 +209,7 @@ def plot_ref_sld(project: RAT.Project, results: Union[RAT.outputs.Results, RAT.o
               The result from the calculation
     block : bool, default: False
             Indicates the plot should block until it is closed
+
     """
     data = PlotEventData()
 

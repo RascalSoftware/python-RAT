@@ -21,7 +21,7 @@ class TestCalculate:
         ("calcSldDuringFit", False),
         ("resampleParams", [0.9, 50]),
         ("display", Display.Iter),
-        ("procedure", Procedures.Calculate)
+        ("procedure", Procedures.Calculate),
     ])
     def test_calculate_property_values(self, control_property: str, value: Any) -> None:
         """Tests the default values of Calculate class."""
@@ -31,7 +31,7 @@ class TestCalculate:
         ("parallel", Parallel.Points),
         ("calcSldDuringFit", True),
         ("resampleParams", [0.2, 1]),
-        ("display", Display.Notify)
+        ("display", Display.Notify),
     ])
     def test_calculate_property_setters(self, control_property: str,  value: Any) -> None:
         """Tests the setters of Calculate class."""
@@ -61,7 +61,7 @@ class TestCalculate:
 
     @pytest.mark.parametrize("value, msg", [
         ([5.0], "List should have at least 2 items after validation, not 1"),
-        ([12, 13, 14], "List should have at most 2 items after validation, not 3")
+        ([12, 13, 14], "List should have at most 2 items after validation, not 3"),
     ])
     def test_calculate_resampleParams_length_validation(self, value: list, msg: str) -> None:
         """Tests the resampleParams setter length validation in Calculate class."""
@@ -71,7 +71,7 @@ class TestCalculate:
 
     @pytest.mark.parametrize("value, msg", [
         ([1.0, 2], "Value error, resampleParams[0] must be between 0 and 1"),
-        ([0.5, -0.1], "Value error, resampleParams[1] must be greater than or equal to 0")
+        ([0.5, -0.1], "Value error, resampleParams[1] must be greater than or equal to 0"),
     ])
     def test_calculate_resampleParams_value_validation(self, value: list, msg: str) -> None:
         """Tests the resampleParams setter value validation in Calculate class."""
@@ -132,7 +132,7 @@ class TestSimplex:
         ("maxFuncEvals", 10000),
         ("maxIterations", 1000),
         ("updateFreq", -1),
-        ("updatePlotFreq", 1)
+        ("updatePlotFreq", 1),
     ])
     def test_simplex_property_values(self, control_property: str, value: Any) -> None:
         """Tests the default values of Simplex class."""
@@ -148,7 +148,7 @@ class TestSimplex:
         ("maxFuncEvals", 100),
         ("maxIterations", 50),
         ("updateFreq", 4),
-        ("updatePlotFreq", 3)
+        ("updatePlotFreq", 3),
     ])
     def test_simplex_property_setters(self, control_property: str,  value: Any) -> None:
         """Tests the setters of Simplex class."""
@@ -159,7 +159,7 @@ class TestSimplex:
         ("xTolerance", -4e-6),
         ("funcTolerance", -3e-4),
         ("maxFuncEvals", -100),
-        ("maxIterations", -50)
+        ("maxIterations", -50),
     ])
     def test_simplex_property_errors(self, control_property: str,  value: Union[float, int]) -> None:
         """Tests the property errors of Simplex class."""
@@ -195,7 +195,7 @@ class TestSimplex:
                      "|     parallel     |   single  |\n"
                      "| calcSldDuringFit |   False   |\n"
                      "|  resampleParams  | [0.9, 50] |\n"
-                     "|     display      |    iter   |\n"                     
+                     "|     display      |    iter   |\n"
                      "|    xTolerance    |   1e-06   |\n"
                      "|  funcTolerance   |   1e-06   |\n"
                      "|   maxFuncEvals   |   10000   |\n"
@@ -226,7 +226,7 @@ class TestDE:
         ("crossoverProbability", 0.8),
         ("strategy", Strategies.RandomWithPerVectorDither),
         ("targetValue", 1),
-        ("numGenerations", 500)
+        ("numGenerations", 500),
     ])
     def test_de_property_values(self, control_property: str, value: Any) -> None:
         """Tests the default values of DE class."""
@@ -242,7 +242,7 @@ class TestDE:
         ("crossoverProbability", 0.4),
         ("strategy", Strategies.BestWithJitter),
         ("targetValue", 2.0),
-        ("numGenerations", 50)
+        ("numGenerations", 50),
     ])
     def test_de_property_setters(self, control_property: str,  value: Any) -> None:
         """Tests the setters of DE class."""
@@ -251,7 +251,7 @@ class TestDE:
 
     @pytest.mark.parametrize("value, msg", [
         (0, "Input should be greater than 0"),
-        (2, "Input should be less than 1")
+        (2, "Input should be less than 1"),
     ])
     def test_de_crossoverProbability_error(self,  value: int, msg: str) -> None:
         """Tests the crossoverProbability setter error in DE class."""
@@ -265,7 +265,7 @@ class TestDE:
         ("numGenerations", -500),
         ("numGenerations", 0),
         ("populationSize", 0),
-        ("populationSize", -1)
+        ("populationSize", -1),
     ])
     def test_de_targetValue_numGenerations_populationSize_error(self,
                                                                 control_property: str,
@@ -332,7 +332,7 @@ class TestNS:
         ("nLive", 150),
         ("nMCMC", 0),
         ("propScale", 0.1),
-        ("nsTolerance", 0.1)
+        ("nsTolerance", 0.1),
     ])
     def test_ns_property_values(self, control_property: str, value: Any) -> None:
         """Tests the default values of NS class."""
@@ -346,7 +346,7 @@ class TestNS:
         ("nLive", 1500),
         ("nMCMC", 1),
         ("propScale", 0.5),
-        ("nsTolerance", 0.8)
+        ("nsTolerance", 0.8),
     ])
     def test_ns_property_setters(self, control_property: str,  value: Any) -> None:
         """Tests the setters of NS class."""
@@ -356,7 +356,7 @@ class TestNS:
     @pytest.mark.parametrize("control_property, value, bound", [
         ("nMCMC", -0.6, 0),
         ("nsTolerance", -500, 0),
-        ("nLive", -500, 1)
+        ("nLive", -500, 1),
     ])
     def test_ns_setter_error(self, control_property: str, value: Union[int, float], bound: int) -> None:
         """Tests the nMCMC, nsTolerance, nLive setter error in NS class."""
@@ -366,7 +366,7 @@ class TestNS:
 
     @pytest.mark.parametrize("value, msg", [
         (0, "Input should be greater than 0"),
-        (2, "Input should be less than 1")
+        (2, "Input should be less than 1"),
     ])
     def test_ns_propScale_error(self,  value: int, msg: str) -> None:
         """Tests the propScale error in NS class."""
@@ -402,7 +402,7 @@ class TestNS:
                      "|     parallel     |   single  |\n"
                      "| calcSldDuringFit |   False   |\n"
                      "|  resampleParams  | [0.9, 50] |\n"
-                     "|     display      |    iter   |\n"                     
+                     "|     display      |    iter   |\n"
                      "|      nLive       |    150    |\n"
                      "|      nMCMC       |    0.0    |\n"
                      "|    propScale     |    0.1    |\n"
@@ -430,7 +430,7 @@ class TestDream:
         ("nChains", 10),
         ("jumpProbability", 0.5),
         ("pUnitGamma", 0.2),
-        ("boundHandling", BoundHandling.Fold)
+        ("boundHandling", BoundHandling.Fold),
     ])
     def test_dream_property_values(self, control_property: str, value: Any) -> None:
         """Tests the default values of Dream class."""
@@ -445,7 +445,7 @@ class TestDream:
         ("nChains", 1000),
         ("jumpProbability", 0.7),
         ("pUnitGamma", 0.3),
-        ("boundHandling", BoundHandling.Reflect)
+        ("boundHandling", BoundHandling.Reflect),
     ])
     def test_dream_property_setters(self, control_property: str,  value: Any) -> None:
         """Tests the setters in Dream class."""
@@ -456,7 +456,7 @@ class TestDream:
         ("jumpProbability", 0, "Input should be greater than 0"),
         ("jumpProbability", 2, "Input should be less than 1"),
         ("pUnitGamma", -5, "Input should be greater than 0"),
-        ("pUnitGamma", 20, "Input should be less than 1")
+        ("pUnitGamma", 20, "Input should be less than 1"),
     ])
     def test_dream_jumpProbability_pUnitGamma_error(self, control_property: str, value: int, msg: str) -> None:
         """Tests the jumpProbability and pUnitGamma setter errors in Dream class."""
@@ -506,7 +506,7 @@ class TestDream:
                      "|     parallel     |   single  |\n"
                      "| calcSldDuringFit |   False   |\n"
                      "|  resampleParams  | [0.9, 50] |\n"
-                     "|     display      |    iter   |\n"                     
+                     "|     display      |    iter   |\n"
                      "|     nSamples     |   50000   |\n"
                      "|     nChains      |     10    |\n"
                      "| jumpProbability  |    0.5    |\n"
@@ -523,7 +523,7 @@ class TestDream:
     ("simplex", Simplex),
     ("de", DE),
     ("ns", NS),
-    ("dream", Dream)
+    ("dream", Dream),
 ])
 def test_set_controls(procedure: Procedures, expected_model: Union[Calculate, Simplex, DE, NS, Dream]) -> None:
     """We should return the correct model given the value of procedure."""
@@ -549,7 +549,7 @@ def test_set_controls_invalid_procedure() -> None:
     ("simplex", Simplex),
     ("de", DE),
     ("ns", NS),
-    ("dream", Dream)
+    ("dream", Dream),
 ])
 def test_set_controls_extra_fields(procedure: Procedures, expected_model: Union[Calculate, Simplex, DE, NS, Dream])\
         -> None:

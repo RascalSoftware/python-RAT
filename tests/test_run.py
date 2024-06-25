@@ -1,10 +1,9 @@
-"""
-Test the run module using the example calculation from "DSPC_standard_layers.py".
+"""Test the run module using the example calculation from "DSPC_standard_layers.py".
 
 We use the example for both a reflectivity calculation, and Bayesian analysis using the Dream algorithm.
 """
 
-import unittest.mock as mock
+from unittest import mock
 
 import numpy as np
 import pytest

@@ -12,7 +12,7 @@ from RAT.utils.enums import Calculations, Languages, LayerModels, TypeOptions
 
 
 def make_input(project: RAT.Project, controls: Union[RAT.controls.Calculate, RAT.controls.Simplex, RAT.controls.DE,
-                                                     RAT.controls.NS, RAT.controls.Dream]
+                                                     RAT.controls.NS, RAT.controls.Dream],
                ) -> tuple[ProblemDefinition, Cells, Limits, Priors, Control]:
     """Constructs the inputs required for the compiled RAT code using the data defined in the input project and
     controls.
@@ -36,8 +36,8 @@ def make_input(project: RAT.Project, controls: Union[RAT.controls.Calculate, RAT
         The priors defined for each parameter in the project.
     cpp_controls : RAT.rat_core.Control
         The controls object used in the compiled RAT code.
-    """
 
+    """
     parameter_field = {"parameters": "param",
                        "bulk_in": "bulkIn",
                        "bulk_out": "bulkOut",
@@ -102,6 +102,7 @@ def make_problem(project: RAT.Project) -> ProblemDefinition:
     -------
     problem : RAT.rat_core.ProblemDefinition
         The problem input used in the compiled RAT code.
+
     """
     action_id = {"add": 1, "subtract": 2}
 
@@ -188,6 +189,7 @@ def make_resample(project: RAT.Project) -> list[int]:
     -------
      : list[int]
         The "resample" field of the problem input used in the compiled RAT code.
+
     """
     return [contrast.resample for contrast in project.contrasts]
 
@@ -204,6 +206,7 @@ def make_data_present(project: RAT.Project) -> list[int]:
     -------
      : list[int]
         The "dataPresent" field of the problem input used in the compiled RAT code.
+
     """
     return [1 if project.data[project.data.index(contrast.data)].data.size != 0 else 0
             for contrast in project.contrasts]
@@ -217,6 +220,7 @@ def check_indices(problem: ProblemDefinition) -> None:
     ----------
     problem : RAT.rat_core.ProblemDefinition
         The problem input used in the compiled RAT code.
+
     """
     index_list = {"bulkIn": "contrastBulkIns",
                   "bulkOut": "contrastBulkOuts",
@@ -236,7 +240,6 @@ def check_indices(problem: ProblemDefinition) -> None:
             raise IndexError(f'The problem field "{index_list[params]}" contains: {", ".join(str(i) for i in elements)}'
                              f', which lie outside of the range of "{params}"')
 
-    return None
 
 
 def make_cells(project: RAT.Project) -> Cells:
@@ -253,8 +256,8 @@ def make_cells(project: RAT.Project) -> Cells:
     -------
     cells : RAT.rat_core.Cells
         The set of inputs that are defined in MATLAB as cell arrays.
-    """
 
+    """
     hydrate_id = {"bulk in": 1, "bulk out": 2}
 
     # Set contrast parameters according to model type
@@ -360,6 +363,7 @@ def get_python_handle(file_name: str, function_name: str, path: Union[str, pathl
     -------
     handle : Callable
         The handle of the function defined in the python module file.
+
     """
     spec = importlib.util.spec_from_file_location(pathlib.Path(file_name).stem, os.path.join(path, file_name))
     custom_module = importlib.util.module_from_spec(spec)
@@ -383,8 +387,8 @@ def make_controls(controls: Union[RAT.controls.Calculate, RAT.controls.Simplex, 
     -------
     controls : RAT.rat_core.Control
         The controls object used in the compiled RAT code.
-    """
 
+    """
     full_controls = RAT.controls.Controls(**controls.model_dump())
     cpp_controls = Control()
 

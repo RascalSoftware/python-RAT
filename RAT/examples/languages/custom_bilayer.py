@@ -14,7 +14,7 @@ def custom_bilayer(params, bulk_in, bulk_out, contrast):
 
     # We have a constant SLD for the bilayer
     oxide_SLD = 3.41e-6
- 
+
     # Now make the lipid layers
     # Use known lipid volume and compositions
     # to make the layers
@@ -29,7 +29,7 @@ def custom_bilayer(params, bulk_in, bulk_out, contrast):
     # Now make the lipid groups
     COO = (4*bo) + (2*bc)
     GLYC = (3*bc) + (5*bh)
-    CH3 = (2*bc) + (6*bh)             
+    CH3 = (2*bc) + (6*bh)
     PO4 = (1*bp) + (4*bo)
     CH2 = (1*bc) + (2*bh)
     CHOL = (5*bc) + (12*bh) + (1*bn)
@@ -54,14 +54,14 @@ def custom_bilayer(params, bulk_in, bulk_out, contrast):
     # Manually deal with hydration for layers in this example.
     oxSLD = (oxide_hydration * bulk_out[contrast]) + ((1 - oxide_hydration) * oxide_SLD)
     headSLD = (headHydration * bulk_out[contrast]) + ((1 - headHydration) * SLDhead)
-    tailSLD = (bilayerHydration * bulk_out[contrast]) + ((1 - bilayerHydration) * SLDtail)   
+    tailSLD = (bilayerHydration * bulk_out[contrast]) + ((1 - bilayerHydration) * SLDtail)
 
     # Make the layers
     oxide = [oxide_thick, oxSLD, sub_rough]
     water = [waterThick, bulk_out[contrast], bilayerRough]
     head = [headThick, headSLD, bilayerRough]
     tail = [tailThick, tailSLD, bilayerRough]
-    
+
     output = np.array([oxide, water, head, tail, tail, head])
 
     return output, sub_rough

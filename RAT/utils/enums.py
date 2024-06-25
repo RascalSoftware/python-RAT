@@ -9,6 +9,7 @@ except ImportError:
 # Controls
 class Parallel(StrEnum):
     """Defines the available options for parallelization"""
+
     Single = "single"
     Points = "points"
     Contrasts = "contrasts"
@@ -16,6 +17,7 @@ class Parallel(StrEnum):
 
 class Procedures(StrEnum):
     """Defines the available options for procedures"""
+
     Calculate = "calculate"
     Simplex = "simplex"
     DE = "de"
@@ -25,6 +27,7 @@ class Procedures(StrEnum):
 
 class Display(StrEnum):
     """Defines the available options for display"""
+
     Off = "off"
     Iter = "iter"
     Notify = "notify"
@@ -33,6 +36,7 @@ class Display(StrEnum):
 
 class BoundHandling(StrEnum):
     """Defines the available options for bound handling"""
+
     Off = "off"
     Reflect = "reflect"
     Bound = "bound"
@@ -41,6 +45,7 @@ class BoundHandling(StrEnum):
 
 class Strategies(Enum):
     """Defines the available options for strategies"""
+
     Random = 1
     LocalToBest = 2
     BestWithJitter = 3

@@ -14,13 +14,12 @@ TEST_DIR_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)),
 
 
 def data() -> PlotEventData:
+    """Creates the fixture for the tests.
     """
-    Creates the fixture for the tests.
-    """
-    data_path = os.path.join(TEST_DIR_PATH, "plotting_data.pickle")    
+    data_path = os.path.join(TEST_DIR_PATH, "plotting_data.pickle")
     with open(data_path, "rb") as f:
         loaded_data = pickle.load(f)
-    
+
     data = PlotEventData()
     data.modelType = loaded_data["modelType"]
     data.dataPresent = loaded_data["dataPresent"]
@@ -35,8 +34,7 @@ def data() -> PlotEventData:
 
 @pytest.fixture
 def fig() -> Figure:
-    """
-    Creates the fixture for the tests.
+    """Creates the fixture for the tests.
     """
     plt.close("all")
     figure = Figure(1, 3)
@@ -45,8 +43,7 @@ def fig() -> Figure:
 
 
 def test_figure_axis_formating(fig: Figure) -> None:
-    """
-    Tests the axis formating of the figure.
+    """Tests the axis formating of the figure.
     """
     ref_plot = fig._ax[0]
     sld_plot = fig._ax[1]
@@ -68,8 +65,7 @@ def test_figure_axis_formating(fig: Figure) -> None:
 
 
 def test_figure_color_formating(fig: Figure) -> None:
-    """
-    Tests the color formating of the figure.
+    """Tests the color formating of the figure.
     """
     ref_plot = fig._ax[0]
     sld_plot = fig._ax[1]
@@ -92,8 +88,7 @@ def test_figure_color_formating(fig: Figure) -> None:
 
 
 def test_eventhandlers_linked_to_figure(fig: Figure) -> None:
-    """
-    Tests whether the eventhandlers for close_event
+    """Tests whether the eventhandlers for close_event
     and key_press_event in the figure are linked to the
     class methods.
     """
@@ -119,8 +114,7 @@ def test_eventhandlers_linked_to_figure(fig: Figure) -> None:
 
 
 def test_eventhandler_variable_update(fig: Figure) -> None:
-    """
-    Tests whether the eventhandlers for close_event
+    """Tests whether the eventhandlers for close_event
     and key_press_event update variables that stop
     while loop in wait_for_close.
     """
@@ -134,10 +128,9 @@ def test_eventhandler_variable_update(fig: Figure) -> None:
     assert fig._close_clicked
 
 
-@patch("RAT.utils.plotting.plt.waitforbuttonpress")  
+@patch("RAT.utils.plotting.plt.waitforbuttonpress")
 def test_wait_for_close(mock: MagicMock, fig: Figure) -> None:
-    """
-    Tests the _wait_for_close method stops the
+    """Tests the _wait_for_close method stops the
     while loop when _esc_pressed is True.
     """
     def mock_wait_for_button_press(timeout):
@@ -149,10 +142,9 @@ def test_wait_for_close(mock: MagicMock, fig: Figure) -> None:
     assert fig._esc_pressed
 
 
-@patch("RAT.utils.plotting.makeSLDProfileXY")   
+@patch("RAT.utils.plotting.makeSLDProfileXY")
 def test_sld_profile_function_call(mock: MagicMock) -> None:
-    """
-    Tests the makeSLDProfileXY function called with
+    """Tests the makeSLDProfileXY function called with
     correct args.
     """
     plot_ref_sld_helper(data())
