@@ -441,7 +441,7 @@ struct Cells {
 };
 
 struct ProblemDefinition {
-    py::array_t<real_T> contrastBackgrounds;
+    py::array_t<real_T> contrastBackgroundParams;
     py::array_t<real_T> contrastBackgroundActions;
     std::string TF {};
     py::array_t<real_T> resample;
@@ -454,7 +454,7 @@ struct ProblemDefinition {
     py::array_t<real_T> contrastScalefactors;
     py::array_t<real_T> contrastBulkIns;
     py::array_t<real_T> contrastBulkOuts;
-    py::array_t<real_T> contrastResolutions;
+    py::array_t<real_T> contrastResolutionParams;
     py::array_t<real_T> backgroundParams;
     py::array_t<real_T> qzshifts;
     py::array_t<real_T> scalefactors;
@@ -646,7 +646,7 @@ RAT::struct0_T createStruct0(const ProblemDefinition& problem)
     stringToRatArray(problem.geometry, problem_struct.geometry.data, problem_struct.geometry.size);
     stringToRatArray(problem.TF, problem_struct.TF.data, problem_struct.TF.size);
     
-    problem_struct.contrastBackgrounds = customCaller("Problem.contrastBackgrounds", pyArrayToRatArray1d, problem.contrastBackgrounds);
+    problem_struct.contrastBackgroundParams = customCaller("Problem.contrastBackgroundParams", pyArrayToRatArray1d, problem.contrastBackgroundParams);
     problem_struct.contrastBackgroundActions = customCaller("Problem.contrastBackgroundActions", pyArrayToRatArray1d, problem.contrastBackgroundActions);
     problem_struct.resample = customCaller("Problem.resample", pyArrayToRatArray1d, problem.resample);
     problem_struct.dataPresent = customCaller("Problem.dataPresent", pyArrayToRatArray1d, problem.dataPresent);
@@ -655,7 +655,7 @@ RAT::struct0_T createStruct0(const ProblemDefinition& problem)
     problem_struct.contrastScalefactors = customCaller("Problem.contrastScalefactors", pyArrayToRatArray1d, problem.contrastScalefactors);
     problem_struct.contrastBulkIns = customCaller("Problem.contrastBulkIns", pyArrayToRatArray1d, problem.contrastBulkIns);
     problem_struct.contrastBulkOuts = customCaller("Problem.contrastBulkOuts", pyArrayToRatArray1d, problem.contrastBulkOuts);
-    problem_struct.contrastResolutions = customCaller("Problem.contrastResolutions", pyArrayToRatArray1d, problem.contrastResolutions);
+    problem_struct.contrastResolutionParams = customCaller("Problem.contrastResolutionParams", pyArrayToRatArray1d, problem.contrastResolutionParams);
     problem_struct.backgroundParams = customCaller("Problem.backgroundParams", pyArrayToRatArray1d, problem.backgroundParams);
     problem_struct.qzshifts = customCaller("Problem.qzshifts", pyArrayToRatArray1d, problem.qzshifts);
     problem_struct.scalefactors = customCaller("Problem.scalefactors", pyArrayToRatArray1d, problem.scalefactors);
@@ -1023,7 +1023,7 @@ ProblemDefinition problemDefinitionFromStruct0T(const RAT::struct0_T problem)
     problem_def.TF.resize(problem.TF.size[1]);
     memcpy(&problem_def.TF[0], problem.TF.data, problem.TF.size[1]);
     
-    problem_def.contrastBackgrounds = pyArrayFromRatArray1d(problem.contrastBackgrounds);
+    problem_def.contrastBackgroundParams = pyArrayFromRatArray1d(problem.contrastBackgroundParams);
     problem_def.contrastBackgroundActions = pyArrayFromRatArray1d(problem.contrastBackgroundActions);
     problem_def.resample = pyArrayFromRatArray1d(problem.resample);
     problem_def.dataPresent = pyArrayFromRatArray1d(problem.dataPresent);
@@ -1032,7 +1032,7 @@ ProblemDefinition problemDefinitionFromStruct0T(const RAT::struct0_T problem)
     problem_def.contrastScalefactors = pyArrayFromRatArray1d(problem.contrastScalefactors);
     problem_def.contrastBulkIns = pyArrayFromRatArray1d(problem.contrastBulkIns);
     problem_def.contrastBulkOuts = pyArrayFromRatArray1d(problem.contrastBulkOuts);
-    problem_def.contrastResolutions = pyArrayFromRatArray1d(problem.contrastResolutions);
+    problem_def.contrastResolutionParams = pyArrayFromRatArray1d(problem.contrastResolutionParams);
     problem_def.backgroundParams = pyArrayFromRatArray1d(problem.backgroundParams);
     problem_def.qzshifts = pyArrayFromRatArray1d(problem.qzshifts);
     problem_def.scalefactors = pyArrayFromRatArray1d(problem.scalefactors);
@@ -1430,7 +1430,7 @@ PYBIND11_MODULE(rat_core, m) {
 
     py::class_<ProblemDefinition>(m, "ProblemDefinition")
         .def(py::init<>())
-        .def_readwrite("contrastBackgrounds", &ProblemDefinition::contrastBackgrounds)
+        .def_readwrite("contrastBackgroundParams", &ProblemDefinition::contrastBackgroundParams)
         .def_readwrite("contrastBackgroundActions", &ProblemDefinition::contrastBackgroundActions)
         .def_readwrite("TF", &ProblemDefinition::TF)
         .def_readwrite("resample", &ProblemDefinition::resample)
@@ -1443,7 +1443,7 @@ PYBIND11_MODULE(rat_core, m) {
         .def_readwrite("contrastScalefactors", &ProblemDefinition::contrastScalefactors)
         .def_readwrite("contrastBulkIns", &ProblemDefinition::contrastBulkIns)
         .def_readwrite("contrastBulkOuts", &ProblemDefinition::contrastBulkOuts)
-        .def_readwrite("contrastResolutions", &ProblemDefinition::contrastResolutions)
+        .def_readwrite("contrastResolutionParams", &ProblemDefinition::contrastResolutionParams)
         .def_readwrite("backgroundParams", &ProblemDefinition::backgroundParams)
         .def_readwrite("qzshifts", &ProblemDefinition::qzshifts)
         .def_readwrite("scalefactors", &ProblemDefinition::scalefactors)

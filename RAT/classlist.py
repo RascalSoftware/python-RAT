@@ -218,8 +218,9 @@ class ClassList(collections.UserList):
     def set_fields(self, index: int, **kwargs) -> None:
         """Assign the values of an existing object's attributes using keyword arguments."""
         self._validate_name_field(kwargs)
-        for key, value in kwargs.items():
-            setattr(self.data[index], key, value)
+        class_handle = self.data[index].__class__
+        new_fields = {**self.data[index].__dict__, **kwargs}
+        self.data[index] = class_handle(**new_fields)
 
     def get_names(self) -> list[str]:
         """Return a list of the values of the name_field attribute of each class object in the list.

@@ -17,7 +17,12 @@ class InputAttributes:
 
 
 class SubInputAttributes(InputAttributes):
-    """Trivial subclass of InputAttributes"""
+    """Trivial subclass of InputAttributes."""
+    pass
+
+
+def dummy_function() -> None:
+    """Trivial function for function handle tests."""
     pass
 
 

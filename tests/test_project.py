@@ -94,7 +94,7 @@ def default_project_repr():
         '+-------+------------+------+------------+------------------+\n'
         '| index |    name    | data | data range | simulation range |\n'
         '+-------+------------+------+------------+------------------+\n'
-        '|   0   | Simulation |  []  |     []     |        []        |\n'
+        '|   0   | Simulation |  []  |     []     |   [0.005, 0.7]   |\n'
         '+-------+------------+------+------------+------------------+\n\n')
 
 
@@ -115,7 +115,7 @@ def test_project_script():
         "    resolution_parameters=RAT.ClassList([Parameter(name='Resolution Param 1', min=0.01, value=0.03, max=0.05, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
         "    backgrounds=RAT.ClassList([Background(name='Background 1', type='constant', value_1='Background Param 1', value_2='', value_3='', value_4='', value_5='')]),\n"
         "    resolutions=RAT.ClassList([Resolution(name='Resolution 1', type='constant', value_1='Resolution Param 1', value_2='', value_3='', value_4='', value_5='')]),\n"
-        "    custom_files=RAT.ClassList([CustomFile(name='Test Custom File', filename='', language='python', path='pwd')]),\n"
+        "    custom_files=RAT.ClassList([CustomFile(name='Test Custom File', filename='', function_name='', language='python', path='')]),\n"
         "    data=RAT.ClassList([Data(name='Simulation', data=array([[1., 1., 1.]]), data_range=[1.0, 1.0], simulation_range=[1.0, 1.0])]),\n"
         "    layers=RAT.ClassList([Layer(name='Test Layer', thickness='Test Thickness', SLD='Test SLD', roughness='Test Roughness', hydration='', hydrate_with='bulk out')]),\n"
         "    contrasts=RAT.ClassList([Contrast(name='Test Contrast', data='Simulation', background='Background 1', background_action='add', bulk_in='SLD Air', bulk_out='SLD D2O', scalefactor='Scalefactor 1', resolution='Resolution 1', resample=False, model=['Test Layer'])]),\n"

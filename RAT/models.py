@@ -2,7 +2,8 @@
 
 import numpy as np
 from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
-from typing import Any
+import pathlib
+from typing import Any, Union
 
 from RAT.utils.enums import BackgroundActions, Hydration, Languages, Priors, TypeOptions
 
@@ -87,9 +88,27 @@ class CustomFile(RATModel):
     """Defines the files containing functions to run when using custom models."""
     name: str = Field(default_factory=lambda: 'New Custom File ' + next(custom_file_number), min_length=1)
     filename: str = ''
+    function_name: str = ''
     language: Languages = Languages.Python
-    path: str = 'pwd'  # Should later expand to find current file path
+    path: Union[str, pathlib.Path] = ''
 
+    def model_post_init(self, __context: Any) -> None:
+        """If a "filename" is supplied but the "function_name" field is not set, the "function_name" should be set to
+        the file name without the extension.
+        """
+
+        if "filename" in self.model_fields_set and "function_name" not in self.model_fields_set:
+            self.function_name = pathlib.Path(self.filename).stem
+
+    @model_validator(mode='after')
+    def set_matlab_function_name(self):
+        """If we have a matlab custom function, the "function_name" should be set to the filename without the extension.
+        """
+        if self.language == Languages.Matlab and self.function_name != pathlib.Path(self.filename).stem:
+            self.function_name = pathlib.Path(self.filename).stem
+
+        return self
+        
 
 class Data(RATModel, arbitrary_types_allowed=True):
     """Defines the dataset required for each contrast."""
@@ -124,8 +143,8 @@ class Data(RATModel, arbitrary_types_allowed=True):
         set to the min and max values of the first column (assumed to be q) of the supplied data.
         """
         if self.data.shape[0] > 0:
-            data_min = np.min(self.data[:, 0])
-            data_max = np.max(self.data[:, 0])
+            data_min = float(np.min(self.data[:, 0]))
+            data_max = float(np.max(self.data[:, 0]))
             for field in ["data_range", "simulation_range"]:
                 if field not in self.model_fields_set:
                     getattr(self, field).extend([data_min, data_max])
@@ -216,6 +235,13 @@ class Parameter(RATModel):
     prior_type: Priors = Priors.Uniform
     mu: float = 0.0
     sigma: float = np.inf
+
+    @model_validator(mode='after')
+    def check_min_max(self) -> 'Parameter':
+        """The maximum value of a parameter must be greater than the minimum."""
+        if self.min > self.max:
+            raise ValueError(f'The maximum value {self.max} must be greater than the minimum value {self.min}')
+        return self
 
     @model_validator(mode='after')
     def check_value_in_range(self) -> 'Parameter':

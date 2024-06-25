@@ -2,12 +2,16 @@
 
 from itertools import chain
 import numpy as np
+import pathlib
 import pytest
+import unittest.mock as mock
 
 import RAT
-from RAT.inputs import make_input, make_problem, make_cells, make_controls
+from RAT.inputs import make_input, make_problem, make_cells, make_controls, check_indices
 from RAT.utils.enums import (BoundHandling, Calculations, Display, Geometries, LayerModels, Parallel, Procedures,
                              TypeOptions)
+import RAT.wrappers
+from tests.utils import dummy_function
 
 from RAT.rat_core import Cells, Checks, Control, Limits, Priors, ProblemDefinition
 
@@ -19,7 +23,8 @@ def standard_layers_project():
     test_project.parameters.append(name='Test Thickness')
     test_project.parameters.append(name='Test SLD')
     test_project.parameters.append(name='Test Roughness')
-    test_project.custom_files.append(name='Test Custom File', filename='matlab_test.m', language='matlab')
+    test_project.custom_files.append(name='Test Custom File', filename='python_test.py', function_name='dummy_function',
+                                     language='python')
     test_project.layers.append(name='Test Layer', thickness='Test Thickness', SLD='Test SLD', roughness='Test Roughness')
     test_project.contrasts.append(name='Test Contrast', data='Test Data', background='Background 1', bulk_in='SLD Air',
                                   bulk_out='SLD D2O', scalefactor='Scalefactor 1', resolution='Resolution 1',
@@ -52,7 +57,7 @@ def custom_xy_project():
     test_project.parameters.append(name='Test Thickness')
     test_project.parameters.append(name='Test SLD')
     test_project.parameters.append(name='Test Roughness')
-    test_project.custom_files.append(name='Test Custom File', filename='matlab_test.m', language='matlab')
+    test_project.custom_files.append(name='Test Custom File', filename='cpp_test.dll', language='cpp')
     test_project.contrasts.append(name='Test Contrast', data='Simulation', background='Background 1', bulk_in='SLD Air',
                                   bulk_out='SLD D2O', scalefactor='Scalefactor 1', resolution='Resolution 1',
                                   model=['Test Custom File'])
@@ -79,9 +84,9 @@ def standard_layers_problem():
     problem.contrastBulkOuts = [1]
     problem.contrastQzshifts = []
     problem.contrastScalefactors = [1]
-    problem.contrastBackgrounds = [1]
+    problem.contrastBackgroundParams = [1]
     problem.contrastBackgroundActions = [1]
-    problem.contrastResolutions = [1]
+    problem.contrastResolutionParams = [1]
     problem.contrastCustomFiles = [float('NaN')]
     problem.contrastDomainRatios = [0]
     problem.resample = [False]
@@ -119,9 +124,9 @@ def domains_problem():
     problem.contrastBulkOuts = [1]
     problem.contrastQzshifts = []
     problem.contrastScalefactors = [1]
-    problem.contrastBackgrounds = [1]
+    problem.contrastBackgroundParams = [1]
     problem.contrastBackgroundActions = [1]
-    problem.contrastResolutions = [1]
+    problem.contrastResolutionParams = [1]
     problem.contrastCustomFiles = [float('NaN')]
     problem.contrastDomainRatios = [1]
     problem.resample = [False]
@@ -159,9 +164,9 @@ def custom_xy_problem():
     problem.contrastBulkOuts = [1]
     problem.contrastQzshifts = []
     problem.contrastScalefactors = [1]
-    problem.contrastBackgrounds = [1]
+    problem.contrastBackgroundParams = [1]
     problem.contrastBackgroundActions = [1]
-    problem.contrastResolutions = [1]
+    problem.contrastResolutionParams = [1]
     problem.contrastCustomFiles = [1]
     problem.contrastDomainRatios = [0]
     problem.resample = [False]
@@ -196,10 +201,10 @@ def standard_layers_cells():
     cells.f11 = ['SLD Air']
     cells.f12 = ['SLD D2O']
     cells.f13 = ['Resolution Param 1']
-    cells.f14 = ['matlab_test']
+    cells.f14 = [dummy_function]
     cells.f15 = [TypeOptions.Constant]
     cells.f16 = [TypeOptions.Constant]
-    cells.f17 = [[0.0, 0.0, 0.0]]
+    cells.f17 = [[[]]]
     cells.f18 = []
     cells.f19 = []
     cells.f20 = []
@@ -224,10 +229,10 @@ def domains_cells():
     cells.f11 = ['SLD Air']
     cells.f12 = ['SLD D2O']
     cells.f13 = ['Resolution Param 1']
-    cells.f14 = ['matlab_test']
+    cells.f14 = [dummy_function]
     cells.f15 = [TypeOptions.Constant]
     cells.f16 = [TypeOptions.Constant]
-    cells.f17 = [[0.0, 0.0, 0.0]]
+    cells.f17 = [[[]]]
     cells.f18 = [[0, 1], [0, 1]]
     cells.f19 = [[1], [1]]
     cells.f20 = ['Domain Ratio 1']
@@ -241,10 +246,10 @@ def custom_xy_cells():
     cells = Cells()
     cells.f1 = [[0, 1]]
     cells.f2 = [np.empty([0, 3])]
-    cells.f3 = [[]]
-    cells.f4 = [[]]
-    cells.f5 = [0]
-    cells.f6 = [0]
+    cells.f3 = [[0.0, 0.0]]
+    cells.f4 = [[0.005, 0.7]]
+    cells.f5 = [[0]]
+    cells.f6 = [[0]]
     cells.f7 = ['Substrate Roughness', 'Test Thickness', 'Test SLD', 'Test Roughness']
     cells.f8 = ['Background Param 1']
     cells.f9 = ['Scalefactor 1']
@@ -252,10 +257,10 @@ def custom_xy_cells():
     cells.f11 = ['SLD Air']
     cells.f12 = ['SLD D2O']
     cells.f13 = ['Resolution Param 1']
-    cells.f14 = ['matlab_test']
+    cells.f14 = [dummy_function]
     cells.f15 = [TypeOptions.Constant]
     cells.f16 = [TypeOptions.Constant]
-    cells.f17 = [[0.0, 0.0, 0.0]]
+    cells.f17 = [[[]]]
     cells.f18 = []
     cells.f19 = []
     cells.f20 = []
@@ -466,7 +471,17 @@ def test_make_input(test_project, test_problem, test_cells, test_limits, test_pr
     parameter_fields = ["param", "backgroundParam", "scalefactor", "qzshift", "bulkIn", "bulkOut", "resolutionParam",
                         "domainRatio"]
 
-    problem, cells, limits, priors, controls = make_input(test_project, RAT.set_controls())
+    mocked_matlab_module = mock.MagicMock()
+    mocked_engine = mock.MagicMock()
+    mocked_matlab_module.engine.start_matlab.return_value = mocked_engine
+
+    with mock.patch.dict('sys.modules', {'matlab': mocked_matlab_module,
+                                         'matlab.engine': mocked_matlab_module.engine}), \
+            mock.patch.object(RAT.rat_core, "DylibEngine", mock.MagicMock()), \
+            mock.patch.object(RAT.inputs, "get_python_handle", mock.MagicMock(return_value=dummy_function)), \
+            mock.patch.object(RAT.wrappers.MatlabWrapper, "getHandle", mock.MagicMock(return_value=dummy_function)), \
+            mock.patch.object(RAT.wrappers.DylibWrapper, "getHandle", mock.MagicMock(return_value=dummy_function)):
+        problem, cells, limits, priors, controls = make_input(test_project, RAT.set_controls())
 
     check_problem_equal(problem, test_problem)
     check_cells_equal(cells, test_cells)
@@ -497,6 +512,71 @@ def test_make_problem(test_project, test_problem, request) -> None:
     check_problem_equal(problem, test_problem)
 
 
+@pytest.mark.parametrize("test_problem", [
+    "standard_layers_problem",
+    "custom_xy_problem",
+    "domains_problem",
+])
+def test_check_indices(test_problem, request) -> None:
+    """The check_indices routine should not raise errors for a properly defined ProblemDefinition object."""
+    test_problem = request.getfixturevalue(test_problem)
+
+    check_indices(test_problem)
+
+
+@pytest.mark.parametrize(["test_problem", "index_list", "bad_value"], [
+    ("standard_layers_problem", "contrastBulkIns", [0.0]),
+    ("standard_layers_problem", "contrastBulkIns", [2.0]),
+    ("standard_layers_problem", "contrastBulkOuts", [0.0]),
+    ("standard_layers_problem", "contrastBulkOuts", [2.0]),
+    ("standard_layers_problem", "contrastScalefactors", [0.0]),
+    ("standard_layers_problem", "contrastScalefactors", [2.0]),
+    ("standard_layers_problem", "contrastBackgroundParams", [0.0]),
+    ("standard_layers_problem", "contrastBackgroundParams", [2.0]),
+    ("standard_layers_problem", "contrastResolutionParams", [0.0]),
+    ("standard_layers_problem", "contrastResolutionParams", [2.0]),
+    ("custom_xy_problem", "contrastBulkIns", [0.0]),
+    ("custom_xy_problem", "contrastBulkIns", [2.0]),
+    ("custom_xy_problem", "contrastBulkOuts", [0.0]),
+    ("custom_xy_problem", "contrastBulkOuts", [2.0]),
+    ("custom_xy_problem", "contrastScalefactors", [0.0]),
+    ("custom_xy_problem", "contrastScalefactors", [2.0]),
+    ("custom_xy_problem", "contrastBackgroundParams", [0.0]),
+    ("custom_xy_problem", "contrastBackgroundParams", [2.0]),
+    ("custom_xy_problem", "contrastResolutionParams", [0.0]),
+    ("custom_xy_problem", "contrastResolutionParams", [2.0]),
+    ("domains_problem", "contrastBulkIns", [0.0]),
+    ("domains_problem", "contrastBulkIns", [2.0]),
+    ("domains_problem", "contrastBulkOuts", [0.0]),
+    ("domains_problem", "contrastBulkOuts", [2.0]),
+    ("domains_problem", "contrastScalefactors", [0.0]),
+    ("domains_problem", "contrastScalefactors", [2.0]),
+    ("domains_problem", "contrastDomainRatios", [0.0]),
+    ("domains_problem", "contrastDomainRatios", [2.0]),
+    ("domains_problem", "contrastBackgroundParams", [0.0]),
+    ("domains_problem", "contrastBackgroundParams", [2.0]),
+    ("domains_problem", "contrastResolutionParams", [0.0]),
+    ("domains_problem", "contrastResolutionParams", [2.0]),
+])
+def test_check_indices(test_problem, index_list, bad_value, request) -> None:
+    """The check_indices routine should raise an IndexError if a contrast list contains an index that is out of the
+    range of the corresponding parameter list in a ProblemDefinition object."""
+    param_list = {'contrastBulkIns': 'bulkIn',
+                  'contrastBulkOuts': 'bulkOut',
+                  'contrastScalefactors': 'scalefactors',
+                  'contrastDomainRatios': 'domainRatio',
+                  'contrastBackgroundParams': 'backgroundParams',
+                  'contrastResolutionParams': 'resolutionParams',
+                  }
+
+    test_problem = request.getfixturevalue(test_problem)
+    setattr(test_problem, index_list, bad_value)
+
+    with pytest.raises(IndexError, match=f'The problem field "{index_list}" contains: {bad_value[0]}, which lie '
+                                         f'outside of the range of "{param_list[index_list]}"'):
+        check_indices(test_problem)
+
+
 @pytest.mark.parametrize(["test_project", "test_cells"], [
     ("standard_layers_project", "standard_layers_cells"),
     ("custom_xy_project", "custom_xy_cells"),
@@ -507,8 +587,24 @@ def test_make_cells(test_project, test_cells, request) -> None:
     test_project = request.getfixturevalue(test_project)
     test_cells = request.getfixturevalue(test_cells)
 
-    cells = make_cells(test_project)
+    mocked_matlab_module = mock.MagicMock()
+    mocked_matlab_engine = mock.MagicMock()
+    mocked_matlab_module.engine.start_matlab.return_value = mocked_matlab_engine
+
+    with mock.patch.dict('sys.modules', {'matlab': mocked_matlab_module,
+                                         'matlab.engine': mocked_matlab_module.engine}), \
+            mock.patch.object(RAT.rat_core, "DylibEngine", mock.MagicMock()), \
+            mock.patch.object(RAT.inputs, "get_python_handle", mock.MagicMock(return_value=dummy_function)), \
+            mock.patch.object(RAT.wrappers.MatlabWrapper, "getHandle", mock.MagicMock(return_value=dummy_function)), \
+            mock.patch.object(RAT.wrappers.DylibWrapper, "getHandle", mock.MagicMock(return_value=dummy_function)):
+        cells = make_cells(test_project)
+
     check_cells_equal(cells, test_cells)
+
+
+def test_get_python_handle():
+    path = pathlib.Path(__file__).parent.resolve()
+    assert RAT.inputs.get_python_handle("utils.py", "dummy_function", path).__code__ == dummy_function.__code__
 
 
 def test_make_controls(standard_layers_controls, test_checks) -> None:
@@ -525,8 +621,8 @@ def check_problem_equal(actual_problem, expected_problem) -> None:
                      "numberOfDomainContrasts"]
 
     array_fields = ["params", "backgroundParams", "qzshifts", "scalefactors", "bulkIn", "bulkOut", "resolutionParams",
-                    "domainRatio", "contrastBackgrounds", "contrastBackgroundActions", "contrastQzshifts",
-                    "contrastScalefactors", "contrastBulkIns", "contrastBulkOuts", "contrastResolutions",
+                    "domainRatio", "contrastBackgroundParams", "contrastBackgroundActions", "contrastQzshifts",
+                    "contrastScalefactors", "contrastBulkIns", "contrastBulkOuts", "contrastResolutionParams",
                     "contrastDomainRatios", "resample", "dataPresent", "oilChiDataPresent", "fitParams", "otherParams",
                     "fitLimits", "otherLimits"]
 
