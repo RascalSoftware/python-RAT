@@ -53,7 +53,6 @@ def volume_thiol_bilayer(params, bulk_in, bulk_out, contrast):
     bh = -0.3739e-4  # Hydrogen
     bp = 0.513e-4    # Phosphorus
     bn = 0.936e-4    # Nitrogen
-    bd = 0.6671e-4   # Deuterium
 
     # Work out the total scattering length in each fragment
     # Define scattering lengths
@@ -65,8 +64,6 @@ def volume_thiol_bilayer(params, bulk_in, bulk_out, contrast):
     CH2 = (1*bc) + (2*bh)
     CH = (1*bc) + (1*bh)
     CHOL = (5*bc) + (12*bh) + (1*bn)
-    H2O = (2*bh) + (1*bo)
-    D2O = (2*bd) + (1*bo)
 
     # And also volumes
     vCH3 = 52.7  # CH3 volume in the paper appears to be for 2 * CH3's
@@ -75,7 +72,6 @@ def volume_thiol_bilayer(params, bulk_in, bulk_out, contrast):
     vGLYC = 68.8
     vPO4 = 53.7
     vCHOL = 120.4
-    vWAT = 30.4
     vCHCH = 42.14
 
     vHead = vCHOL + vPO4 + vGLYC + 2*vCOO

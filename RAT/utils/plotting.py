@@ -2,6 +2,7 @@
 Plots using the matplotlib library
 """
 from typing import Optional, Union
+from matplotlib.axes._axes import Axes
 import matplotlib.pyplot as plt
 import numpy as np
 from RAT.rat_core import PlotEventData, makeSLDProfileXY
@@ -60,7 +61,7 @@ class Figure:
         self._close_clicked = True
 
 
-def plot_errorbars(ax: 'matplotlib.axes._axes.Axes', x: np.ndarray, y: np.ndarray, err: np.ndarray, 
+def plot_errorbars(ax: Axes, x: np.ndarray, y: np.ndarray, err: np.ndarray,
                    one_sided: bool, color: str):
     """
     Plots the error bars.

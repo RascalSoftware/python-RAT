@@ -24,7 +24,6 @@ def custom_XY_DSPC(params, bulk_in, bulk_out, contrast):
     bh = -0.3739e-4  # Hydrogen
     bp = 0.513e-4    # Phosphorus
     bn = 0.936e-4    # Nitrogen
-    bd = 0.6671e-4   # Deuterium
 
     # Now make the lipid groups
     COO = (4*bo) + (2*bc)
@@ -124,16 +123,16 @@ def layer(z, prevLaySurf, thickness, height, Sigma_L, Sigma_R):
     Each side of the layer has its own roughness value.
     """
     # Find the edges
-    l = prevLaySurf
-    r = prevLaySurf + thickness
+    left = prevLaySurf
+    right = prevLaySurf + thickness
 
     # Make our heaviside
-    a = (z-l) / ((2**0.5) * Sigma_L)
-    b = (z-r) / ((2**0.5) * Sigma_R)
+    a = (z-left) / ((2**0.5) * Sigma_L)
+    b = (z-right) / ((2**0.5) * Sigma_R)
 
     erf_a = np.array([math.erf(value) for value in a])
     erf_b = np.array([math.erf(value) for value in b])
 
     VF = np.array((height / 2) * (erf_a - erf_b))
 
-    return VF, r
+    return VF, right

@@ -169,7 +169,7 @@ def test_setitem_same_name_field(two_name_class_list: ClassList, new_item: Input
 ])
 def test_setitem_different_classes(two_name_class_list: ClassList, new_values: dict[str, Any]) -> None:
     """If we set the name_field of an object in the ClassList to one already defined, we should raise a ValueError."""
-    with pytest.raises(ValueError, match=f"Input list contains elements of type other than 'InputAttributes'"):
+    with pytest.raises(ValueError, match="Input list contains elements of type other than 'InputAttributes'"):
         two_name_class_list[0] = new_values
 
 

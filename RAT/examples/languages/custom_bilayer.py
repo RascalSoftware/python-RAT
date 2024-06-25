@@ -25,7 +25,6 @@ def custom_bilayer(params, bulk_in, bulk_out, contrast):
     bh = -0.3739e-4    # Hydrogen
     bp = 0.513e-4      # Phosphorus
     bn = 0.936e-4      # Nitrogen
-    bd = 0.6671e-4     # Deuterium
 
     # Now make the lipid groups
     COO = (4*bo) + (2*bc)

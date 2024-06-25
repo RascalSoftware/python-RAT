@@ -405,8 +405,8 @@ def test_check_protected_parameters(delete_operation) -> None:
     """If we try to remove a protected parameter, we should raise an error."""
     project = RAT.Project()
 
-    with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\n  Value error, Can\'t delete'
-                                                       f' the protected parameters: Substrate Roughness'):
+    with pytest.raises(pydantic.ValidationError, match='1 validation error for Project\n  Value error, Can\'t delete'
+                                                       ' the protected parameters: Substrate Roughness'):
         eval(delete_operation)
 
     # Ensure model was not deleted
@@ -659,7 +659,7 @@ def test_check_contrast_model_allowed_values(test_values: list[str]) -> None:
     ["Undefined Param"],
     ["Test Layer", "Undefined Param"],
 ])
-def test_check_allowed_values_not_on_list(test_values: list[str]) -> None:
+def test_check_allowed_contrast_model_not_on_list(test_values: list[str]) -> None:
     """If string values are defined in a non-empty list and any of them are not included on the list of allowed values
     we should raise a ValueError.
     """

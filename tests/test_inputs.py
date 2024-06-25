@@ -558,7 +558,7 @@ def test_check_indices(test_problem, request) -> None:
     ("domains_problem", "contrastResolutionParams", [0.0]),
     ("domains_problem", "contrastResolutionParams", [2.0]),
 ])
-def test_check_indices(test_problem, index_list, bad_value, request) -> None:
+def test_check_indices_error(test_problem, index_list, bad_value, request) -> None:
     """The check_indices routine should raise an IndexError if a contrast list contains an index that is out of the
     range of the corresponding parameter list in a ProblemDefinition object."""
     param_list = {'contrastBulkIns': 'bulkIn',
