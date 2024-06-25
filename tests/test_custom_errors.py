@@ -1,7 +1,8 @@
 """Test the utils.custom_errors module."""
-from pydantic import create_model, ValidationError
-import pytest
 import re
+
+import pytest
+from pydantic import ValidationError, create_model
 
 import RAT.utils.custom_errors
 

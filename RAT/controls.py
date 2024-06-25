@@ -1,10 +1,11 @@
 from dataclasses import dataclass, field
-import prettytable
-from pydantic import BaseModel, Field, field_validator, ValidationError
 from typing import Literal, Union
 
-from RAT.utils.enums import Parallel, Procedures, Display, BoundHandling, Strategies
+import prettytable
+from pydantic import BaseModel, Field, ValidationError, field_validator
+
 from RAT.utils.custom_errors import custom_pydantic_validation_error
+from RAT.utils.enums import BoundHandling, Display, Parallel, Procedures, Strategies
 
 
 @dataclass(frozen=True)

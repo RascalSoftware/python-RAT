@@ -1,10 +1,11 @@
 """Test the ClassList."""
 
-from collections.abc import Iterable, Sequence
-import pytest
 import re
-from typing import Any, Union
 import warnings
+from collections.abc import Iterable, Sequence
+from typing import Any, Union
+
+import pytest
 
 from RAT.classlist import ClassList
 from tests.utils import InputAttributes, SubInputAttributes
@@ -41,7 +42,7 @@ def three_name_class_list():
     return ClassList([InputAttributes(name='Alice'), InputAttributes(name='Bob'), InputAttributes(name='Eve')])
 
 
-class TestInitialisation(object):
+class TestInitialisation:
     @pytest.mark.parametrize("input_object", [
         (InputAttributes()),
         (InputAttributes(name='Alice')),

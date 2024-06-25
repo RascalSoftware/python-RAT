@@ -1,7 +1,9 @@
 import pathlib
 from typing import Callable, Tuple
+
 import numpy as np
 from numpy.typing import ArrayLike
+
 import RAT.rat_core
 
 

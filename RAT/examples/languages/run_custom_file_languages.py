@@ -1,9 +1,10 @@
 """Test custom function languages."""
-import RAT.utils.plotting
-
 import pathlib
-import setup_problem
 import time
+
+import setup_problem
+
+import RAT.utils.plotting
 
 path = pathlib.Path(__file__).parent.resolve()
 

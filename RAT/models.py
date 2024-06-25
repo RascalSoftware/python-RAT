@@ -1,9 +1,10 @@
 """The models module. Contains the pydantic models used by RAT to store project parameters."""
 
-import numpy as np
-from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
 import pathlib
 from typing import Any, Union
+
+import numpy as np
+from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
 
 from RAT.utils.enums import BackgroundActions, Hydration, Languages, Priors, TypeOptions
 

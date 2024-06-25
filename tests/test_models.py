@@ -1,10 +1,11 @@
 """Test the pydantic models."""
 
+import re
+from typing import Callable
+
 import numpy as np
 import pydantic
 import pytest
-import re
-from typing import Callable
 
 import RAT.models
 
@@ -47,7 +48,7 @@ def test_default_names(model: Callable, model_name: str, model_params: dict) -> 
     (RAT.models.Parameter, {}),
     (RAT.models.Resolution, {}),
 ])
-class TestModels(object):
+class TestModels:
     def test_initialise_with_wrong_type(self, model: Callable, model_params: dict) -> None:
         """When initialising a model with the wrong type for the "name" field, we should raise a ValidationError."""
         with pytest.raises(pydantic.ValidationError, match=f'1 validation error for {model.__name__}\nname\n  Input should be a valid string'):

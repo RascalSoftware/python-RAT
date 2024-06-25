@@ -4,15 +4,15 @@ Test the run module using the example calculation from "DSPC_standard_layers.py"
 We use the example for both a reflectivity calculation, and Bayesian analysis using the Dream algorithm.
 """
 
+import unittest.mock as mock
+
 import numpy as np
 import pytest
-import unittest.mock as mock
 
 import RAT
 import RAT.outputs
 import RAT.rat_core
 from RAT.utils.enums import Calculations, Geometries, LayerModels, Procedures
-
 from tests.utils import check_results_equal
 
 

@@ -1,6 +1,8 @@
 import pathlib
 import unittest.mock as mock
+
 import pytest
+
 import RAT.wrappers
 
 

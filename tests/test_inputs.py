@@ -1,19 +1,27 @@
 """Test the inputs module."""
 
-from itertools import chain
-import numpy as np
 import pathlib
-import pytest
 import unittest.mock as mock
+from itertools import chain
+
+import numpy as np
+import pytest
 
 import RAT
-from RAT.inputs import make_input, make_problem, make_cells, make_controls, check_indices
-from RAT.utils.enums import (BoundHandling, Calculations, Display, Geometries, LayerModels, Parallel, Procedures,
-                             TypeOptions)
 import RAT.wrappers
-from tests.utils import dummy_function
-
+from RAT.inputs import check_indices, make_cells, make_controls, make_input, make_problem
 from RAT.rat_core import Cells, Checks, Control, Limits, Priors, ProblemDefinition
+from RAT.utils.enums import (
+    BoundHandling,
+    Calculations,
+    Display,
+    Geometries,
+    LayerModels,
+    Parallel,
+    Procedures,
+    TypeOptions,
+)
+from tests.utils import dummy_function
 
 
 @pytest.fixture

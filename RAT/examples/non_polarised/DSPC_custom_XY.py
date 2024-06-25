@@ -24,9 +24,10 @@ $${\textrm{VF}}_{\textrm{wat}} =1-\sum_n {\textrm{VF}}_n$$
 where VFn is the Volume Fraction of the n'th layer.
 """
 
-import numpy as np
 import os
 import pathlib
+
+import numpy as np
 
 import RAT
 import RAT.utils.plotting

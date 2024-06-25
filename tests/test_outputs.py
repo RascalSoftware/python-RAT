@@ -10,7 +10,6 @@ import RAT
 import RAT.outputs
 import RAT.rat_core
 from RAT.utils.enums import Procedures
-
 from tests.utils import check_results_equal
 
 

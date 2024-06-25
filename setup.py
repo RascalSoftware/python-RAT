@@ -1,12 +1,12 @@
-from glob import glob
-from pathlib import Path
 import platform
 import sys
-import pybind11
-from setuptools import setup, Extension, find_packages
-from setuptools.command.build_ext import build_ext
-from setuptools.command.build_clib import build_clib
+from glob import glob
+from pathlib import Path
 
+import pybind11
+from setuptools import Extension, find_packages, setup
+from setuptools.command.build_clib import build_clib
+from setuptools.command.build_ext import build_ext
 
 __version__ = '0.0.0'
 
@@ -33,6 +33,7 @@ ext_modules = [
 # check whether compiler supports a flag
 def has_flag(compiler, flagname):
     import tempfile
+
     from setuptools.errors import CompileError
     with tempfile.NamedTemporaryFile('w', suffix='.cpp') as f:
         f.write('int main (int argc, char **argv) { return 0; }')

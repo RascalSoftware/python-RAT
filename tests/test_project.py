@@ -1,17 +1,17 @@
 """Test the project module."""
 
 import copy
+import os
+import shutil
+import tempfile
+from typing import Callable
+
 import numpy as np
 import pydantic
-import os
 import pytest
-import shutil
-from typing import Callable
-import tempfile
 
 import RAT
 from RAT.utils.enums import Calculations, LayerModels
-
 
 layer_params = {'thickness': 'Test Thickness', 'SLD': 'Test SLD', 'roughness': 'Test Roughness'}
 absorption_layer_params = {'thickness': 'Test Thickness', 'SLD_real': 'Test SLD', 'SLD_imaginary': 'Test SLD',
@@ -238,7 +238,7 @@ def test_assign_wrong_layers(wrong_input_model: Callable, model_params: dict, ab
     with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\nlayers\n  Value error, '
                                                        f'"layers" ClassList contains objects other than '
                                                        f'"{actual_model_name}"'):
-        setattr(project, 'layers', RAT.ClassList(wrong_input_model(**model_params)))
+        project.layers = RAT.ClassList(wrong_input_model(**model_params))
 
 
 @pytest.mark.parametrize(["wrong_input_model", "calculation", "actual_model_name"], [
@@ -251,7 +251,7 @@ def test_assign_wrong_contrasts(wrong_input_model: Callable, calculation: Calcul
     with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Project\ncontrasts\n  Value error, '
                                                        f'"contrasts" ClassList contains objects other than '
                                                        f'"{actual_model_name}"'):
-        setattr(project, 'contrasts', RAT.ClassList(wrong_input_model()))
+        project.contrasts = RAT.ClassList(wrong_input_model())
 
 
 @pytest.mark.parametrize(["field", "model_params"], [
@@ -699,7 +699,7 @@ def test_write_script(test_project, temp_dir, test_project_script, input_filenam
     assert os.path.isfile(script_path)
 
     # Test the contents of the file are as expected
-    with open(script_path, 'r') as f:
+    with open(script_path) as f:
         script = f.read()
 
     assert script == test_project_script

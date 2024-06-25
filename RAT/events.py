@@ -1,4 +1,5 @@
-from typing import Callable, Union, List
+from typing import Callable, List, Union
+
 from RAT.rat_core import EventBridge, EventTypes, PlotEventData, ProgressEventData
 
 
@@ -55,7 +56,7 @@ def register(event_type: EventTypes, callback: Callable[[Union[str, PlotEventDat
 def clear() -> None:
     """Clears all event callbacks."""
     __event_impl.clear()
-    for key in __event_callbacks.keys():
+    for key in __event_callbacks:
         __event_callbacks[key] = set()
 
 

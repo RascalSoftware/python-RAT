@@ -3,16 +3,16 @@
 import collections
 import copy
 import functools
-import numpy as np
 import os
-from pydantic import BaseModel, ValidationInfo, field_validator, model_validator, ValidationError
 from typing import Any, Callable
 
-from RAT.classlist import ClassList
+import numpy as np
+from pydantic import BaseModel, ValidationError, ValidationInfo, field_validator, model_validator
+
 import RAT.models
+from RAT.classlist import ClassList
 from RAT.utils.custom_errors import custom_pydantic_validation_error
 from RAT.utils.enums import Calculations, Geometries, LayerModels, Priors, TypeOptions
-
 
 # Map project fields to pydantic models
 model_in_classlist = {'parameters': 'Parameter',
@@ -157,24 +157,24 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         control revalidation.
         """
         # Ensure all ClassLists have the correct _class_handle defined
-        layer_field = getattr(self, 'layers')
+        layer_field = self.layers
         if not hasattr(layer_field, "_class_handle"):
             if self.absorption:
-                setattr(layer_field, "_class_handle", getattr(RAT.models, 'AbsorptionLayer'))
+                layer_field._class_handle = RAT.models.AbsorptionLayer
             else:
-                setattr(layer_field, "_class_handle", getattr(RAT.models, 'Layer'))
+                layer_field._class_handle = RAT.models.Layer
 
-        contrast_field = getattr(self, 'contrasts')
+        contrast_field = self.contrasts
         if not hasattr(contrast_field, "_class_handle"):
             if self.calculation == Calculations.Domains:
-                setattr(contrast_field, "_class_handle", getattr(RAT.models, 'ContrastWithRatio'))
+                contrast_field._class_handle = RAT.models.ContrastWithRatio
             else:
-                setattr(contrast_field, "_class_handle", getattr(RAT.models, 'Contrast'))
+                contrast_field._class_handle = RAT.models.Contrast
 
         for field_name, model in model_in_classlist.items():
             field = getattr(self, field_name)
             if not hasattr(field, "_class_handle"):
-                setattr(field, "_class_handle", getattr(RAT.models, model))
+                field._class_handle = getattr(RAT.models, model)
 
         if 'Substrate Roughness' not in self.parameters.get_names():
             self.parameters.insert(0, RAT.models.ProtectedParameter(name='Substrate Roughness', min=1.0, value=3.0,
@@ -231,7 +231,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
     def set_calculation(self) -> 'Project':
         """Apply the calc setting to the project."""
         contrast_list = []
-        handle = getattr(self.contrasts, '_class_handle').__name__
+        handle = self.contrasts._class_handle.__name__
         if self.calculation == Calculations.Domains and handle == 'Contrast':
             for contrast in self.contrasts:
                 contrast_list.append(RAT.models.ContrastWithRatio(**contrast.model_dump()))
@@ -239,14 +239,14 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
             self.domain_ratios.data = [RAT.models.Parameter(name='Domain Ratio 1', min=0.4, value=0.5, max=0.6,
                                                             fit=False, prior_type=RAT.models.Priors.Uniform, mu=0.0,
                                                             sigma=np.inf)]
-            setattr(self.contrasts, '_class_handle', getattr(RAT.models, 'ContrastWithRatio'))
+            self.contrasts._class_handle = RAT.models.ContrastWithRatio
         elif self.calculation != Calculations.Domains and handle == 'ContrastWithRatio':
             for contrast in self.contrasts:
                 contrast_params = contrast.model_dump()
                 del contrast_params['domain_ratio']
                 contrast_list.append(RAT.models.Contrast(**contrast_params))
             self.contrasts.data = contrast_list
-            setattr(self.contrasts, '_class_handle', getattr(RAT.models, 'Contrast'))
+            self.contrasts._class_handle = RAT.models.Contrast
         return self
 
     @model_validator(mode='after')
@@ -282,25 +282,25 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
     def set_absorption(self) -> 'Project':
         """Apply the absorption setting to the project."""
         layer_list = []
-        handle = getattr(self.layers, '_class_handle').__name__
+        handle = self.layers._class_handle.__name__
         if self.absorption and handle == 'Layer':
             for layer in self.layers:
                 layer_list.append(RAT.models.AbsorptionLayer(**layer.model_dump()))
             self.layers.data = layer_list
-            setattr(self.layers, '_class_handle', getattr(RAT.models, 'AbsorptionLayer'))
+            self.layers._class_handle = RAT.models.AbsorptionLayer
         elif not self.absorption and handle == 'AbsorptionLayer':
             for layer in self.layers:
                 layer_params = layer.model_dump()
                 del layer_params['SLD_imaginary']
                 layer_list.append(RAT.models.Layer(**layer_params))
             self.layers.data = layer_list
-            setattr(self.layers, '_class_handle', getattr(RAT.models, 'Layer'))
+            self.layers._class_handle = RAT.models.Layer
         return self
 
     @model_validator(mode='after')
     def update_renamed_models(self) -> 'Project':
         """When models defined in the ClassLists are renamed, we need to update that name elsewhere in the project."""
-        for class_list in model_names_used_in.keys():
+        for class_list in model_names_used_in:
             old_names = self._all_names[class_list]
             new_names = getattr(self, class_list).get_names()
             if len(old_names) == len(new_names):
@@ -420,7 +420,7 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
         """
         class_list = getattr(self, contrast_attribute)
         for contrast in class_list:
-            model_values = getattr(contrast, 'model')
+            model_values = contrast.model
             if model_values and not all(value in allowed_values for value in model_values):
                 raise ValueError(f'The values: "{", ".join(str(i) for i in model_values)}" in the "model" field of '
                                  f'"{contrast_attribute}" must be defined in "{allowed_field}".')
@@ -499,17 +499,17 @@ class Project(BaseModel, validate_assignment=True, extra='forbid', arbitrary_typ
             """Run the given function and then revalidate the "Project" model. If any exception is raised, restore
             the previous state of the given ClassList and report details of the exception.
             """
-            previous_state = copy.deepcopy(getattr(class_list, 'data'))
+            previous_state = copy.deepcopy(class_list.data)
             return_value = None
             try:
                 return_value = func(*args, **kwargs)
                 Project.model_validate(self)
             except ValidationError as exc:
-                setattr(class_list, 'data', previous_state)
+                class_list.data = previous_state
                 custom_error_list = custom_pydantic_validation_error(exc.errors())
                 raise ValidationError.from_exception_data(exc.title, custom_error_list) from None
             except (TypeError, ValueError):
-                setattr(class_list, 'data', previous_state)
+                class_list.data = previous_state
                 raise
             finally:
                 del previous_state

@@ -2,11 +2,12 @@
 """
 
 import collections
-from collections.abc import Iterable, Sequence
 import contextlib
-import prettytable
-from typing import Any, Union
 import warnings
+from collections.abc import Iterable, Sequence
+from typing import Any, Union
+
+import prettytable
 
 
 class ClassList(collections.UserList):

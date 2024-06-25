@@ -1,8 +1,9 @@
 """Standard Layers fit of a DSPC floating bilayer"""
 
-import numpy as np
 import os
 import pathlib
+
+import numpy as np
 
 import RAT
 import RAT.utils.plotting

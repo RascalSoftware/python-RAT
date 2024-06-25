@@ -4,11 +4,13 @@ Custom Layers example for Supported DSPC layer.
 Example of using custom layers to model a DSPC supported bilayer.
 """
 
-import numpy as np
 import os
 import pathlib
 
+import numpy as np
+
 import RAT
+
 
 def make_example_problem():
 

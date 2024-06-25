@@ -1,8 +1,9 @@
 """Custom layers model including absorption"""
 
-import numpy as np
 import os
 import pathlib
+
+import numpy as np
 
 import RAT
 import RAT.utils.plotting

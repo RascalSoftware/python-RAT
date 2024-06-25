@@ -1,11 +1,12 @@
 """Test the controls module."""
 
-import pytest
-import pydantic
-from typing import Union, Any
+from typing import Any, Union
 
-from RAT.controls import Calculate, Simplex, DE, NS, Dream, set_controls
-from RAT.utils.enums import Parallel, Procedures, Display, BoundHandling, Strategies
+import pydantic
+import pytest
+
+from RAT.controls import DE, NS, Calculate, Dream, Simplex, set_controls
+from RAT.utils.enums import BoundHandling, Display, Parallel, Procedures, Strategies
 
 
 class TestCalculate:
@@ -41,21 +42,21 @@ class TestCalculate:
     def test_calculate_parallel_validation(self, value: Any) -> None:
         """Tests the parallel setter validation in Calculate class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.calculate, 'parallel', value)
+            self.calculate.parallel = value
         assert exp.value.errors()[0]['msg'] == "Input should be 'single', 'points' or 'contrasts'"
 
     @pytest.mark.parametrize("value", [5.0, 12])
     def test_calculate_calcSldDuringFit_validation(self, value: Union[int, float]) -> None:
         """Tests the calcSldDuringFit setter validation in Calculate class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.calculate, 'calcSldDuringFit', value)
+            self.calculate.calcSldDuringFit = value
         assert exp.value.errors()[0]['msg'] == "Input should be a valid boolean, unable to interpret input"
 
     @pytest.mark.parametrize("value", ['test', 'iterate', "FINAL", True, 1, 3.0])
     def test_calculate_display_validation(self, value: Any) -> None:
         """Tests the display setter validation in Calculate class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.calculate, 'display', value)
+            self.calculate.display = value
         assert exp.value.errors()[0]['msg'] == "Input should be 'off', 'iter', 'notify' or 'final'"
 
     @pytest.mark.parametrize("value, msg", [
@@ -65,7 +66,7 @@ class TestCalculate:
     def test_calculate_resampleParams_length_validation(self, value: list, msg: str) -> None:
         """Tests the resampleParams setter length validation in Calculate class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.calculate, 'resampleParams', value)
+            self.calculate.resampleParams = value
         assert exp.value.errors()[0]['msg'] == msg
 
     @pytest.mark.parametrize("value, msg", [
@@ -75,13 +76,13 @@ class TestCalculate:
     def test_calculate_resampleParams_value_validation(self, value: list, msg: str) -> None:
         """Tests the resampleParams setter value validation in Calculate class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.calculate, 'resampleParams', value)
+            self.calculate.resampleParams = value
         assert exp.value.errors()[0]['msg'] == msg
 
     def test_calculate_extra_property_error(self) -> None:
         """Tests the extra property setter in Calculate class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.calculate, 'test', 1)
+            self.calculate.test = 1
         assert exp.value.errors()[0]['msg'] == "Object has no attribute 'test'"
 
     def test_calculate_initialise_procedure_error(self) -> None:
@@ -93,7 +94,7 @@ class TestCalculate:
     def test_calculate_set_procedure_error(self) -> None:
         """Tests the procedure property is frozen in Calculate class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.calculate, 'procedure', 'test')
+            self.calculate.procedure = "test"
         assert exp.value.errors()[0]['msg'] == "Input should be <Procedures.Calculate: 'calculate'>"
 
     def test_repr(self) -> None:
@@ -169,7 +170,7 @@ class TestSimplex:
     def test_simplex_extra_property_error(self) -> None:
         """Tests the extra property setter in Simplex class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.simplex, 'test', 1)
+            self.simplex.test = 1
         assert exp.value.errors()[0]['msg'] == "Object has no attribute 'test'"
 
     def test_simplex_initialise_procedure_error(self) -> None:
@@ -181,7 +182,7 @@ class TestSimplex:
     def test_simplex_set_procedure_error(self) -> None:
         """Tests the procedure property is frozen in Simplex class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.simplex, 'procedure', 'test')
+            self.simplex.procedure = "test"
         assert exp.value.errors()[0]['msg'] == "Input should be <Procedures.Simplex: 'simplex'>"
 
     def test_repr(self) -> None:
@@ -255,7 +256,7 @@ class TestDE:
     def test_de_crossoverProbability_error(self,  value: int, msg: str) -> None:
         """Tests the crossoverProbability setter error in DE class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.de, 'crossoverProbability', value)
+            self.de.crossoverProbability = value
         assert exp.value.errors()[0]['msg'] == msg
 
     @pytest.mark.parametrize("control_property, value", [
@@ -277,7 +278,7 @@ class TestDE:
     def test_de_extra_property_error(self) -> None:
         """Tests the extra property setter in DE class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.de, 'test', 1)
+            self.de.test = 1
         assert exp.value.errors()[0]['msg'] == "Object has no attribute 'test'"
 
     def test_de_initialise_procedure_error(self) -> None:
@@ -289,7 +290,7 @@ class TestDE:
     def test_de_set_procedure_error(self) -> None:
         """Tests the procedure property is frozen in DE class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.de, 'procedure', 'test')
+            self.de.procedure = "test"
         assert exp.value.errors()[0]['msg'] == "Input should be <Procedures.DE: 'de'>"
 
     def test_repr(self) -> None:
@@ -370,13 +371,13 @@ class TestNS:
     def test_ns_propScale_error(self,  value: int, msg: str) -> None:
         """Tests the propScale error in NS class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.ns, 'propScale', value)
+            self.ns.propScale = value
         assert exp.value.errors()[0]['msg'] == msg
 
     def test_ns_extra_property_error(self) -> None:
         """Tests the extra property setter in NS class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.ns, 'test', 1)
+            self.ns.test = 1
         assert exp.value.errors()[0]['msg'] == "Object has no attribute 'test'"
 
     def test_ns_initialise_procedure_error(self) -> None:
@@ -388,7 +389,7 @@ class TestNS:
     def test_ns_procedure_error(self) -> None:
         """Tests the procedure property is frozen in NS class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.ns, 'procedure', 'test')
+            self.ns.procedure = "test"
         assert exp.value.errors()[0]['msg'] == "Input should be <Procedures.NS: 'ns'>"
 
     def test_control_class_ns_repr(self) -> None:
@@ -467,20 +468,20 @@ class TestDream:
     def test_dream_nSamples_error(self, value: int) -> None:
         """Tests the nSamples setter error in Dream class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.dream, 'nSamples', value)
+            self.dream.nSamples = value
         assert exp.value.errors()[0]['msg'] == "Input should be greater than or equal to 0"
 
     @pytest.mark.parametrize("value", [-5, 0])
     def test_dream_nChains_error(self, value: int) -> None:
         """Tests the nChains setter error in Dream class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.dream, 'nChains', value)
+            self.dream.nChains = value
         assert exp.value.errors()[0]['msg'] == "Input should be greater than 0"
 
     def test_dream_extra_property_error(self) -> None:
         """Tests the extra property setter in Dream class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.dream, 'test', 1)
+            self.dream.test = 1
         assert exp.value.errors()[0]['msg'] == "Object has no attribute 'test'"
 
     def test_dream_initialise_procedure_error(self) -> None:
@@ -492,7 +493,7 @@ class TestDream:
     def test_dream_procedure_error(self) -> None:
         """Tests the procedure property is frozen in Dream class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            setattr(self.dream, 'procedure', 'test')
+            self.dream.procedure = "test"
         assert exp.value.errors()[0]['msg'] == "Input should be <Procedures.Dream: 'dream'>"
 
     def test_control_class_dream_repr(self) -> None:

@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def custom_bilayer_DSPC(params, bulk_in, bulk_out, contrast):
     """
     CUSTOMBILAYER RAT Custom Layer Model File.

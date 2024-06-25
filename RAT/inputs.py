@@ -6,10 +6,9 @@ from typing import Callable, Union
 
 import RAT
 import RAT.controls
-from RAT.utils.enums import Calculations, Languages, LayerModels, TypeOptions
 import RAT.wrappers
-
 from RAT.rat_core import Cells, Checks, Control, Limits, Priors, ProblemDefinition
+from RAT.utils.enums import Calculations, Languages, LayerModels, TypeOptions
 
 
 def make_input(project: RAT.Project, controls: Union[RAT.controls.Calculate, RAT.controls.Simplex, RAT.controls.DE,
@@ -225,7 +224,7 @@ def check_indices(problem: ProblemDefinition) -> None:
                   }
 
     # Check the indices -- note we have switched to 1-based indexing at this point
-    for params in index_list.keys():
+    for params in index_list:
         param_list = getattr(problem, params)
         if len(param_list) > 0 and not all((element > 0 or element == -1) and element <= len(param_list)
                                            for element in getattr(problem, index_list[params])):

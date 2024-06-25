@@ -1,13 +1,13 @@
 import os
-import re
-import pytest
 import pickle
-from unittest.mock import patch
-from unittest.mock import MagicMock
+import re
+from unittest.mock import MagicMock, patch
+
 import matplotlib.pyplot as plt
+import pytest
+
 from RAT.rat_core import PlotEventData
 from RAT.utils.plotting import Figure, plot_ref_sld_helper
-
 
 TEST_DIR_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                              'test_data')

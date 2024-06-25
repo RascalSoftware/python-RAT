@@ -1,6 +1,6 @@
+import RAT.rat_core
 from RAT.inputs import make_input
 from RAT.outputs import make_results
-import RAT.rat_core
 
 
 def run(project, controls):
@@ -25,6 +25,6 @@ def run(project, controls):
     # Update parameter values in project
     for class_list in RAT.project.parameter_class_lists:
         for (index, value) in enumerate(getattr(problem_definition, parameter_field[class_list])):
-            setattr(getattr(project, class_list)[index], 'value', value)
+            getattr(project, class_list)[index].value = value
 
     return project, results

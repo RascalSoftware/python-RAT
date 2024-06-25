@@ -1,10 +1,12 @@
 """Converts outputs from the compiled RAT code to python dataclasses"""
 
 from dataclasses import dataclass
-import numpy as np
 from typing import Optional, Union
-from RAT.utils.enums import Procedures
+
+import numpy as np
+
 import RAT.rat_core
+from RAT.utils.enums import Procedures
 
 
 @dataclass

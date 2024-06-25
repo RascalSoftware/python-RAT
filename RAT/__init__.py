@@ -1,9 +1,10 @@
 import os
+
+import RAT.models as models
 from RAT.classlist import ClassList
 from RAT.controls import set_controls
 from RAT.project import Project
 from RAT.run import run
-import RAT.models as models
 
 __all__ = ["ClassList", "Project", "run", "set_controls", "models"]
 

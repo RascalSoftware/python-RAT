@@ -2,14 +2,15 @@
 Plots using the matplotlib library
 """
 from typing import Optional, Union
-from matplotlib.axes._axes import Axes
+
 import matplotlib.pyplot as plt
 import numpy as np
-from RAT.rat_core import PlotEventData, makeSLDProfileXY
+from matplotlib.axes._axes import Axes
 
 import RAT
 import RAT.inputs
 import RAT.outputs
+from RAT.rat_core import PlotEventData, makeSLDProfileXY
 
 
 class Figure:
