@@ -9,4 +9,4 @@ from RAT.run import run
 __all__ = ["ClassList", "Project", "run", "set_controls", "models"]
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-os.environ["RAT_PATH"] = os.path.join(dir_path, '')
+os.environ["RAT_PATH"] = os.path.join(dir_path, "")

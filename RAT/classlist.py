@@ -57,7 +57,7 @@ class ClassList(collections.UserList):
         else:
             if any(model.__dict__ for model in self.data):
                 table = prettytable.PrettyTable()
-                table.field_names = ['index'] + [key.replace('_', ' ') for key in self.data[0].__dict__]
+                table.field_names = ["index"] + [key.replace("_", " ") for key in self.data[0].__dict__]
                 table.add_rows([[index] + list(model.__dict__.values()) for index, model in enumerate(self.data)])
                 output = table.get_string()
             else:
@@ -82,15 +82,15 @@ class ClassList(collections.UserList):
         """Auxiliary routine of "__delitem__" used to enable wrapping."""
         del self.data[index]
 
-    def __iadd__(self, other: Sequence[object]) -> 'ClassList':
+    def __iadd__(self, other: Sequence[object]) -> "ClassList":
         """Define in-place addition using the "+=" operator."""
         return self._iadd(other)
 
-    def _iadd(self, other: Sequence[object]) -> 'ClassList':
+    def _iadd(self, other: Sequence[object]) -> "ClassList":
         """Auxiliary routine of "__iadd__" used to enable wrapping."""
         if other and not (isinstance(other, Sequence) and not isinstance(other, str)):
             other = [other]
-        if not hasattr(self, '_class_handle'):
+        if not hasattr(self, "_class_handle"):
             self._class_handle = self._determine_class_handle(self + other)
         self._check_classes(self + other)
         self._check_unique_name_fields(self + other)
@@ -132,18 +132,18 @@ class ClassList(collections.UserList):
             appended to the ClassList and the keyword arguments are discarded.
         """
         if obj and kwargs:
-            warnings.warn('ClassList.append() called with both an object and keyword arguments. '
-                          'The keyword arguments will be ignored.', SyntaxWarning, stacklevel=2)
+            warnings.warn("ClassList.append() called with both an object and keyword arguments. "
+                          "The keyword arguments will be ignored.", SyntaxWarning, stacklevel=2)
         if obj:
-            if not hasattr(self, '_class_handle'):
+            if not hasattr(self, "_class_handle"):
                 self._class_handle = type(obj)
             self._check_classes(self + [obj])
             self._check_unique_name_fields(self + [obj])
             self.data.append(obj)
         else:
-            if not hasattr(self, '_class_handle'):
-                raise TypeError('ClassList.append() called with keyword arguments for a ClassList without a class '
-                                'defined. Call ClassList.append() with an object to define the class.')
+            if not hasattr(self, "_class_handle"):
+                raise TypeError("ClassList.append() called with keyword arguments for a ClassList without a class "
+                                "defined. Call ClassList.append() with an object to define the class.")
             self._validate_name_field(kwargs)
             self.data.append(self._class_handle(**kwargs))
 
@@ -172,18 +172,18 @@ class ClassList(collections.UserList):
             inserted into the ClassList and the keyword arguments are discarded.
         """
         if obj and kwargs:
-            warnings.warn('ClassList.insert() called with both an object and keyword arguments. '
-                          'The keyword arguments will be ignored.', SyntaxWarning, stacklevel=2)
+            warnings.warn("ClassList.insert() called with both an object and keyword arguments. "
+                          "The keyword arguments will be ignored.", SyntaxWarning, stacklevel=2)
         if obj:
-            if not hasattr(self, '_class_handle'):
+            if not hasattr(self, "_class_handle"):
                 self._class_handle = type(obj)
             self._check_classes(self + [obj])
             self._check_unique_name_fields(self + [obj])
             self.data.insert(index, obj)
         else:
-            if not hasattr(self, '_class_handle'):
-                raise TypeError('ClassList.insert() called with keyword arguments for a ClassList without a class '
-                                'defined. Call ClassList.insert() with an object to define the class.')
+            if not hasattr(self, "_class_handle"):
+                raise TypeError("ClassList.insert() called with keyword arguments for a ClassList without a class "
+                                "defined. Call ClassList.insert() with an object to define the class.")
             self._validate_name_field(kwargs)
             self.data.insert(index, self._class_handle(**kwargs))
 
@@ -210,7 +210,7 @@ class ClassList(collections.UserList):
         """Extend the ClassList by adding another sequence."""
         if other and not (isinstance(other, Sequence) and not isinstance(other, str)):
             other = [other]
-        if not hasattr(self, '_class_handle'):
+        if not hasattr(self, "_class_handle"):
             self._class_handle = self._determine_class_handle(self + other)
         self._check_classes(self + other)
         self._check_unique_name_fields(self + other)

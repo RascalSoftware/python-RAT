@@ -33,65 +33,65 @@ parameter_number = int_sequence()
 resolution_number = int_sequence()
 
 
-class RATModel(BaseModel, validate_assignment=True, extra='forbid'):
+class RATModel(BaseModel, validate_assignment=True, extra="forbid"):
     """A BaseModel where enums are represented by their value."""
     def __repr__(self):
-        fields_repr = (', '.join(repr(v) if a is None else
-                                 f'{a}={v.value!r}' if isinstance(v, StrEnum) else
-                                 f'{a}={v!r}'
+        fields_repr = (", ".join(repr(v) if a is None else
+                                 f"{a}={v.value!r}" if isinstance(v, StrEnum) else
+                                 f"{a}={v!r}"
                                  for a, v in self.__repr_args__()
                                  )
                        )
-        return f'{self.__repr_name__()}({fields_repr})'
+        return f"{self.__repr_name__()}({fields_repr})"
 
 
 class Background(RATModel):
     """Defines the Backgrounds in RAT."""
-    name: str = Field(default_factory=lambda: 'New Background ' + next(background_number), min_length=1)
+    name: str = Field(default_factory=lambda: "New Background " + next(background_number), min_length=1)
     type: TypeOptions = TypeOptions.Constant
-    value_1: str = ''
-    value_2: str = ''
-    value_3: str = ''
-    value_4: str = ''
-    value_5: str = ''
+    value_1: str = ""
+    value_2: str = ""
+    value_3: str = ""
+    value_4: str = ""
+    value_5: str = ""
 
 
 class Contrast(RATModel):
     """Groups together all of the components of the model."""
-    name: str = Field(default_factory=lambda: 'New Contrast ' + next(contrast_number), min_length=1)
-    data: str = ''
-    background: str = ''
+    name: str = Field(default_factory=lambda: "New Contrast " + next(contrast_number), min_length=1)
+    data: str = ""
+    background: str = ""
     background_action: BackgroundActions = BackgroundActions.Add
-    bulk_in: str = ''
-    bulk_out: str = ''
-    scalefactor: str = ''
-    resolution: str = ''
+    bulk_in: str = ""
+    bulk_out: str = ""
+    scalefactor: str = ""
+    resolution: str = ""
     resample: bool = False
     model: list[str] = []
 
 
 class ContrastWithRatio(RATModel):
     """Groups together all of the components of the model including domain terms."""
-    name: str = Field(default_factory=lambda: 'New Contrast ' + next(contrast_number), min_length=1)
-    data: str = ''
-    background: str = ''
+    name: str = Field(default_factory=lambda: "New Contrast " + next(contrast_number), min_length=1)
+    data: str = ""
+    background: str = ""
     background_action: BackgroundActions = BackgroundActions.Add
-    bulk_in: str = ''
-    bulk_out: str = ''
-    scalefactor: str = ''
-    resolution: str = ''
+    bulk_in: str = ""
+    bulk_out: str = ""
+    scalefactor: str = ""
+    resolution: str = ""
     resample: bool = False
-    domain_ratio: str = ''
+    domain_ratio: str = ""
     model: list[str] = []
 
 
 class CustomFile(RATModel):
     """Defines the files containing functions to run when using custom models."""
-    name: str = Field(default_factory=lambda: 'New Custom File ' + next(custom_file_number), min_length=1)
-    filename: str = ''
-    function_name: str = ''
+    name: str = Field(default_factory=lambda: "New Custom File " + next(custom_file_number), min_length=1)
+    filename: str = ""
+    function_name: str = ""
     language: Languages = Languages.Python
-    path: Union[str, pathlib.Path] = ''
+    path: Union[str, pathlib.Path] = ""
 
     def model_post_init(self, __context: Any) -> None:
         """If a "filename" is supplied but the "function_name" field is not set, the "function_name" should be set to
@@ -101,7 +101,7 @@ class CustomFile(RATModel):
         if "filename" in self.model_fields_set and "function_name" not in self.model_fields_set:
             self.function_name = pathlib.Path(self.filename).stem
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def set_matlab_function_name(self):
         """If we have a matlab custom function, the "function_name" should be set to the filename without the extension.
         """
@@ -113,12 +113,12 @@ class CustomFile(RATModel):
 
 class Data(RATModel, arbitrary_types_allowed=True):
     """Defines the dataset required for each contrast."""
-    name: str = Field(default_factory=lambda: 'New Data ' + next(data_number), min_length=1)
+    name: str = Field(default_factory=lambda: "New Data " + next(data_number), min_length=1)
     data: np.ndarray[np.float64] = np.empty([0, 3])
     data_range: list[float] = Field(default=[], min_length=2, max_length=2)
     simulation_range: list[float] = Field(default=[], min_length=2, max_length=2)
 
-    @field_validator('data')
+    @field_validator("data")
     @classmethod
     def check_data_dimension(cls, data: np.ndarray[float]) -> np.ndarray[float]:
         """The data must be a two-dimensional array containing at least three columns."""
@@ -131,7 +131,7 @@ class Data(RATModel, arbitrary_types_allowed=True):
                 raise ValueError('"data" must have at least three columns') from None
         return data
 
-    @field_validator('data_range', 'simulation_range')
+    @field_validator("data_range", "simulation_range")
     @classmethod
     def check_min_max(cls, limits: list[float], info: ValidationInfo) -> list[float]:
         """The data range and simulation range maximum must be greater than the minimum."""
@@ -150,8 +150,8 @@ class Data(RATModel, arbitrary_types_allowed=True):
                 if field not in self.model_fields_set:
                     getattr(self, field).extend([data_min, data_max])
 
-    @model_validator(mode='after')
-    def check_ranges(self) -> 'Data':
+    @model_validator(mode="after")
+    def check_ranges(self) -> "Data":
         """The limits of the "data_range" field must lie within the range of the supplied data, whilst the limits
         of the "simulation_range" field must lie outside the range of the supplied data.
         """
@@ -160,12 +160,12 @@ class Data(RATModel, arbitrary_types_allowed=True):
             data_max = np.max(self.data[:, 0])
             if "data_range" in self.model_fields_set and (self.data_range[0] < data_min or
                                                           self.data_range[1] > data_max):
-                raise ValueError(f'The data_range value of: {self.data_range} must lie within the min/max values of '
-                                 f'the data: [{data_min}, {data_max}]')
+                raise ValueError(f"The data_range value of: {self.data_range} must lie within the min/max values of "
+                                 f"the data: [{data_min}, {data_max}]")
             if "simulation_range" in self.model_fields_set and (self.simulation_range[0] > data_min or
                                                                 self.simulation_range[1] < data_max):
-                raise ValueError(f'The simulation_range value of: {self.simulation_range} must lie outside of the '
-                                 f'min/max values of the data: [{data_min}, {data_max}]')
+                raise ValueError(f"The simulation_range value of: {self.simulation_range} must lie outside of the "
+                                 f"min/max values of the data: [{data_min}, {data_max}]")
         return self
 
     def __eq__(self, other: Any) -> bool:
@@ -173,8 +173,8 @@ class Data(RATModel, arbitrary_types_allowed=True):
             # When comparing instances of generic types for equality, as long as all field values are equal,
             # only require their generic origin types to be equal, rather than exact type equality.
             # This prevents headaches like MyGeneric(x=1) != MyGeneric[Any](x=1).
-            self_type = self.__pydantic_generic_metadata__['origin'] or self.__class__
-            other_type = other.__pydantic_generic_metadata__['origin'] or other.__class__
+            self_type = self.__pydantic_generic_metadata__["origin"] or self.__class__
+            other_type = other.__pydantic_generic_metadata__["origin"] or other.__class__
 
             return (
                     self_type == other_type
@@ -196,39 +196,39 @@ class Data(RATModel, arbitrary_types_allowed=True):
                                  for a, v in self.__repr_args__()
                                  )
                        )
-        return f'{self.__repr_name__()}({fields_repr})'
+        return f"{self.__repr_name__()}({fields_repr})"
 
 
 class DomainContrast(RATModel):
     """Groups together the layers required for each domain."""
-    name: str = Field(default_factory=lambda: 'New Domain Contrast ' + next(domain_contrast_number), min_length=1)
+    name: str = Field(default_factory=lambda: "New Domain Contrast " + next(domain_contrast_number), min_length=1)
     model: list[str] = []
 
 
 class Layer(RATModel, populate_by_name=True):
     """Combines parameters into defined layers."""
-    name: str = Field(default_factory=lambda: 'New Layer ' + next(layer_number), min_length=1)
+    name: str = Field(default_factory=lambda: "New Layer " + next(layer_number), min_length=1)
     thickness: str
-    SLD: str = Field(validation_alias='SLD_real')
+    SLD: str = Field(validation_alias="SLD_real")
     roughness: str
-    hydration: str = ''
+    hydration: str = ""
     hydrate_with: Hydration = Hydration.BulkOut
 
 
 class AbsorptionLayer(RATModel, populate_by_name=True):
     """Combines parameters into defined layers including absorption terms."""
-    name: str = Field(default_factory=lambda: 'New Layer ' + next(layer_number), min_length=1)
+    name: str = Field(default_factory=lambda: "New Layer " + next(layer_number), min_length=1)
     thickness: str
-    SLD_real: str = Field(validation_alias='SLD')
-    SLD_imaginary: str = ''
+    SLD_real: str = Field(validation_alias="SLD")
+    SLD_imaginary: str = ""
     roughness: str
-    hydration: str = ''
+    hydration: str = ""
     hydrate_with: Hydration = Hydration.BulkOut
 
 
 class Parameter(RATModel):
     """Defines parameters needed to specify the model."""
-    name: str = Field(default_factory=lambda: 'New Parameter ' + next(parameter_number), min_length=1)
+    name: str = Field(default_factory=lambda: "New Parameter " + next(parameter_number), min_length=1)
     min: float = 0.0
     value: float = 0.0
     max: float = 0.0
@@ -237,18 +237,18 @@ class Parameter(RATModel):
     mu: float = 0.0
     sigma: float = np.inf
 
-    @model_validator(mode='after')
-    def check_min_max(self) -> 'Parameter':
+    @model_validator(mode="after")
+    def check_min_max(self) -> "Parameter":
         """The maximum value of a parameter must be greater than the minimum."""
         if self.min > self.max:
-            raise ValueError(f'The maximum value {self.max} must be greater than the minimum value {self.min}')
+            raise ValueError(f"The maximum value {self.max} must be greater than the minimum value {self.min}")
         return self
 
-    @model_validator(mode='after')
-    def check_value_in_range(self) -> 'Parameter':
+    @model_validator(mode="after")
+    def check_value_in_range(self) -> "Parameter":
         """The value of a parameter must lie within its defined bounds."""
         if self.value < self.min or self.value > self.max:
-            raise ValueError(f'value {self.value} is not within the defined range: {self.min} <= value <= {self.max}')
+            raise ValueError(f"value {self.value} is not within the defined range: {self.min} <= value <= {self.max}")
         return self
 
 
@@ -259,10 +259,10 @@ class ProtectedParameter(Parameter):
 
 class Resolution(RATModel):
     """Defines Resolutions in RAT."""
-    name: str = Field(default_factory=lambda: 'New Resolution ' + next(resolution_number), min_length=1)
+    name: str = Field(default_factory=lambda: "New Resolution " + next(resolution_number), min_length=1)
     type: TypeOptions = TypeOptions.Constant
-    value_1: str = ''
-    value_2: str = ''
-    value_3: str = ''
-    value_4: str = ''
-    value_5: str = ''
+    value_1: str = ""
+    value_2: str = ""
+    value_3: str = ""
+    value_4: str = ""
+    value_5: str = ""

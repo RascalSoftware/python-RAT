@@ -20,7 +20,7 @@ print(f"Python time is: {end-start}s\n")
 RAT.utils.plotting.plot_ref_sld(project, results)
 
 # Matlab
-project.custom_files.set_fields(0, filename='custom_bilayer.m', language='matlab', path=path)
+project.custom_files.set_fields(0, filename="custom_bilayer.m", language="matlab", path=path)
 
 start = time.time()
 project, results = RAT.run(project, controls)
@@ -30,7 +30,7 @@ print(f"Matlab time is: {end-start}s\n")
 RAT.utils.plotting.plot_ref_sld(project, results)
 
 # C++
-project.custom_files.set_fields(0, filename='custom_bilayer.dll', language='cpp', path=path)
+project.custom_files.set_fields(0, filename="custom_bilayer.dll", language="cpp", path=path)
 
 start = time.time()
 project, results = RAT.run(project, controls)

@@ -27,11 +27,11 @@ def custom_pydantic_validation_error(error_list: list[pydantic_core.ErrorDetails
         custom_error_msgs = {}
     custom_error_list = []
     for error in error_list:
-        if error['type'] in custom_error_msgs:
-            custom_error = pydantic_core.PydanticCustomError(error['type'], custom_error_msgs[error['type']])
+        if error["type"] in custom_error_msgs:
+            custom_error = pydantic_core.PydanticCustomError(error["type"], custom_error_msgs[error["type"]])
         else:
-            custom_error = pydantic_core.PydanticCustomError(error['type'], error['msg'])
-        error['type'] = custom_error
+            custom_error = pydantic_core.PydanticCustomError(error["type"], error["msg"])
+        error["type"] = custom_error
         custom_error_list.append(error)
 
     return custom_error_list

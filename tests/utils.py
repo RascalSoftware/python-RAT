@@ -139,8 +139,8 @@ def check_bayes_fields_equal(actual_results, expected_results) -> None:
             expected_array = getattr(expected_subclass, array)
             for i in range(len(actual_array)):
                 assert ((actual_array == expected_array).all() or
-                        (['NaN' if np.isnan(el) else el for el in actual_array[i]] ==
-                         ['NaN' if np.isnan(el) else el for el in expected_array[i]]))
+                        (["NaN" if np.isnan(el) else el for el in actual_array[i]] ==
+                         ["NaN" if np.isnan(el) else el for el in expected_array[i]]))
 
     assert (actual_results.chain == expected_results.chain).all()
 

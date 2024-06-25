@@ -36,7 +36,7 @@ class Figure:
         self._close_clicked = False
         self._fig.canvas.mpl_connect("key_press_event",
                                      self._process_button_press)
-        self._fig.canvas.mpl_connect('close_event',
+        self._fig.canvas.mpl_connect("close_event",
                                      self._close)
 
     def wait_for_close(self):
@@ -52,7 +52,7 @@ class Figure:
         """
         Process the key_press_event.
         """
-        if event.key == 'escape':
+        if event.key == "escape":
             self._esc_pressed = True
 
     def _close(self, _):
@@ -86,7 +86,7 @@ def plot_errorbars(ax: Axes, x: np.ndarray, y: np.ndarray, err: np.ndarray,
     ax.errorbar(x=x,
                 y=y,
                 yerr=y_error,
-                fmt='none',
+                fmt="none",
                 ecolor=color,
                 elinewidth=1,
                 capsize=0)
@@ -135,7 +135,7 @@ def plot_ref_sld_helper(data: PlotEventData, fig: Optional[Figure] = None, delay
         # Plot the reflectivity on plot (1,1)
         ref_plot.plot(r[:, 0],
                       r[:, 1]/div,
-                      label=f'ref {i+1}',
+                      label=f"ref {i+1}",
                       linewidth=2)
         color = ref_plot.get_lines()[-1].get_color()
 
@@ -162,10 +162,10 @@ def plot_ref_sld_helper(data: PlotEventData, fig: Optional[Figure] = None, delay
         for j in range(len(sld)):
             sld_plot.plot(sld[j][:, 0],
                           sld[j][:, 1],
-                          label=f'sld {i+1}',
+                          label=f"sld {i+1}",
                           linewidth=1)
 
-        if data.resample[i] == 1 or data.modelType == 'custom xy':
+        if data.resample[i] == 1 or data.modelType == "custom xy":
             layers = data.resampledLayers[i][0]
             for j in range(len(data.resampledLayers[i])):
                 layer = data.resampledLayers[i][j]
@@ -184,15 +184,15 @@ def plot_ref_sld_helper(data: PlotEventData, fig: Optional[Figure] = None, delay
                               linewidth=1)
 
     # Format the axis
-    ref_plot.set_yscale('log')
-    ref_plot.set_xscale('log')
-    ref_plot.set_xlabel('Qz')
-    ref_plot.set_ylabel('Ref')
+    ref_plot.set_yscale("log")
+    ref_plot.set_xscale("log")
+    ref_plot.set_xlabel("Qz")
+    ref_plot.set_ylabel("Ref")
     ref_plot.legend()
     ref_plot.grid()
 
-    sld_plot.set_xlabel('Z')
-    sld_plot.set_ylabel('SLD')
+    sld_plot.set_xlabel("Z")
+    sld_plot.set_ylabel("SLD")
     sld_plot.legend()
     sld_plot.grid()
 

@@ -7,21 +7,21 @@ import RAT.wrappers
 
 
 def test_matlab_wrapper() -> None:
-    with mock.patch.dict('sys.modules', {'matlab': mock.MagicMock(side_effect=ImportError)}), \
+    with mock.patch.dict("sys.modules", {"matlab": mock.MagicMock(side_effect=ImportError)}), \
             pytest.raises(ImportError):
-        RAT.wrappers.MatlabWrapper('demo.m')
+        RAT.wrappers.MatlabWrapper("demo.m")
     mocked_matlab_module = mock.MagicMock()
     mocked_engine = mock.MagicMock()
     mocked_matlab_module.engine.start_matlab.return_value = mocked_engine
         
     # mocked_matlab_module.engine = mock.MagicMock()
 
-    with mock.patch.dict('sys.modules', {'matlab': mocked_matlab_module,
-                                         'matlab.engine': mocked_matlab_module.engine}):
-        wrapper = RAT.wrappers.MatlabWrapper('demo.m')
-        assert wrapper.function_name == 'demo'
+    with mock.patch.dict("sys.modules", {"matlab": mocked_matlab_module,
+                                         "matlab.engine": mocked_matlab_module.engine}):
+        wrapper = RAT.wrappers.MatlabWrapper("demo.m")
+        assert wrapper.function_name == "demo"
         mocked_engine.cd.assert_called_once()
-        assert pathlib.Path(mocked_engine.cd.call_args[0][0]).samefile('.')
+        assert pathlib.Path(mocked_engine.cd.call_args[0][0]).samefile(".")
 
         handle = wrapper.getHandle()
         
@@ -40,9 +40,9 @@ def test_matlab_wrapper() -> None:
 
 def test_dylib_wrapper() -> None:
     mocked_engine = mock.MagicMock()
-    with mock.patch('RAT.wrappers.RAT.rat_core.DylibEngine', mocked_engine):
-        wrapper = RAT.wrappers.DylibWrapper('demo.dylib', 'demo')
-        mocked_engine.assert_called_once_with('demo.dylib', 'demo')
+    with mock.patch("RAT.wrappers.RAT.rat_core.DylibEngine", mocked_engine):
+        wrapper = RAT.wrappers.DylibWrapper("demo.dylib", "demo")
+        mocked_engine.assert_called_once_with("demo.dylib", "demo")
 
         wrapper.engine.invoke.return_value = ([2], 5)
         handle = wrapper.getHandle()

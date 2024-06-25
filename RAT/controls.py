@@ -45,7 +45,7 @@ class Controls:
     adaptPCR: bool = False
 
 
-class Calculate(BaseModel, validate_assignment=True, extra='forbid'):
+class Calculate(BaseModel, validate_assignment=True, extra="forbid"):
     """Defines the class for the calculate procedure, which includes the properties used in all five procedures."""
     procedure: Literal[Procedures.Calculate] = Procedures.Calculate
     parallel: Parallel = Parallel.Single
@@ -57,14 +57,14 @@ class Calculate(BaseModel, validate_assignment=True, extra='forbid'):
     @classmethod
     def check_resample_params(cls, resampleParams):
         if not 0 < resampleParams[0] < 1:
-            raise ValueError('resampleParams[0] must be between 0 and 1')
+            raise ValueError("resampleParams[0] must be between 0 and 1")
         if resampleParams[1] < 0:
-            raise ValueError('resampleParams[1] must be greater than or equal to 0')
+            raise ValueError("resampleParams[1] must be greater than or equal to 0")
         return resampleParams
 
     def __repr__(self) -> str:
         table = prettytable.PrettyTable()
-        table.field_names = ['Property', 'Value']
+        table.field_names = ["Property", "Value"]
         table.add_rows([[k, v] for k, v in self.__dict__.items()])
         return table.get_string()
 
@@ -127,9 +127,9 @@ def set_controls(procedure: Procedures = Procedures.Calculate, **properties)\
     except KeyError:
         members = list(Procedures.__members__.values())
         allowed_values = f'{", ".join([repr(member.value) for member in members[:-1]])} or {members[-1].value!r}'
-        raise ValueError(f'The controls procedure must be one of: {allowed_values}') from None
+        raise ValueError(f"The controls procedure must be one of: {allowed_values}") from None
     except ValidationError as exc:
-        custom_error_msgs = {'extra_forbidden': f'Extra inputs are not permitted. The fields for the {procedure}'
+        custom_error_msgs = {"extra_forbidden": f'Extra inputs are not permitted. The fields for the {procedure}'
                                                 f' controls procedure are:\n    '
                                                 f'{", ".join(controls[procedure].model_fields.keys())}\n'
                              }

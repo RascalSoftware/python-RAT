@@ -38,24 +38,24 @@ def make_input(project: RAT.Project, controls: Union[RAT.controls.Calculate, RAT
         The controls object used in the compiled RAT code.
     """
 
-    parameter_field = {'parameters': 'param',
-                       'bulk_in': 'bulkIn',
-                       'bulk_out': 'bulkOut',
-                       'scalefactors': 'scalefactor',
-                       'domain_ratios': 'domainRatio',
-                       'background_parameters': 'backgroundParam',
-                       'resolution_parameters': 'resolutionParam',
+    parameter_field = {"parameters": "param",
+                       "bulk_in": "bulkIn",
+                       "bulk_out": "bulkOut",
+                       "scalefactors": "scalefactor",
+                       "domain_ratios": "domainRatio",
+                       "background_parameters": "backgroundParam",
+                       "resolution_parameters": "resolutionParam",
                        }
-    checks_field = {'parameters': 'fitParam',
-                    'bulk_in': 'fitBulkIn',
-                    'bulk_out': 'fitBulkOut',
-                    'scalefactors': 'fitScalefactor',
-                    'domain_ratios': 'fitDomainRatio',
-                    'background_parameters': 'fitBackgroundParam',
-                    'resolution_parameters': 'fitResolutionParam',
+    checks_field = {"parameters": "fitParam",
+                    "bulk_in": "fitBulkIn",
+                    "bulk_out": "fitBulkOut",
+                    "scalefactors": "fitScalefactor",
+                    "domain_ratios": "fitDomainRatio",
+                    "background_parameters": "fitBackgroundParam",
+                    "resolution_parameters": "fitResolutionParam",
                     }
 
-    prior_id = {'uniform': 1, 'gaussian': 2, 'jeffreys': 3}
+    prior_id = {"uniform": 1, "gaussian": 2, "jeffreys": 3}
 
     problem = make_problem(project)
     cells = make_cells(project)
@@ -103,11 +103,11 @@ def make_problem(project: RAT.Project) -> ProblemDefinition:
     problem : RAT.rat_core.ProblemDefinition
         The problem input used in the compiled RAT code.
     """
-    action_id = {'add': 1, 'subtract': 2}
+    action_id = {"add": 1, "subtract": 2}
 
     # Set contrast parameters according to model type
     if project.model == LayerModels.StandardLayers:
-        contrast_custom_files = [float('NaN')] * len(project.contrasts)
+        contrast_custom_files = [float("NaN")] * len(project.contrasts)
     else:
         contrast_custom_files = [project.custom_files.index(contrast.model[0], True) for contrast in project.contrasts]
 
@@ -151,7 +151,7 @@ def make_problem(project: RAT.Project) -> ProblemDefinition:
     problem.contrastScalefactors = [project.scalefactors.index(contrast.scalefactor, True)
                                     for contrast in project.contrasts]
     problem.contrastDomainRatios = [project.domain_ratios.index(contrast.domain_ratio, True)
-                                    if hasattr(contrast, 'domain_ratio') else 0 for contrast in project.contrasts]
+                                    if hasattr(contrast, "domain_ratio") else 0 for contrast in project.contrasts]
     problem.contrastBackgroundParams = contrast_background_params
     problem.contrastBackgroundActions = [action_id[contrast.background_action] for contrast in project.contrasts]
     problem.contrastResolutionParams = contrast_resolution_params
@@ -218,12 +218,12 @@ def check_indices(problem: ProblemDefinition) -> None:
     problem : RAT.rat_core.ProblemDefinition
         The problem input used in the compiled RAT code.
     """
-    index_list = {'bulkIn': 'contrastBulkIns',
-                  'bulkOut': 'contrastBulkOuts',
-                  'scalefactors': 'contrastScalefactors',
-                  'domainRatio': 'contrastDomainRatios',
-                  'backgroundParams': 'contrastBackgroundParams',
-                  'resolutionParams': 'contrastResolutionParams',
+    index_list = {"bulkIn": "contrastBulkIns",
+                  "bulkOut": "contrastBulkOuts",
+                  "scalefactors": "contrastScalefactors",
+                  "domainRatio": "contrastDomainRatios",
+                  "backgroundParams": "contrastBackgroundParams",
+                  "resolutionParams": "contrastResolutionParams",
                   }
 
     # Check the indices -- note we have switched to 1-based indexing at this point
@@ -255,7 +255,7 @@ def make_cells(project: RAT.Project) -> Cells:
         The set of inputs that are defined in MATLAB as cell arrays.
     """
 
-    hydrate_id = {'bulk in': 1, 'bulk out': 2}
+    hydrate_id = {"bulk in": 1, "bulk out": 2}
 
     # Set contrast parameters according to model type
     if project.model == LayerModels.StandardLayers:
@@ -275,7 +275,7 @@ def make_cells(project: RAT.Project) -> Cells:
 
         layer_params = [project.parameters.index(getattr(layer, attribute), True)
                         for attribute in list(layer.model_fields.keys())[1:-2]]
-        layer_params.append(project.parameters.index(layer.hydration, True) if layer.hydration else float('NaN'))
+        layer_params.append(project.parameters.index(layer.hydration, True) if layer.hydration else float("NaN"))
         layer_params.append(hydrate_id[layer.hydrate_with])
 
         layer_details.append(layer_params)

@@ -27,18 +27,18 @@ from tests.utils import dummy_function
 @pytest.fixture
 def standard_layers_project():
     """Add parameters to the default project for a non polarised calculation."""
-    test_project = RAT.Project(data=RAT.ClassList([RAT.models.Data(name='Test Data', data=np.array([[1.0, 1.0, 1.0]]))])
+    test_project = RAT.Project(data=RAT.ClassList([RAT.models.Data(name="Test Data", data=np.array([[1.0, 1.0, 1.0]]))])
                                )
-    test_project.parameters.append(name='Test Thickness')
-    test_project.parameters.append(name='Test SLD')
-    test_project.parameters.append(name='Test Roughness')
-    test_project.custom_files.append(name='Test Custom File', filename='python_test.py', function_name='dummy_function',
-                                     language='python')
-    test_project.layers.append(name='Test Layer', thickness='Test Thickness', SLD='Test SLD', roughness='Test Roughness'
+    test_project.parameters.append(name="Test Thickness")
+    test_project.parameters.append(name="Test SLD")
+    test_project.parameters.append(name="Test Roughness")
+    test_project.custom_files.append(name="Test Custom File", filename="python_test.py", function_name="dummy_function",
+                                     language="python")
+    test_project.layers.append(name="Test Layer", thickness="Test Thickness", SLD="Test SLD", roughness="Test Roughness"
                                )
-    test_project.contrasts.append(name='Test Contrast', data='Test Data', background='Background 1', bulk_in='SLD Air',
-                                  bulk_out='SLD D2O', scalefactor='Scalefactor 1', resolution='Resolution 1',
-                                  model=['Test Layer'])
+    test_project.contrasts.append(name="Test Contrast", data="Test Data", background="Background 1", bulk_in="SLD Air",
+                                  bulk_out="SLD D2O", scalefactor="Scalefactor 1", resolution="Resolution 1",
+                                  model=["Test Layer"])
     return test_project
 
 
@@ -46,19 +46,19 @@ def standard_layers_project():
 def domains_project():
     """Add parameters to the default project for a domains calculation."""
     test_project = RAT.Project(calculation=Calculations.Domains,
-                               data=RAT.ClassList([RAT.models.Data(name='Test Data', data=np.array([[1.0, 1.0, 1.0]]))])
+                               data=RAT.ClassList([RAT.models.Data(name="Test Data", data=np.array([[1.0, 1.0, 1.0]]))])
                                )
-    test_project.parameters.append(name='Test Thickness')
-    test_project.parameters.append(name='Test SLD')
-    test_project.parameters.append(name='Test Roughness')
-    test_project.custom_files.append(name='Test Custom File', filename='matlab_test.m', language='matlab')
-    test_project.layers.append(name='Test Layer', thickness='Test Thickness', SLD='Test SLD', roughness='Test Roughness'
+    test_project.parameters.append(name="Test Thickness")
+    test_project.parameters.append(name="Test SLD")
+    test_project.parameters.append(name="Test Roughness")
+    test_project.custom_files.append(name="Test Custom File", filename="matlab_test.m", language="matlab")
+    test_project.layers.append(name="Test Layer", thickness="Test Thickness", SLD="Test SLD", roughness="Test Roughness"
                                )
-    test_project.domain_contrasts.append(name='up', model=['Test Layer'])
-    test_project.domain_contrasts.append(name='down', model=['Test Layer'])
-    test_project.contrasts.append(name='Test Contrast', data='Test Data', background='Background 1', bulk_in='SLD Air',
-                                  bulk_out='SLD D2O', scalefactor='Scalefactor 1', resolution='Resolution 1',
-                                  domain_ratio='Domain Ratio 1', model=['down', 'up'])
+    test_project.domain_contrasts.append(name="up", model=["Test Layer"])
+    test_project.domain_contrasts.append(name="down", model=["Test Layer"])
+    test_project.contrasts.append(name="Test Contrast", data="Test Data", background="Background 1", bulk_in="SLD Air",
+                                  bulk_out="SLD D2O", scalefactor="Scalefactor 1", resolution="Resolution 1",
+                                  domain_ratio="Domain Ratio 1", model=["down", "up"])
     return test_project
 
 
@@ -66,13 +66,13 @@ def domains_project():
 def custom_xy_project():
     """Add parameters to the default project for a non polarised calculation and use the custom xy model."""
     test_project = RAT.Project(model=LayerModels.CustomXY)
-    test_project.parameters.append(name='Test Thickness')
-    test_project.parameters.append(name='Test SLD')
-    test_project.parameters.append(name='Test Roughness')
-    test_project.custom_files.append(name='Test Custom File', filename='cpp_test.dll', language='cpp')
-    test_project.contrasts.append(name='Test Contrast', data='Simulation', background='Background 1', bulk_in='SLD Air',
-                                  bulk_out='SLD D2O', scalefactor='Scalefactor 1', resolution='Resolution 1',
-                                  model=['Test Custom File'])
+    test_project.parameters.append(name="Test Thickness")
+    test_project.parameters.append(name="Test SLD")
+    test_project.parameters.append(name="Test Roughness")
+    test_project.custom_files.append(name="Test Custom File", filename="cpp_test.dll", language="cpp")
+    test_project.contrasts.append(name="Test Contrast", data="Simulation", background="Background 1", bulk_in="SLD Air",
+                                  bulk_out="SLD D2O", scalefactor="Scalefactor 1", resolution="Resolution 1",
+                                  model=["Test Custom File"])
     return test_project
 
 
@@ -99,7 +99,7 @@ def standard_layers_problem():
     problem.contrastBackgroundParams = [1]
     problem.contrastBackgroundActions = [1]
     problem.contrastResolutionParams = [1]
-    problem.contrastCustomFiles = [float('NaN')]
+    problem.contrastCustomFiles = [float("NaN")]
     problem.contrastDomainRatios = [0]
     problem.resample = [False]
     problem.dataPresent = [1]
@@ -139,7 +139,7 @@ def domains_problem():
     problem.contrastBackgroundParams = [1]
     problem.contrastBackgroundActions = [1]
     problem.contrastResolutionParams = [1]
-    problem.contrastCustomFiles = [float('NaN')]
+    problem.contrastCustomFiles = [float("NaN")]
     problem.contrastDomainRatios = [1]
     problem.resample = [False]
     problem.dataPresent = [1]
@@ -205,14 +205,14 @@ def standard_layers_cells():
     cells.f3 = [[1.0, 1.0]]
     cells.f4 = [[1.0, 1.0]]
     cells.f5 = [[1]]
-    cells.f6 = [[2, 3, 4, float('nan'), 2]]
-    cells.f7 = ['Substrate Roughness', 'Test Thickness', 'Test SLD', 'Test Roughness']
-    cells.f8 = ['Background Param 1']
-    cells.f9 = ['Scalefactor 1']
+    cells.f6 = [[2, 3, 4, float("nan"), 2]]
+    cells.f7 = ["Substrate Roughness", "Test Thickness", "Test SLD", "Test Roughness"]
+    cells.f8 = ["Background Param 1"]
+    cells.f9 = ["Scalefactor 1"]
     cells.f10 = []
-    cells.f11 = ['SLD Air']
-    cells.f12 = ['SLD D2O']
-    cells.f13 = ['Resolution Param 1']
+    cells.f11 = ["SLD Air"]
+    cells.f12 = ["SLD D2O"]
+    cells.f13 = ["Resolution Param 1"]
     cells.f14 = [dummy_function]
     cells.f15 = [TypeOptions.Constant]
     cells.f16 = [TypeOptions.Constant]
@@ -233,21 +233,21 @@ def domains_cells():
     cells.f3 = [[1.0, 1.0]]
     cells.f4 = [[1.0, 1.0]]
     cells.f5 = [[2, 1]]
-    cells.f6 = [[2, 3, 4, float('nan'), 2]]
-    cells.f7 = ['Substrate Roughness', 'Test Thickness', 'Test SLD', 'Test Roughness']
-    cells.f8 = ['Background Param 1']
-    cells.f9 = ['Scalefactor 1']
+    cells.f6 = [[2, 3, 4, float("nan"), 2]]
+    cells.f7 = ["Substrate Roughness", "Test Thickness", "Test SLD", "Test Roughness"]
+    cells.f8 = ["Background Param 1"]
+    cells.f9 = ["Scalefactor 1"]
     cells.f10 = []
-    cells.f11 = ['SLD Air']
-    cells.f12 = ['SLD D2O']
-    cells.f13 = ['Resolution Param 1']
+    cells.f11 = ["SLD Air"]
+    cells.f12 = ["SLD D2O"]
+    cells.f13 = ["Resolution Param 1"]
     cells.f14 = [dummy_function]
     cells.f15 = [TypeOptions.Constant]
     cells.f16 = [TypeOptions.Constant]
     cells.f17 = [[[]]]
     cells.f18 = [[0, 1], [0, 1]]
     cells.f19 = [[1], [1]]
-    cells.f20 = ['Domain Ratio 1']
+    cells.f20 = ["Domain Ratio 1"]
 
     return cells
 
@@ -262,13 +262,13 @@ def custom_xy_cells():
     cells.f4 = [[0.005, 0.7]]
     cells.f5 = [[0]]
     cells.f6 = [[0]]
-    cells.f7 = ['Substrate Roughness', 'Test Thickness', 'Test SLD', 'Test Roughness']
-    cells.f8 = ['Background Param 1']
-    cells.f9 = ['Scalefactor 1']
+    cells.f7 = ["Substrate Roughness", "Test Thickness", "Test SLD", "Test Roughness"]
+    cells.f8 = ["Background Param 1"]
+    cells.f9 = ["Scalefactor 1"]
     cells.f10 = []
-    cells.f11 = ['SLD Air']
-    cells.f12 = ['SLD D2O']
-    cells.f13 = ['Resolution Param 1']
+    cells.f11 = ["SLD Air"]
+    cells.f12 = ["SLD D2O"]
+    cells.f13 = ["Resolution Param 1"]
     cells.f14 = [dummy_function]
     cells.f15 = [TypeOptions.Constant]
     cells.f16 = [TypeOptions.Constant]
@@ -316,19 +316,19 @@ def domains_limits():
 def non_polarised_priors():
     """The expected priors object from "standard_layers_project" and "custom_xy_project"."""
     priors = Priors()
-    priors.param = [['Substrate Roughness', RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
-                    ['Test Thickness', RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
-                    ['Test SLD', RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
-                    ['Test Roughness', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.backgroundParam = [['Background Param 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.param = [["Substrate Roughness", RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
+                    ["Test Thickness", RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
+                    ["Test SLD", RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
+                    ["Test Roughness", RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.backgroundParam = [["Background Param 1", RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.qzshift = []
-    priors.scalefactor = [['Scalefactor 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.bulkIn = [['SLD Air', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.bulkOut = [['SLD D2O', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.resolutionParam = [['Resolution Param 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.scalefactor = [["Scalefactor 1", RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.bulkIn = [["SLD Air", RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.bulkOut = [["SLD D2O", RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.resolutionParam = [["Resolution Param 1", RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.domainRatio = []
-    priors.priorNames = ['Substrate Roughness', 'Test Thickness', 'Test SLD', 'Test Roughness', 'Background Param 1',
-                         'Scalefactor 1', 'SLD Air', 'SLD D2O', 'Resolution Param 1']
+    priors.priorNames = ["Substrate Roughness", "Test Thickness", "Test SLD", "Test Roughness", "Background Param 1",
+                         "Scalefactor 1", "SLD Air", "SLD D2O", "Resolution Param 1"]
     priors.priorValues = [[1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf],
                           [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf]]
 
@@ -339,19 +339,19 @@ def non_polarised_priors():
 def domains_priors():
     """The expected priors object from "domains_project"."""
     priors = Priors()
-    priors.param = [['Substrate Roughness', RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
-                    ['Test Thickness', RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
-                    ['Test SLD', RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
-                    ['Test Roughness', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.backgroundParam = [['Background Param 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.param = [["Substrate Roughness", RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
+                    ["Test Thickness", RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
+                    ["Test SLD", RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
+                    ["Test Roughness", RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.backgroundParam = [["Background Param 1", RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.qzshift = []
-    priors.scalefactor = [['Scalefactor 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.bulkIn = [['SLD Air', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.bulkOut = [['SLD D2O', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.resolutionParam = [['Resolution Param 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.domainRatio = [['Domain Ratio 1', RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.priorNames = ['Substrate Roughness', 'Test Thickness', 'Test SLD', 'Test Roughness', 'Background Param 1',
-                         'Scalefactor 1', 'SLD Air', 'SLD D2O', 'Resolution Param 1', 'Domain Ratio 1']
+    priors.scalefactor = [["Scalefactor 1", RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.bulkIn = [["SLD Air", RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.bulkOut = [["SLD D2O", RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.resolutionParam = [["Resolution Param 1", RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.domainRatio = [["Domain Ratio 1", RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.priorNames = ["Substrate Roughness", "Test Thickness", "Test SLD", "Test Roughness", "Background Param 1",
+                         "Scalefactor 1", "SLD Air", "SLD D2O", "Resolution Param 1", "Domain Ratio 1"]
     priors.priorValues = [[1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf],
                           [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf]]
 
@@ -488,8 +488,8 @@ def test_make_input(test_project, test_problem, test_cells, test_limits, test_pr
     mocked_engine = mock.MagicMock()
     mocked_matlab_module.engine.start_matlab.return_value = mocked_engine
 
-    with mock.patch.dict('sys.modules', {'matlab': mocked_matlab_module,
-                                         'matlab.engine': mocked_matlab_module.engine}), \
+    with mock.patch.dict("sys.modules", {"matlab": mocked_matlab_module,
+                                         "matlab.engine": mocked_matlab_module.engine}), \
             mock.patch.object(RAT.rat_core, "DylibEngine", mock.MagicMock()), \
             mock.patch.object(RAT.inputs, "get_python_handle", mock.MagicMock(return_value=dummy_function)), \
             mock.patch.object(RAT.wrappers.MatlabWrapper, "getHandle", mock.MagicMock(return_value=dummy_function)), \
@@ -574,12 +574,12 @@ def test_check_indices(test_problem, request) -> None:
 def test_check_indices_error(test_problem, index_list, bad_value, request) -> None:
     """The check_indices routine should raise an IndexError if a contrast list contains an index that is out of the
     range of the corresponding parameter list in a ProblemDefinition object."""
-    param_list = {'contrastBulkIns': 'bulkIn',
-                  'contrastBulkOuts': 'bulkOut',
-                  'contrastScalefactors': 'scalefactors',
-                  'contrastDomainRatios': 'domainRatio',
-                  'contrastBackgroundParams': 'backgroundParams',
-                  'contrastResolutionParams': 'resolutionParams',
+    param_list = {"contrastBulkIns": "bulkIn",
+                  "contrastBulkOuts": "bulkOut",
+                  "contrastScalefactors": "scalefactors",
+                  "contrastDomainRatios": "domainRatio",
+                  "contrastBackgroundParams": "backgroundParams",
+                  "contrastResolutionParams": "resolutionParams",
                   }
 
     test_problem = request.getfixturevalue(test_problem)
@@ -604,8 +604,8 @@ def test_make_cells(test_project, test_cells, request) -> None:
     mocked_matlab_engine = mock.MagicMock()
     mocked_matlab_module.engine.start_matlab.return_value = mocked_matlab_engine
 
-    with mock.patch.dict('sys.modules', {'matlab': mocked_matlab_module,
-                                         'matlab.engine': mocked_matlab_module.engine}), \
+    with mock.patch.dict("sys.modules", {"matlab": mocked_matlab_module,
+                                         "matlab.engine": mocked_matlab_module.engine}), \
             mock.patch.object(RAT.rat_core, "DylibEngine", mock.MagicMock()), \
             mock.patch.object(RAT.inputs, "get_python_handle", mock.MagicMock(return_value=dummy_function)), \
             mock.patch.object(RAT.wrappers.MatlabWrapper, "getHandle", mock.MagicMock(return_value=dummy_function)), \
@@ -647,8 +647,8 @@ def check_problem_equal(actual_problem, expected_problem) -> None:
 
     # Need to account for "NaN" entries in contrastCustomFiles field
     assert ((actual_problem.contrastCustomFiles == expected_problem.contrastCustomFiles).all() or
-            ['NaN' if np.isnan(el) else el for el in actual_problem.contrastCustomFiles] ==
-            ['NaN' if np.isnan(el) else el for el in expected_problem.contrastCustomFiles]
+            ["NaN" if np.isnan(el) else el for el in actual_problem.contrastCustomFiles] ==
+            ["NaN" if np.isnan(el) else el for el in expected_problem.contrastCustomFiles]
             )
 
     return None
@@ -664,8 +664,8 @@ def check_cells_equal(actual_cells, expected_cells) -> None:
 
     # f6 may contain "NaN" values, so consider separately
     assert (actual_cells.f6 == expected_cells.f6 or
-            ['NaN' if np.isnan(el) else el for entry in actual_cells.f6 for el in entry] ==
-            ['NaN' if np.isnan(el) else el for entry in expected_cells.f6 for el in entry])
+            ["NaN" if np.isnan(el) else el for entry in actual_cells.f6 for el in entry] ==
+            ["NaN" if np.isnan(el) else el for entry in expected_cells.f6 for el in entry])
 
     for index in chain(range(3, 6), range(7, 21)):
         field = f"f{index}"

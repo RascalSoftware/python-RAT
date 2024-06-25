@@ -217,11 +217,11 @@ def reflectivity_calculation_output_results():
     results.fitParams = np.array([3.000e+00, 1.954e+01, 2.266e+01, 5.252e+00, 5.640e+00, 1.712e+01, 8.560e+00,
                                   4.545e+01, 1.070e+01, 6.014e+00, 1.782e+01, 1.764e+01, 3.615e+01, 2.361e+01,
                                   2.230e-06, 3.380e-06, 5.980e-06, 2.210e-06])
-    results.fitNames = ['Substrate Roughness', 'Oxide Thickness', 'SAM Tails Thickness', 'SAM Tails Hydration',
-                        'SAM Roughness', 'CW Thickness', 'SAM Heads Thickness', 'SAM Heads Hydration',
-                        'Bilayer Heads Thickness', 'Bilayer Roughness', 'Bilayer Tails Thickness',
-                        'Bilayer Tails Hydration', 'Bilayer Heads Hydration', 'Oxide Hydration',
-                        'Background parameter D2O', 'Background parameter SMW', 'D2O', 'SMW']
+    results.fitNames = ["Substrate Roughness", "Oxide Thickness", "SAM Tails Thickness", "SAM Tails Hydration",
+                        "SAM Roughness", "CW Thickness", "SAM Heads Thickness", "SAM Heads Hydration",
+                        "Bilayer Heads Thickness", "Bilayer Roughness", "Bilayer Tails Thickness",
+                        "Bilayer Tails Hydration", "Bilayer Heads Hydration", "Oxide Hydration",
+                        "Background parameter D2O", "Background parameter SMW", "D2O", "SMW"]
 
     return results
 
@@ -435,11 +435,11 @@ def reflectivity_calculation_results():
         fitParams=np.array([3.000e+00, 1.954e+01, 2.266e+01, 5.252e+00, 5.640e+00, 1.712e+01, 8.560e+00, 4.545e+01,
                             1.070e+01, 6.014e+00, 1.782e+01, 1.764e+01, 3.615e+01, 2.361e+01, 2.230e-06, 3.380e-06,
                             5.980e-06, 2.210e-06]),
-        fitNames=['Substrate Roughness', 'Oxide Thickness', 'SAM Tails Thickness', 'SAM Tails Hydration',
-                  'SAM Roughness', 'CW Thickness', 'SAM Heads Thickness', 'SAM Heads Hydration',
-                  'Bilayer Heads Thickness', 'Bilayer Roughness', 'Bilayer Tails Thickness',
-                  'Bilayer Tails Hydration', 'Bilayer Heads Hydration', 'Oxide Hydration',
-                  'Background parameter D2O', 'Background parameter SMW', 'D2O', 'SMW']
+        fitNames=["Substrate Roughness", "Oxide Thickness", "SAM Tails Thickness", "SAM Tails Hydration",
+                  "SAM Roughness", "CW Thickness", "SAM Heads Thickness", "SAM Heads Hydration",
+                  "Bilayer Heads Thickness", "Bilayer Roughness", "Bilayer Tails Thickness",
+                  "Bilayer Tails Hydration", "Bilayer Heads Hydration", "Oxide Hydration",
+                  "Background parameter D2O", "Background parameter SMW", "D2O", "SMW"]
     )
 
 
@@ -668,11 +668,11 @@ def dream_output_results():
                                   1.09906265e+01, 5.71005361e+00, 1.67933822e+01, 1.72009856e+01,
                                   3.00260126e+01, 2.94448999e+01, 2.37113128e-06, 1.99006694e-06,
                                   6.01489149e-06, 1.59371685e-06])
-    results.fitNames = ['Substrate Roughness', 'Oxide Thickness', 'SAM Tails Thickness', 'SAM Tails Hydration',
-                        'SAM Roughness', 'CW Thickness', 'SAM Heads Thickness', 'SAM Heads Hydration',
-                        'Bilayer Heads Thickness', 'Bilayer Roughness', 'Bilayer Tails Thickness',
-                        'Bilayer Tails Hydration', 'Bilayer Heads Hydration', 'Oxide Hydration',
-                        'Background parameter D2O', 'Background parameter SMW', 'D2O', 'SMW']
+    results.fitNames = ["Substrate Roughness", "Oxide Thickness", "SAM Tails Thickness", "SAM Tails Hydration",
+                        "SAM Roughness", "CW Thickness", "SAM Heads Thickness", "SAM Heads Hydration",
+                        "Bilayer Heads Thickness", "Bilayer Roughness", "Bilayer Tails Thickness",
+                        "Bilayer Tails Hydration", "Bilayer Heads Hydration", "Oxide Hydration",
+                        "Background parameter D2O", "Background parameter SMW", "D2O", "SMW"]
 
     return results
 
@@ -1349,11 +1349,11 @@ def dream_results():
                             1.09906265e+01, 5.71005361e+00, 1.67933822e+01, 1.72009856e+01,
                             3.00260126e+01, 2.94448999e+01, 2.37113128e-06, 1.99006694e-06,
                             6.01489149e-06, 1.59371685e-06]),
-        fitNames=['Substrate Roughness', 'Oxide Thickness', 'SAM Tails Thickness', 'SAM Tails Hydration',
-                  'SAM Roughness', 'CW Thickness', 'SAM Heads Thickness', 'SAM Heads Hydration',
-                  'Bilayer Heads Thickness', 'Bilayer Roughness', 'Bilayer Tails Thickness', 'Bilayer Tails Hydration',
-                  'Bilayer Heads Hydration', 'Oxide Hydration', 'Background parameter D2O', 'Background parameter SMW',
-                  'D2O', 'SMW'],
+        fitNames=["Substrate Roughness", "Oxide Thickness", "SAM Tails Thickness", "SAM Tails Hydration",
+                  "SAM Roughness", "CW Thickness", "SAM Heads Thickness", "SAM Heads Hydration",
+                  "Bilayer Heads Thickness", "Bilayer Roughness", "Bilayer Tails Thickness", "Bilayer Tails Hydration",
+                  "Bilayer Heads Hydration", "Oxide Hydration", "Background parameter D2O", "Background parameter SMW",
+                  "D2O", "SMW"],
         predictionIntervals=RAT.outputs.PredictionIntervals(
             reflectivity=[np.array([[1.00000560e+00, 7.07687612e-01, 2.08315160e-02, 2.40787966e-03,
                                      2.17627660e-03, 2.54301700e-03, 1.76309827e-03, 6.15269679e-04,

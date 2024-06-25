@@ -6,13 +6,13 @@ from RAT.outputs import make_results
 def run(project, controls):
     """Run RAT for the given project and controls inputs."""
 
-    parameter_field = {'parameters': 'params',
-                       'bulk_in': 'bulkIn',
-                       'bulk_out': 'bulkOut',
-                       'scalefactors': 'scalefactors',
-                       'domain_ratios': 'domainRatio',
-                       'background_parameters': 'backgroundParams',
-                       'resolution_parameters': 'resolutionParams',
+    parameter_field = {"parameters": "params",
+                       "bulk_in": "bulkIn",
+                       "bulk_out": "bulkOut",
+                       "scalefactors": "scalefactors",
+                       "domain_ratios": "domainRatio",
+                       "background_parameters": "backgroundParams",
+                       "resolution_parameters": "resolutionParams",
                        }
 
     problem_definition, cells, limits, priors, cpp_controls = make_input(project, controls)

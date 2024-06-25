@@ -10,26 +10,26 @@ from RAT.rat_core import PlotEventData
 from RAT.utils.plotting import Figure, plot_ref_sld_helper
 
 TEST_DIR_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                             'test_data')
+                             "test_data")
 
 
 def data() -> PlotEventData:
     """
     Creates the fixture for the tests.
     """
-    data_path = os.path.join(TEST_DIR_PATH, 'plotting_data.pickle')    
-    with open(data_path, 'rb') as f:
+    data_path = os.path.join(TEST_DIR_PATH, "plotting_data.pickle")    
+    with open(data_path, "rb") as f:
         loaded_data = pickle.load(f)
     
     data = PlotEventData()
-    data.modelType = loaded_data['modelType']
-    data.dataPresent = loaded_data['dataPresent']
-    data.subRoughs = loaded_data['subRoughs']
-    data.resample = loaded_data['resample']
-    data.resampledLayers = loaded_data['resampledLayers']
-    data.reflectivity = loaded_data['reflectivity']
-    data.shiftedData = loaded_data['shiftedData']
-    data.sldProfiles = loaded_data['sldProfiles']
+    data.modelType = loaded_data["modelType"]
+    data.dataPresent = loaded_data["dataPresent"]
+    data.subRoughs = loaded_data["subRoughs"]
+    data.resample = loaded_data["resample"]
+    data.resampledLayers = loaded_data["resampledLayers"]
+    data.reflectivity = loaded_data["reflectivity"]
+    data.shiftedData = loaded_data["shiftedData"]
+    data.sldProfiles = loaded_data["sldProfiles"]
     return data
 
 
@@ -38,7 +38,7 @@ def fig() -> Figure:
     """
     Creates the fixture for the tests.
     """
-    plt.close('all')
+    plt.close("all")
     figure = Figure(1, 3)
     fig = plot_ref_sld_helper(fig=figure, data=data())
     return fig
@@ -58,13 +58,13 @@ def test_figure_axis_formating(fig: Figure) -> None:
     assert ref_plot.get_xscale() == "log"
     assert ref_plot.get_ylabel() == "Ref"
     assert ref_plot.get_yscale() == "log"
-    assert [label._text for label in ref_plot.get_legend().texts] == ['ref 1', 'ref 2', 'ref 3']
+    assert [label._text for label in ref_plot.get_legend().texts] == ["ref 1", "ref 2", "ref 3"]
 
     assert sld_plot.get_xlabel() == "Z"
     assert sld_plot.get_xscale() == "linear"
     assert sld_plot.get_ylabel() == "SLD"
     assert sld_plot.get_yscale() == "linear"
-    assert [label._text for label in sld_plot.get_legend().texts] == ['sld 1', 'sld 2', 'sld 3']
+    assert [label._text for label in sld_plot.get_legend().texts] == ["sld 1", "sld 2", "sld 3"]
 
 
 def test_figure_color_formating(fig: Figure) -> None:
@@ -97,21 +97,21 @@ def test_eventhandlers_linked_to_figure(fig: Figure) -> None:
     and key_press_event in the figure are linked to the
     class methods.
     """
-    pattern = r'\(([^\]]+)\)'
+    pattern = r"\(([^\]]+)\)"
 
-    for ix, val in fig._fig.canvas.callbacks.callbacks['close_event'].items():
+    for ix, val in fig._fig.canvas.callbacks.callbacks["close_event"].items():
         if str(type(val)) == "<class 'weakref.WeakMethod'>":
             break
-    canvas_close_event_callback = fig._fig.canvas.callbacks.callbacks['close_event'][ix]._func_ref.__repr__()
+    canvas_close_event_callback = fig._fig.canvas.callbacks.callbacks["close_event"][ix]._func_ref.__repr__()
     close_event_callback = re.findall(pattern,
                                       canvas_close_event_callback)[0]
     assert close_event_callback == "_close"
     assert hasattr(Figure, "_close")
 
-    for ix, val in fig._fig.canvas.callbacks.callbacks['key_press_event'].items():
+    for ix, val in fig._fig.canvas.callbacks.callbacks["key_press_event"].items():
         if str(type(val)) == "<class 'weakref.WeakMethod'>":
             break
-    canvas_key_press_event_callback = fig._fig.canvas.callbacks.callbacks['key_press_event'][ix]._func_ref.__repr__()
+    canvas_key_press_event_callback = fig._fig.canvas.callbacks.callbacks["key_press_event"][ix]._func_ref.__repr__()
     key_press_event_callback = re.findall(pattern,
                                           canvas_key_press_event_callback)[0]
     assert key_press_event_callback == "_process_button_press"
@@ -125,12 +125,12 @@ def test_eventhandler_variable_update(fig: Figure) -> None:
     while loop in wait_for_close.
     """
     assert not fig._esc_pressed
-    on_key_mock_event = type('MockEvent', (object,), {'key': 'escape'})
+    on_key_mock_event = type("MockEvent", (object,), {"key": "escape"})
     fig._process_button_press(on_key_mock_event)
     assert fig._esc_pressed
 
     assert not fig._close_clicked
-    fig._close('test')
+    fig._close("test")
     assert fig._close_clicked
 
 

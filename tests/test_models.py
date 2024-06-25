@@ -16,7 +16,7 @@ import RAT.models
     (RAT.models.CustomFile, "Custom File", {}),
     (RAT.models.Data, "Data", {}),
     (RAT.models.DomainContrast, "Domain Contrast", {}),
-    (RAT.models.Layer, "Layer", {'thickness': 'Test Thickness', 'SLD': 'Test SLD', 'roughness': 'Test Roughness'}),
+    (RAT.models.Layer, "Layer", {"thickness": "Test Thickness", "SLD": "Test SLD", "roughness": "Test Roughness"}),
     (RAT.models.Parameter, "Parameter", {}),
     (RAT.models.Resolution, "Resolution", {}),
 ])
@@ -26,7 +26,7 @@ def test_default_names(model: Callable, model_name: str, model_params: dict) -> 
     """
     model_1 = model(**model_params)
     model_2 = model(**model_params)
-    model_3 = model(name='Given Name', **model_params)
+    model_3 = model(name="Given Name", **model_params)
     model_4 = model(**model_params)
 
     assert model_1.name == f"New {model_name} 1"
@@ -42,36 +42,36 @@ def test_default_names(model: Callable, model_name: str, model_params: dict) -> 
     (RAT.models.CustomFile, {}),
     (RAT.models.Data, {}),
     (RAT.models.DomainContrast, {}),
-    (RAT.models.Layer, {'thickness': 'Test Thickness', 'SLD': 'Test SLD', 'roughness': 'Test Roughness'}),
-    (RAT.models.AbsorptionLayer, {'thickness': 'Test Thickness', 'SLD_real': 'Test SLD', 'SLD_imaginary': 'Test SLD',
-                                  'roughness': 'Test Roughness'}),
+    (RAT.models.Layer, {"thickness": "Test Thickness", "SLD": "Test SLD", "roughness": "Test Roughness"}),
+    (RAT.models.AbsorptionLayer, {"thickness": "Test Thickness", "SLD_real": "Test SLD", "SLD_imaginary": "Test SLD",
+                                  "roughness": "Test Roughness"}),
     (RAT.models.Parameter, {}),
     (RAT.models.Resolution, {}),
 ])
 class TestModels:
     def test_initialise_with_wrong_type(self, model: Callable, model_params: dict) -> None:
         """When initialising a model with the wrong type for the "name" field, we should raise a ValidationError."""
-        with pytest.raises(pydantic.ValidationError, match=f'1 validation error for {model.__name__}\nname\n  '
-                                                           f'Input should be a valid string'):
+        with pytest.raises(pydantic.ValidationError, match=f"1 validation error for {model.__name__}\nname\n  "
+                                                           f"Input should be a valid string"):
             model(name=1, **model_params)
 
     def test_assignment_with_wrong_type(self, model: Callable, model_params: dict) -> None:
         """When assigning the "name" field of a model with the wrong type, we should raise a ValidationError."""
         test_model = model(**model_params)
-        with pytest.raises(pydantic.ValidationError, match=f'1 validation error for {model.__name__}\nname\n  '
-                                                           f'Input should be a valid string'):
+        with pytest.raises(pydantic.ValidationError, match=f"1 validation error for {model.__name__}\nname\n  "
+                                                           f"Input should be a valid string"):
             test_model.name = 1
 
     def test_initialise_with_zero_length_name(self, model: Callable, model_params: dict) -> None:
         """When initialising a model with a zero length name, we should raise a ValidationError."""
-        with pytest.raises(pydantic.ValidationError, match=f'1 validation error for {model.__name__}\nname\n  '
-                                                           f'String should have at least 1 character'):
-            model(name='', **model_params)
+        with pytest.raises(pydantic.ValidationError, match=f"1 validation error for {model.__name__}\nname\n  "
+                                                           f"String should have at least 1 character"):
+            model(name="", **model_params)
 
     def test_initialise_with_extra_fields(self, model: Callable, model_params: dict) -> None:
         """When initialising a model with unspecified fields, we should raise a ValidationError."""
-        with pytest.raises(pydantic.ValidationError, match=f'1 validation error for {model.__name__}\nnew_field\n  '
-                                                           f'Extra inputs are not permitted'):
+        with pytest.raises(pydantic.ValidationError, match=f"1 validation error for {model.__name__}\nnew_field\n  "
+                                                           f"Extra inputs are not permitted"):
             model(new_field=1, **model_params)
 
 
@@ -79,7 +79,7 @@ def test_data_eq() -> None:
     """If we use the Data.__eq__ method with an object that is not a pydantic BaseModel, we should return
     "NotImplemented".
     """
-    assert RAT.models.Data().__eq__('data') == NotImplemented
+    assert RAT.models.Data().__eq__("data") == NotImplemented
 
 
 @pytest.mark.parametrize("input_data", [
@@ -159,8 +159,8 @@ def test_two_values_in_simulation_range(input_range: list[float]) -> None:
 
 
 @pytest.mark.parametrize("field", [
-    'data_range',
-    'simulation_range'
+    "data_range",
+    "simulation_range"
 ])
 def test_min_max_in_range(field: str) -> None:
     """If the maximum value of the "data_range" or "simulation_range" fields of the "Data" model is greater than the
@@ -189,9 +189,9 @@ def test_data_range(test_range) -> None:
     """If "data" is specified but the "data_range" lies outside of the limits of the data we should raise a
     ValidationError.
     """
-    with pytest.raises(pydantic.ValidationError, match=re.escape(f'1 validation error for Data\n  Value error, The '
-                                                                 f'data_range value of: {test_range} must lie within '
-                                                                 f'the min/max values of the data: [1.0, 3.0]')):
+    with pytest.raises(pydantic.ValidationError, match=re.escape(f"1 validation error for Data\n  Value error, The "
+                                                                 f"data_range value of: {test_range} must lie within "
+                                                                 f"the min/max values of the data: [1.0, 3.0]")):
         RAT.models.Data(data=np.array([[1.0, 0.0, 0.0], [3.0, 0.0, 0.0]]), data_range=test_range)
 
 
@@ -204,10 +204,10 @@ def test_simulation_range(test_range) -> None:
     """If "data" is specified but the "simulation_range" lies within the limits of the data we should raise a
     ValidationError.
     """
-    with pytest.raises(pydantic.ValidationError, match=re.escape(f'1 validation error for Data\n  Value error, The '
-                                                                 f'simulation_range value of: {test_range} must lie '
-                                                                 f'outside of the min/max values of the data: '
-                                                                 f'[1.0, 3.0]')):
+    with pytest.raises(pydantic.ValidationError, match=re.escape(f"1 validation error for Data\n  Value error, The "
+                                                                 f"simulation_range value of: {test_range} must lie "
+                                                                 f"outside of the min/max values of the data: "
+                                                                 f"[1.0, 3.0]")):
         RAT.models.Data(data=np.array([[1.0, 0.0, 0.0], [3.0, 0.0, 0.0]]), simulation_range=test_range)
 
 
@@ -220,7 +220,7 @@ def test_parameter_range(minimum: float, value: float, maximum: float) -> None:
     """For the "Parameter" model, if the value of the "value" field does not lie with the values given in the "min" and
     "max" fields, we should raise a ValidationError.
     """
-    with pytest.raises(pydantic.ValidationError, match=f'1 validation error for Parameter\n  Value error, value '
-                                                       f'{float(value)} is not within the defined range: '
-                                                       f'{float(minimum)} <= value <= {float(maximum)}'):
+    with pytest.raises(pydantic.ValidationError, match=f"1 validation error for Parameter\n  Value error, value "
+                                                       f"{float(value)} is not within the defined range: "
+                                                       f"{float(minimum)} <= value <= {float(maximum)}"):
         RAT.models.Parameter(min=minimum, value=value, max=maximum)
