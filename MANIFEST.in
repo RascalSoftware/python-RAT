@@ -1,0 +1,5 @@
+include README.md
+recursive-include cpp/RAT *
+prune tests
+prune */__pycache__ 
+global-exclude .git

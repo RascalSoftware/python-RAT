@@ -1,7 +1,6 @@
 name: Build wheel
 
-on:
-  workflow_dispatch:
+on: [workflow_dispatch, workflow_call]
 
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
@@ -10,17 +9,14 @@ concurrency:
 jobs:
   build:
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
-        platform: [windows-latest, ubuntu-latest, macos-latest, macos-14]
+        platform: [windows-latest, ubuntu-latest, macos-13, macos-14]
     env:
       CIBW_SKIP: 'pp*'
       CIBW_ARCHS: 'auto64'
       CIBW_PROJECT_REQUIRES_PYTHON: '>=3.9'
       CIBW_TEST_REQUIRES: 'pytest'
-      # Appends the project path since build is not done in the project directory
-      CIBW_TEST_COMMAND: 'pytest {project}/tmp/tests'
-
     defaults:
       run:
         shell: bash -l {0}
@@ -36,7 +32,7 @@ jobs:
         with:
           python-version: "3.x"
       - name: Install OMP (MacOS Intel) 
-        if: matrix.platform == 'macos-latest'
+        if: matrix.platform == 'macos-13'
         run: |
           brew install llvm libomp
           echo "export CC=/usr/local/opt/llvm/bin/clang" >> ~/.bashrc
@@ -64,8 +60,10 @@ jobs:
           # of local package.
           mkdir tmp
           cp -r tests tmp/tests/
+          CIBW_TEST_COMMAND='cd ${pwd}/tmp && python -m pytest tests'
+          echo "CIBW_TEST_COMMAND=${CIBW_TEST_COMMAND}" >> $GITHUB_ENV
           python -m pip install cibuildwheel==2.16.5
-          python -m cibuildwheel --output-dir wheelhouse
+          python -m cibuildwheel --output-dir ./wheelhouse 
       - uses: actions/upload-artifact@v4
         with:
           name: wheels-${{ runner.os }}-${{ strategy.job-index }}
