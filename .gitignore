@@ -28,3 +28,6 @@ docs/*.inv
 build/*
 dist/*
 *.whl
+
+# Local pre-commit hooks
+.pre-commit-config.yaml

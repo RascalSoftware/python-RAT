@@ -21,14 +21,32 @@ problem.parameters.append(name="L3 Hydration", min=10.0, value=20.0, max=30.0, f
 
 
 # Now group these parameters into layers
-problem.layers.append(name="Layer 1", thickness="L1 Thickness", SLD="L1 SLD", roughness="L1 Roughness",
-                      hydration="L1 Hydration", hydrate_with="bulk out")
+problem.layers.append(
+    name="Layer 1",
+    thickness="L1 Thickness",
+    SLD="L1 SLD",
+    roughness="L1 Roughness",
+    hydration="L1 Hydration",
+    hydrate_with="bulk out",
+)
 
-problem.layers.append(name="Layer 2", thickness="L2 Thickness", SLD="L2 SLD", roughness="L2 Roughness",
-                      hydration="L2 Hydration", hydrate_with="bulk out")
+problem.layers.append(
+    name="Layer 2",
+    thickness="L2 Thickness",
+    SLD="L2 SLD",
+    roughness="L2 Roughness",
+    hydration="L2 Hydration",
+    hydrate_with="bulk out",
+)
 
-problem.layers.append(name="Layer 3", thickness="L3 Thickness", SLD="L3 SLD", roughness="L3 Roughness",
-                      hydration="L3 Hydration", hydrate_with="bulk out")
+problem.layers.append(
+    name="Layer 3",
+    thickness="L3 Thickness",
+    SLD="L3 SLD",
+    roughness="L3 Roughness",
+    hydration="L3 Hydration",
+    hydrate_with="bulk out",
+)
 
 
 # If we look at the project, there are two extra groups as compared to a normal standard layers calculation:
@@ -37,9 +55,18 @@ problem.domain_contrasts.append(name="Domain 1", model=["Layer 1"])
 problem.domain_contrasts.append(name="Domain 2", model=["Layer 2", "Layer 3"])
 
 # Now make a contrast as with standard models, but this time also including the default domain ratio ("Domain Ratio 1")
-problem.contrasts.append(name="Domain Test", background="Background 1", resolution="Resolution 1",
-                         scalefactor="Scalefactor 1", resample=False, bulk_in="SLD Air", bulk_out="SLD D2O",
-                         domain_ratio="Domain Ratio 1", data="Simulation", model=["Domain 1", "Domain 2"])
+problem.contrasts.append(
+    name="Domain Test",
+    background="Background 1",
+    resolution="Resolution 1",
+    scalefactor="Scalefactor 1",
+    resample=False,
+    bulk_in="SLD Air",
+    bulk_out="SLD D2O",
+    domain_ratio="Domain Ratio 1",
+    data="Simulation",
+    model=["Domain 1", "Domain 2"],
+)
 
 
 # Now we can run our simulation as usual, and plot the results

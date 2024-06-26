@@ -1,5 +1,4 @@
-"""
-Custom XY Example for Supported DSPC layer.
+"""Custom XY Example for Supported DSPC layer.
 
 In this example, we model the same data (DSPC supported bilayer) as the Custom Layers example, but this time we will
 use continuous distributions of the volume fractions of each component to build up the SLD profiles (as described in
@@ -19,14 +18,15 @@ Then, the total volume occupied will be given by the sum of the volume fractions
 does not permit any hydration, so to deal with this, we can simply scale the (full occupation) Heaviside functions by
 relevant coverage parameters. When this is correctly done, we can obtain the remaining water distribution as
 
-$${\textrm{VF}}_{\textrm{wat}} =1-\sum_n {\textrm{VF}}_n$$
+$${\textrm{VF}}_{\textrm{wat}} =1-\\sum_n {\textrm{VF}}_n$$
 
 where VFn is the Volume Fraction of the n'th layer.
 """
 
-import numpy as np
 import os
 import pathlib
+
+import numpy as np
 
 import RAT
 import RAT.utils.plotting
@@ -68,12 +68,22 @@ problem.data.append(name="Bilayer / SMW", data=SMW_data)
 problem.data.append(name="Bilayer / H2O", data=H2O_data)
 
 # Add the custom file to the project
-problem.custom_files.append(name="DSPC Model", filename="custom_XY_DSPC.py", language="python",
-                            path=pathlib.Path(__file__).parent.resolve())
+problem.custom_files.append(
+    name="DSPC Model",
+    filename="custom_XY_DSPC.py",
+    language="python",
+    path=pathlib.Path(__file__).parent.resolve(),
+)
 
 # Also, add the relevant background parameters - one each for each contrast:
-problem.background_parameters.set_fields(0, name="Background parameter D2O", fit=True, min=1.0e-10, max=1.0e-5,
-                                         value=1.0e-07)
+problem.background_parameters.set_fields(
+    0,
+    name="Background parameter D2O",
+    fit=True,
+    min=1.0e-10,
+    max=1.0e-5,
+    value=1.0e-07,
+)
 
 problem.background_parameters.append(name="Background parameter SMW", min=0.0, value=1.0e-7, max=1.0e-5, fit=True)
 problem.background_parameters.append(name="Background parameter H2O", min=0.0, value=1.0e-7, max=1.0e-5, fit=True)
@@ -92,17 +102,38 @@ problem.scalefactors.set_fields(0, value=1.0, min=0.5, max=2.0, fit=True)
 problem.resolutions.append(name="Data Resolution", type="data")
 
 # Now add the three contrasts
-problem.contrasts.append(name="Bilayer / D2O", background="Background D2O", resolution="Data Resolution",
-                         scalefactor="Scalefactor 1", bulk_out="SLD D2O", bulk_in="Silicon", data="Bilayer / D2O",
-                         model=["DSPC Model"])
+problem.contrasts.append(
+    name="Bilayer / D2O",
+    background="Background D2O",
+    resolution="Data Resolution",
+    scalefactor="Scalefactor 1",
+    bulk_out="SLD D2O",
+    bulk_in="Silicon",
+    data="Bilayer / D2O",
+    model=["DSPC Model"],
+)
 
-problem.contrasts.append(name="Bilayer / SMW", background="Background SMW", resolution="Data Resolution",
-                         scalefactor="Scalefactor 1", bulk_out="SLD SMW", bulk_in="Silicon", data="Bilayer / SMW",
-                         model=["DSPC Model"])
+problem.contrasts.append(
+    name="Bilayer / SMW",
+    background="Background SMW",
+    resolution="Data Resolution",
+    scalefactor="Scalefactor 1",
+    bulk_out="SLD SMW",
+    bulk_in="Silicon",
+    data="Bilayer / SMW",
+    model=["DSPC Model"],
+)
 
-problem.contrasts.append(name="Bilayer / H2O", background="Background H2O", resolution="Data Resolution",
-                         scalefactor="Scalefactor 1", bulk_out="SLD H2O", bulk_in="Silicon", data="Bilayer / H2O",
-                         model=["DSPC Model"])
+problem.contrasts.append(
+    name="Bilayer / H2O",
+    background="Background H2O",
+    resolution="Data Resolution",
+    scalefactor="Scalefactor 1",
+    bulk_out="SLD H2O",
+    bulk_in="Silicon",
+    data="Bilayer / H2O",
+    model=["DSPC Model"],
+)
 
 controls = RAT.set_controls()
 

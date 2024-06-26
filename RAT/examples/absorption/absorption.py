@@ -1,14 +1,20 @@
 """Custom layers model including absorption"""
 
-import numpy as np
 import os
 import pathlib
+
+import numpy as np
 
 import RAT
 import RAT.utils.plotting
 
-problem = RAT.Project(name="Absorption example", calculation="non polarised", model="custom layers",
-                      geometry="substrate/liquid", absorption=True)
+problem = RAT.Project(
+    name="Absorption example",
+    calculation="non polarised",
+    model="custom layers",
+    geometry="substrate/liquid",
+    absorption=True,
+)
 
 # Add the required parameters (substrate roughness is already there by default)
 problem.parameters.append(name="Alloy Thickness", min=100.0, value=135.6, max=200.0, fit=True)
@@ -79,25 +85,61 @@ data_4 = np.loadtxt(os.path.join(data_path, "H2O_spin_up.dat"))
 problem.data.append(name="H2O_up", data=data_4)
 
 # Add the custom file
-problem.custom_files.append(name="DPPC absorption", filename="volume_thiol_bilayer.py", language="python",
-                            path=pathlib.Path(__file__).parent.resolve())
+problem.custom_files.append(
+    name="DPPC absorption",
+    filename="volume_thiol_bilayer.py",
+    language="python",
+    path=pathlib.Path(__file__).parent.resolve(),
+)
 
 # Finally add the contrasts
-problem.contrasts.append(name="D2O Down", data="D2O_dn", background="Background 1", bulk_in="Silicon",
-                         bulk_out="D2O", scalefactor="Scalefactor 1", resolution="Resolution 1", resample=True,
-                         model=["DPPC absorption"])
+problem.contrasts.append(
+    name="D2O Down",
+    data="D2O_dn",
+    background="Background 1",
+    bulk_in="Silicon",
+    bulk_out="D2O",
+    scalefactor="Scalefactor 1",
+    resolution="Resolution 1",
+    resample=True,
+    model=["DPPC absorption"],
+)
 
-problem.contrasts.append(name="D2O Up", data="D2O_up", background="Background 2", bulk_in="Silicon",
-                         bulk_out="D2O", scalefactor="Scalefactor 2", resolution="Resolution 1", resample=True,
-                         model=["DPPC absorption"])
+problem.contrasts.append(
+    name="D2O Up",
+    data="D2O_up",
+    background="Background 2",
+    bulk_in="Silicon",
+    bulk_out="D2O",
+    scalefactor="Scalefactor 2",
+    resolution="Resolution 1",
+    resample=True,
+    model=["DPPC absorption"],
+)
 
-problem.contrasts.append(name="H2O Down", data="H2O_dn", background="Background 3", bulk_in="Silicon",
-                         bulk_out="H2O", scalefactor="Scalefactor 3", resolution="Resolution 1", resample=True,
-                         model=["DPPC absorption"])
+problem.contrasts.append(
+    name="H2O Down",
+    data="H2O_dn",
+    background="Background 3",
+    bulk_in="Silicon",
+    bulk_out="H2O",
+    scalefactor="Scalefactor 3",
+    resolution="Resolution 1",
+    resample=True,
+    model=["DPPC absorption"],
+)
 
-problem.contrasts.append(name="H2O Up", data="H2O_up", background="Background 4", bulk_in="Silicon",
-                         bulk_out="H2O", scalefactor="Scalefactor 4", resolution="Resolution 1", resample=True,
-                         model=["DPPC absorption"])
+problem.contrasts.append(
+    name="H2O Up",
+    data="H2O_up",
+    background="Background 4",
+    bulk_in="Silicon",
+    bulk_out="H2O",
+    scalefactor="Scalefactor 4",
+    resolution="Resolution 1",
+    resample=True,
+    model=["DPPC absorption"],
+)
 
 # Now make a controls block
 controls = RAT.set_controls(parallel="contrasts", resampleParams=[0.9, 150.0])

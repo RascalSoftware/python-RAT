@@ -1,15 +1,17 @@
 from dataclasses import dataclass, field
-import prettytable
-from pydantic import BaseModel, Field, field_validator, ValidationError
 from typing import Literal, Union
 
-from RAT.utils.enums import Parallel, Procedures, Display, BoundHandling, Strategies
+import prettytable
+from pydantic import BaseModel, Field, ValidationError, field_validator
+
 from RAT.utils.custom_errors import custom_pydantic_validation_error
+from RAT.utils.enums import BoundHandling, Display, Parallel, Procedures, Strategies
 
 
 @dataclass(frozen=True)
 class Controls:
     """The full set of controls parameters required for the compiled RAT code."""
+
     # All Procedures
     procedure: Procedures = Procedures.Calculate
     parallel: Parallel = Parallel.Single
@@ -44,8 +46,9 @@ class Controls:
     adaptPCR: bool = False
 
 
-class Calculate(BaseModel, validate_assignment=True, extra='forbid'):
+class Calculate(BaseModel, validate_assignment=True, extra="forbid"):
     """Defines the class for the calculate procedure, which includes the properties used in all five procedures."""
+
     procedure: Literal[Procedures.Calculate] = Procedures.Calculate
     parallel: Parallel = Parallel.Single
     calcSldDuringFit: bool = False
@@ -56,20 +59,21 @@ class Calculate(BaseModel, validate_assignment=True, extra='forbid'):
     @classmethod
     def check_resample_params(cls, resampleParams):
         if not 0 < resampleParams[0] < 1:
-            raise ValueError('resampleParams[0] must be between 0 and 1')
+            raise ValueError("resampleParams[0] must be between 0 and 1")
         if resampleParams[1] < 0:
-            raise ValueError('resampleParams[1] must be greater than or equal to 0')
+            raise ValueError("resampleParams[1] must be greater than or equal to 0")
         return resampleParams
 
     def __repr__(self) -> str:
         table = prettytable.PrettyTable()
-        table.field_names = ['Property', 'Value']
+        table.field_names = ["Property", "Value"]
         table.add_rows([[k, v] for k, v in self.__dict__.items()])
         return table.get_string()
 
 
 class Simplex(Calculate):
     """Defines the additional fields for the simplex procedure."""
+
     procedure: Literal[Procedures.Simplex] = Procedures.Simplex
     xTolerance: float = Field(1.0e-6, gt=0.0)
     funcTolerance: float = Field(1.0e-6, gt=0.0)
@@ -81,6 +85,7 @@ class Simplex(Calculate):
 
 class DE(Calculate):
     """Defines the additional fields for the Differential Evolution procedure."""
+
     procedure: Literal[Procedures.DE] = Procedures.DE
     populationSize: int = Field(20, ge=1)
     fWeight: float = 0.5
@@ -92,6 +97,7 @@ class DE(Calculate):
 
 class NS(Calculate):
     """Defines the additional fields for the Nested Sampler procedure."""
+
     procedure: Literal[Procedures.NS] = Procedures.NS
     nLive: int = Field(150, ge=1)
     nMCMC: float = Field(0.0, ge=0.0)
@@ -101,6 +107,7 @@ class NS(Calculate):
 
 class Dream(Calculate):
     """Defines the additional fields for the Dream procedure."""
+
     procedure: Literal[Procedures.Dream] = Procedures.Dream
     nSamples: int = Field(50000, ge=0)
     nChains: int = Field(10, gt=0)
@@ -110,15 +117,17 @@ class Dream(Calculate):
     adaptPCR: bool = False
 
 
-def set_controls(procedure: Procedures = Procedures.Calculate, **properties)\
-        -> Union[Calculate, Simplex, DE, NS, Dream]:
+def set_controls(
+    procedure: Procedures = Procedures.Calculate,
+    **properties,
+) -> Union[Calculate, Simplex, DE, NS, Dream]:
     """Returns the appropriate controls model given the specified procedure."""
     controls = {
         Procedures.Calculate: Calculate,
         Procedures.Simplex: Simplex,
         Procedures.DE: DE,
         Procedures.NS: NS,
-        Procedures.Dream: Dream
+        Procedures.Dream: Dream,
     }
 
     try:
@@ -126,12 +135,13 @@ def set_controls(procedure: Procedures = Procedures.Calculate, **properties)\
     except KeyError:
         members = list(Procedures.__members__.values())
         allowed_values = f'{", ".join([repr(member.value) for member in members[:-1]])} or {members[-1].value!r}'
-        raise ValueError(f'The controls procedure must be one of: {allowed_values}') from None
+        raise ValueError(f"The controls procedure must be one of: {allowed_values}") from None
     except ValidationError as exc:
-        custom_error_msgs = {'extra_forbidden': f'Extra inputs are not permitted. The fields for the {procedure}'
-                                                f' controls procedure are:\n    '
-                                                f'{", ".join(controls[procedure].model_fields.keys())}\n'
-                             }
+        custom_error_msgs = {
+            "extra_forbidden": f'Extra inputs are not permitted. The fields for the {procedure}'
+            f' controls procedure are:\n    '
+            f'{", ".join(controls[procedure].model_fields.keys())}\n',
+        }
         custom_error_list = custom_pydantic_validation_error(exc.errors(), custom_error_msgs)
         raise ValidationError.from_exception_data(exc.title, custom_error_list) from None
 

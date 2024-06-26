@@ -20,13 +20,26 @@ problem.parameters.append(name="Gold Roughness", min=5.0, value=7.0, max=11.0, f
 problem.bulk_in.set_fields(0, name="Silicon", value=2.073e-6, max=1.0)
 
 # Add the custom file
-problem.custom_files.append(name="Alloy domains", filename="alloy_domains.py", language="python",
-                            path=pathlib.Path(__file__).parent.resolve())
+problem.custom_files.append(
+    name="Alloy domains",
+    filename="alloy_domains.py",
+    language="python",
+    path=pathlib.Path(__file__).parent.resolve(),
+)
 
 # Make a contrast
-problem.contrasts.append(name="D2O Contrast", data="Simulation", background="Background 1", bulk_in="Silicon",
-                         bulk_out="SLD D2O", scalefactor="Scalefactor 1", resolution="Resolution 1", resample=False,
-                         domain_ratio="Domain Ratio 1", model=["Alloy domains"])
+problem.contrasts.append(
+    name="D2O Contrast",
+    data="Simulation",
+    background="Background 1",
+    bulk_in="Silicon",
+    bulk_out="SLD D2O",
+    scalefactor="Scalefactor 1",
+    resolution="Resolution 1",
+    resample=False,
+    domain_ratio="Domain Ratio 1",
+    model=["Alloy domains"],
+)
 
 controls = RAT.set_controls()
 

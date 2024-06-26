@@ -1,10 +1,12 @@
 """Converts outputs from the compiled RAT code to python dataclasses"""
 
 from dataclasses import dataclass
-import numpy as np
 from typing import Optional, Union
-from RAT.utils.enums import Procedures
+
+import numpy as np
+
 import RAT.rat_core
+from RAT.utils.enums import Procedures
 
 
 @dataclass
@@ -106,13 +108,16 @@ class BayesResults(Results):
     chain: np.ndarray
 
 
-def make_results(procedure: Procedures, output_results: RAT.rat_core.OutputResult,
-                 bayes_results: Optional[RAT.rat_core.BayesResults] = None) -> Union[Results, BayesResults]:
+def make_results(
+    procedure: Procedures,
+    output_results: RAT.rat_core.OutputResult,
+    bayes_results: Optional[RAT.rat_core.BayesResults] = None,
+) -> Union[Results, BayesResults]:
     """Initialise a python Results or BayesResults object using the outputs from a RAT calculation."""
-
-    calculation_results = CalculationResults(chiValues=output_results.calculationResults.chiValues,
-                                             sumChi=output_results.calculationResults.sumChi
-                                             )
+    calculation_results = CalculationResults(
+        chiValues=output_results.calculationResults.chiValues,
+        sumChi=output_results.calculationResults.sumChi,
+    )
     contrast_params = ContrastParams(
         backgroundParams=output_results.contrastParams.backgroundParams,
         scalefactors=output_results.contrastParams.scalefactors,
@@ -120,23 +125,22 @@ def make_results(procedure: Procedures, output_results: RAT.rat_core.OutputResul
         bulkOut=output_results.contrastParams.bulkOut,
         resolutionParams=output_results.contrastParams.resolutionParams,
         subRoughs=output_results.contrastParams.subRoughs,
-        resample=output_results.contrastParams.resample
+        resample=output_results.contrastParams.resample,
     )
 
     if procedure in [Procedures.NS, Procedures.Dream]:
-
         prediction_intervals = PredictionIntervals(
             reflectivity=bayes_results.predictionIntervals.reflectivity,
             sld=bayes_results.predictionIntervals.sld,
             reflectivityXData=bayes_results.predictionIntervals.reflectivityXData,
             sldXData=bayes_results.predictionIntervals.sldXData,
-            sampleChi=bayes_results.predictionIntervals.sampleChi
+            sampleChi=bayes_results.predictionIntervals.sampleChi,
         )
 
         confidence_intervals = ConfidenceIntervals(
             percentile95=bayes_results.confidenceIntervals.percentile95,
             percentile65=bayes_results.confidenceIntervals.percentile65,
-            mean=bayes_results.confidenceIntervals.mean
+            mean=bayes_results.confidenceIntervals.mean,
         )
 
         dream_params = DreamParams(
@@ -158,7 +162,7 @@ def make_results(procedure: Procedures, output_results: RAT.rat_core.OutputResul
             ABC=bool(bayes_results.dreamParams.ABC),
             IO=bool(bayes_results.dreamParams.IO),
             storeOutput=bool(bayes_results.dreamParams.storeOutput),
-            R=bayes_results.dreamParams.R
+            R=bayes_results.dreamParams.R,
         )
 
         dream_output = DreamOutput(
@@ -169,13 +173,13 @@ def make_results(procedure: Procedures, output_results: RAT.rat_core.OutputResul
             modelOutput=bayes_results.dreamOutput.modelOutput,
             AR=bayes_results.dreamOutput.AR,
             R_stat=bayes_results.dreamOutput.R_stat,
-            CR=bayes_results.dreamOutput.CR
+            CR=bayes_results.dreamOutput.CR,
         )
 
         nested_sampler_output = NestedSamplerOutput(
             logZ=bayes_results.nestedSamplerOutput.logZ,
             nestSamples=bayes_results.nestedSamplerOutput.nestSamples,
-            postSamples=bayes_results.nestedSamplerOutput.postSamples
+            postSamples=bayes_results.nestedSamplerOutput.postSamples,
         )
 
         results = BayesResults(
@@ -194,11 +198,10 @@ def make_results(procedure: Procedures, output_results: RAT.rat_core.OutputResul
             dreamParams=dream_params,
             dreamOutput=dream_output,
             nestedSamplerOutput=nested_sampler_output,
-            chain=bayes_results.chain
+            chain=bayes_results.chain,
         )
 
     else:
-
         results = Results(
             reflectivity=output_results.reflectivity,
             simulation=output_results.simulation,
@@ -209,7 +212,7 @@ def make_results(procedure: Procedures, output_results: RAT.rat_core.OutputResul
             calculationResults=calculation_results,
             contrastParams=contrast_params,
             fitParams=output_results.fitParams,
-            fitNames=output_results.fitNames
+            fitNames=output_results.fitNames,
         )
 
     return results

@@ -1,8 +1,8 @@
 import numpy as np
 
+
 def custom_bilayer_DSPC(params, bulk_in, bulk_out, contrast):
-    """
-    CUSTOMBILAYER RAT Custom Layer Model File.
+    """CUSTOMBILAYER RAT Custom Layer Model File.
 
     This file accepts 3 vectors containing the values for params, bulk in and bulk out.
     The final parameter is an index of the contrast being calculated.
@@ -23,7 +23,6 @@ def custom_bilayer_DSPC(params, bulk_in, bulk_out, contrast):
 
     The second output parameter should be the substrate roughness.
     """
-
     sub_rough = params[0]
     oxide_thick = params[1]
     oxide_hydration = params[2]
@@ -40,24 +39,23 @@ def custom_bilayer_DSPC(params, bulk_in, bulk_out, contrast):
     # Use known lipid volume and compositions to make the layers
 
     # define all the neutron b's.
-    bc = 0.6646e-4   # Carbon
-    bo = 0.5843e-4   # Oxygen
+    bc = 0.6646e-4  # Carbon
+    bo = 0.5843e-4  # Oxygen
     bh = -0.3739e-4  # Hydrogen
-    bp = 0.513e-4    # Phosphorus
-    bn = 0.936e-4    # Nitrogen
-    bd = 0.6671e-4   # Deuterium
+    bp = 0.513e-4  # Phosphorus
+    bn = 0.936e-4  # Nitrogen
 
     # Now make the lipid groups
-    COO = (4*bo) + (2*bc)
-    GLYC = (3*bc) + (5*bh)
-    CH3 = (2*bc) + (6*bh)
-    PO4 = (1*bp) + (4*bo)
-    CH2 = (1*bc) + (2*bh)
-    CHOL = (5*bc) + (12*bh) + (1*bn)
+    COO = (4 * bo) + (2 * bc)
+    GLYC = (3 * bc) + (5 * bh)
+    CH3 = (2 * bc) + (6 * bh)
+    PO4 = (1 * bp) + (4 * bo)
+    CH2 = (1 * bc) + (2 * bh)
+    CHOL = (5 * bc) + (12 * bh) + (1 * bn)
 
     # Group these into heads and tails:
     Head = CHOL + PO4 + GLYC + COO
-    Tails = (34*CH2) + (2*CH3)
+    Tails = (34 * CH2) + (2 * CH3)
 
     # We need volumes for each. Use literature values:
     vHead = 319

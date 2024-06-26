@@ -1,12 +1,14 @@
-"""The classlist module. Contains the ClassList class, which defines a list containing instances of a particular class.
+"""The classlist module. Contains the ClassList class, which defines a list containing instances of a particular
+class.
 """
 
 import collections
-from collections.abc import Iterable, Sequence
 import contextlib
-import prettytable
-from typing import Any, Union
 import warnings
+from collections.abc import Iterable, Sequence
+from typing import Any, Union
+
+import prettytable
 
 
 class ClassList(collections.UserList):
@@ -31,7 +33,9 @@ class ClassList(collections.UserList):
         An instance, or list of instance(s), of the class to be used in this ClassList.
     name_field : str, optional
         The field used to define unique objects in the ClassList (default is "name").
+
     """
+
     def __init__(self, init_list: Union[Sequence[object], object] = None, name_field: str = "name") -> None:
         self.name_field = name_field
 
@@ -56,7 +60,7 @@ class ClassList(collections.UserList):
         else:
             if any(model.__dict__ for model in self.data):
                 table = prettytable.PrettyTable()
-                table.field_names = ['index'] + [key.replace('_', ' ') for key in self.data[0].__dict__.keys()]
+                table.field_names = ["index"] + [key.replace("_", " ") for key in self.data[0].__dict__]
                 table.add_rows([[index] + list(model.__dict__.values()) for index, model in enumerate(self.data)])
                 output = table.get_string()
             else:
@@ -81,15 +85,15 @@ class ClassList(collections.UserList):
         """Auxiliary routine of "__delitem__" used to enable wrapping."""
         del self.data[index]
 
-    def __iadd__(self, other: Sequence[object]) -> 'ClassList':
+    def __iadd__(self, other: Sequence[object]) -> "ClassList":
         """Define in-place addition using the "+=" operator."""
         return self._iadd(other)
 
-    def _iadd(self, other: Sequence[object]) -> 'ClassList':
+    def _iadd(self, other: Sequence[object]) -> "ClassList":
         """Auxiliary routine of "__iadd__" used to enable wrapping."""
         if other and not (isinstance(other, Sequence) and not isinstance(other, str)):
             other = [other]
-        if not hasattr(self, '_class_handle'):
+        if not hasattr(self, "_class_handle"):
             self._class_handle = self._determine_class_handle(self + other)
         self._check_classes(self + other)
         self._check_unique_name_fields(self + other)
@@ -129,20 +133,27 @@ class ClassList(collections.UserList):
         SyntaxWarning
             Raised if the input arguments contain BOTH an object and keyword arguments. In this situation the object is
             appended to the ClassList and the keyword arguments are discarded.
+
         """
         if obj and kwargs:
-            warnings.warn('ClassList.append() called with both an object and keyword arguments. '
-                          'The keyword arguments will be ignored.', SyntaxWarning)
+            warnings.warn(
+                "ClassList.append() called with both an object and keyword arguments. "
+                "The keyword arguments will be ignored.",
+                SyntaxWarning,
+                stacklevel=2,
+            )
         if obj:
-            if not hasattr(self, '_class_handle'):
+            if not hasattr(self, "_class_handle"):
                 self._class_handle = type(obj)
             self._check_classes(self + [obj])
             self._check_unique_name_fields(self + [obj])
             self.data.append(obj)
         else:
-            if not hasattr(self, '_class_handle'):
-                raise TypeError('ClassList.append() called with keyword arguments for a ClassList without a class '
-                                'defined. Call ClassList.append() with an object to define the class.')
+            if not hasattr(self, "_class_handle"):
+                raise TypeError(
+                    "ClassList.append() called with keyword arguments for a ClassList without a class "
+                    "defined. Call ClassList.append() with an object to define the class.",
+                )
             self._validate_name_field(kwargs)
             self.data.append(self._class_handle(**kwargs))
 
@@ -169,20 +180,27 @@ class ClassList(collections.UserList):
         SyntaxWarning
             Raised if the input arguments contain both an object and keyword arguments. In this situation the object is
             inserted into the ClassList and the keyword arguments are discarded.
+
         """
         if obj and kwargs:
-            warnings.warn('ClassList.insert() called with both an object and keyword arguments. '
-                          'The keyword arguments will be ignored.', SyntaxWarning)
+            warnings.warn(
+                "ClassList.insert() called with both an object and keyword arguments. "
+                "The keyword arguments will be ignored.",
+                SyntaxWarning,
+                stacklevel=2,
+            )
         if obj:
-            if not hasattr(self, '_class_handle'):
+            if not hasattr(self, "_class_handle"):
                 self._class_handle = type(obj)
             self._check_classes(self + [obj])
             self._check_unique_name_fields(self + [obj])
             self.data.insert(index, obj)
         else:
-            if not hasattr(self, '_class_handle'):
-                raise TypeError('ClassList.insert() called with keyword arguments for a ClassList without a class '
-                                'defined. Call ClassList.insert() with an object to define the class.')
+            if not hasattr(self, "_class_handle"):
+                raise TypeError(
+                    "ClassList.insert() called with keyword arguments for a ClassList without a class "
+                    "defined. Call ClassList.insert() with an object to define the class.",
+                )
             self._validate_name_field(kwargs)
             self.data.insert(index, self._class_handle(**kwargs))
 
@@ -209,7 +227,7 @@ class ClassList(collections.UserList):
         """Extend the ClassList by adding another sequence."""
         if other and not (isinstance(other, Sequence) and not isinstance(other, str)):
             other = [other]
-        if not hasattr(self, '_class_handle'):
+        if not hasattr(self, "_class_handle"):
             self._class_handle = self._determine_class_handle(self + other)
         self._check_classes(self + other)
         self._check_unique_name_fields(self + other)
@@ -229,6 +247,7 @@ class ClassList(collections.UserList):
         -------
         names : list [str]
             The value of the name_field attribute of each object in the ClassList.
+
         """
         return [getattr(model, self.name_field) for model in self.data if hasattr(model, self.name_field)]
 
@@ -244,9 +263,14 @@ class ClassList(collections.UserList):
         -------
          : list [tuple]
             A list of (index, field) tuples matching the given value.
+
         """
-        return [(index, field) for index, element in enumerate(self.data) for field in vars(element)
-                if getattr(element, field) == value]
+        return [
+            (index, field)
+            for index, element in enumerate(self.data)
+            for field in vars(element)
+            if getattr(element, field) == value
+        ]
 
     def _validate_name_field(self, input_args: dict[str, Any]) -> None:
         """Raise a ValueError if the name_field attribute is passed as an object parameter, and its value is already
@@ -261,12 +285,15 @@ class ClassList(collections.UserList):
         ------
         ValueError
             Raised if the input arguments contain a name_field value already defined in the ClassList.
+
         """
         names = self.get_names()
         with contextlib.suppress(KeyError):
             if input_args[self.name_field] in names:
-                raise ValueError(f"Input arguments contain the {self.name_field} '{input_args[self.name_field]}', "
-                                 f"which is already specified in the ClassList")
+                raise ValueError(
+                    f"Input arguments contain the {self.name_field} '{input_args[self.name_field]}', "
+                    f"which is already specified in the ClassList",
+                )
 
     def _check_unique_name_fields(self, input_list: Iterable[object]) -> None:
         """Raise a ValueError if any value of the name_field attribute is used more than once in a list of class
@@ -281,6 +308,7 @@ class ClassList(collections.UserList):
         ------
         ValueError
             Raised if the input list defines more than one object with the same value of name_field.
+
         """
         names = [getattr(model, self.name_field) for model in input_list if hasattr(model, self.name_field)]
         if len(set(names)) != len(names):
@@ -298,6 +326,7 @@ class ClassList(collections.UserList):
         ------
         ValueError
             Raised if the input list defines objects of different types.
+
         """
         if not (all(isinstance(element, self._class_handle) for element in input_list)):
             raise ValueError(f"Input list contains elements of type other than '{self._class_handle.__name__}'")
@@ -315,6 +344,7 @@ class ClassList(collections.UserList):
         instance : object or str
             Either the object with the value of the name_field attribute given by value, or the input value if an
             object with that value of the name_field attribute cannot be found.
+
         """
         return next((model for model in self.data if getattr(model, self.name_field) == value), value)
 
@@ -333,6 +363,7 @@ class ClassList(collections.UserList):
         class_handle : type
             The type object of the element fulfilling the condition of satisfying "issubclass" for all of the other
             elements.
+
         """
         for this_element in input_list:
             if all([issubclass(type(instance), type(this_element)) for instance in input_list]):

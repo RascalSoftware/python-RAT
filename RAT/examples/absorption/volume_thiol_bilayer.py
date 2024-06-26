@@ -1,6 +1,5 @@
 def volume_thiol_bilayer(params, bulk_in, bulk_out, contrast):
-    """
-    volumeThiolBilayer  RAT Custom Layer Model File.
+    """VolumeThiolBilayer  RAT Custom Layer Model File.
 
     This file accepts 3 vectors containing the values for params, bulk in and bulk out.
     The final parameter is an index of the contrast being calculated
@@ -48,25 +47,22 @@ def volume_thiol_bilayer(params, bulk_in, bulk_out, contrast):
 
     # Neutron b's..
     # define all the neutron b's.
-    bc = 0.6646e-4   # Carbon
-    bo = 0.5843e-4   # Oxygen
+    bc = 0.6646e-4  # Carbon
+    bo = 0.5843e-4  # Oxygen
     bh = -0.3739e-4  # Hydrogen
-    bp = 0.513e-4    # Phosphorus
-    bn = 0.936e-4    # Nitrogen
-    bd = 0.6671e-4   # Deuterium
+    bp = 0.513e-4  # Phosphorus
+    bn = 0.936e-4  # Nitrogen
 
     # Work out the total scattering length in each fragment
     # Define scattering lengths
     # Hydrogenated version
-    COO = (2*bo) + (bc)
-    GLYC = (3*bc) + (5*bh)
-    CH3 = (1*bc) + (3*bh)
-    PO4 = (1*bp) + (4*bo)
-    CH2 = (1*bc) + (2*bh)
-    CH = (1*bc) + (1*bh)
-    CHOL = (5*bc) + (12*bh) + (1*bn)
-    H2O = (2*bh) + (1*bo)
-    D2O = (2*bd) + (1*bo)
+    COO = (2 * bo) + (bc)
+    GLYC = (3 * bc) + (5 * bh)
+    CH3 = (1 * bc) + (3 * bh)
+    PO4 = (1 * bp) + (4 * bo)
+    CH2 = (1 * bc) + (2 * bh)
+    CH = (1 * bc) + (1 * bh)
+    CHOL = (5 * bc) + (12 * bh) + (1 * bn)
 
     # And also volumes
     vCH3 = 52.7  # CH3 volume in the paper appears to be for 2 * CH3's
@@ -75,57 +71,56 @@ def volume_thiol_bilayer(params, bulk_in, bulk_out, contrast):
     vGLYC = 68.8
     vPO4 = 53.7
     vCHOL = 120.4
-    vWAT = 30.4
     vCHCH = 42.14
 
-    vHead = vCHOL + vPO4 + vGLYC + 2*vCOO
-    vTail = (28*vCH2) + (1*vCHCH) + (2*vCH3)  # Tail volume
+    vHead = vCHOL + vPO4 + vGLYC + 2 * vCOO
+    vTail = (28 * vCH2) + (1 * vCHCH) + (2 * vCH3)  # Tail volume
 
     # Calculate sum_b's for other fragments
-    sumbHead = CHOL + PO4 + GLYC + 2*COO
-    sumbTail = (28*CH2) + (2*CH) + 2*CH3
+    sumbHead = CHOL + PO4 + GLYC + 2 * COO
+    sumbTail = (28 * CH2) + (2 * CH) + 2 * CH3
 
     # Calculate SLDs and Thickness
-    sldHead = sumbHead/vHead
-    thickHead = vHead/thiolAPM
+    sldHead = sumbHead / vHead
+    thickHead = vHead / thiolAPM
 
-    sldTail = sumbTail/vTail
-    thickTail = vTail/thiolAPM
+    sldTail = sumbTail / vTail
+    thickTail = vTail / thiolAPM
 
     # Correct head SLD based on hydration
-    thiolHeadHydr = thiolHeadHydr/100
-    sldHead = (sldHead * (1 - thiolHeadHydr) + (thiolHeadHydr * bulk_out[contrast]))
+    thiolHeadHydr = thiolHeadHydr / 100
+    sldHead = sldHead * (1 - thiolHeadHydr) + (thiolHeadHydr * bulk_out[contrast])
 
     # Now correct both the SLDs for the coverage parameter
-    sldTail = (thiolCoverage*sldTail) + ((1-thiolCoverage) * bulk_out[contrast])
-    sldHead = (thiolCoverage*sldHead) + ((1-thiolCoverage) * bulk_out[contrast])
+    sldTail = (thiolCoverage * sldTail) + ((1 - thiolCoverage) * bulk_out[contrast])
+    sldHead = (thiolCoverage * sldHead) + ((1 - thiolCoverage) * bulk_out[contrast])
 
     SAMTAILS = [thickTail, sldTail, 0, goldRough]
     SAMHEAD = [thickHead, sldHead, 0, goldRough]
 
     # Now do the same for the bilayer
-    vHead = vCHOL + vPO4 + vGLYC + 2*vCOO
-    vTail = (28*vCH2)  # Tail volume
-    vMe = (2*vCH3)
+    vHead = vCHOL + vPO4 + vGLYC + 2 * vCOO
+    vTail = 28 * vCH2  # Tail volume
+    vMe = 2 * vCH3
 
-    sumbHead = CHOL + PO4 + GLYC + 2*COO
-    sumbTail = (28*CH2)
-    sumbMe = 2*CH3
+    sumbHead = CHOL + PO4 + GLYC + 2 * COO
+    sumbTail = 28 * CH2
+    sumbMe = 2 * CH3
 
-    sldHead = sumbHead/vHead
-    thickHead = vHead/bilayerAPM
+    sldHead = sumbHead / vHead
+    thickHead = vHead / bilayerAPM
     bilHeadHydr = bilHeadHydr / 100
-    sldHead = (sldHead * (1 - bilHeadHydr) + (bilHeadHydr * bulk_out[contrast]))
+    sldHead = sldHead * (1 - bilHeadHydr) + (bilHeadHydr * bulk_out[contrast])
 
-    sldTail = sumbTail/vTail
-    thickTail = vTail/bilayerAPM
+    sldTail = sumbTail / vTail
+    thickTail = vTail / bilayerAPM
 
-    sldMe = sumbMe/vMe
-    thickMe = vMe/bilayerAPM
+    sldMe = sumbMe / vMe
+    thickMe = vMe / bilayerAPM
 
-    sldTail = (bilayerCoverage * sldTail) + ((1-bilayerCoverage) * bulk_out[contrast])
-    sldHead = (bilayerCoverage * sldHead) + ((1-bilayerCoverage) * bulk_out[contrast])
-    sldMe = (bilayerCoverage * sldMe) + ((1-bilayerCoverage) * bulk_out[contrast])
+    sldTail = (bilayerCoverage * sldTail) + ((1 - bilayerCoverage) * bulk_out[contrast])
+    sldHead = (bilayerCoverage * sldHead) + ((1 - bilayerCoverage) * bulk_out[contrast])
+    sldMe = (bilayerCoverage * sldMe) + ((1 - bilayerCoverage) * bulk_out[contrast])
 
     BILTAILS = [thickTail, sldTail, 0, bilayerRough]
     BILHEAD = [thickHead, sldHead, 0, bilayerRough]

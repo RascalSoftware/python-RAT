@@ -1,9 +1,11 @@
-import unittest.mock as mock
+from unittest import mock
+
 import pytest
+
 import RAT.events
 
 
-@pytest.mark.skip
+@pytest.mark.skip()
 def test_event_register() -> None:
     first_callback = mock.Mock()
     second_callback = mock.Mock()
@@ -27,7 +29,7 @@ def test_event_register() -> None:
     assert RAT.events.get_event_callback(RAT.events.EventTypes.Message) == []
 
 
-@pytest.mark.skip
+@pytest.mark.skip()
 def test_event_notify() -> None:
     first_callback = mock.Mock()
     second_callback = mock.Mock()
@@ -35,7 +37,7 @@ def test_event_notify() -> None:
     RAT.events.register(RAT.events.EventTypes.Message, first_callback)
     RAT.events.register(RAT.events.EventTypes.Plot, second_callback)
     RAT.events.register(RAT.events.EventTypes.Progress, third_callback)
-    
+
     RAT.events.notify(RAT.events.EventTypes.Message, "Hello World")
     first_callback.assert_called_once_with("Hello World")
     second_callback.assert_not_called()
@@ -50,7 +52,7 @@ def test_event_notify() -> None:
     first_callback.assert_called_once()
     second_callback.assert_called_once()
     third_callback.assert_called_once_with(data)
-    
+
     RAT.events.clear()
     RAT.events.notify(RAT.events.EventTypes.Message, "Hello World")
     RAT.events.notify(RAT.events.EventTypes.Plot, data)
