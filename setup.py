@@ -165,11 +165,11 @@ setup(
     install_requires=["numpy >= 1.20", "prettytable >= 3.9.0", "pydantic >= 2.7.2", "matplotlib >= 3.8.3"],
     extras_require={
         ':python_version < "3.11"': ["StrEnum >= 0.4.15"],
-        "Dev": ["pytest>=7.4.0", "pytest-cov>=4.1.0"],
+        "Dev": ["pytest>=7.4.0", "pytest-cov>=4.1.0", "ruff>=0.4.10"],
         "Matlab_latest": ["matlabengine"],
         "Matlab_2023b": ["matlabengine == 23.2.1"],
         "Matlab_2023a": ["matlabengine == 9.14.3"],
-        "Matlab-2022b": ["matlabengine == 9.13.9"],
+        "Matlab_2022b": ["matlabengine == 9.13.9"],
         "Matlab_2022a": ["matlabengine == 9.12.19"],
         "Matlab_2021b": ["matlabengine == 9.11.21"],
         "Matlab_2021a": ["matlabengine == 9.10.3"],
