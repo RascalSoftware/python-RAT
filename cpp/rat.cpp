@@ -150,7 +150,7 @@ class DylibEngine
             return py::make_tuple(output, roughness);    
 
         }catch (const dylib::symbol_error &) {
-            throw std::runtime_error("failed to get dynamic library symbol for ***functionName");
+            throw std::runtime_error("failed to get dynamic library symbol for " + functionName);
         }        
     };
 };
