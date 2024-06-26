@@ -1,4 +1,6 @@
-"""The classlist module. Contains the ClassList class, which defines a list containing instances of a particular class."""
+"""The classlist module. Contains the ClassList class, which defines a list containing instances of a particular
+class.
+"""
 
 import collections
 import contextlib

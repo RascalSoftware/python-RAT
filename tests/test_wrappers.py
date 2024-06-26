@@ -15,8 +15,6 @@ def test_matlab_wrapper() -> None:
     mocked_engine = mock.MagicMock()
     mocked_matlab_module.engine.start_matlab.return_value = mocked_engine
 
-    # mocked_matlab_module.engine = mock.MagicMock()
-
     with mock.patch.dict("sys.modules", {"matlab": mocked_matlab_module, "matlab.engine": mocked_matlab_module.engine}):
         wrapper = RAT.wrappers.MatlabWrapper("demo.m")
         assert wrapper.function_name == "demo"

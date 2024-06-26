@@ -105,7 +105,9 @@ class CustomFile(RATModel):
 
     @model_validator(mode="after")
     def set_matlab_function_name(self):
-        """If we have a matlab custom function, the "function_name" should be set to the filename without the extension."""
+        """If we have a matlab custom function, the "function_name" should be set to the filename without the
+        extension.
+        """
         if self.language == Languages.Matlab and self.function_name != pathlib.Path(self.filename).stem:
             self.function_name = pathlib.Path(self.filename).stem
 

@@ -10,8 +10,8 @@ build-backend = 'setuptools.build_meta'
 line-length = 120
 
 [tool.ruff.lint]
-select = ["E", "F", "UP", "B", "SIM", "I", "COM"]
-ignore = ["SIM108", "S101", "COM812"]
+select = ["E", "F", "UP", "B", "SIM", "I"]
+ignore = ["SIM108"]
 
 [tool.ruff.lint.flake8-pytest-style]
 fixture-parentheses = false

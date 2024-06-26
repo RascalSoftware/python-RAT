@@ -123,22 +123,41 @@ def test_project_script():
     return (
         '# THIS FILE IS GENERATED FROM RAT VIA THE "WRITE_SCRIPT" ROUTINE. IT IS NOT PART OF THE RAT CODE.\n\n'
         "import RAT\nfrom RAT.models import *\nfrom numpy import array, inf\n\n"
-        "problem = RAT.Project(\n    name='', calculation='non polarised', model='standard layers', geometry='air/substrate', absorption=False,\n"
-        "    parameters=RAT.ClassList([ProtectedParameter(name='Substrate Roughness', min=1.0, value=3.0, max=5.0, fit=True, prior_type='uniform', mu=0.0, sigma=inf),"
-        " Parameter(name='Test Thickness', min=0.0, value=0.0, max=0.0, fit=False, prior_type='uniform', mu=0.0, sigma=inf),"
+        "problem = RAT.Project(\n"
+        "    name='', calculation='non polarised', model='standard layers', geometry='air/substrate',"
+        " absorption=False,\n"
+        "    parameters=RAT.ClassList("
+        "[ProtectedParameter(name='Substrate Roughness', min=1.0, value=3.0, max=5.0, fit=True, prior_type='uniform',"
+        " mu=0.0, sigma=inf),"
+        " Parameter(name='Test Thickness', min=0.0, value=0.0, max=0.0, fit=False, prior_type='uniform', mu=0.0,"
+        " sigma=inf),"
         " Parameter(name='Test SLD', min=0.0, value=0.0, max=0.0, fit=False, prior_type='uniform', mu=0.0, sigma=inf),"
-        " Parameter(name='Test Roughness', min=0.0, value=0.0, max=0.0, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
-        "    background_parameters=RAT.ClassList([Parameter(name='Background Param 1', min=1e-07, value=1e-06, max=1e-05, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
-        "    scalefactors=RAT.ClassList([Parameter(name='Scalefactor 1', min=0.02, value=0.23, max=0.25, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
-        "    bulk_in=RAT.ClassList([Parameter(name='SLD Air', min=0.0, value=0.0, max=0.0, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
-        "    bulk_out=RAT.ClassList([Parameter(name='SLD D2O', min=6.2e-06, value=6.35e-06, max=6.35e-06, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
-        "    resolution_parameters=RAT.ClassList([Parameter(name='Resolution Param 1', min=0.01, value=0.03, max=0.05, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
-        "    backgrounds=RAT.ClassList([Background(name='Background 1', type='constant', value_1='Background Param 1', value_2='', value_3='', value_4='', value_5='')]),\n"
-        "    resolutions=RAT.ClassList([Resolution(name='Resolution 1', type='constant', value_1='Resolution Param 1', value_2='', value_3='', value_4='', value_5='')]),\n"
-        "    custom_files=RAT.ClassList([CustomFile(name='Test Custom File', filename='', function_name='', language='python', path='')]),\n"
-        "    data=RAT.ClassList([Data(name='Simulation', data=array([[1., 1., 1.]]), data_range=[1.0, 1.0], simulation_range=[1.0, 1.0])]),\n"
-        "    layers=RAT.ClassList([Layer(name='Test Layer', thickness='Test Thickness', SLD='Test SLD', roughness='Test Roughness', hydration='', hydrate_with='bulk out')]),\n"
-        "    contrasts=RAT.ClassList([Contrast(name='Test Contrast', data='Simulation', background='Background 1', background_action='add', bulk_in='SLD Air', bulk_out='SLD D2O', scalefactor='Scalefactor 1', resolution='Resolution 1', resample=False, model=['Test Layer'])]),\n"
+        " Parameter(name='Test Roughness', min=0.0, value=0.0, max=0.0, fit=False, prior_type='uniform', mu=0.0,"
+        " sigma=inf)"
+        "]),\n"
+        "    background_parameters=RAT.ClassList([Parameter(name='Background Param 1', min=1e-07, value=1e-06,"
+        " max=1e-05, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
+        "    scalefactors=RAT.ClassList([Parameter(name='Scalefactor 1', min=0.02, value=0.23, max=0.25, fit=False,"
+        " prior_type='uniform', mu=0.0, sigma=inf)]),\n"
+        "    bulk_in=RAT.ClassList([Parameter(name='SLD Air', min=0.0, value=0.0, max=0.0, fit=False,"
+        " prior_type='uniform', mu=0.0, sigma=inf)]),\n"
+        "    bulk_out=RAT.ClassList([Parameter(name='SLD D2O', min=6.2e-06, value=6.35e-06, max=6.35e-06, fit=False,"
+        " prior_type='uniform', mu=0.0, sigma=inf)]),\n"
+        "    resolution_parameters=RAT.ClassList([Parameter(name='Resolution Param 1', min=0.01, value=0.03, max=0.05,"
+        " fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
+        "    backgrounds=RAT.ClassList([Background(name='Background 1', type='constant', value_1='Background Param 1',"
+        " value_2='', value_3='', value_4='', value_5='')]),\n"
+        "    resolutions=RAT.ClassList([Resolution(name='Resolution 1', type='constant', value_1='Resolution Param 1',"
+        " value_2='', value_3='', value_4='', value_5='')]),\n"
+        "    custom_files=RAT.ClassList([CustomFile(name='Test Custom File', filename='', function_name='',"
+        " language='python', path='')]),\n"
+        "    data=RAT.ClassList([Data(name='Simulation', data=array([[1., 1., 1.]]), data_range=[1.0, 1.0],"
+        " simulation_range=[1.0, 1.0])]),\n"
+        "    layers=RAT.ClassList([Layer(name='Test Layer', thickness='Test Thickness', SLD='Test SLD',"
+        " roughness='Test Roughness', hydration='', hydrate_with='bulk out')]),\n"
+        "    contrasts=RAT.ClassList([Contrast(name='Test Contrast', data='Simulation', background='Background 1',"
+        " background_action='add', bulk_in='SLD Air', bulk_out='SLD D2O', scalefactor='Scalefactor 1',"
+        " resolution='Resolution 1', resample=False, model=['Test Layer'])]),\n"
         "    )\n"
     )
 
@@ -461,12 +480,14 @@ def test_set_contrast_model_field(
         (
             LayerModels.StandardLayers,
             ["Test Domain Ratio"],
-            'For a standard layers domains calculation the "model" field of "contrasts" must contain exactly two values.',
+            'For a standard layers domains calculation the "model" field of "contrasts" must contain exactly two '
+            "values.",
         ),
         (
             LayerModels.StandardLayers,
             ["Test Domain Ratio", "Test Domain Ratio", "Test Domain Ratio"],
-            'For a standard layers domains calculation the "model" field of "contrasts" must contain exactly two values.',
+            'For a standard layers domains calculation the "model" field of "contrasts" must contain exactly two '
+            "values.",
         ),
         (
             LayerModels.CustomLayers,
@@ -894,7 +915,9 @@ def test_check_allowed_values_not_on_list(test_value: str) -> None:
     ],
 )
 def test_check_contrast_model_allowed_values(test_values: list[str]) -> None:
-    """We should not raise an error if values are defined in a non-empty list and all are on the list of allowed values."""
+    """We should not raise an error if values are defined in a non-empty list and all are on the list of allowed
+    values.
+    """
     project = RAT.Project.model_construct(
         contrasts=RAT.ClassList(RAT.models.Contrast(name="Test Contrast", model=test_values)),
     )

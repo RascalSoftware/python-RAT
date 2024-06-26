@@ -507,7 +507,9 @@ def standard_layers_controls():
 
 @pytest.fixture
 def custom_xy_controls():
-    """The expected controls object for input to the compiled RAT code given the default inputs and "custom_xy_project"."""
+    """The expected controls object for input to the compiled RAT code given the default inputs and
+    "custom_xy_project".
+    """
     controls = Control()
     controls.procedure = Procedures.Calculate
     controls.parallel = Parallel.Single

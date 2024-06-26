@@ -20,15 +20,15 @@ def TestModel():
     [
         (
             {},
-            "2 validation errors for TestModel\nint_field\n  Input should be a valid integer, unable to parse string as an "
-            "integer [type=int_parsing, input_value='string', input_type=str]\nstr_field\n  Input should be a valid string "
-            "[type=string_type, input_value=5, input_type=int]",
+            "2 validation errors for TestModel\nint_field\n  Input should be a valid integer, unable to parse string "
+            "as an integer [type=int_parsing, input_value='string', input_type=str]\nstr_field\n  Input should be a "
+            "valid string [type=string_type, input_value=5, input_type=int]",
         ),
         (
             {"int_parsing": "This is a custom error message", "string_type": "This is another custom error message"},
             "2 validation errors for TestModel\nint_field\n  This is a custom error message [type=int_parsing, "
-            "input_value='string', input_type=str]\nstr_field\n  This is another custom error message [type=string_type, "
-            "input_value=5, input_type=int]",
+            "input_value='string', input_type=str]\nstr_field\n  This is another custom error message "
+            "[type=string_type, input_value=5, input_type=int]",
         ),
     ],
 )

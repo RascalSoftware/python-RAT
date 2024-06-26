@@ -125,7 +125,9 @@ def test_data_dimension(input_data: np.ndarray[float]) -> None:
     ],
 )
 def test_data_too_few_dimensions(input_data: np.ndarray[float]) -> None:
-    """If the "data" field of the "Data" model is not a two-dimensional numpy array we should raise a ValidationError."""
+    """If the "data" field of the "Data" model is not a two-dimensional numpy array we should raise a
+    ValidationError.
+    """
     with pytest.raises(
         pydantic.ValidationError,
         match='1 validation error for Data\ndata\n  Value error, "data" must ' "have at least two dimensions",

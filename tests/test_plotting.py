@@ -89,19 +89,22 @@ def test_eventhandlers_linked_to_figure(fig: Figure) -> None:
     class methods.
     """
     pattern = r"\(([^\]]+)\)"
+    index = 0
 
     for ix, val in fig._fig.canvas.callbacks.callbacks["close_event"].items():
         if str(type(val)) == "<class 'weakref.WeakMethod'>":
+            index = ix
             break
-    canvas_close_event_callback = fig._fig.canvas.callbacks.callbacks["close_event"][ix]._func_ref.__repr__()
+    canvas_close_event_callback = fig._fig.canvas.callbacks.callbacks["close_event"][index]._func_ref.__repr__()
     close_event_callback = re.findall(pattern, canvas_close_event_callback)[0]
     assert close_event_callback == "_close"
     assert hasattr(Figure, "_close")
 
     for ix, val in fig._fig.canvas.callbacks.callbacks["key_press_event"].items():
         if str(type(val)) == "<class 'weakref.WeakMethod'>":
+            index = ix
             break
-    canvas_key_press_event_callback = fig._fig.canvas.callbacks.callbacks["key_press_event"][ix]._func_ref.__repr__()
+    canvas_key_press_event_callback = fig._fig.canvas.callbacks.callbacks["key_press_event"][index]._func_ref.__repr__()
     key_press_event_callback = re.findall(pattern, canvas_key_press_event_callback)[0]
     assert key_press_event_callback == "_process_button_press"
     assert hasattr(Figure, "_process_button_press")
