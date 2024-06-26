@@ -108,12 +108,16 @@ class BayesResults(Results):
     chain: np.ndarray
 
 
-def make_results(procedure: Procedures, output_results: RAT.rat_core.OutputResult,
-                 bayes_results: Optional[RAT.rat_core.BayesResults] = None) -> Union[Results, BayesResults]:
+def make_results(
+    procedure: Procedures,
+    output_results: RAT.rat_core.OutputResult,
+    bayes_results: Optional[RAT.rat_core.BayesResults] = None,
+) -> Union[Results, BayesResults]:
     """Initialise a python Results or BayesResults object using the outputs from a RAT calculation."""
-    calculation_results = CalculationResults(chiValues=output_results.calculationResults.chiValues,
-                                             sumChi=output_results.calculationResults.sumChi,
-                                             )
+    calculation_results = CalculationResults(
+        chiValues=output_results.calculationResults.chiValues,
+        sumChi=output_results.calculationResults.sumChi,
+    )
     contrast_params = ContrastParams(
         backgroundParams=output_results.contrastParams.backgroundParams,
         scalefactors=output_results.contrastParams.scalefactors,
@@ -125,7 +129,6 @@ def make_results(procedure: Procedures, output_results: RAT.rat_core.OutputResul
     )
 
     if procedure in [Procedures.NS, Procedures.Dream]:
-
         prediction_intervals = PredictionIntervals(
             reflectivity=bayes_results.predictionIntervals.reflectivity,
             sld=bayes_results.predictionIntervals.sld,
@@ -199,7 +202,6 @@ def make_results(procedure: Procedures, output_results: RAT.rat_core.OutputResul
         )
 
     else:
-
         results = Results(
             reflectivity=output_results.reflectivity,
             simulation=output_results.simulation,

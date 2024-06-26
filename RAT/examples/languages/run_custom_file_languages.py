@@ -1,4 +1,5 @@
 """Test custom function languages."""
+
 import pathlib
 import time
 

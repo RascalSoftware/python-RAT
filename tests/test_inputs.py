@@ -27,38 +27,67 @@ from tests.utils import dummy_function
 @pytest.fixture
 def standard_layers_project():
     """Add parameters to the default project for a non polarised calculation."""
-    test_project = RAT.Project(data=RAT.ClassList([RAT.models.Data(name="Test Data", data=np.array([[1.0, 1.0, 1.0]]))]),
-                               )
+    test_project = RAT.Project(
+        data=RAT.ClassList([RAT.models.Data(name="Test Data", data=np.array([[1.0, 1.0, 1.0]]))]),
+    )
     test_project.parameters.append(name="Test Thickness")
     test_project.parameters.append(name="Test SLD")
     test_project.parameters.append(name="Test Roughness")
-    test_project.custom_files.append(name="Test Custom File", filename="python_test.py", function_name="dummy_function",
-                                     language="python")
-    test_project.layers.append(name="Test Layer", thickness="Test Thickness", SLD="Test SLD", roughness="Test Roughness",
-                               )
-    test_project.contrasts.append(name="Test Contrast", data="Test Data", background="Background 1", bulk_in="SLD Air",
-                                  bulk_out="SLD D2O", scalefactor="Scalefactor 1", resolution="Resolution 1",
-                                  model=["Test Layer"])
+    test_project.custom_files.append(
+        name="Test Custom File",
+        filename="python_test.py",
+        function_name="dummy_function",
+        language="python",
+    )
+    test_project.layers.append(
+        name="Test Layer",
+        thickness="Test Thickness",
+        SLD="Test SLD",
+        roughness="Test Roughness",
+    )
+    test_project.contrasts.append(
+        name="Test Contrast",
+        data="Test Data",
+        background="Background 1",
+        bulk_in="SLD Air",
+        bulk_out="SLD D2O",
+        scalefactor="Scalefactor 1",
+        resolution="Resolution 1",
+        model=["Test Layer"],
+    )
     return test_project
 
 
 @pytest.fixture
 def domains_project():
     """Add parameters to the default project for a domains calculation."""
-    test_project = RAT.Project(calculation=Calculations.Domains,
-                               data=RAT.ClassList([RAT.models.Data(name="Test Data", data=np.array([[1.0, 1.0, 1.0]]))]),
-                               )
+    test_project = RAT.Project(
+        calculation=Calculations.Domains,
+        data=RAT.ClassList([RAT.models.Data(name="Test Data", data=np.array([[1.0, 1.0, 1.0]]))]),
+    )
     test_project.parameters.append(name="Test Thickness")
     test_project.parameters.append(name="Test SLD")
     test_project.parameters.append(name="Test Roughness")
     test_project.custom_files.append(name="Test Custom File", filename="matlab_test.m", language="matlab")
-    test_project.layers.append(name="Test Layer", thickness="Test Thickness", SLD="Test SLD", roughness="Test Roughness",
-                               )
+    test_project.layers.append(
+        name="Test Layer",
+        thickness="Test Thickness",
+        SLD="Test SLD",
+        roughness="Test Roughness",
+    )
     test_project.domain_contrasts.append(name="up", model=["Test Layer"])
     test_project.domain_contrasts.append(name="down", model=["Test Layer"])
-    test_project.contrasts.append(name="Test Contrast", data="Test Data", background="Background 1", bulk_in="SLD Air",
-                                  bulk_out="SLD D2O", scalefactor="Scalefactor 1", resolution="Resolution 1",
-                                  domain_ratio="Domain Ratio 1", model=["down", "up"])
+    test_project.contrasts.append(
+        name="Test Contrast",
+        data="Test Data",
+        background="Background 1",
+        bulk_in="SLD Air",
+        bulk_out="SLD D2O",
+        scalefactor="Scalefactor 1",
+        resolution="Resolution 1",
+        domain_ratio="Domain Ratio 1",
+        model=["down", "up"],
+    )
     return test_project
 
 
@@ -70,9 +99,16 @@ def custom_xy_project():
     test_project.parameters.append(name="Test SLD")
     test_project.parameters.append(name="Test Roughness")
     test_project.custom_files.append(name="Test Custom File", filename="cpp_test.dll", language="cpp")
-    test_project.contrasts.append(name="Test Contrast", data="Simulation", background="Background 1", bulk_in="SLD Air",
-                                  bulk_out="SLD D2O", scalefactor="Scalefactor 1", resolution="Resolution 1",
-                                  model=["Test Custom File"])
+    test_project.contrasts.append(
+        name="Test Contrast",
+        data="Simulation",
+        background="Background 1",
+        bulk_in="SLD Air",
+        bulk_out="SLD D2O",
+        scalefactor="Scalefactor 1",
+        resolution="Resolution 1",
+        model=["Test Custom File"],
+    )
     return test_project
 
 
@@ -110,8 +146,16 @@ def standard_layers_problem():
     problem.fitParams = [3.0]
     problem.otherParams = [0.0, 0.0, 0.0, 1e-06, 0.23, 0.0, 6.35e-06, 0.03]
     problem.fitLimits = [[1.0, 5.0]]
-    problem.otherLimits = [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [1e-07, 1e-05], [0.02, 0.25], [0.0, 0.0],
-                           [6.2e-06, 6.35e-06], [0.01, 0.05]]
+    problem.otherLimits = [
+        [0.0, 0.0],
+        [0.0, 0.0],
+        [0.0, 0.0],
+        [1e-07, 1e-05],
+        [0.02, 0.25],
+        [0.0, 0.0],
+        [6.2e-06, 6.35e-06],
+        [0.01, 0.05],
+    ]
 
     return problem
 
@@ -150,8 +194,17 @@ def domains_problem():
     problem.fitParams = [3.0]
     problem.otherParams = [0.0, 0.0, 0.0, 1e-06, 0.23, 0.0, 6.35e-06, 0.03, 0.5]
     problem.fitLimits = [[1.0, 5.0]]
-    problem.otherLimits = [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [1e-07, 1e-05], [0.02, 0.25], [0.0, 0.0],
-                           [6.2e-06, 6.35e-06], [0.01, 0.05], [0.4, 0.6]]
+    problem.otherLimits = [
+        [0.0, 0.0],
+        [0.0, 0.0],
+        [0.0, 0.0],
+        [1e-07, 1e-05],
+        [0.02, 0.25],
+        [0.0, 0.0],
+        [6.2e-06, 6.35e-06],
+        [0.01, 0.05],
+        [0.4, 0.6],
+    ]
 
     return problem
 
@@ -190,8 +243,16 @@ def custom_xy_problem():
     problem.fitParams = [3.0]
     problem.otherParams = [0.0, 0.0, 0.0, 1e-06, 0.23, 0.0, 6.35e-06, 0.03]
     problem.fitLimits = [[1.0, 5.0]]
-    problem.otherLimits = [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [1e-07, 1e-05], [0.02, 0.25], [0.0, 0.0],
-                           [6.2e-06, 6.35e-06], [0.01, 0.05]]
+    problem.otherLimits = [
+        [0.0, 0.0],
+        [0.0, 0.0],
+        [0.0, 0.0],
+        [1e-07, 1e-05],
+        [0.02, 0.25],
+        [0.0, 0.0],
+        [6.2e-06, 6.35e-06],
+        [0.01, 0.05],
+    ]
 
     return problem
 
@@ -316,10 +377,12 @@ def domains_limits():
 def non_polarised_priors():
     """The expected priors object from "standard_layers_project" and "custom_xy_project"."""
     priors = Priors()
-    priors.param = [["Substrate Roughness", RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
-                    ["Test Thickness", RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
-                    ["Test SLD", RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
-                    ["Test Roughness", RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.param = [
+        ["Substrate Roughness", RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
+        ["Test Thickness", RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
+        ["Test SLD", RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
+        ["Test Roughness", RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
+    ]
     priors.backgroundParam = [["Background Param 1", RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.qzshift = []
     priors.scalefactor = [["Scalefactor 1", RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
@@ -327,10 +390,28 @@ def non_polarised_priors():
     priors.bulkOut = [["SLD D2O", RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.resolutionParam = [["Resolution Param 1", RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.domainRatio = []
-    priors.priorNames = ["Substrate Roughness", "Test Thickness", "Test SLD", "Test Roughness", "Background Param 1",
-                         "Scalefactor 1", "SLD Air", "SLD D2O", "Resolution Param 1"]
-    priors.priorValues = [[1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf],
-                          [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf]]
+    priors.priorNames = [
+        "Substrate Roughness",
+        "Test Thickness",
+        "Test SLD",
+        "Test Roughness",
+        "Background Param 1",
+        "Scalefactor 1",
+        "SLD Air",
+        "SLD D2O",
+        "Resolution Param 1",
+    ]
+    priors.priorValues = [
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+    ]
 
     return priors
 
@@ -339,10 +420,12 @@ def non_polarised_priors():
 def domains_priors():
     """The expected priors object from "domains_project"."""
     priors = Priors()
-    priors.param = [["Substrate Roughness", RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
-                    ["Test Thickness", RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
-                    ["Test SLD", RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
-                    ["Test Roughness", RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.param = [
+        ["Substrate Roughness", RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
+        ["Test Thickness", RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
+        ["Test SLD", RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
+        ["Test Roughness", RAT.utils.enums.Priors.Uniform, 0.0, np.inf],
+    ]
     priors.backgroundParam = [["Background Param 1", RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.qzshift = []
     priors.scalefactor = [["Scalefactor 1", RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
@@ -350,10 +433,30 @@ def domains_priors():
     priors.bulkOut = [["SLD D2O", RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.resolutionParam = [["Resolution Param 1", RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.domainRatio = [["Domain Ratio 1", RAT.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.priorNames = ["Substrate Roughness", "Test Thickness", "Test SLD", "Test Roughness", "Background Param 1",
-                         "Scalefactor 1", "SLD Air", "SLD D2O", "Resolution Param 1", "Domain Ratio 1"]
-    priors.priorValues = [[1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf],
-                          [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf], [1, 0.0, np.inf]]
+    priors.priorNames = [
+        "Substrate Roughness",
+        "Test Thickness",
+        "Test SLD",
+        "Test Roughness",
+        "Background Param 1",
+        "Scalefactor 1",
+        "SLD Air",
+        "SLD D2O",
+        "Resolution Param 1",
+        "Domain Ratio 1",
+    ]
+    priors.priorValues = [
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+    ]
 
     return priors
 
@@ -404,8 +507,7 @@ def standard_layers_controls():
 
 @pytest.fixture
 def custom_xy_controls():
-    """The expected controls object for input to the compiled RAT code given the default inputs and "custom_xy_project".
-    """
+    """The expected controls object for input to the compiled RAT code given the default inputs and "custom_xy_project"."""
     controls = Control()
     controls.procedure = Procedures.Calculate
     controls.parallel = Parallel.Single
@@ -461,15 +563,35 @@ def test_checks():
     return checks
 
 
-@pytest.mark.parametrize(["test_project", "test_problem", "test_cells", "test_limits", "test_priors", "test_controls"],
-                         [
-    ("standard_layers_project", "standard_layers_problem", "standard_layers_cells", "non_polarised_limits",
-     "non_polarised_priors", "standard_layers_controls"),
-    ("custom_xy_project", "custom_xy_problem", "custom_xy_cells", "non_polarised_limits", "non_polarised_priors",
-     "custom_xy_controls"),
-    ("domains_project", "domains_problem", "domains_cells", "domains_limits", "domains_priors",
-     "standard_layers_controls"),
-])
+@pytest.mark.parametrize(
+    ["test_project", "test_problem", "test_cells", "test_limits", "test_priors", "test_controls"],
+    [
+        (
+            "standard_layers_project",
+            "standard_layers_problem",
+            "standard_layers_cells",
+            "non_polarised_limits",
+            "non_polarised_priors",
+            "standard_layers_controls",
+        ),
+        (
+            "custom_xy_project",
+            "custom_xy_problem",
+            "custom_xy_cells",
+            "non_polarised_limits",
+            "non_polarised_priors",
+            "custom_xy_controls",
+        ),
+        (
+            "domains_project",
+            "domains_problem",
+            "domains_cells",
+            "domains_limits",
+            "domains_priors",
+            "standard_layers_controls",
+        ),
+    ],
+)
 def test_make_input(test_project, test_problem, test_cells, test_limits, test_priors, test_controls, request) -> None:
     """When converting the "project" and "controls", we should obtain the five input objects required for the compiled
     RAT code.
@@ -481,19 +603,33 @@ def test_make_input(test_project, test_problem, test_cells, test_limits, test_pr
     test_priors = request.getfixturevalue(test_priors)
     test_controls = request.getfixturevalue(test_controls)
 
-    parameter_fields = ["param", "backgroundParam", "scalefactor", "qzshift", "bulkIn", "bulkOut", "resolutionParam",
-                        "domainRatio"]
+    parameter_fields = [
+        "param",
+        "backgroundParam",
+        "scalefactor",
+        "qzshift",
+        "bulkIn",
+        "bulkOut",
+        "resolutionParam",
+        "domainRatio",
+    ]
 
     mocked_matlab_module = mock.MagicMock()
     mocked_engine = mock.MagicMock()
     mocked_matlab_module.engine.start_matlab.return_value = mocked_engine
 
-    with mock.patch.dict("sys.modules", {"matlab": mocked_matlab_module,
-                                         "matlab.engine": mocked_matlab_module.engine}), \
-            mock.patch.object(RAT.rat_core, "DylibEngine", mock.MagicMock()), \
-            mock.patch.object(RAT.inputs, "get_python_handle", mock.MagicMock(return_value=dummy_function)), \
-            mock.patch.object(RAT.wrappers.MatlabWrapper, "getHandle", mock.MagicMock(return_value=dummy_function)), \
-            mock.patch.object(RAT.wrappers.DylibWrapper, "getHandle", mock.MagicMock(return_value=dummy_function)):
+    with mock.patch.dict(
+        "sys.modules",
+        {"matlab": mocked_matlab_module, "matlab.engine": mocked_matlab_module.engine},
+    ), mock.patch.object(RAT.rat_core, "DylibEngine", mock.MagicMock()), mock.patch.object(
+        RAT.inputs,
+        "get_python_handle",
+        mock.MagicMock(return_value=dummy_function),
+    ), mock.patch.object(
+        RAT.wrappers.MatlabWrapper,
+        "getHandle",
+        mock.MagicMock(return_value=dummy_function),
+    ), mock.patch.object(RAT.wrappers.DylibWrapper, "getHandle", mock.MagicMock(return_value=dummy_function)):
         problem, cells, limits, priors, controls = make_input(test_project, RAT.set_controls())
 
     check_problem_equal(problem, test_problem)
@@ -511,11 +647,14 @@ def test_make_input(test_project, test_problem, test_cells, test_limits, test_pr
     check_controls_equal(controls, test_controls)
 
 
-@pytest.mark.parametrize(["test_project", "test_problem"], [
-    ("standard_layers_project", "standard_layers_problem"),
-    ("custom_xy_project", "custom_xy_problem"),
-    ("domains_project", "domains_problem"),
-])
+@pytest.mark.parametrize(
+    ["test_project", "test_problem"],
+    [
+        ("standard_layers_project", "standard_layers_problem"),
+        ("custom_xy_project", "custom_xy_problem"),
+        ("domains_project", "domains_problem"),
+    ],
+)
 def test_make_problem(test_project, test_problem, request) -> None:
     """The problem object should contain the relevant parameters defined in the input project object."""
     test_project = request.getfixturevalue(test_project)
@@ -525,11 +664,14 @@ def test_make_problem(test_project, test_problem, request) -> None:
     check_problem_equal(problem, test_problem)
 
 
-@pytest.mark.parametrize("test_problem", [
-    "standard_layers_problem",
-    "custom_xy_problem",
-    "domains_problem",
-])
+@pytest.mark.parametrize(
+    "test_problem",
+    [
+        "standard_layers_problem",
+        "custom_xy_problem",
+        "domains_problem",
+    ],
+)
 def test_check_indices(test_problem, request) -> None:
     """The check_indices routine should not raise errors for a properly defined ProblemDefinition object."""
     test_problem = request.getfixturevalue(test_problem)
@@ -537,65 +679,75 @@ def test_check_indices(test_problem, request) -> None:
     check_indices(test_problem)
 
 
-@pytest.mark.parametrize(["test_problem", "index_list", "bad_value"], [
-    ("standard_layers_problem", "contrastBulkIns", [0.0]),
-    ("standard_layers_problem", "contrastBulkIns", [2.0]),
-    ("standard_layers_problem", "contrastBulkOuts", [0.0]),
-    ("standard_layers_problem", "contrastBulkOuts", [2.0]),
-    ("standard_layers_problem", "contrastScalefactors", [0.0]),
-    ("standard_layers_problem", "contrastScalefactors", [2.0]),
-    ("standard_layers_problem", "contrastBackgroundParams", [0.0]),
-    ("standard_layers_problem", "contrastBackgroundParams", [2.0]),
-    ("standard_layers_problem", "contrastResolutionParams", [0.0]),
-    ("standard_layers_problem", "contrastResolutionParams", [2.0]),
-    ("custom_xy_problem", "contrastBulkIns", [0.0]),
-    ("custom_xy_problem", "contrastBulkIns", [2.0]),
-    ("custom_xy_problem", "contrastBulkOuts", [0.0]),
-    ("custom_xy_problem", "contrastBulkOuts", [2.0]),
-    ("custom_xy_problem", "contrastScalefactors", [0.0]),
-    ("custom_xy_problem", "contrastScalefactors", [2.0]),
-    ("custom_xy_problem", "contrastBackgroundParams", [0.0]),
-    ("custom_xy_problem", "contrastBackgroundParams", [2.0]),
-    ("custom_xy_problem", "contrastResolutionParams", [0.0]),
-    ("custom_xy_problem", "contrastResolutionParams", [2.0]),
-    ("domains_problem", "contrastBulkIns", [0.0]),
-    ("domains_problem", "contrastBulkIns", [2.0]),
-    ("domains_problem", "contrastBulkOuts", [0.0]),
-    ("domains_problem", "contrastBulkOuts", [2.0]),
-    ("domains_problem", "contrastScalefactors", [0.0]),
-    ("domains_problem", "contrastScalefactors", [2.0]),
-    ("domains_problem", "contrastDomainRatios", [0.0]),
-    ("domains_problem", "contrastDomainRatios", [2.0]),
-    ("domains_problem", "contrastBackgroundParams", [0.0]),
-    ("domains_problem", "contrastBackgroundParams", [2.0]),
-    ("domains_problem", "contrastResolutionParams", [0.0]),
-    ("domains_problem", "contrastResolutionParams", [2.0]),
-])
+@pytest.mark.parametrize(
+    ["test_problem", "index_list", "bad_value"],
+    [
+        ("standard_layers_problem", "contrastBulkIns", [0.0]),
+        ("standard_layers_problem", "contrastBulkIns", [2.0]),
+        ("standard_layers_problem", "contrastBulkOuts", [0.0]),
+        ("standard_layers_problem", "contrastBulkOuts", [2.0]),
+        ("standard_layers_problem", "contrastScalefactors", [0.0]),
+        ("standard_layers_problem", "contrastScalefactors", [2.0]),
+        ("standard_layers_problem", "contrastBackgroundParams", [0.0]),
+        ("standard_layers_problem", "contrastBackgroundParams", [2.0]),
+        ("standard_layers_problem", "contrastResolutionParams", [0.0]),
+        ("standard_layers_problem", "contrastResolutionParams", [2.0]),
+        ("custom_xy_problem", "contrastBulkIns", [0.0]),
+        ("custom_xy_problem", "contrastBulkIns", [2.0]),
+        ("custom_xy_problem", "contrastBulkOuts", [0.0]),
+        ("custom_xy_problem", "contrastBulkOuts", [2.0]),
+        ("custom_xy_problem", "contrastScalefactors", [0.0]),
+        ("custom_xy_problem", "contrastScalefactors", [2.0]),
+        ("custom_xy_problem", "contrastBackgroundParams", [0.0]),
+        ("custom_xy_problem", "contrastBackgroundParams", [2.0]),
+        ("custom_xy_problem", "contrastResolutionParams", [0.0]),
+        ("custom_xy_problem", "contrastResolutionParams", [2.0]),
+        ("domains_problem", "contrastBulkIns", [0.0]),
+        ("domains_problem", "contrastBulkIns", [2.0]),
+        ("domains_problem", "contrastBulkOuts", [0.0]),
+        ("domains_problem", "contrastBulkOuts", [2.0]),
+        ("domains_problem", "contrastScalefactors", [0.0]),
+        ("domains_problem", "contrastScalefactors", [2.0]),
+        ("domains_problem", "contrastDomainRatios", [0.0]),
+        ("domains_problem", "contrastDomainRatios", [2.0]),
+        ("domains_problem", "contrastBackgroundParams", [0.0]),
+        ("domains_problem", "contrastBackgroundParams", [2.0]),
+        ("domains_problem", "contrastResolutionParams", [0.0]),
+        ("domains_problem", "contrastResolutionParams", [2.0]),
+    ],
+)
 def test_check_indices_error(test_problem, index_list, bad_value, request) -> None:
     """The check_indices routine should raise an IndexError if a contrast list contains an index that is out of the
     range of the corresponding parameter list in a ProblemDefinition object.
     """
-    param_list = {"contrastBulkIns": "bulkIn",
-                  "contrastBulkOuts": "bulkOut",
-                  "contrastScalefactors": "scalefactors",
-                  "contrastDomainRatios": "domainRatio",
-                  "contrastBackgroundParams": "backgroundParams",
-                  "contrastResolutionParams": "resolutionParams",
-                  }
+    param_list = {
+        "contrastBulkIns": "bulkIn",
+        "contrastBulkOuts": "bulkOut",
+        "contrastScalefactors": "scalefactors",
+        "contrastDomainRatios": "domainRatio",
+        "contrastBackgroundParams": "backgroundParams",
+        "contrastResolutionParams": "resolutionParams",
+    }
 
     test_problem = request.getfixturevalue(test_problem)
     setattr(test_problem, index_list, bad_value)
 
-    with pytest.raises(IndexError, match=f'The problem field "{index_list}" contains: {bad_value[0]}, which lie '
-                                         f'outside of the range of "{param_list[index_list]}"'):
+    with pytest.raises(
+        IndexError,
+        match=f'The problem field "{index_list}" contains: {bad_value[0]}, which lie '
+        f'outside of the range of "{param_list[index_list]}"',
+    ):
         check_indices(test_problem)
 
 
-@pytest.mark.parametrize(["test_project", "test_cells"], [
-    ("standard_layers_project", "standard_layers_cells"),
-    ("custom_xy_project", "custom_xy_cells"),
-    ("domains_project", "domains_cells"),
-])
+@pytest.mark.parametrize(
+    ["test_project", "test_cells"],
+    [
+        ("standard_layers_project", "standard_layers_cells"),
+        ("custom_xy_project", "custom_xy_cells"),
+        ("domains_project", "domains_cells"),
+    ],
+)
 def test_make_cells(test_project, test_cells, request) -> None:
     """The cells object should be populated according to the input project object."""
     test_project = request.getfixturevalue(test_project)
@@ -605,12 +757,18 @@ def test_make_cells(test_project, test_cells, request) -> None:
     mocked_matlab_engine = mock.MagicMock()
     mocked_matlab_module.engine.start_matlab.return_value = mocked_matlab_engine
 
-    with mock.patch.dict("sys.modules", {"matlab": mocked_matlab_module,
-                                         "matlab.engine": mocked_matlab_module.engine}), \
-            mock.patch.object(RAT.rat_core, "DylibEngine", mock.MagicMock()), \
-            mock.patch.object(RAT.inputs, "get_python_handle", mock.MagicMock(return_value=dummy_function)), \
-            mock.patch.object(RAT.wrappers.MatlabWrapper, "getHandle", mock.MagicMock(return_value=dummy_function)), \
-            mock.patch.object(RAT.wrappers.DylibWrapper, "getHandle", mock.MagicMock(return_value=dummy_function)):
+    with mock.patch.dict(
+        "sys.modules",
+        {"matlab": mocked_matlab_module, "matlab.engine": mocked_matlab_module.engine},
+    ), mock.patch.object(RAT.rat_core, "DylibEngine", mock.MagicMock()), mock.patch.object(
+        RAT.inputs,
+        "get_python_handle",
+        mock.MagicMock(return_value=dummy_function),
+    ), mock.patch.object(
+        RAT.wrappers.MatlabWrapper,
+        "getHandle",
+        mock.MagicMock(return_value=dummy_function),
+    ), mock.patch.object(RAT.wrappers.DylibWrapper, "getHandle", mock.MagicMock(return_value=dummy_function)):
         cells = make_cells(test_project)
 
     check_cells_equal(cells, test_cells)
@@ -618,8 +776,7 @@ def test_make_cells(test_project, test_cells, request) -> None:
 
 def test_get_python_handle():
     path = pathlib.Path(__file__).parent.resolve()
-    assert (RAT.inputs.get_python_handle("utils.py", "dummy_function", path).__code__ ==
-            dummy_function.__code__)
+    assert RAT.inputs.get_python_handle("utils.py", "dummy_function", path).__code__ == dummy_function.__code__
 
 
 def test_make_controls(standard_layers_controls, test_checks) -> None:
@@ -632,14 +789,41 @@ def test_make_controls(standard_layers_controls, test_checks) -> None:
 
 def check_problem_equal(actual_problem, expected_problem) -> None:
     """Compare two instances of the "problem" object for equality."""
-    scalar_fields = ["TF", "modelType", "geometry", "useImaginary", "numberOfContrasts", "numberOfLayers",
-                     "numberOfDomainContrasts"]
+    scalar_fields = [
+        "TF",
+        "modelType",
+        "geometry",
+        "useImaginary",
+        "numberOfContrasts",
+        "numberOfLayers",
+        "numberOfDomainContrasts",
+    ]
 
-    array_fields = ["params", "backgroundParams", "qzshifts", "scalefactors", "bulkIn", "bulkOut", "resolutionParams",
-                    "domainRatio", "contrastBackgroundParams", "contrastBackgroundActions", "contrastQzshifts",
-                    "contrastScalefactors", "contrastBulkIns", "contrastBulkOuts", "contrastResolutionParams",
-                    "contrastDomainRatios", "resample", "dataPresent", "oilChiDataPresent", "fitParams", "otherParams",
-                    "fitLimits", "otherLimits"]
+    array_fields = [
+        "params",
+        "backgroundParams",
+        "qzshifts",
+        "scalefactors",
+        "bulkIn",
+        "bulkOut",
+        "resolutionParams",
+        "domainRatio",
+        "contrastBackgroundParams",
+        "contrastBackgroundActions",
+        "contrastQzshifts",
+        "contrastScalefactors",
+        "contrastBulkIns",
+        "contrastBulkOuts",
+        "contrastResolutionParams",
+        "contrastDomainRatios",
+        "resample",
+        "dataPresent",
+        "oilChiDataPresent",
+        "fitParams",
+        "otherParams",
+        "fitLimits",
+        "otherLimits",
+    ]
 
     for scalar_field in scalar_fields:
         assert getattr(actual_problem, scalar_field) == getattr(expected_problem, scalar_field)
@@ -647,11 +831,9 @@ def check_problem_equal(actual_problem, expected_problem) -> None:
         assert (getattr(actual_problem, array_field) == getattr(expected_problem, array_field)).all()
 
     # Need to account for "NaN" entries in contrastCustomFiles field
-    assert ((actual_problem.contrastCustomFiles == expected_problem.contrastCustomFiles).all() or
-            ["NaN" if np.isnan(el) else el for el in actual_problem.contrastCustomFiles] ==
-            ["NaN" if np.isnan(el) else el for el in expected_problem.contrastCustomFiles]
-            )
-
+    assert (actual_problem.contrastCustomFiles == expected_problem.contrastCustomFiles).all() or [
+        "NaN" if np.isnan(el) else el for el in actual_problem.contrastCustomFiles
+    ] == ["NaN" if np.isnan(el) else el for el in expected_problem.contrastCustomFiles]
 
 
 def check_cells_equal(actual_cells, expected_cells) -> None:
@@ -659,29 +841,59 @@ def check_cells_equal(actual_cells, expected_cells) -> None:
     assert actual_cells.f1 == expected_cells.f1
 
     # Need to test equality of the numpy arrays separately
-    for (a, b) in zip(actual_cells.f2, expected_cells.f2):
+    for a, b in zip(actual_cells.f2, expected_cells.f2):
         assert (a == b).all()
 
     # f6 may contain "NaN" values, so consider separately
-    assert (actual_cells.f6 == expected_cells.f6 or
-            ["NaN" if np.isnan(el) else el for entry in actual_cells.f6 for el in entry] ==
-            ["NaN" if np.isnan(el) else el for entry in expected_cells.f6 for el in entry])
+    assert actual_cells.f6 == expected_cells.f6 or [
+        "NaN" if np.isnan(el) else el for entry in actual_cells.f6 for el in entry
+    ] == ["NaN" if np.isnan(el) else el for entry in expected_cells.f6 for el in entry]
 
     for index in chain(range(3, 6), range(7, 21)):
         field = f"f{index}"
         assert getattr(actual_cells, field) == getattr(expected_cells, field)
 
 
-
 def check_controls_equal(actual_controls, expected_controls) -> None:
     """Compare two instances of the "controls" object used as input for the compiled RAT code for equality."""
-    controls_fields = ["procedure", "parallel", "calcSldDuringFit", "display", "xTolerance",
-                       "funcTolerance", "maxFuncEvals", "maxIterations", "updateFreq", "updatePlotFreq",
-                       "populationSize", "fWeight", "crossoverProbability", "strategy", "targetValue", "numGenerations",
-                       "nLive", "nMCMC", "propScale", "nsTolerance", "nSamples", "nChains", "jumpProbability",
-                       "pUnitGamma", "boundHandling", "adaptPCR"]
-    checks_fields = ["fitParam", "fitBackgroundParam", "fitQzshift", "fitScalefactor", "fitBulkIn", "fitBulkOut",
-                     "fitResolutionParam", "fitDomainRatio"]
+    controls_fields = [
+        "procedure",
+        "parallel",
+        "calcSldDuringFit",
+        "display",
+        "xTolerance",
+        "funcTolerance",
+        "maxFuncEvals",
+        "maxIterations",
+        "updateFreq",
+        "updatePlotFreq",
+        "populationSize",
+        "fWeight",
+        "crossoverProbability",
+        "strategy",
+        "targetValue",
+        "numGenerations",
+        "nLive",
+        "nMCMC",
+        "propScale",
+        "nsTolerance",
+        "nSamples",
+        "nChains",
+        "jumpProbability",
+        "pUnitGamma",
+        "boundHandling",
+        "adaptPCR",
+    ]
+    checks_fields = [
+        "fitParam",
+        "fitBackgroundParam",
+        "fitQzshift",
+        "fitScalefactor",
+        "fitBulkIn",
+        "fitBulkOut",
+        "fitResolutionParam",
+        "fitDomainRatio",
+    ]
 
     # Check "resampleParams" separately as it is an array
     assert (actual_controls.resampleParams == expected_controls.resampleParams).all()
@@ -689,4 +901,3 @@ def check_controls_equal(actual_controls, expected_controls) -> None:
         assert getattr(actual_controls, field) == getattr(expected_controls, field)
     for field in checks_fields:
         assert (getattr(actual_controls.checks, field) == getattr(expected_controls.checks, field)).all()
-

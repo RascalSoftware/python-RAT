@@ -4,7 +4,6 @@ import numpy as np
 
 
 def domains_XY_model(params, bulk_in, bulk_out, contrast, domain):
-
     # Split up the parameters for convenience
     subRough = params[0]
     oxideThick = params[1]
@@ -60,8 +59,8 @@ def makeLayer(z, prevLaySurf, thickness, height, Sigma_L, Sigma_R):
     right = prevLaySurf + thickness
 
     # Make our heaviside
-    a = (z-left) / ((2**0.5) * Sigma_L)
-    b = (z-right) / ((2**0.5) * Sigma_R)
+    a = (z - left) / ((2**0.5) * Sigma_L)
+    b = (z - right) / ((2**0.5) * Sigma_R)
 
     erf_a = np.array([math.erf(value) for value in a])
     erf_b = np.array([math.erf(value) for value in b])

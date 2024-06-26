@@ -12,10 +12,13 @@ from RAT.utils.enums import Procedures
 from tests.utils import check_results_equal
 
 
-@pytest.mark.parametrize(["test_procedure", "test_output_results", "test_bayes", "test_results"], [
-    (Procedures.Calculate, "reflectivity_calculation_output_results", None, "reflectivity_calculation_results"),
-    (Procedures.Dream, "dream_output_results", "dream_bayes", "dream_results"),
-])
+@pytest.mark.parametrize(
+    ["test_procedure", "test_output_results", "test_bayes", "test_results"],
+    [
+        (Procedures.Calculate, "reflectivity_calculation_output_results", None, "reflectivity_calculation_results"),
+        (Procedures.Dream, "dream_output_results", "dream_bayes", "dream_results"),
+    ],
+)
 def test_make_results(test_procedure, test_output_results, test_bayes, test_results, request) -> None:
     """The python results object should contain the relevant parameters defined in the C++ results and bayes objects."""
     test_output_results = request.getfixturevalue(test_output_results)

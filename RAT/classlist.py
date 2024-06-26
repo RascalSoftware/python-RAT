@@ -1,5 +1,4 @@
-"""The classlist module. Contains the ClassList class, which defines a list containing instances of a particular class.
-"""
+"""The classlist module. Contains the ClassList class, which defines a list containing instances of a particular class."""
 
 import collections
 import contextlib
@@ -135,8 +134,12 @@ class ClassList(collections.UserList):
 
         """
         if obj and kwargs:
-            warnings.warn("ClassList.append() called with both an object and keyword arguments. "
-                          "The keyword arguments will be ignored.", SyntaxWarning, stacklevel=2)
+            warnings.warn(
+                "ClassList.append() called with both an object and keyword arguments. "
+                "The keyword arguments will be ignored.",
+                SyntaxWarning,
+                stacklevel=2,
+            )
         if obj:
             if not hasattr(self, "_class_handle"):
                 self._class_handle = type(obj)
@@ -145,8 +148,10 @@ class ClassList(collections.UserList):
             self.data.append(obj)
         else:
             if not hasattr(self, "_class_handle"):
-                raise TypeError("ClassList.append() called with keyword arguments for a ClassList without a class "
-                                "defined. Call ClassList.append() with an object to define the class.")
+                raise TypeError(
+                    "ClassList.append() called with keyword arguments for a ClassList without a class "
+                    "defined. Call ClassList.append() with an object to define the class.",
+                )
             self._validate_name_field(kwargs)
             self.data.append(self._class_handle(**kwargs))
 
@@ -176,8 +181,12 @@ class ClassList(collections.UserList):
 
         """
         if obj and kwargs:
-            warnings.warn("ClassList.insert() called with both an object and keyword arguments. "
-                          "The keyword arguments will be ignored.", SyntaxWarning, stacklevel=2)
+            warnings.warn(
+                "ClassList.insert() called with both an object and keyword arguments. "
+                "The keyword arguments will be ignored.",
+                SyntaxWarning,
+                stacklevel=2,
+            )
         if obj:
             if not hasattr(self, "_class_handle"):
                 self._class_handle = type(obj)
@@ -186,8 +195,10 @@ class ClassList(collections.UserList):
             self.data.insert(index, obj)
         else:
             if not hasattr(self, "_class_handle"):
-                raise TypeError("ClassList.insert() called with keyword arguments for a ClassList without a class "
-                                "defined. Call ClassList.insert() with an object to define the class.")
+                raise TypeError(
+                    "ClassList.insert() called with keyword arguments for a ClassList without a class "
+                    "defined. Call ClassList.insert() with an object to define the class.",
+                )
             self._validate_name_field(kwargs)
             self.data.insert(index, self._class_handle(**kwargs))
 
@@ -252,8 +263,12 @@ class ClassList(collections.UserList):
             A list of (index, field) tuples matching the given value.
 
         """
-        return [(index, field) for index, element in enumerate(self.data) for field in vars(element)
-                if getattr(element, field) == value]
+        return [
+            (index, field)
+            for index, element in enumerate(self.data)
+            for field in vars(element)
+            if getattr(element, field) == value
+        ]
 
     def _validate_name_field(self, input_args: dict[str, Any]) -> None:
         """Raise a ValueError if the name_field attribute is passed as an object parameter, and its value is already
@@ -273,8 +288,10 @@ class ClassList(collections.UserList):
         names = self.get_names()
         with contextlib.suppress(KeyError):
             if input_args[self.name_field] in names:
-                raise ValueError(f"Input arguments contain the {self.name_field} '{input_args[self.name_field]}', "
-                                 f"which is already specified in the ClassList")
+                raise ValueError(
+                    f"Input arguments contain the {self.name_field} '{input_args[self.name_field]}', "
+                    f"which is already specified in the ClassList",
+                )
 
     def _check_unique_name_fields(self, input_list: Iterable[object]) -> None:
         """Raise a ValueError if any value of the name_field attribute is used more than once in a list of class

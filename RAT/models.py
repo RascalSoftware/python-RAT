@@ -37,12 +37,10 @@ class RATModel(BaseModel, validate_assignment=True, extra="forbid"):
     """A BaseModel where enums are represented by their value."""
 
     def __repr__(self):
-        fields_repr = (", ".join(repr(v) if a is None else
-                                 f"{a}={v.value!r}" if isinstance(v, StrEnum) else
-                                 f"{a}={v!r}"
-                                 for a, v in self.__repr_args__()
-                                 )
-                       )
+        fields_repr = ", ".join(
+            repr(v) if a is None else f"{a}={v.value!r}" if isinstance(v, StrEnum) else f"{a}={v!r}"
+            for a, v in self.__repr_args__()
+        )
         return f"{self.__repr_name__()}({fields_repr})"
 
 
@@ -107,8 +105,7 @@ class CustomFile(RATModel):
 
     @model_validator(mode="after")
     def set_matlab_function_name(self):
-        """If we have a matlab custom function, the "function_name" should be set to the filename without the extension.
-        """
+        """If we have a matlab custom function, the "function_name" should be set to the filename without the extension."""
         if self.language == Languages.Matlab and self.function_name != pathlib.Path(self.filename).stem:
             self.function_name = pathlib.Path(self.filename).stem
 
@@ -163,14 +160,20 @@ class Data(RATModel, arbitrary_types_allowed=True):
         if self.data.shape[0] > 0:
             data_min = np.min(self.data[:, 0])
             data_max = np.max(self.data[:, 0])
-            if "data_range" in self.model_fields_set and (self.data_range[0] < data_min or
-                                                          self.data_range[1] > data_max):
-                raise ValueError(f"The data_range value of: {self.data_range} must lie within the min/max values of "
-                                 f"the data: [{data_min}, {data_max}]")
-            if "simulation_range" in self.model_fields_set and (self.simulation_range[0] > data_min or
-                                                                self.simulation_range[1] < data_max):
-                raise ValueError(f"The simulation_range value of: {self.simulation_range} must lie outside of the "
-                                 f"min/max values of the data: [{data_min}, {data_max}]")
+            if "data_range" in self.model_fields_set and (
+                self.data_range[0] < data_min or self.data_range[1] > data_max
+            ):
+                raise ValueError(
+                    f"The data_range value of: {self.data_range} must lie within the min/max values of "
+                    f"the data: [{data_min}, {data_max}]",
+                )
+            if "simulation_range" in self.model_fields_set and (
+                self.simulation_range[0] > data_min or self.simulation_range[1] < data_max
+            ):
+                raise ValueError(
+                    f"The simulation_range value of: {self.simulation_range} must lie outside of the "
+                    f"min/max values of the data: [{data_min}, {data_max}]",
+                )
         return self
 
     def __eq__(self, other: object) -> bool:
@@ -182,25 +185,24 @@ class Data(RATModel, arbitrary_types_allowed=True):
             other_type = other.__pydantic_generic_metadata__["origin"] or other.__class__
 
             return (
-                    self_type == other_type
-                    and self.name == other.name
-                    and (self.data == other.data).all()
-                    and self.data_range == other.data_range
-                    and self.simulation_range == other.simulation_range
-                    and self.__pydantic_private__ == other.__pydantic_private__
-                    and self.__pydantic_extra__ == other.__pydantic_extra__
+                self_type == other_type
+                and self.name == other.name
+                and (self.data == other.data).all()
+                and self.data_range == other.data_range
+                and self.simulation_range == other.simulation_range
+                and self.__pydantic_private__ == other.__pydantic_private__
+                and self.__pydantic_extra__ == other.__pydantic_extra__
             )
         else:
             return NotImplemented  # delegate to the other item in the comparison
 
     def __repr__(self):
         """Only include the name if the data is empty."""
-        fields_repr = (f"name={self.name!r}" if self.data.size == 0 else
-                       ", ".join(repr(v) if a is None else
-                                 f"{a}={v!r}"
-                                 for a, v in self.__repr_args__()
-                                 )
-                       )
+        fields_repr = (
+            f"name={self.name!r}"
+            if self.data.size == 0
+            else ", ".join(repr(v) if a is None else f"{a}={v!r}" for a, v in self.__repr_args__())
+        )
         return f"{self.__repr_name__()}({fields_repr})"
 
 

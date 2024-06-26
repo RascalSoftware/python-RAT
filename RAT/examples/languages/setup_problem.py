@@ -12,7 +12,6 @@ import RAT
 
 
 def make_example_problem():
-
     problem = RAT.Project(name="Orso lipid example - custom layers", model="custom layers", geometry="substrate/liquid")
 
     # First we need to set up a parameters group. We will be using a pre-prepared custom model file, so we need to add
@@ -52,17 +51,37 @@ def make_example_problem():
     problem.data.append(name="Bilayer / H2O", data=H2O_data)
 
     # Add the custom file to the project
-    problem.custom_files.append(name="DSPC Model", filename="custom_bilayer.py", language="python",
-                                path=pathlib.Path(__file__).parent.resolve())
+    problem.custom_files.append(
+        name="DSPC Model",
+        filename="custom_bilayer.py",
+        language="python",
+        path=pathlib.Path(__file__).parent.resolve(),
+    )
 
     # Also, add the relevant background parameters - one each for each contrast:
-    problem.background_parameters.set_fields(0, name="Background parameter D2O", fit=True, min=1.0e-10, max=1.0e-5,
-                                             value=1.0e-07)
+    problem.background_parameters.set_fields(
+        0,
+        name="Background parameter D2O",
+        fit=True,
+        min=1.0e-10,
+        max=1.0e-5,
+        value=1.0e-07,
+    )
 
-    problem.background_parameters.append(name="Background parameter SMW", min=1.0e-10, value=1.0e-7, max=1.0e-5,
-                                         fit=True)
-    problem.background_parameters.append(name="Background parameter H2O", min=1.0e-10, value=1.0e-7, max=1.0e-5,
-                                         fit=True)
+    problem.background_parameters.append(
+        name="Background parameter SMW",
+        min=1.0e-10,
+        value=1.0e-7,
+        max=1.0e-5,
+        fit=True,
+    )
+    problem.background_parameters.append(
+        name="Background parameter H2O",
+        min=1.0e-10,
+        value=1.0e-7,
+        max=1.0e-5,
+        fit=True,
+    )
 
     # And add the two new constant backgrounds
     problem.backgrounds.append(name="Background SMW", type="constant", value_1="Background parameter SMW")
@@ -75,16 +94,37 @@ def make_example_problem():
     problem.scalefactors.set_fields(0, value=1.0, min=0.5, max=2.0, fit=True)
 
     # Now add the three contrasts
-    problem.contrasts.append(name="Bilayer / D2O", background="Background D2O", resolution="Resolution 1",
-                             scalefactor="Scalefactor 1", bulk_out="SLD D2O", bulk_in="Silicon", data="Bilayer / D2O",
-                             model=["DSPC Model"])
+    problem.contrasts.append(
+        name="Bilayer / D2O",
+        background="Background D2O",
+        resolution="Resolution 1",
+        scalefactor="Scalefactor 1",
+        bulk_out="SLD D2O",
+        bulk_in="Silicon",
+        data="Bilayer / D2O",
+        model=["DSPC Model"],
+    )
 
-    problem.contrasts.append(name="Bilayer / SMW", background="Background SMW", resolution="Resolution 1",
-                             scalefactor="Scalefactor 1", bulk_out="SLD SMW", bulk_in="Silicon", data="Bilayer / SMW",
-                             model=["DSPC Model"])
+    problem.contrasts.append(
+        name="Bilayer / SMW",
+        background="Background SMW",
+        resolution="Resolution 1",
+        scalefactor="Scalefactor 1",
+        bulk_out="SLD SMW",
+        bulk_in="Silicon",
+        data="Bilayer / SMW",
+        model=["DSPC Model"],
+    )
 
-    problem.contrasts.append(name="Bilayer / H2O", background="Background H2O", resolution="Resolution 1",
-                             scalefactor="Scalefactor 1", bulk_out="SLD H2O", bulk_in="Silicon", data="Bilayer / H2O",
-                             model=["DSPC Model"])
+    problem.contrasts.append(
+        name="Bilayer / H2O",
+        background="Background H2O",
+        resolution="Resolution 1",
+        scalefactor="Scalefactor 1",
+        bulk_out="SLD H2O",
+        bulk_in="Silicon",
+        data="Bilayer / H2O",
+        model=["DSPC Model"],
+    )
 
     return problem

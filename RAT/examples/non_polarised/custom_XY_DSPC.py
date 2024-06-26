@@ -19,23 +19,23 @@ def custom_XY_DSPC(params, bulk_in, bulk_out, contrast):
     # Define these first
 
     # define all the neutron b's.
-    bc = 0.6646e-4   # Carbon
-    bo = 0.5843e-4   # Oxygen
+    bc = 0.6646e-4  # Carbon
+    bo = 0.5843e-4  # Oxygen
     bh = -0.3739e-4  # Hydrogen
-    bp = 0.513e-4    # Phosphorus
-    bn = 0.936e-4    # Nitrogen
+    bp = 0.513e-4  # Phosphorus
+    bn = 0.936e-4  # Nitrogen
 
     # Now make the lipid groups
-    COO = (4*bo) + (2*bc)
-    GLYC = (3*bc) + (5*bh)
-    CH3 = (2*bc) + (6*bh)
-    PO4 = (1*bp) + (4*bo)
-    CH2 = (1*bc) + (2*bh)
-    CHOL = (5*bc) + (12*bh) + (1*bn)
+    COO = (4 * bo) + (2 * bc)
+    GLYC = (3 * bc) + (5 * bh)
+    CH3 = (2 * bc) + (6 * bh)
+    PO4 = (1 * bp) + (4 * bo)
+    CH2 = (1 * bc) + (2 * bh)
+    CHOL = (5 * bc) + (12 * bh) + (1 * bn)
 
     # Group these into heads and tails
     heads = CHOL + PO4 + GLYC + COO
-    tails = (34*CH2) + (2*CH3)
+    tails = (34 * CH2) + (2 * CH3)
 
     # We need volumes for each. Use literature values
     vHead = 319
@@ -126,8 +126,8 @@ def layer(z, prevLaySurf, thickness, height, Sigma_L, Sigma_R):
     right = prevLaySurf + thickness
 
     # Make our heaviside
-    a = (z-left) / ((2**0.5) * Sigma_L)
-    b = (z-right) / ((2**0.5) * Sigma_R)
+    a = (z - left) / ((2**0.5) * Sigma_L)
+    b = (z - right) / ((2**0.5) * Sigma_R)
 
     erf_a = np.array([math.erf(value) for value in a])
     erf_b = np.array([math.erf(value) for value in b])

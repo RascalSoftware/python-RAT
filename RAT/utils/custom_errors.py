@@ -1,10 +1,12 @@
 """Defines routines for custom error handling in RAT."""
+
 import pydantic_core
 
 
-def custom_pydantic_validation_error(error_list: list[pydantic_core.ErrorDetails],
-                                     custom_error_msgs: dict[str, str] = None,
-                                     ) -> list[pydantic_core.ErrorDetails]:
+def custom_pydantic_validation_error(
+    error_list: list[pydantic_core.ErrorDetails],
+    custom_error_msgs: dict[str, str] = None,
+) -> list[pydantic_core.ErrorDetails]:
     """Run through the list of errors generated from a pydantic ValidationError, substituting the standard error for a
     PydanticCustomError for a given set of error types.
 

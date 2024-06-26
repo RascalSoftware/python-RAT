@@ -9,13 +9,11 @@ import pytest
 from RAT.rat_core import PlotEventData
 from RAT.utils.plotting import Figure, plot_ref_sld_helper
 
-TEST_DIR_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                             "test_data")
+TEST_DIR_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_data")
 
 
 def data() -> PlotEventData:
-    """Creates the fixture for the tests.
-    """
+    """Creates the fixture for the tests."""
     data_path = os.path.join(TEST_DIR_PATH, "plotting_data.pickle")
     with open(data_path, "rb") as f:
         loaded_data = pickle.load(f)
@@ -34,8 +32,7 @@ def data() -> PlotEventData:
 
 @pytest.fixture
 def fig() -> Figure:
-    """Creates the fixture for the tests.
-    """
+    """Creates the fixture for the tests."""
     plt.close("all")
     figure = Figure(1, 3)
     fig = plot_ref_sld_helper(fig=figure, data=data())
@@ -43,8 +40,7 @@ def fig() -> Figure:
 
 
 def test_figure_axis_formating(fig: Figure) -> None:
-    """Tests the axis formating of the figure.
-    """
+    """Tests the axis formating of the figure."""
     ref_plot = fig._ax[0]
     sld_plot = fig._ax[1]
 
@@ -65,8 +61,7 @@ def test_figure_axis_formating(fig: Figure) -> None:
 
 
 def test_figure_color_formating(fig: Figure) -> None:
-    """Tests the color formating of the figure.
-    """
+    """Tests the color formating of the figure."""
     ref_plot = fig._ax[0]
     sld_plot = fig._ax[1]
 
@@ -74,17 +69,18 @@ def test_figure_color_formating(fig: Figure) -> None:
     assert len(sld_plot.get_lines()) == 6
 
     for axis_ix in range(len(ref_plot.get_lines())):
-        ax1 = axis_ix*2
+        ax1 = axis_ix * 2
         ax2 = ax1 + 1
 
         # Tests whether the color of the line and the errorbars match on the ref_plot
-        assert (ref_plot.containers[ax1][2][0]._original_edgecolor ==
-                ref_plot.containers[ax2][2][0]._original_edgecolor ==
-                ref_plot.get_lines()[axis_ix].get_color())
+        assert (
+            ref_plot.containers[ax1][2][0]._original_edgecolor
+            == ref_plot.containers[ax2][2][0]._original_edgecolor
+            == ref_plot.get_lines()[axis_ix].get_color()
+        )
 
         # Tests whether the color of the sld and resampled_sld match on the sld_plot
-        assert (sld_plot.get_lines()[ax1].get_color() ==
-                sld_plot.get_lines()[ax2].get_color())
+        assert sld_plot.get_lines()[ax1].get_color() == sld_plot.get_lines()[ax2].get_color()
 
 
 def test_eventhandlers_linked_to_figure(fig: Figure) -> None:
@@ -98,8 +94,7 @@ def test_eventhandlers_linked_to_figure(fig: Figure) -> None:
         if str(type(val)) == "<class 'weakref.WeakMethod'>":
             break
     canvas_close_event_callback = fig._fig.canvas.callbacks.callbacks["close_event"][ix]._func_ref.__repr__()
-    close_event_callback = re.findall(pattern,
-                                      canvas_close_event_callback)[0]
+    close_event_callback = re.findall(pattern, canvas_close_event_callback)[0]
     assert close_event_callback == "_close"
     assert hasattr(Figure, "_close")
 
@@ -107,8 +102,7 @@ def test_eventhandlers_linked_to_figure(fig: Figure) -> None:
         if str(type(val)) == "<class 'weakref.WeakMethod'>":
             break
     canvas_key_press_event_callback = fig._fig.canvas.callbacks.callbacks["key_press_event"][ix]._func_ref.__repr__()
-    key_press_event_callback = re.findall(pattern,
-                                          canvas_key_press_event_callback)[0]
+    key_press_event_callback = re.findall(pattern, canvas_key_press_event_callback)[0]
     assert key_press_event_callback == "_process_button_press"
     assert hasattr(Figure, "_process_button_press")
 
@@ -133,6 +127,7 @@ def test_wait_for_close(mock: MagicMock, fig: Figure) -> None:
     """Tests the _wait_for_close method stops the
     while loop when _esc_pressed is True.
     """
+
     def mock_wait_for_button_press(timeout):
         fig._esc_pressed = True
 

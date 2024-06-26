@@ -2,6 +2,7 @@
 
 Example of using custom layers to model a DSPC supported bilayer.
 """
+
 import os
 import pathlib
 
@@ -48,12 +49,22 @@ problem.data.append(name="Bilayer / SMW", data=SMW_data, data_range=[0.013, 0.32
 problem.data.append(name="Bilayer / H2O", data=H2O_data, data_range=[0.013, 0.33048])
 
 # Add the custom file to the project
-problem.custom_files.append(name="DSPC Model", filename="custom_bilayer_DSPC.py", language="python",
-                            path=pathlib.Path(__file__).parent.resolve())
+problem.custom_files.append(
+    name="DSPC Model",
+    filename="custom_bilayer_DSPC.py",
+    language="python",
+    path=pathlib.Path(__file__).parent.resolve(),
+)
 
 # Also, add the relevant background parameters - one each for each contrast:
-problem.background_parameters.set_fields(0, name="Background parameter D2O", min=1.0e-10, max=1.0e-5,
-                                         value=1.0e-07, fit=True)
+problem.background_parameters.set_fields(
+    0,
+    name="Background parameter D2O",
+    min=1.0e-10,
+    max=1.0e-5,
+    value=1.0e-07,
+    fit=True,
+)
 
 problem.background_parameters.append(name="Background parameter SMW", min=1.0e-10, value=1.0e-7, max=1.0e-5, fit=True)
 problem.background_parameters.append(name="Background parameter H2O", min=1.0e-10, value=1.0e-7, max=1.0e-5, fit=True)
@@ -72,17 +83,38 @@ problem.scalefactors.set_fields(0, value=1.0, min=0.5, max=2.0, fit=True)
 problem.resolutions.append(name="Data Resolution", type="data")
 
 # Now add the three contrasts
-problem.contrasts.append(name="Bilayer / D2O", background="Background D2O", resolution="Data Resolution",
-                         scalefactor="Scalefactor 1", bulk_out="SLD D2O", bulk_in="Silicon", data="Bilayer / D2O",
-                         model=["DSPC Model"])
+problem.contrasts.append(
+    name="Bilayer / D2O",
+    background="Background D2O",
+    resolution="Data Resolution",
+    scalefactor="Scalefactor 1",
+    bulk_out="SLD D2O",
+    bulk_in="Silicon",
+    data="Bilayer / D2O",
+    model=["DSPC Model"],
+)
 
-problem.contrasts.append(name="Bilayer / SMW", background="Background SMW", resolution="Data Resolution",
-                         scalefactor="Scalefactor 1", bulk_out="SLD SMW", bulk_in="Silicon", data="Bilayer / SMW",
-                         model=["DSPC Model"])
+problem.contrasts.append(
+    name="Bilayer / SMW",
+    background="Background SMW",
+    resolution="Data Resolution",
+    scalefactor="Scalefactor 1",
+    bulk_out="SLD SMW",
+    bulk_in="Silicon",
+    data="Bilayer / SMW",
+    model=["DSPC Model"],
+)
 
-problem.contrasts.append(name="Bilayer / H2O", background="Background H2O", resolution="Data Resolution",
-                         scalefactor="Scalefactor 1", bulk_out="SLD H2O", bulk_in="Silicon", data="Bilayer / H2O",
-                         model=["DSPC Model"])
+problem.contrasts.append(
+    name="Bilayer / H2O",
+    background="Background H2O",
+    resolution="Data Resolution",
+    scalefactor="Scalefactor 1",
+    bulk_out="SLD H2O",
+    bulk_in="Silicon",
+    data="Bilayer / H2O",
+    model=["DSPC Model"],
+)
 
 controls = RAT.set_controls()
 

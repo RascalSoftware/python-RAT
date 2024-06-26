@@ -117,8 +117,10 @@ class Dream(Calculate):
     adaptPCR: bool = False
 
 
-def set_controls(procedure: Procedures = Procedures.Calculate, **properties)\
-        -> Union[Calculate, Simplex, DE, NS, Dream]:
+def set_controls(
+    procedure: Procedures = Procedures.Calculate,
+    **properties,
+) -> Union[Calculate, Simplex, DE, NS, Dream]:
     """Returns the appropriate controls model given the specified procedure."""
     controls = {
         Procedures.Calculate: Calculate,
@@ -135,10 +137,11 @@ def set_controls(procedure: Procedures = Procedures.Calculate, **properties)\
         allowed_values = f'{", ".join([repr(member.value) for member in members[:-1]])} or {members[-1].value!r}'
         raise ValueError(f"The controls procedure must be one of: {allowed_values}") from None
     except ValidationError as exc:
-        custom_error_msgs = {"extra_forbidden": f'Extra inputs are not permitted. The fields for the {procedure}'
-                                                f' controls procedure are:\n    '
-                                                f'{", ".join(controls[procedure].model_fields.keys())}\n',
-                             }
+        custom_error_msgs = {
+            "extra_forbidden": f'Extra inputs are not permitted. The fields for the {procedure}'
+            f' controls procedure are:\n    '
+            f'{", ".join(controls[procedure].model_fields.keys())}\n',
+        }
         custom_error_list = custom_pydantic_validation_error(exc.errors(), custom_error_msgs)
         raise ValidationError.from_exception_data(exc.title, custom_error_list) from None
 

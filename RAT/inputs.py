@@ -1,4 +1,5 @@
 """Converts python models to the necessary inputs for the compiled RAT code"""
+
 import importlib
 import os
 import pathlib
@@ -11,9 +12,10 @@ from RAT.rat_core import Cells, Checks, Control, Limits, Priors, ProblemDefiniti
 from RAT.utils.enums import Calculations, Languages, LayerModels, TypeOptions
 
 
-def make_input(project: RAT.Project, controls: Union[RAT.controls.Calculate, RAT.controls.Simplex, RAT.controls.DE,
-                                                     RAT.controls.NS, RAT.controls.Dream],
-               ) -> tuple[ProblemDefinition, Cells, Limits, Priors, Control]:
+def make_input(
+    project: RAT.Project,
+    controls: Union[RAT.controls.Calculate, RAT.controls.Simplex, RAT.controls.DE, RAT.controls.NS, RAT.controls.Dream],
+) -> tuple[ProblemDefinition, Cells, Limits, Priors, Control]:
     """Constructs the inputs required for the compiled RAT code using the data defined in the input project and
     controls.
 
@@ -38,22 +40,24 @@ def make_input(project: RAT.Project, controls: Union[RAT.controls.Calculate, RAT
         The controls object used in the compiled RAT code.
 
     """
-    parameter_field = {"parameters": "param",
-                       "bulk_in": "bulkIn",
-                       "bulk_out": "bulkOut",
-                       "scalefactors": "scalefactor",
-                       "domain_ratios": "domainRatio",
-                       "background_parameters": "backgroundParam",
-                       "resolution_parameters": "resolutionParam",
-                       }
-    checks_field = {"parameters": "fitParam",
-                    "bulk_in": "fitBulkIn",
-                    "bulk_out": "fitBulkOut",
-                    "scalefactors": "fitScalefactor",
-                    "domain_ratios": "fitDomainRatio",
-                    "background_parameters": "fitBackgroundParam",
-                    "resolution_parameters": "fitResolutionParam",
-                    }
+    parameter_field = {
+        "parameters": "param",
+        "bulk_in": "bulkIn",
+        "bulk_out": "bulkOut",
+        "scalefactors": "scalefactor",
+        "domain_ratios": "domainRatio",
+        "background_parameters": "backgroundParam",
+        "resolution_parameters": "resolutionParam",
+    }
+    checks_field = {
+        "parameters": "fitParam",
+        "bulk_in": "fitBulkIn",
+        "bulk_out": "fitBulkOut",
+        "scalefactors": "fitScalefactor",
+        "domain_ratios": "fitDomainRatio",
+        "background_parameters": "fitBackgroundParam",
+        "resolution_parameters": "fitResolutionParam",
+    }
 
     prior_id = {"uniform": 1, "gaussian": 2, "jeffreys": 3}
 
@@ -66,21 +70,30 @@ def make_input(project: RAT.Project, controls: Union[RAT.controls.Calculate, RAT
 
     for class_list in RAT.project.parameter_class_lists:
         setattr(checks, checks_field[class_list], [int(element.fit) for element in getattr(project, class_list)])
-        setattr(limits, parameter_field[class_list], [[element.min, element.max]
-                                                      for element in getattr(project, class_list)])
-        setattr(priors, parameter_field[class_list], [[element.name, element.prior_type, element.mu, element.sigma]
-                                                      for element in getattr(project, class_list)])
+        setattr(
+            limits,
+            parameter_field[class_list],
+            [[element.min, element.max] for element in getattr(project, class_list)],
+        )
+        setattr(
+            priors,
+            parameter_field[class_list],
+            [[element.name, element.prior_type, element.mu, element.sigma] for element in getattr(project, class_list)],
+        )
 
     # Use dummy values for qzshifts
     checks.fitQzshift = []
     limits.qzshift = []
     priors.qzshift = []
 
-    priors.priorNames = [param.name for class_list in RAT.project.parameter_class_lists
-                         for param in getattr(project, class_list)]
-    priors.priorValues = [[prior_id[param.prior_type], param.mu, param.sigma]
-                          for class_list in RAT.project.parameter_class_lists
-                          for param in getattr(project, class_list)]
+    priors.priorNames = [
+        param.name for class_list in RAT.project.parameter_class_lists for param in getattr(project, class_list)
+    ]
+    priors.priorValues = [
+        [prior_id[param.prior_type], param.mu, param.sigma]
+        for class_list in RAT.project.parameter_class_lists
+        for param in getattr(project, class_list)
+    ]
 
     if project.model == LayerModels.CustomXY:
         controls.calcSldDuringFit = True
@@ -149,10 +162,13 @@ def make_problem(project: RAT.Project) -> ProblemDefinition:
     problem.contrastBulkIns = [project.bulk_in.index(contrast.bulk_in, True) for contrast in project.contrasts]
     problem.contrastBulkOuts = [project.bulk_out.index(contrast.bulk_out, True) for contrast in project.contrasts]
     problem.contrastQzshifts = [0] * len(project.contrasts)  # This is marked as "to do" in RAT
-    problem.contrastScalefactors = [project.scalefactors.index(contrast.scalefactor, True)
-                                    for contrast in project.contrasts]
-    problem.contrastDomainRatios = [project.domain_ratios.index(contrast.domain_ratio, True)
-                                    if hasattr(contrast, "domain_ratio") else 0 for contrast in project.contrasts]
+    problem.contrastScalefactors = [
+        project.scalefactors.index(contrast.scalefactor, True) for contrast in project.contrasts
+    ]
+    problem.contrastDomainRatios = [
+        project.domain_ratios.index(contrast.domain_ratio, True) if hasattr(contrast, "domain_ratio") else 0
+        for contrast in project.contrasts
+    ]
     problem.contrastBackgroundParams = contrast_background_params
     problem.contrastBackgroundActions = [action_id[contrast.background_action] for contrast in project.contrasts]
     problem.contrastResolutionParams = contrast_resolution_params
@@ -163,14 +179,30 @@ def make_problem(project: RAT.Project) -> ProblemDefinition:
     problem.numberOfContrasts = len(project.contrasts)
     problem.numberOfLayers = len(project.layers)
     problem.numberOfDomainContrasts = len(project.domain_contrasts)
-    problem.fitParams = [param.value for class_list in RAT.project.parameter_class_lists
-                         for param in getattr(project, class_list) if param.fit]
-    problem.fitLimits = [[param.min, param.max] for class_list in RAT.project.parameter_class_lists
-                         for param in getattr(project, class_list) if param.fit]
-    problem.otherParams = [param.value for class_list in RAT.project.parameter_class_lists
-                           for param in getattr(project, class_list) if not param.fit]
-    problem.otherLimits = [[param.min, param.max] for class_list in RAT.project.parameter_class_lists
-                           for param in getattr(project, class_list) if not param.fit]
+    problem.fitParams = [
+        param.value
+        for class_list in RAT.project.parameter_class_lists
+        for param in getattr(project, class_list)
+        if param.fit
+    ]
+    problem.fitLimits = [
+        [param.min, param.max]
+        for class_list in RAT.project.parameter_class_lists
+        for param in getattr(project, class_list)
+        if param.fit
+    ]
+    problem.otherParams = [
+        param.value
+        for class_list in RAT.project.parameter_class_lists
+        for param in getattr(project, class_list)
+        if not param.fit
+    ]
+    problem.otherLimits = [
+        [param.min, param.max]
+        for class_list in RAT.project.parameter_class_lists
+        for param in getattr(project, class_list)
+        if not param.fit
+    ]
 
     check_indices(problem)
 
@@ -208,8 +240,9 @@ def make_data_present(project: RAT.Project) -> list[int]:
         The "dataPresent" field of the problem input used in the compiled RAT code.
 
     """
-    return [1 if project.data[project.data.index(contrast.data)].data.size != 0 else 0
-            for contrast in project.contrasts]
+    return [
+        1 if project.data[project.data.index(contrast.data)].data.size != 0 else 0 for contrast in project.contrasts
+    ]
 
 
 def check_indices(problem: ProblemDefinition) -> None:
@@ -222,24 +255,31 @@ def check_indices(problem: ProblemDefinition) -> None:
         The problem input used in the compiled RAT code.
 
     """
-    index_list = {"bulkIn": "contrastBulkIns",
-                  "bulkOut": "contrastBulkOuts",
-                  "scalefactors": "contrastScalefactors",
-                  "domainRatio": "contrastDomainRatios",
-                  "backgroundParams": "contrastBackgroundParams",
-                  "resolutionParams": "contrastResolutionParams",
-                  }
+    index_list = {
+        "bulkIn": "contrastBulkIns",
+        "bulkOut": "contrastBulkOuts",
+        "scalefactors": "contrastScalefactors",
+        "domainRatio": "contrastDomainRatios",
+        "backgroundParams": "contrastBackgroundParams",
+        "resolutionParams": "contrastResolutionParams",
+    }
 
     # Check the indices -- note we have switched to 1-based indexing at this point
     for params in index_list:
         param_list = getattr(problem, params)
-        if len(param_list) > 0 and not all((element > 0 or element == -1) and element <= len(param_list)
-                                           for element in getattr(problem, index_list[params])):
-            elements = [element for element in getattr(problem, index_list[params])
-                        if not ((element > 0 or element == -1) and element <= len(param_list))]
-            raise IndexError(f'The problem field "{index_list[params]}" contains: {", ".join(str(i) for i in elements)}'
-                             f', which lie outside of the range of "{params}"')
-
+        if len(param_list) > 0 and not all(
+            (element > 0 or element == -1) and element <= len(param_list)
+            for element in getattr(problem, index_list[params])
+        ):
+            elements = [
+                element
+                for element in getattr(problem, index_list[params])
+                if not ((element > 0 or element == -1) and element <= len(param_list))
+            ]
+            raise IndexError(
+                f'The problem field "{index_list[params]}" contains: {", ".join(str(i) for i in elements)}'
+                f', which lie outside of the range of "{params}"',
+            )
 
 
 def make_cells(project: RAT.Project) -> Cells:
@@ -263,21 +303,24 @@ def make_cells(project: RAT.Project) -> Cells:
     # Set contrast parameters according to model type
     if project.model == LayerModels.StandardLayers:
         if project.calculation == Calculations.Domains:
-            contrast_models = [[project.domain_contrasts.index(domain_contrast, True)
-                                for domain_contrast in contrast.model]
-                               for contrast in project.contrasts]
+            contrast_models = [
+                [project.domain_contrasts.index(domain_contrast, True) for domain_contrast in contrast.model]
+                for contrast in project.contrasts
+            ]
         else:
-            contrast_models = [[project.layers.index(layer, True) for layer in contrast.model]
-                               for contrast in project.contrasts]
+            contrast_models = [
+                [project.layers.index(layer, True) for layer in contrast.model] for contrast in project.contrasts
+            ]
     else:
         contrast_models = [[]] * len(project.contrasts)
 
     # Get details of defined layers
     layer_details = []
     for layer in project.layers:
-
-        layer_params = [project.parameters.index(getattr(layer, attribute), True)
-                        for attribute in list(layer.model_fields.keys())[1:-2]]
+        layer_params = [
+            project.parameters.index(getattr(layer, attribute), True)
+            for attribute in list(layer.model_fields.keys())[1:-2]
+        ]
         layer_params.append(project.parameters.index(layer.hydration, True) if layer.hydration else float("NaN"))
         layer_params.append(hydrate_id[layer.hydrate_with])
 
@@ -289,7 +332,6 @@ def make_cells(project: RAT.Project) -> Cells:
     simulation_limits = []
 
     for contrast in project.contrasts:
-
         data_index = project.data.index(contrast.data)
         all_data.append(project.data[data_index].data)
         data_range = project.data[data_index].data_range
@@ -337,10 +379,13 @@ def make_cells(project: RAT.Project) -> Cells:
     cells.f17 = [[[]]] * len(project.contrasts)  # Placeholder for oil chi data
     cells.f18 = [[0, 1]] * len(project.domain_contrasts)  # This is marked as "to do" in RAT
 
-    domain_contrast_models = [[project.layers.index(layer, True) for layer in domain_contrast.model]
-                              for domain_contrast in project.domain_contrasts]
-    cells.f19 = [domain_contrast_model if domain_contrast_model else 0
-                 for domain_contrast_model in domain_contrast_models]
+    domain_contrast_models = [
+        [project.layers.index(layer, True) for layer in domain_contrast.model]
+        for domain_contrast in project.domain_contrasts
+    ]
+    cells.f19 = [
+        domain_contrast_model if domain_contrast_model else 0 for domain_contrast_model in domain_contrast_models
+    ]
 
     cells.f20 = [param.name for param in project.domain_ratios]
 
@@ -372,8 +417,10 @@ def get_python_handle(file_name: str, function_name: str, path: Union[str, pathl
     return handle
 
 
-def make_controls(controls: Union[RAT.controls.Calculate, RAT.controls.Simplex, RAT.controls.DE, RAT.controls.NS,
-                                  RAT.controls.Dream], checks: Checks) -> Control:
+def make_controls(
+    controls: Union[RAT.controls.Calculate, RAT.controls.Simplex, RAT.controls.DE, RAT.controls.NS, RAT.controls.Dream],
+    checks: Checks,
+) -> Control:
     """Converts the controls object to the format required by the compiled RAT code.
 
     Parameters

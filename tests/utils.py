@@ -1,4 +1,3 @@
-
 import numpy as np
 
 import RAT.outputs
@@ -21,7 +20,6 @@ class SubInputAttributes(InputAttributes):
     """Trivial subclass of InputAttributes."""
 
 
-
 def dummy_function() -> None:
     """Trivial function for function handle tests."""
 
@@ -34,18 +32,24 @@ def check_results_equal(actual_results, expected_results) -> None:
     """
     list_fields = ["reflectivity", "simulation", "shiftedData"]
     double_list_fields = ["layerSlds", "sldProfiles", "resampledLayers"]
-    contrast_param_fields = ["backgroundParams", "scalefactors", "bulkIn", "bulkOut", "resolutionParams", "subRoughs",
-                             "resample"]
+    contrast_param_fields = [
+        "backgroundParams",
+        "scalefactors",
+        "bulkIn",
+        "bulkOut",
+        "resolutionParams",
+        "subRoughs",
+        "resample",
+    ]
 
-    assert ((isinstance(actual_results, RAT.outputs.Results) and
-             isinstance(expected_results, RAT.outputs.Results)) or
-            (isinstance(actual_results, RAT.outputs.BayesResults) and
-             isinstance(expected_results, RAT.outputs.BayesResults)))
+    assert (isinstance(actual_results, RAT.outputs.Results) and isinstance(expected_results, RAT.outputs.Results)) or (
+        isinstance(actual_results, RAT.outputs.BayesResults) and isinstance(expected_results, RAT.outputs.BayesResults)
+    )
 
     # The first set of fields are either 1D or 2D python lists containing numpy arrays.
     # Hence, we need to compare them element-wise.
     for list_field in list_fields:
-        for (a, b) in zip(getattr(actual_results, list_field), getattr(expected_results, list_field)):
+        for a, b in zip(getattr(actual_results, list_field), getattr(expected_results, list_field)):
             assert (a == b).all()
 
     for list_field in double_list_fields:
@@ -53,7 +57,7 @@ def check_results_equal(actual_results, expected_results) -> None:
         expected_list = getattr(expected_results, list_field)
         assert len(actual_list) == len(expected_list)
         for i in range(len(actual_list)):
-            for (a, b) in zip(actual_list[i], expected_list[i]):
+            for a, b in zip(actual_list[i], expected_list[i]):
                 assert (a == b).all()
 
     # Compare the final fields
@@ -71,7 +75,6 @@ def check_results_equal(actual_results, expected_results) -> None:
         check_bayes_fields_equal(actual_results, expected_results)
 
 
-
 def check_bayes_fields_equal(actual_results, expected_results) -> None:
     """Compare two instances of the "BayesResults" object for equality.
 
@@ -80,35 +83,56 @@ def check_bayes_fields_equal(actual_results, expected_results) -> None:
     # The BayesResults object consists of a number of subclasses, each containing fields of differing formats.
     subclasses = ["predictionIntervals", "confidenceIntervals", "dreamParams", "dreamOutput", "nestedSamplerOutput"]
 
-    param_fields = {"predictionIntervals": [],
-                    "confidenceIntervals": [],
-                    "dreamParams": ["nParams", "nChains", "nGenerations", "parallel", "CPU", "jumpProbability",
-                                    "pUnitGamma", "nCR", "delta", "steps", "zeta", "outlier", "adaptPCR", "thinning",
-                                    "epsilon", "ABC", "IO", "storeOutput"],
-                    "dreamOutput": ["runtime", "iteration", "modelOutput"],
-                    "nestedSamplerOutput": ["logZ"],
-                    }
+    param_fields = {
+        "predictionIntervals": [],
+        "confidenceIntervals": [],
+        "dreamParams": [
+            "nParams",
+            "nChains",
+            "nGenerations",
+            "parallel",
+            "CPU",
+            "jumpProbability",
+            "pUnitGamma",
+            "nCR",
+            "delta",
+            "steps",
+            "zeta",
+            "outlier",
+            "adaptPCR",
+            "thinning",
+            "epsilon",
+            "ABC",
+            "IO",
+            "storeOutput",
+        ],
+        "dreamOutput": ["runtime", "iteration", "modelOutput"],
+        "nestedSamplerOutput": ["logZ"],
+    }
 
-    list_fields = {"predictionIntervals": ["reflectivity", "reflectivityXData"],
-                   "confidenceIntervals": [],
-                   "dreamParams": [],
-                   "dreamOutput": [],
-                   "nestedSamplerOutput": [],
-                   }
+    list_fields = {
+        "predictionIntervals": ["reflectivity", "reflectivityXData"],
+        "confidenceIntervals": [],
+        "dreamParams": [],
+        "dreamOutput": [],
+        "nestedSamplerOutput": [],
+    }
 
-    double_list_fields = {"predictionIntervals": ["sld", "sldXData"],
-                          "confidenceIntervals": [],
-                          "dreamParams": [],
-                          "dreamOutput": [],
-                          "nestedSamplerOutput": [],
-                          }
+    double_list_fields = {
+        "predictionIntervals": ["sld", "sldXData"],
+        "confidenceIntervals": [],
+        "dreamParams": [],
+        "dreamOutput": [],
+        "nestedSamplerOutput": [],
+    }
 
-    array_fields = {"predictionIntervals": ["sampleChi"],
-                    "confidenceIntervals": ["percentile65", "percentile95", "mean"],
-                    "dreamParams": ["R"],
-                    "dreamOutput": ["allChains", "outlierChains", "AR", "R_stat", "CR"],
-                    "nestedSamplerOutput": ["nestSamples", "postSamples"],
-                    }
+    array_fields = {
+        "predictionIntervals": ["sampleChi"],
+        "confidenceIntervals": ["percentile65", "percentile95", "mean"],
+        "dreamParams": ["R"],
+        "dreamOutput": ["allChains", "outlierChains", "AR", "R_stat", "CR"],
+        "nestedSamplerOutput": ["nestSamples", "postSamples"],
+    }
 
     for subclass in subclasses:
         actual_subclass = getattr(actual_results, subclass)
@@ -118,7 +142,7 @@ def check_bayes_fields_equal(actual_results, expected_results) -> None:
             assert getattr(actual_subclass, field) == getattr(expected_subclass, field)
 
         for field in list_fields[subclass]:
-            for (a, b) in zip(getattr(actual_subclass, field), getattr(expected_subclass, field)):
+            for a, b in zip(getattr(actual_subclass, field), getattr(expected_subclass, field)):
                 assert (a == b).all()
 
         for field in double_list_fields[subclass]:
@@ -126,7 +150,7 @@ def check_bayes_fields_equal(actual_results, expected_results) -> None:
             expected_list = getattr(expected_subclass, field)
             assert len(actual_list) == len(expected_list)
             for i in range(len(actual_list)):
-                for (a, b) in zip(actual_list[i], expected_list[i]):
+                for a, b in zip(actual_list[i], expected_list[i]):
                     assert (a == b).all()
 
         # Need to account for the arrays that are initialised as "NaN" in the compiled code
@@ -134,9 +158,9 @@ def check_bayes_fields_equal(actual_results, expected_results) -> None:
             actual_array = getattr(actual_subclass, array)
             expected_array = getattr(expected_subclass, array)
             for i in range(len(actual_array)):
-                assert ((actual_array == expected_array).all() or
-                        (["NaN" if np.isnan(el) else el for el in actual_array[i]] ==
-                         ["NaN" if np.isnan(el) else el for el in expected_array[i]]))
+                assert (actual_array == expected_array).all() or (
+                    ["NaN" if np.isnan(el) else el for el in actual_array[i]]
+                    == ["NaN" if np.isnan(el) else el for el in expected_array[i]]
+                )
 
     assert (actual_results.chain == expected_results.chain).all()
-

@@ -41,19 +41,27 @@ class MatlabWrapper:
             The wrapper function for the MATLAB callback
 
         """
+
         def handle(params, bulk_in, bulk_out, contrast, domain=-1):
             if domain == -1:
-                output, sub_rough = getattr(self.engine, self.function_name)(np.array(params, "float"),
-                                                                             np.array(bulk_in, "float"),
-                                                                             np.array(bulk_out, "float"),
-                                                                             float(contrast + 1), nargout=2)
+                output, sub_rough = getattr(self.engine, self.function_name)(
+                    np.array(params, "float"),
+                    np.array(bulk_in, "float"),
+                    np.array(bulk_out, "float"),
+                    float(contrast + 1),
+                    nargout=2,
+                )
             else:
-                output, sub_rough = getattr(self.engine, self.function_name)(np.array(params, "float"),
-                                                                             np.array(bulk_in, "float"),
-                                                                             np.array(bulk_out, "float"),
-                                                                             float(contrast + 1), float(domain + 1),
-                                                                             nargout=2)
+                output, sub_rough = getattr(self.engine, self.function_name)(
+                    np.array(params, "float"),
+                    np.array(bulk_in, "float"),
+                    np.array(bulk_out, "float"),
+                    float(contrast + 1),
+                    float(domain + 1),
+                    nargout=2,
+                )
             return output, sub_rough
+
         return handle
 
 
@@ -81,10 +89,12 @@ class DylibWrapper:
             The wrapper function for the dynamic library callback
 
         """
+
         def handle(params, bulk_in, bulk_out, contrast, domain=-1):
             if domain == -1:
                 output, sub_rough = self.engine.invoke(params, bulk_in, bulk_out, contrast)
             else:
                 output, sub_rough = self.engine.invoke(params, bulk_in, bulk_out, contrast, domain)
             return output, sub_rough
+
         return handle

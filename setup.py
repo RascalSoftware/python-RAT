@@ -11,8 +11,7 @@ from setuptools.command.build_ext import build_ext
 __version__ = "0.0.0"
 
 
-libevent = ("eventManager", {"sources": ["cpp/RAT/events/eventManager.cpp"],
-                             "include_dirs": ["cpp/RAT/events/"]})
+libevent = ("eventManager", {"sources": ["cpp/RAT/events/eventManager.cpp"], "include_dirs": ["cpp/RAT/events/"]})
 
 
 ext_modules = [
@@ -35,6 +34,7 @@ def has_flag(compiler, flagname):
     import tempfile
 
     from setuptools.errors import CompileError
+
     with tempfile.NamedTemporaryFile("w", suffix=".cpp") as f:
         f.write("int main (int argc, char **argv) { return 0; }")
         try:
@@ -112,8 +112,7 @@ class BuildClib(build_clib):
     def build_libraries(self, libraries):
         # bug in distutils: flag not valid for c++
         flag = "-Wstrict-prototypes"
-        if (hasattr(self.compiler, "compiler_so")
-                and flag in self.compiler.compiler_so):
+        if hasattr(self.compiler, "compiler_so") and flag in self.compiler.compiler_so:
             self.compiler.compiler_so.remove(flag)
 
         compiler_type = self.compiler.compiler_type
@@ -122,27 +121,27 @@ class BuildClib(build_clib):
         else:
             compile_args = ["-std=c++11", "-fPIC"]
 
-        for (lib_name, build_info) in libraries:
+        for lib_name, build_info in libraries:
             build_info["cflags"] = compile_args
             macros = build_info.get("macros")
             include_dirs = build_info.get("include_dirs")
             cflags = build_info.get("cflags")
             sources = list(build_info.get("sources"))
             objects = self.compiler.compile(
-                            sources,
-                            output_dir=self.build_temp,
-                            macros=macros,
-                            include_dirs=include_dirs,
-                            extra_postargs=cflags,
-                            debug=self.debug,
-                            )
+                sources,
+                output_dir=self.build_temp,
+                macros=macros,
+                include_dirs=include_dirs,
+                extra_postargs=cflags,
+                debug=self.debug,
+            )
             language = self.compiler.detect_language(sources)
             self.compiler.link_shared_object(
                 objects,
                 get_shared_object_name(lib_name),
                 output_dir=self.build_clib,
                 target_lang=language,
-                )
+            )
 
         super().build_libraries(libraries)
 
@@ -154,8 +153,8 @@ setup(
     author_email="",
     url="https://github.com/RascalSoftware/python-RAT",
     description="Python extension for the Reflectivity Analysis Toolbox (RAT)",
-    long_description = open("README.md").read(),
-    long_description_content_type = "text/markdown",
+    long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",
     packages=find_packages(),
     include_package_data=True,
     package_data={"": [get_shared_object_name(libevent[0])], "RAT.examples": ["data/*.dat"]},
@@ -164,14 +163,16 @@ setup(
     ext_modules=ext_modules,
     python_requires=">=3.9",
     install_requires=["numpy >= 1.20", "prettytable >= 3.9.0", "pydantic >= 2.7.2", "matplotlib >= 3.8.3"],
-    extras_require={':python_version < "3.11"': ["StrEnum >= 0.4.15"],
-                    "Dev": ["pytest>=7.4.0", "pytest-cov>=4.1.0"],
-                    "Matlab_latest": ["matlabengine"],
-                    "Matlab_2023b": ["matlabengine == 23.2.1"],
-                    "Matlab_2023a": ["matlabengine == 9.14.3"],
-                    "Matlab-2022b": ["matlabengine == 9.13.9"],
-                    "Matlab_2022a": ["matlabengine == 9.12.19"],
-                    "Matlab_2021b": ["matlabengine == 9.11.21"],
-                    "Matlab_2021a": ["matlabengine == 9.10.3"]},
+    extras_require={
+        ':python_version < "3.11"': ["StrEnum >= 0.4.15"],
+        "Dev": ["pytest>=7.4.0", "pytest-cov>=4.1.0"],
+        "Matlab_latest": ["matlabengine"],
+        "Matlab_2023b": ["matlabengine == 23.2.1"],
+        "Matlab_2023a": ["matlabengine == 9.14.3"],
+        "Matlab-2022b": ["matlabengine == 9.13.9"],
+        "Matlab_2022a": ["matlabengine == 9.12.19"],
+        "Matlab_2021b": ["matlabengine == 9.11.21"],
+        "Matlab_2021a": ["matlabengine == 9.10.3"],
+    },
     zip_safe=False,
 )
