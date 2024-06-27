@@ -2,8 +2,7 @@
 
 import pathlib
 
-import RAT
-import RAT.utils.plotting
+import RATpy as RAT
 
 problem = RAT.Project(calculation="domains", model="custom xy", geometry="substrate/liquid")
 
@@ -67,4 +66,4 @@ problem.contrasts.append(
 controls = RAT.set_controls()
 problem, results = RAT.run(problem, controls)
 
-RAT.utils.plotting.plot_ref_sld(problem, results, True)
+RAT.plotting.plot_ref_sld(problem, results, True)

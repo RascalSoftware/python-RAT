@@ -9,14 +9,17 @@ from setuptools.command.build_clib import build_clib
 from setuptools.command.build_ext import build_ext
 
 __version__ = "0.0.0"
+PACKAGE_NAME = "RATpy"
 
+with open("README.md") as f:
+    LONG_DESCRIPTION = f.read()
 
 libevent = ("eventManager", {"sources": ["cpp/RAT/events/eventManager.cpp"], "include_dirs": ["cpp/RAT/events/"]})
 
 
 ext_modules = [
     Extension(
-        "RAT.rat_core",
+        "RATpy.rat_core",
         sources=["cpp/rat.cpp", *glob("cpp/RAT/*.c*")],
         include_dirs=[
             # Path to pybind11 headers
@@ -91,15 +94,15 @@ class BuildExt(build_ext):
     def run(self):
         super().run()
         build_py = self.get_finalized_command("build_py")
-        package_dir = f"{build_py.build_lib}/RAT/"
+        package_dir = f"{build_py.build_lib}/{PACKAGE_NAME}/"
         for p in Path(package_dir).glob("**/*"):
             if p.suffix in {".exp", ".a", ".lib"}:
                 p.unlink()
 
         if self.inplace:
             obj_name = get_shared_object_name(libevent[0])
-            src = f"{build_py.build_lib}/RAT/{obj_name}"
-            dest = f'{build_py.get_package_dir("RAT")}/{obj_name}'
+            src = f"{build_py.build_lib}/{PACKAGE_NAME}/{obj_name}"
+            dest = f"{build_py.get_package_dir(PACKAGE_NAME)}/{obj_name}"
             build_py.copy_file(src, dest)
 
 
@@ -107,7 +110,7 @@ class BuildClib(build_clib):
     def initialize_options(self):
         super().initialize_options()
         build_py = self.get_finalized_command("build_py")
-        self.build_clib = f"{build_py.build_lib}/RAT"
+        self.build_clib = f"{build_py.build_lib}/{PACKAGE_NAME}"
 
     def build_libraries(self, libraries):
         # bug in distutils: flag not valid for c++
@@ -147,17 +150,17 @@ class BuildClib(build_clib):
 
 
 setup(
-    name="RAT",
+    name=PACKAGE_NAME,
     version=__version__,
     author="",
     author_email="",
     url="https://github.com/RascalSoftware/python-RAT",
     description="Python extension for the Reflectivity Analysis Toolbox (RAT)",
-    long_description=open("README.md").read(),  # noqa: SIM115
+    long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
     packages=find_packages(),
     include_package_data=True,
-    package_data={"": [get_shared_object_name(libevent[0])], "RAT.examples": ["data/*.dat"]},
+    package_data={"": [get_shared_object_name(libevent[0])], "RATpy.examples": ["data/*.dat"]},
     cmdclass={"build_clib": BuildClib, "build_ext": BuildExt},
     libraries=[libevent],
     ext_modules=ext_modules,

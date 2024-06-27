@@ -28,8 +28,7 @@ import pathlib
 
 import numpy as np
 
-import RAT
-import RAT.utils.plotting
+import RATpy as RAT
 
 # Start by making the class and setting it to a custom layers type:
 problem = RAT.Project(name="Orso lipid example - custom XY", model="custom xy", geometry="substrate/liquid")
@@ -138,4 +137,4 @@ problem.contrasts.append(
 controls = RAT.set_controls()
 
 problem, results = RAT.run(problem, controls)
-RAT.utils.plotting.plot_ref_sld(problem, results, True)
+RAT.plotting.plot_ref_sld(problem, results, True)

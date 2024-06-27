@@ -4,8 +4,8 @@ from typing import Literal, Union
 import prettytable
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
-from RAT.utils.custom_errors import custom_pydantic_validation_error
-from RAT.utils.enums import BoundHandling, Display, Parallel, Procedures, Strategies
+from RATpy.utils.custom_errors import custom_pydantic_validation_error
+from RATpy.utils.enums import BoundHandling, Display, Parallel, Procedures, Strategies
 
 
 @dataclass(frozen=True)

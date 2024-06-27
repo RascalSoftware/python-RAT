@@ -1,6 +1,6 @@
-import RAT.rat_core
-from RAT.inputs import make_input
-from RAT.outputs import make_results
+import RATpy.rat_core
+from RATpy.inputs import make_input
+from RATpy.outputs import make_results
 
 
 def run(project, controls):
@@ -17,7 +17,7 @@ def run(project, controls):
 
     problem_definition, cells, limits, priors, cpp_controls = make_input(project, controls)
 
-    problem_definition, output_results, bayes_results = RAT.rat_core.RATMain(
+    problem_definition, output_results, bayes_results = RATpy.rat_core.RATMain(
         problem_definition,
         cells,
         limits,
@@ -28,7 +28,7 @@ def run(project, controls):
     results = make_results(controls.procedure, output_results, bayes_results)
 
     # Update parameter values in project
-    for class_list in RAT.project.parameter_class_lists:
+    for class_list in RATpy.project.parameter_class_lists:
         for index, value in enumerate(getattr(problem_definition, parameter_field[class_list])):
             getattr(project, class_list)[index].value = value
 

@@ -3,20 +3,20 @@ from unittest import mock
 
 import pytest
 
-import RAT.wrappers
+import RATpy.wrappers
 
 
 def test_matlab_wrapper() -> None:
     with mock.patch.dict("sys.modules", {"matlab": mock.MagicMock(side_effect=ImportError)}), pytest.raises(
         ImportError,
     ):
-        RAT.wrappers.MatlabWrapper("demo.m")
+        RATpy.wrappers.MatlabWrapper("demo.m")
     mocked_matlab_module = mock.MagicMock()
     mocked_engine = mock.MagicMock()
     mocked_matlab_module.engine.start_matlab.return_value = mocked_engine
 
     with mock.patch.dict("sys.modules", {"matlab": mocked_matlab_module, "matlab.engine": mocked_matlab_module.engine}):
-        wrapper = RAT.wrappers.MatlabWrapper("demo.m")
+        wrapper = RATpy.wrappers.MatlabWrapper("demo.m")
         assert wrapper.function_name == "demo"
         mocked_engine.cd.assert_called_once()
         assert pathlib.Path(mocked_engine.cd.call_args[0][0]).samefile(".")
@@ -38,8 +38,8 @@ def test_matlab_wrapper() -> None:
 
 def test_dylib_wrapper() -> None:
     mocked_engine = mock.MagicMock()
-    with mock.patch("RAT.wrappers.RAT.rat_core.DylibEngine", mocked_engine):
-        wrapper = RAT.wrappers.DylibWrapper("demo.dylib", "demo")
+    with mock.patch("RATpy.wrappers.RATpy.rat_core.DylibEngine", mocked_engine):
+        wrapper = RATpy.wrappers.DylibWrapper("demo.dylib", "demo")
         mocked_engine.assert_called_once_with("demo.dylib", "demo")
 
         wrapper.engine.invoke.return_value = ([2], 5)

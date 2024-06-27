@@ -1,0 +1,45 @@
+name: Build and upload to PyPI
+
+on:
+  release:
+    types:
+        - published
+  workflow_dispatch:
+
+jobs:
+  build_wheels:
+    uses: RascalSoftware/python-RAT/.github/workflows/build_wheel.yml@main
+
+  build_sdist:
+    name: Build source distribution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build sdist
+        run: |
+          pip install pybind11
+          python setup.py sdist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: dist/*.tar.gz
+
+  upload_pypi:
+    needs: [build_wheels, build_sdist]
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Publish to TestPyPi
+        if: github.event_name == 'workflow_dispatch' 
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+      - name: Publish
+        if: github.event_name == 'release'
+        uses: pypa/gh-action-pypi-publish@release/v1
