@@ -5,8 +5,7 @@ import pathlib
 
 import numpy as np
 
-import RAT
-import RAT.utils.plotting
+import RATpy as RAT
 
 problem = RAT.Project(
     name="Absorption example",
@@ -146,4 +145,4 @@ controls = RAT.set_controls(parallel="contrasts", resampleParams=[0.9, 150.0])
 
 # Run the code and plot the results
 problem, results = RAT.run(problem, controls)
-RAT.utils.plotting.plot_ref_sld(problem, results, True)
+RAT.plotting.plot_ref_sld(problem, results, True)

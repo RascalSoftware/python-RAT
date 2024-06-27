@@ -1,6 +1,7 @@
+import os
 from typing import Callable, List, Union
 
-from RAT.rat_core import EventBridge, EventTypes, PlotEventData, ProgressEventData
+from RATpy.rat_core import EventBridge, EventTypes, PlotEventData, ProgressEventData
 
 
 def notify(event_type: EventTypes, data: Union[str, PlotEventData, ProgressEventData]) -> None:
@@ -63,5 +64,7 @@ def clear() -> None:
         __event_callbacks[key] = set()
 
 
+dir_path = os.path.dirname(os.path.realpath(__file__))
+os.environ["RAT_PATH"] = os.path.join(dir_path, "")
 __event_impl = EventBridge(notify)
 __event_callbacks = {EventTypes.Message: set(), EventTypes.Plot: set(), EventTypes.Progress: set()}

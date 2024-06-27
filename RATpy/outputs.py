@@ -5,8 +5,8 @@ from typing import Optional, Union
 
 import numpy as np
 
-import RAT.rat_core
-from RAT.utils.enums import Procedures
+import RATpy.rat_core
+from RATpy.utils.enums import Procedures
 
 
 @dataclass
@@ -110,8 +110,8 @@ class BayesResults(Results):
 
 def make_results(
     procedure: Procedures,
-    output_results: RAT.rat_core.OutputResult,
-    bayes_results: Optional[RAT.rat_core.BayesResults] = None,
+    output_results: RATpy.rat_core.OutputResult,
+    bayes_results: Optional[RATpy.rat_core.BayesResults] = None,
 ) -> Union[Results, BayesResults]:
     """Initialise a python Results or BayesResults object using the outputs from a RAT calculation."""
     calculation_results = CalculationResults(

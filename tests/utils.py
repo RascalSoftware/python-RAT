@@ -1,6 +1,6 @@
 import numpy as np
 
-import RAT.outputs
+import RATpy.outputs
 
 
 class InputAttributes:
@@ -42,8 +42,11 @@ def check_results_equal(actual_results, expected_results) -> None:
         "resample",
     ]
 
-    assert (isinstance(actual_results, RAT.outputs.Results) and isinstance(expected_results, RAT.outputs.Results)) or (
-        isinstance(actual_results, RAT.outputs.BayesResults) and isinstance(expected_results, RAT.outputs.BayesResults)
+    assert (
+        isinstance(actual_results, RATpy.outputs.Results) and isinstance(expected_results, RATpy.outputs.Results)
+    ) or (
+        isinstance(actual_results, RATpy.outputs.BayesResults)
+        and isinstance(expected_results, RATpy.outputs.BayesResults)
     )
 
     # The first set of fields are either 1D or 2D python lists containing numpy arrays.
@@ -71,7 +74,9 @@ def check_results_equal(actual_results, expected_results) -> None:
     for field in contrast_param_fields:
         assert (getattr(actual_results.contrastParams, field) == getattr(expected_results.contrastParams, field)).all()
 
-    if isinstance(actual_results, RAT.outputs.BayesResults) and isinstance(expected_results, RAT.outputs.BayesResults):
+    if isinstance(actual_results, RATpy.outputs.BayesResults) and isinstance(
+        expected_results, RATpy.outputs.BayesResults
+    ):
         check_bayes_fields_equal(actual_results, expected_results)
 
 

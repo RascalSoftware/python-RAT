@@ -6,10 +6,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes._axes import Axes
 
-import RAT
-import RAT.inputs
-import RAT.outputs
-from RAT.rat_core import PlotEventData, makeSLDProfileXY
+import RATpy
+import RATpy.inputs
+import RATpy.outputs
+from RATpy.rat_core import PlotEventData, makeSLDProfileXY
 
 
 class Figure:
@@ -177,8 +177,8 @@ def plot_ref_sld_helper(data: PlotEventData, fig: Optional[Figure] = None, delay
 
 
 def plot_ref_sld(
-    project: RAT.Project,
-    results: Union[RAT.outputs.Results, RAT.outputs.BayesResults],
+    project: RATpy.Project,
+    results: Union[RATpy.outputs.Results, RATpy.outputs.BayesResults],
     block: bool = False,
 ):
     """Plots the reflectivity and SLD profiles.
@@ -200,9 +200,9 @@ def plot_ref_sld(
     data.shiftedData = results.shiftedData
     data.sldProfiles = results.sldProfiles
     data.resampledLayers = results.resampledLayers
-    data.dataPresent = RAT.inputs.make_data_present(project)
+    data.dataPresent = RATpy.inputs.make_data_present(project)
     data.subRoughs = results.contrastParams.subRoughs
-    data.resample = RAT.inputs.make_resample(project)
+    data.resample = RATpy.inputs.make_resample(project)
 
     figure = Figure(1, 2)
 

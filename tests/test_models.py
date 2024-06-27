@@ -7,20 +7,24 @@ import numpy as np
 import pydantic
 import pytest
 
-import RAT.models
+import RATpy.models
 
 
 @pytest.mark.parametrize(
     ["model", "model_name", "model_params"],
     [
-        (RAT.models.Background, "Background", {}),
-        (RAT.models.Contrast, "Contrast", {}),
-        (RAT.models.CustomFile, "Custom File", {}),
-        (RAT.models.Data, "Data", {}),
-        (RAT.models.DomainContrast, "Domain Contrast", {}),
-        (RAT.models.Layer, "Layer", {"thickness": "Test Thickness", "SLD": "Test SLD", "roughness": "Test Roughness"}),
-        (RAT.models.Parameter, "Parameter", {}),
-        (RAT.models.Resolution, "Resolution", {}),
+        (RATpy.models.Background, "Background", {}),
+        (RATpy.models.Contrast, "Contrast", {}),
+        (RATpy.models.CustomFile, "Custom File", {}),
+        (RATpy.models.Data, "Data", {}),
+        (RATpy.models.DomainContrast, "Domain Contrast", {}),
+        (
+            RATpy.models.Layer,
+            "Layer",
+            {"thickness": "Test Thickness", "SLD": "Test SLD", "roughness": "Test Roughness"},
+        ),
+        (RATpy.models.Parameter, "Parameter", {}),
+        (RATpy.models.Resolution, "Resolution", {}),
     ],
 )
 def test_default_names(model: Callable, model_name: str, model_params: dict) -> None:
@@ -41,15 +45,15 @@ def test_default_names(model: Callable, model_name: str, model_params: dict) -> 
 @pytest.mark.parametrize(
     ["model", "model_params"],
     [
-        (RAT.models.Background, {}),
-        (RAT.models.Contrast, {}),
-        (RAT.models.ContrastWithRatio, {}),
-        (RAT.models.CustomFile, {}),
-        (RAT.models.Data, {}),
-        (RAT.models.DomainContrast, {}),
-        (RAT.models.Layer, {"thickness": "Test Thickness", "SLD": "Test SLD", "roughness": "Test Roughness"}),
+        (RATpy.models.Background, {}),
+        (RATpy.models.Contrast, {}),
+        (RATpy.models.ContrastWithRatio, {}),
+        (RATpy.models.CustomFile, {}),
+        (RATpy.models.Data, {}),
+        (RATpy.models.DomainContrast, {}),
+        (RATpy.models.Layer, {"thickness": "Test Thickness", "SLD": "Test SLD", "roughness": "Test Roughness"}),
         (
-            RAT.models.AbsorptionLayer,
+            RATpy.models.AbsorptionLayer,
             {
                 "thickness": "Test Thickness",
                 "SLD_real": "Test SLD",
@@ -57,8 +61,8 @@ def test_default_names(model: Callable, model_name: str, model_params: dict) -> 
                 "roughness": "Test Roughness",
             },
         ),
-        (RAT.models.Parameter, {}),
-        (RAT.models.Resolution, {}),
+        (RATpy.models.Parameter, {}),
+        (RATpy.models.Resolution, {}),
     ],
 )
 class TestModels:
@@ -100,7 +104,7 @@ def test_data_eq() -> None:
     """If we use the Data.__eq__ method with an object that is not a pydantic BaseModel, we should return
     "NotImplemented".
     """
-    assert RAT.models.Data().__eq__("data") == NotImplemented
+    assert RATpy.models.Data().__eq__("data") == NotImplemented
 
 
 @pytest.mark.parametrize(
@@ -113,7 +117,7 @@ def test_data_dimension(input_data: np.ndarray[float]) -> None:
     """The "data" field of the "Data" model should be a two-dimensional numpy array with at least three values in the
     second dimension.
     """
-    test_data = RAT.models.Data(data=input_data)
+    test_data = RATpy.models.Data(data=input_data)
     assert (test_data.data == input_data).all()
 
 
@@ -132,7 +136,7 @@ def test_data_too_few_dimensions(input_data: np.ndarray[float]) -> None:
         pydantic.ValidationError,
         match='1 validation error for Data\ndata\n  Value error, "data" must ' "have at least two dimensions",
     ):
-        RAT.models.Data(data=input_data)
+        RATpy.models.Data(data=input_data)
 
 
 @pytest.mark.parametrize(
@@ -151,7 +155,7 @@ def test_data_too_few_values(input_data: np.ndarray[float]) -> None:
         pydantic.ValidationError,
         match='1 validation error for Data\ndata\n  Value error, "data" must ' "have at least three columns",
     ):
-        RAT.models.Data(data=input_data)
+        RATpy.models.Data(data=input_data)
 
 
 @pytest.mark.parametrize(
@@ -162,8 +166,8 @@ def test_data_too_few_values(input_data: np.ndarray[float]) -> None:
 )
 def test_data_ranges(input_range: list[float]) -> None:
     """The "data_range" and "simulation_range" fields of the "Data" model should contain exactly two values."""
-    assert RAT.models.Data(data_range=input_range).data_range == input_range
-    assert RAT.models.Data(simulation_range=input_range).simulation_range == input_range
+    assert RATpy.models.Data(data_range=input_range).data_range == input_range
+    assert RATpy.models.Data(simulation_range=input_range).simulation_range == input_range
 
 
 @pytest.mark.parametrize(
@@ -184,7 +188,7 @@ def test_two_values_in_data_range(input_range: list[float]) -> None:
         f'at {"least" if len(input_range) < 2 else "most"} 2 items '
         f'after validation, not {len(input_range)}',
     ):
-        RAT.models.Data(data_range=input_range)
+        RATpy.models.Data(data_range=input_range)
 
 
 @pytest.mark.parametrize(
@@ -205,7 +209,7 @@ def test_two_values_in_simulation_range(input_range: list[float]) -> None:
         f'have at {"least" if len(input_range) < 2 else "most"} 2 items '
         f'after validation, not {len(input_range)}',
     ):
-        RAT.models.Data(simulation_range=input_range)
+        RATpy.models.Data(simulation_range=input_range)
 
 
 @pytest.mark.parametrize(
@@ -224,14 +228,14 @@ def test_min_max_in_range(field: str) -> None:
         match=f"1 validation error for Data\n{field}\n  Value error, {field} "
         f'"min" value is greater than the "max" value',
     ):
-        RAT.models.Data(**{field: [1.0, 0.0]})
+        RATpy.models.Data(**{field: [1.0, 0.0]})
 
 
 def test_default_ranges() -> None:
     """If "data" is specified but either the "data_range" or "simulation_range" fields are not, we set the ranges to
     the minimum and maximum values of the first column of the data.
     """
-    test_data = RAT.models.Data(data=np.array([[1.0, 0.0, 0.0], [3.0, 0.0, 0.0]]))
+    test_data = RATpy.models.Data(data=np.array([[1.0, 0.0, 0.0], [3.0, 0.0, 0.0]]))
     assert test_data.data_range == [1.0, 3.0]
     assert test_data.simulation_range == [1.0, 3.0]
 
@@ -256,7 +260,7 @@ def test_data_range(test_range) -> None:
             f"the min/max values of the data: [1.0, 3.0]",
         ),
     ):
-        RAT.models.Data(data=np.array([[1.0, 0.0, 0.0], [3.0, 0.0, 0.0]]), data_range=test_range)
+        RATpy.models.Data(data=np.array([[1.0, 0.0, 0.0], [3.0, 0.0, 0.0]]), data_range=test_range)
 
 
 @pytest.mark.parametrize(
@@ -280,7 +284,7 @@ def test_simulation_range(test_range) -> None:
             f"[1.0, 3.0]",
         ),
     ):
-        RAT.models.Data(data=np.array([[1.0, 0.0, 0.0], [3.0, 0.0, 0.0]]), simulation_range=test_range)
+        RATpy.models.Data(data=np.array([[1.0, 0.0, 0.0], [3.0, 0.0, 0.0]]), simulation_range=test_range)
 
 
 @pytest.mark.parametrize(
@@ -301,4 +305,4 @@ def test_parameter_range(minimum: float, value: float, maximum: float) -> None:
         f"{float(value)} is not within the defined range: "
         f"{float(minimum)} <= value <= {float(maximum)}",
     ):
-        RAT.models.Parameter(min=minimum, value=value, max=maximum)
+        RATpy.models.Parameter(min=minimum, value=value, max=maximum)

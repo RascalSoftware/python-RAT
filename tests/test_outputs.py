@@ -5,10 +5,10 @@ We use the example for both a reflectivity calculation, and Bayesian analysis us
 
 import pytest
 
-import RAT
-import RAT.outputs
-import RAT.rat_core
-from RAT.utils.enums import Procedures
+import RATpy
+import RATpy.outputs
+import RATpy.rat_core
+from RATpy.utils.enums import Procedures
 from tests.utils import check_results_equal
 
 
@@ -26,6 +26,6 @@ def test_make_results(test_procedure, test_output_results, test_bayes, test_resu
         test_bayes = request.getfixturevalue(test_bayes)
 
     test_results = request.getfixturevalue(test_results)
-    results = RAT.outputs.make_results(test_procedure, test_output_results, test_bayes)
+    results = RATpy.outputs.make_results(test_procedure, test_output_results, test_bayes)
 
     check_results_equal(test_results, results)

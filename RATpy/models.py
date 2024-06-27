@@ -6,7 +6,7 @@ from typing import Any, Union
 import numpy as np
 from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
 
-from RAT.utils.enums import BackgroundActions, Hydration, Languages, Priors, TypeOptions
+from RATpy.utils.enums import BackgroundActions, Hydration, Languages, Priors, TypeOptions
 
 try:
     from enum import StrEnum

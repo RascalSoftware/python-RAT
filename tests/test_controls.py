@@ -5,8 +5,8 @@ from typing import Any, Union
 import pydantic
 import pytest
 
-from RAT.controls import DE, NS, Calculate, Dream, Simplex, set_controls
-from RAT.utils.enums import BoundHandling, Display, Parallel, Procedures, Strategies
+from RATpy.controls import DE, NS, Calculate, Dream, Simplex, set_controls
+from RATpy.utils.enums import BoundHandling, Display, Parallel, Procedures, Strategies
 
 
 class TestCalculate:

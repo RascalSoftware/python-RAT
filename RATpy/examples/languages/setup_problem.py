@@ -8,7 +8,7 @@ import pathlib
 
 import numpy as np
 
-import RAT
+import RATpy as RAT
 
 
 def make_example_problem():
