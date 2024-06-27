@@ -983,7 +983,6 @@ def test_write_script(test_project, temp_dir, test_project_script, input_filenam
     # Test the contents of the file are as expected
     with open(script_path) as f:
         script = f.read()
-        print(script)
 
     assert script == test_project_script
 
