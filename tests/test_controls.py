@@ -479,7 +479,7 @@ class TestDream:
             ("resampleParams", [0.9, 50]),
             ("display", Display.Iter),
             ("procedure", Procedures.Dream),
-            ("nSamples", 2000),
+            ("nSamples", 20000),
             ("nChains", 10),
             ("jumpProbability", 0.5),
             ("pUnitGamma", 0.2),
@@ -570,7 +570,7 @@ class TestDream:
             "| calcSldDuringFit |   False   |\n"
             "|  resampleParams  | [0.9, 50] |\n"
             "|     display      |    iter   |\n"
-            "|     nSamples     |    2000   |\n"
+            "|     nSamples     |   20000   |\n"
             "|     nChains      |     10    |\n"
             "| jumpProbability  |    0.5    |\n"
             "|    pUnitGamma    |    0.2    |\n"

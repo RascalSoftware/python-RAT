@@ -38,7 +38,7 @@ class Controls:
     propScale: float = 0.1
     nsTolerance: float = 0.1
     # Dream
-    nSamples: int = 2000
+    nSamples: int = 20000
     nChains: int = 10
     jumpProbability: float = 0.5
     pUnitGamma: float = 0.2
@@ -109,7 +109,7 @@ class Dream(Calculate):
     """Defines the additional fields for the Dream procedure."""
 
     procedure: Literal[Procedures.Dream] = Procedures.Dream
-    nSamples: int = Field(2000, ge=0)
+    nSamples: int = Field(20000, ge=0)
     nChains: int = Field(10, gt=0)
     jumpProbability: float = Field(0.5, gt=0.0, lt=1.0)
     pUnitGamma: float = Field(0.2, gt=0.0, lt=1.0)

@@ -488,7 +488,7 @@ def standard_layers_controls():
     controls.nMCMC = 0.0
     controls.propScale = 0.1
     controls.nsTolerance = 0.1
-    controls.nSamples = 2000
+    controls.nSamples = 20000
     controls.nChains = 10
     controls.jumpProbability = 0.5
     controls.pUnitGamma = 0.2
@@ -533,7 +533,7 @@ def custom_xy_controls():
     controls.nMCMC = 0.0
     controls.propScale = 0.1
     controls.nsTolerance = 0.1
-    controls.nSamples = 2000
+    controls.nSamples = 20000
     controls.nChains = 10
     controls.jumpProbability = 0.5
     controls.pUnitGamma = 0.2
