@@ -479,11 +479,12 @@ class TestDream:
             ("resampleParams", [0.9, 50]),
             ("display", Display.Iter),
             ("procedure", Procedures.Dream),
-            ("nSamples", 50000),
+            ("nSamples", 20000),
             ("nChains", 10),
             ("jumpProbability", 0.5),
             ("pUnitGamma", 0.2),
-            ("boundHandling", BoundHandling.Fold),
+            ("boundHandling", BoundHandling.Reflect),
+            ("adaptPCR", True),
         ],
     )
     def test_dream_property_values(self, control_property: str, value: Any) -> None:
@@ -501,7 +502,8 @@ class TestDream:
             ("nChains", 1000),
             ("jumpProbability", 0.7),
             ("pUnitGamma", 0.3),
-            ("boundHandling", BoundHandling.Reflect),
+            ("boundHandling", BoundHandling.Fold),
+            ("adaptPCR", False),
         ],
     )
     def test_dream_property_setters(self, control_property: str, value: Any) -> None:
@@ -568,12 +570,12 @@ class TestDream:
             "| calcSldDuringFit |   False   |\n"
             "|  resampleParams  | [0.9, 50] |\n"
             "|     display      |    iter   |\n"
-            "|     nSamples     |   50000   |\n"
+            "|     nSamples     |   20000   |\n"
             "|     nChains      |     10    |\n"
             "| jumpProbability  |    0.5    |\n"
             "|    pUnitGamma    |    0.2    |\n"
-            "|  boundHandling   |    fold   |\n"
-            "|     adaptPCR     |   False   |\n"
+            "|  boundHandling   |  reflect  |\n"
+            "|     adaptPCR     |    True   |\n"
             "+------------------+-----------+"
         )
 
