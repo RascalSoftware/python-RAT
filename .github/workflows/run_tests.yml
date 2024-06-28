@@ -49,4 +49,4 @@ jobs:
       - name: Install and Test with pytest
         run: |
           python -m pip install -e .[Dev]
-          pytest tests/ --cov=${{ github.event.repository.name }} --cov-report=html:htmlcov --cov-report=term
+          pytest tests/ --cov=RATpy --cov-report=term

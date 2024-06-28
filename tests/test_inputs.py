@@ -618,13 +618,14 @@ def test_make_input(test_project, test_problem, test_cells, test_limits, test_pr
         "domainRatio",
     ]
 
-    mocked_matlab_module = mock.MagicMock()
+    mocked_matlab_future = mock.MagicMock()
     mocked_engine = mock.MagicMock()
-    mocked_matlab_module.engine.start_matlab.return_value = mocked_engine
+    mocked_matlab_future.result.return_value = mocked_engine
 
-    with mock.patch.dict(
-        "sys.modules",
-        {"matlab": mocked_matlab_module, "matlab.engine": mocked_matlab_module.engine},
+    with mock.patch.object(
+        RATpy.wrappers.MatlabWrapper,
+        "loader",
+        mocked_matlab_future,
     ), mock.patch.object(RATpy.rat_core, "DylibEngine", mock.MagicMock()), mock.patch.object(
         RATpy.inputs,
         "get_python_handle",
@@ -757,13 +758,13 @@ def test_make_cells(test_project, test_cells, request) -> None:
     test_project = request.getfixturevalue(test_project)
     test_cells = request.getfixturevalue(test_cells)
 
-    mocked_matlab_module = mock.MagicMock()
-    mocked_matlab_engine = mock.MagicMock()
-    mocked_matlab_module.engine.start_matlab.return_value = mocked_matlab_engine
-
-    with mock.patch.dict(
-        "sys.modules",
-        {"matlab": mocked_matlab_module, "matlab.engine": mocked_matlab_module.engine},
+    mocked_matlab_future = mock.MagicMock()
+    mocked_engine = mock.MagicMock()
+    mocked_matlab_future.result.return_value = mocked_engine
+    with mock.patch.object(
+        RATpy.wrappers.MatlabWrapper,
+        "loader",
+        mocked_matlab_future,
     ), mock.patch.object(RATpy.rat_core, "DylibEngine", mock.MagicMock()), mock.patch.object(
         RATpy.inputs,
         "get_python_handle",

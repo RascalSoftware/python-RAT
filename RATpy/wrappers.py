@@ -1,10 +1,30 @@
 import pathlib
+from contextlib import suppress
 from typing import Callable, Tuple
 
 import numpy as np
 from numpy.typing import ArrayLike
 
 import RATpy.rat_core
+
+
+def start_matlab():
+    """Starts MATLAB asynchronously and returns a future to retrieve the engine later
+
+    Returns
+    -------
+    future : matlab.engine.futureresult.FutureResult
+        A future used to get the actual matlab engine
+
+    """
+    future = None
+    with suppress(ImportError):
+        import matlab.engine
+
+        future = matlab.engine.start_matlab(background=True)
+        print(future)
+
+    return future
 
 
 class MatlabWrapper:
@@ -17,20 +37,16 @@ class MatlabWrapper:
 
     """
 
+    loader = start_matlab()
+
     def __init__(self, filename: str) -> None:
-        self.engine = None
-        try:
-            import matlab.engine
-        except ImportError:
+        if self.loader is None:
             raise ImportError("matlabengine is required to use MatlabWrapper") from None
-        self.engine = matlab.engine.start_matlab()
+
+        self.engine = self.loader.result()
         path = pathlib.Path(filename)
         self.engine.cd(str(path.parent), nargout=0)
         self.function_name = path.stem
-
-    def __del__(self):
-        if self.engine is not None:
-            self.engine.quit()
 
     def getHandle(self) -> Callable[[ArrayLike, ArrayLike, ArrayLike, int, int], Tuple[ArrayLike, float]]:
         """Returns a wrapper for the custom MATLAB function
