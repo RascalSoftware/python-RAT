@@ -22,7 +22,6 @@ def start_matlab():
         import matlab.engine
 
         future = matlab.engine.start_matlab(background=True)
-        print(future)
 
     return future
 
