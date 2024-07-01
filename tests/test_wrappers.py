@@ -7,15 +7,16 @@ import RATpy.wrappers
 
 
 def test_matlab_wrapper() -> None:
-    with mock.patch.dict("sys.modules", {"matlab": mock.MagicMock(side_effect=ImportError)}), pytest.raises(
-        ImportError,
+    with (
+        mock.patch.object(RATpy.wrappers.MatlabWrapper, "loader", None),
+        pytest.raises(ImportError),
     ):
         RATpy.wrappers.MatlabWrapper("demo.m")
-    mocked_matlab_module = mock.MagicMock()
-    mocked_engine = mock.MagicMock()
-    mocked_matlab_module.engine.start_matlab.return_value = mocked_engine
 
-    with mock.patch.dict("sys.modules", {"matlab": mocked_matlab_module, "matlab.engine": mocked_matlab_module.engine}):
+    mocked_matlab_future = mock.MagicMock()
+    mocked_engine = mock.MagicMock()
+    mocked_matlab_future.result.return_value = mocked_engine
+    with mock.patch.object(RATpy.wrappers.MatlabWrapper, "loader", mocked_matlab_future):
         wrapper = RATpy.wrappers.MatlabWrapper("demo.m")
         assert wrapper.function_name == "demo"
         mocked_engine.cd.assert_called_once()
