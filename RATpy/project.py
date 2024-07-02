@@ -485,6 +485,9 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
                     output += repr(value) + "\n\n"
         return output
 
+    def __str__(self) -> str:
+        return self.__repr__()
+
     def get_all_names(self):
         """Record the names of all models defined in the project."""
         return {class_list: getattr(self, class_list).get_names() for class_list in class_lists}

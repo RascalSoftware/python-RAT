@@ -5,7 +5,7 @@ from typing import Any, Union
 import pydantic
 import pytest
 
-from RATpy.controls import DE, NS, Calculate, Dream, Simplex, set_controls
+from RATpy.controls import Controls
 from RATpy.utils.enums import BoundHandling, Display, Parallel, Procedures, Strategies
 
 
@@ -14,7 +14,7 @@ class TestCalculate:
 
     @pytest.fixture(autouse=True)
     def setup_class(self):
-        self.calculate = Calculate()
+        self.calculate = Controls()
 
     @pytest.mark.parametrize(
         "control_property, value",
@@ -100,14 +100,14 @@ class TestCalculate:
     def test_calculate_initialise_procedure_error(self) -> None:
         """Tests the procedure property can only be initialised as "calculate" in Calculate class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            Calculate(procedure="test")
-        assert exp.value.errors()[0]["msg"] == "Input should be <Procedures.Calculate: 'calculate'>"
+            Controls(procedure="test")
+        assert exp.value.errors()[0]["msg"] == "Input should be 'calculate', 'simplex', 'de', 'ns' or 'dream'"
 
     def test_calculate_set_procedure_error(self) -> None:
         """Tests the procedure property is frozen in Calculate class."""
         with pytest.raises(pydantic.ValidationError) as exp:
             self.calculate.procedure = "test"
-        assert exp.value.errors()[0]["msg"] == "Input should be <Procedures.Calculate: 'calculate'>"
+        assert exp.value.errors()[0]["msg"] == "Input should be 'calculate', 'simplex', 'de', 'ns' or 'dream'"
 
     def test_repr(self) -> None:
         """Tests the Calculate model __repr__."""
@@ -132,7 +132,7 @@ class TestSimplex:
 
     @pytest.fixture(autouse=True)
     def setup_class(self):
-        self.simplex = Simplex()
+        self.simplex = Controls(procedure=Procedures.Simplex)
 
     @pytest.mark.parametrize(
         "control_property, value",
@@ -198,14 +198,14 @@ class TestSimplex:
     def test_simplex_initialise_procedure_error(self) -> None:
         """Tests the procedure property can only be initialised as "simplex" in Simplex class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            Simplex(procedure="test")
-        assert exp.value.errors()[0]["msg"] == "Input should be <Procedures.Simplex: 'simplex'>"
+            Controls(procedure="test")
+        assert exp.value.errors()[0]["msg"] == "Input should be 'calculate', 'simplex', 'de', 'ns' or 'dream'"
 
     def test_simplex_set_procedure_error(self) -> None:
         """Tests the procedure property is frozen in Simplex class."""
         with pytest.raises(pydantic.ValidationError) as exp:
             self.simplex.procedure = "test"
-        assert exp.value.errors()[0]["msg"] == "Input should be <Procedures.Simplex: 'simplex'>"
+        assert exp.value.errors()[0]["msg"] == "Input should be 'calculate', 'simplex', 'de', 'ns' or 'dream'"
 
     def test_repr(self) -> None:
         """Tests the Simplex model __repr__."""
@@ -236,7 +236,7 @@ class TestDE:
 
     @pytest.fixture(autouse=True)
     def setup_class(self):
-        self.de = DE()
+        self.de = Controls(procedure=Procedures.DE)
 
     @pytest.mark.parametrize(
         "control_property, value",
@@ -321,14 +321,14 @@ class TestDE:
     def test_de_initialise_procedure_error(self) -> None:
         """Tests the procedure property can only be initialised as "de" in DE class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            DE(procedure="test")
-        assert exp.value.errors()[0]["msg"] == "Input should be <Procedures.DE: 'de'>"
+            Controls(procedure="test")
+        assert exp.value.errors()[0]["msg"] == "Input should be 'calculate', 'simplex', 'de', 'ns' or 'dream'"
 
     def test_de_set_procedure_error(self) -> None:
         """Tests the procedure property is frozen in DE class."""
         with pytest.raises(pydantic.ValidationError) as exp:
             self.de.procedure = "test"
-        assert exp.value.errors()[0]["msg"] == "Input should be <Procedures.DE: 'de'>"
+        assert exp.value.errors()[0]["msg"] == "Input should be 'calculate', 'simplex', 'de', 'ns' or 'dream'"
 
     def test_repr(self) -> None:
         """Tests the DE model __repr__."""
@@ -348,6 +348,8 @@ class TestDE:
             "|       strategy       | Strategies.RandomWithPerVectorDither |\n"
             "|     targetValue      |                 1.0                  |\n"
             "|    numGenerations    |                 500                  |\n"
+            "|      updateFreq      |                  -1                  |\n"
+            "|    updatePlotFreq    |                  1                   |\n"
             "+----------------------+--------------------------------------+"
         )
 
@@ -359,7 +361,7 @@ class TestNS:
 
     @pytest.fixture(autouse=True)
     def setup_class(self):
-        self.ns = NS()
+        self.ns = Controls(procedure=Procedures.NS)
 
     @pytest.mark.parametrize(
         "control_property, value",
@@ -433,14 +435,14 @@ class TestNS:
     def test_ns_initialise_procedure_error(self) -> None:
         """Tests the procedure property can only be initialised as "ns" in NS class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            NS(procedure="test")
-        assert exp.value.errors()[0]["msg"] == "Input should be <Procedures.NS: 'ns'>"
+            Controls(procedure="test")
+        assert exp.value.errors()[0]["msg"] == "Input should be 'calculate', 'simplex', 'de', 'ns' or 'dream'"
 
     def test_ns_procedure_error(self) -> None:
         """Tests the procedure property is frozen in NS class."""
         with pytest.raises(pydantic.ValidationError) as exp:
             self.ns.procedure = "test"
-        assert exp.value.errors()[0]["msg"] == "Input should be <Procedures.NS: 'ns'>"
+        assert exp.value.errors()[0]["msg"] == "Input should be 'calculate', 'simplex', 'de', 'ns' or 'dream'"
 
     def test_control_class_ns_repr(self) -> None:
         """Tests the NS model __repr__."""
@@ -469,7 +471,7 @@ class TestDream:
 
     @pytest.fixture(autouse=True)
     def setup_class(self):
-        self.dream = Dream()
+        self.dream = Controls(procedure=Procedures.Dream)
 
     @pytest.mark.parametrize(
         "control_property, value",
@@ -549,14 +551,14 @@ class TestDream:
     def test_dream_initialise_procedure_error(self) -> None:
         """Tests the procedure property can only be initialised as "dream" in Dream class."""
         with pytest.raises(pydantic.ValidationError) as exp:
-            Dream(procedure="test")
-        assert exp.value.errors()[0]["msg"] == "Input should be <Procedures.Dream: 'dream'>"
+            Controls(procedure="test")
+        assert exp.value.errors()[0]["msg"] == "Input should be 'calculate', 'simplex', 'de', 'ns' or 'dream'"
 
     def test_dream_procedure_error(self) -> None:
         """Tests the procedure property is frozen in Dream class."""
         with pytest.raises(pydantic.ValidationError) as exp:
             self.dream.procedure = "test"
-        assert exp.value.errors()[0]["msg"] == "Input should be <Procedures.Dream: 'dream'>"
+        assert exp.value.errors()[0]["msg"] == "Input should be 'calculate', 'simplex', 'de', 'ns' or 'dream'"
 
     def test_control_class_dream_repr(self) -> None:
         """Tests the Dream model __repr__."""
@@ -580,61 +582,3 @@ class TestDream:
         )
 
         assert table == table_str
-
-
-@pytest.mark.parametrize(
-    ["procedure", "expected_model"],
-    [
-        ("calculate", Calculate),
-        ("simplex", Simplex),
-        ("de", DE),
-        ("ns", NS),
-        ("dream", Dream),
-    ],
-)
-def test_set_controls(procedure: Procedures, expected_model: Union[Calculate, Simplex, DE, NS, Dream]) -> None:
-    """We should return the correct model given the value of procedure."""
-    controls_model = set_controls(procedure)
-    assert type(controls_model) == expected_model
-
-
-def test_set_controls_default_procedure() -> None:
-    """We should return the default model when we call "set_controls" without specifying a procedure."""
-    controls_model = set_controls()
-    assert type(controls_model) == Calculate
-
-
-def test_set_controls_invalid_procedure() -> None:
-    """We should return the default model when we call "set_controls" without specifying a procedure."""
-    with pytest.raises(
-        ValueError,
-        match="The controls procedure must be one of: 'calculate', 'simplex', 'de', 'ns' " "or 'dream'",
-    ):
-        set_controls("invalid")
-
-
-@pytest.mark.parametrize(
-    ["procedure", "expected_model"],
-    [
-        ("calculate", Calculate),
-        ("simplex", Simplex),
-        ("de", DE),
-        ("ns", NS),
-        ("dream", Dream),
-    ],
-)
-def test_set_controls_extra_fields(
-    procedure: Procedures,
-    expected_model: Union[Calculate, Simplex, DE, NS, Dream],
-) -> None:
-    """If we provide extra fields to a controls model through "set_controls", we should print a formatted
-    ValidationError with a custom error message.
-    """
-    with pytest.raises(
-        pydantic.ValidationError,
-        match=f'1 validation error for {expected_model.__name__}\n'
-        f'extra_field\n  Extra inputs are not permitted. The fields for '
-        f'the {procedure} controls procedure are:\n    '
-        f'{", ".join(expected_model.model_fields.keys())}\n',
-    ):
-        set_controls(procedure, extra_field="invalid")

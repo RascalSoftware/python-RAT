@@ -635,7 +635,7 @@ def test_make_input(test_project, test_problem, test_cells, test_limits, test_pr
         "getHandle",
         mock.MagicMock(return_value=dummy_function),
     ), mock.patch.object(RATpy.wrappers.DylibWrapper, "getHandle", mock.MagicMock(return_value=dummy_function)):
-        problem, cells, limits, priors, controls = make_input(test_project, RATpy.set_controls())
+        problem, cells, limits, priors, controls = make_input(test_project, RATpy.Controls())
 
     check_problem_equal(problem, test_problem)
     check_cells_equal(cells, test_cells)
@@ -788,7 +788,7 @@ def test_make_controls(standard_layers_controls, test_checks) -> None:
     """The controls object should contain the full set of controls parameters, with the appropriate set defined by the
     input controls.
     """
-    controls = make_controls(RATpy.set_controls(), test_checks)
+    controls = make_controls(RATpy.Controls(), test_checks)
     check_controls_equal(controls, standard_layers_controls)
 
 
