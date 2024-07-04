@@ -81,7 +81,6 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid"):
             input_dict = model_input
 
         validated_self = None
-        # validated_self = handler(self)
         try:
             validated_self = handler(self)
         except ValidationError as exc:

@@ -844,6 +844,11 @@ def test_repr(default_project_repr: str) -> None:
     assert repr(RATpy.Project()) == default_project_repr
 
 
+def test_str(default_project_repr: str) -> None:
+    """We should be able to print the "Project" model as a formatted list of the fields."""
+    assert str(RATpy.Project()) == default_project_repr
+
+
 def test_get_all_names(test_project) -> None:
     """We should be able to get the names of all the models defined in the project."""
     assert test_project.get_all_names() == {

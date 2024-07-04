@@ -8,6 +8,47 @@ import pytest
 from RATpy.controls import Controls
 from RATpy.utils.enums import BoundHandling, Display, Parallel, Procedures, Strategies
 
+common_fields = ["procedure", "parallel", "calcSldDuringFit", "resampleParams", "display"]
+update_fields = ["updateFreq", "updatePlotFreq"]
+fields = {
+    "calculate": common_fields,
+    "simplex": [*common_fields, "xTolerance", "funcTolerance", "maxFuncEvals", "maxIterations", *update_fields],
+    "de": [
+        *common_fields,
+        "populationSize",
+        "fWeight",
+        "crossoverProbability",
+        "strategy",
+        "targetValue",
+        "numGenerations",
+        *update_fields,
+    ],
+    "ns": [*common_fields, "nLive", "nMCMC", "propScale", "nsTolerance"],
+    "dream": [*common_fields, "nSamples", "nChains", "jumpProbability", "pUnitGamma", "boundHandling", "adaptPCR"],
+}
+
+
+def test_initialise_procedure_error() -> None:
+    """Tests for a ValidationError if the procedure property of the Controls class is initialised with an invalid
+    value.
+    """
+    with pytest.raises(pydantic.ValidationError, match="Input should be 'calculate', 'simplex', 'de', 'ns' or 'dream'"):
+        Controls(procedure="test")
+
+
+def test_set_procedure_error() -> None:
+    """Tests for a ValidationError if the procedure property of the Controls class is set to an invalid value."""
+    controls = Controls()
+    with pytest.raises(pydantic.ValidationError, match="Input should be 'calculate', 'simplex', 'de', 'ns' or 'dream'"):
+        controls.procedure = "test"
+
+
+def test_extra_property_error() -> None:
+    """Tests the extra property setter in the Controls class."""
+    controls = Controls()
+    with pytest.raises(pydantic.ValidationError, match="Object has no attribute 'test'"):
+        controls.test = 1
+
 
 class TestCalculate:
     """Tests the Calculate class."""
@@ -15,6 +56,22 @@ class TestCalculate:
     @pytest.fixture(autouse=True)
     def setup_class(self):
         self.calculate = Controls()
+
+    @pytest.fixture
+    def table_str(self):
+        table_str = (
+            "+------------------+-----------+\n"
+            "|     Property     |   Value   |\n"
+            "+------------------+-----------+\n"
+            "|    procedure     | calculate |\n"
+            "|     parallel     |   single  |\n"
+            "| calcSldDuringFit |   False   |\n"
+            "|  resampleParams  | [0.9, 50] |\n"
+            "|     display      |    iter   |\n"
+            "+------------------+-----------+"
+        )
+
+        return table_str
 
     @pytest.mark.parametrize(
         "control_property, value",
@@ -44,26 +101,103 @@ class TestCalculate:
         setattr(self.calculate, control_property, value)
         assert getattr(self.calculate, control_property) == value
 
+    @pytest.mark.parametrize(
+        "wrong_property, value",
+        [
+            ("xTolerance", 4e-6),
+            ("funcTolerance", 3e-4),
+            ("maxFuncEvals", 100),
+            ("maxIterations", 50),
+            ("updateFreq", 4),
+            ("updatePlotFreq", 3),
+            ("populationSize", 200),
+            ("fWeight", 0.3),
+            ("crossoverProbability", 0.4),
+            ("strategy", Strategies.BestWithJitter),
+            ("targetValue", 2.0),
+            ("numGenerations", 50),
+            ("nLive", 1500),
+            ("nMCMC", 1),
+            ("propScale", 0.5),
+            ("nsTolerance", 0.8),
+            ("nSamples", 500),
+            ("nChains", 1000),
+            ("jumpProbability", 0.7),
+            ("pUnitGamma", 0.3),
+            ("boundHandling", BoundHandling.Fold),
+            ("adaptPCR", False),
+        ],
+    )
+    def test_initialise_non_calculate_properties(self, wrong_property: str, value: Any) -> None:
+        incorrect_procedures = [key for (key, value) in fields.items() if wrong_property in value]
+        with pytest.warns(
+            UserWarning,
+            match=f'\nThe current controls procedure is "calculate", but the property'
+            f' "{wrong_property}" applies instead to the'
+            f' {", ".join(incorrect_procedures)} procedure.\n\n'
+            f' The fields for the "calculate" controls procedure are:\n'
+            f'    {", ".join(fields["calculate"])}\n',
+        ):
+            Controls(procedure="calculate", **{wrong_property: value})
+
+    @pytest.mark.parametrize(
+        "wrong_property, value",
+        [
+            ("xTolerance", 4e-6),
+            ("funcTolerance", 3e-4),
+            ("maxFuncEvals", 100),
+            ("maxIterations", 50),
+            ("updateFreq", 4),
+            ("updatePlotFreq", 3),
+            ("populationSize", 200),
+            ("fWeight", 0.3),
+            ("crossoverProbability", 0.4),
+            ("strategy", Strategies.BestWithJitter),
+            ("targetValue", 2.0),
+            ("numGenerations", 50),
+            ("nLive", 1500),
+            ("nMCMC", 1),
+            ("propScale", 0.5),
+            ("nsTolerance", 0.8),
+            ("nSamples", 500),
+            ("nChains", 1000),
+            ("jumpProbability", 0.7),
+            ("pUnitGamma", 0.3),
+            ("boundHandling", BoundHandling.Fold),
+            ("adaptPCR", False),
+        ],
+    )
+    def test_set_non_calculate_properties(self, wrong_property: str, value: Any) -> None:
+        incorrect_procedures = [key for (key, value) in fields.items() if wrong_property in value]
+        with pytest.warns(
+            UserWarning,
+            match=f'\nThe current controls procedure is "calculate", but the property'
+            f' "{wrong_property}" applies instead to the'
+            f' {", ".join(incorrect_procedures)} procedure.\n\n'
+            f' The fields for the "calculate" controls procedure are:\n'
+            f'    {", ".join(fields["calculate"])}\n',
+        ):
+            setattr(self.calculate, wrong_property, value)
+
     @pytest.mark.parametrize("value", ["test", "ALL", "Contrast", True, 1, 3.0])
     def test_calculate_parallel_validation(self, value: Any) -> None:
         """Tests the parallel setter validation in Calculate class."""
-        with pytest.raises(pydantic.ValidationError) as exp:
+        with pytest.raises(pydantic.ValidationError, match="Input should be 'single', 'points' or 'contrasts'"):
             self.calculate.parallel = value
-        assert exp.value.errors()[0]["msg"] == "Input should be 'single', 'points' or 'contrasts'"
 
     @pytest.mark.parametrize("value", [5.0, 12])
     def test_calculate_calcSldDuringFit_validation(self, value: Union[int, float]) -> None:
         """Tests the calcSldDuringFit setter validation in Calculate class."""
-        with pytest.raises(pydantic.ValidationError) as exp:
+        with pytest.raises(
+            pydantic.ValidationError, match="Input should be a valid boolean, unable to interpret input"
+        ):
             self.calculate.calcSldDuringFit = value
-        assert exp.value.errors()[0]["msg"] == "Input should be a valid boolean, unable to interpret input"
 
     @pytest.mark.parametrize("value", ["test", "iterate", "FINAL", True, 1, 3.0])
     def test_calculate_display_validation(self, value: Any) -> None:
         """Tests the display setter validation in Calculate class."""
-        with pytest.raises(pydantic.ValidationError) as exp:
+        with pytest.raises(pydantic.ValidationError, match="Input should be 'off', 'iter', 'notify' or 'final'"):
             self.calculate.display = value
-        assert exp.value.errors()[0]["msg"] == "Input should be 'off', 'iter', 'notify' or 'final'"
 
     @pytest.mark.parametrize(
         "value, msg",
@@ -74,9 +208,8 @@ class TestCalculate:
     )
     def test_calculate_resampleParams_length_validation(self, value: list, msg: str) -> None:
         """Tests the resampleParams setter length validation in Calculate class."""
-        with pytest.raises(pydantic.ValidationError) as exp:
+        with pytest.raises(pydantic.ValidationError, match=msg):
             self.calculate.resampleParams = value
-        assert exp.value.errors()[0]["msg"] == msg
 
     @pytest.mark.parametrize(
         "value, msg",
@@ -91,40 +224,13 @@ class TestCalculate:
             self.calculate.resampleParams = value
         assert exp.value.errors()[0]["msg"] == msg
 
-    def test_calculate_extra_property_error(self) -> None:
-        """Tests the extra property setter in Calculate class."""
-        with pytest.raises(pydantic.ValidationError) as exp:
-            self.calculate.test = 1
-        assert exp.value.errors()[0]["msg"] == "Object has no attribute 'test'"
-
-    def test_calculate_initialise_procedure_error(self) -> None:
-        """Tests the procedure property can only be initialised as "calculate" in Calculate class."""
-        with pytest.raises(pydantic.ValidationError) as exp:
-            Controls(procedure="test")
-        assert exp.value.errors()[0]["msg"] == "Input should be 'calculate', 'simplex', 'de', 'ns' or 'dream'"
-
-    def test_calculate_set_procedure_error(self) -> None:
-        """Tests the procedure property is frozen in Calculate class."""
-        with pytest.raises(pydantic.ValidationError) as exp:
-            self.calculate.procedure = "test"
-        assert exp.value.errors()[0]["msg"] == "Input should be 'calculate', 'simplex', 'de', 'ns' or 'dream'"
-
-    def test_repr(self) -> None:
+    def test_repr(self, table_str) -> None:
         """Tests the Calculate model __repr__."""
-        table = self.calculate.__repr__()
-        table_str = (
-            "+------------------+-----------+\n"
-            "|     Property     |   Value   |\n"
-            "+------------------+-----------+\n"
-            "|    procedure     | calculate |\n"
-            "|     parallel     |   single  |\n"
-            "| calcSldDuringFit |   False   |\n"
-            "|  resampleParams  | [0.9, 50] |\n"
-            "|     display      |    iter   |\n"
-            "+------------------+-----------+"
-        )
+        assert self.calculate.__repr__() == table_str
 
-        assert table == table_str
+    def test_str(self, table_str) -> None:
+        """Tests the Calculate model __str__."""
+        assert self.calculate.__str__() == table_str
 
 
 class TestSimplex:
@@ -133,6 +239,28 @@ class TestSimplex:
     @pytest.fixture(autouse=True)
     def setup_class(self):
         self.simplex = Controls(procedure=Procedures.Simplex)
+
+    @pytest.fixture
+    def table_str(self):
+        table_str = (
+            "+------------------+-----------+\n"
+            "|     Property     |   Value   |\n"
+            "+------------------+-----------+\n"
+            "|    procedure     |  simplex  |\n"
+            "|     parallel     |   single  |\n"
+            "| calcSldDuringFit |   False   |\n"
+            "|  resampleParams  | [0.9, 50] |\n"
+            "|     display      |    iter   |\n"
+            "|    xTolerance    |   1e-06   |\n"
+            "|  funcTolerance   |   1e-06   |\n"
+            "|   maxFuncEvals   |   10000   |\n"
+            "|  maxIterations   |    1000   |\n"
+            "|    updateFreq    |     -1    |\n"
+            "|  updatePlotFreq  |     1     |\n"
+            "+------------------+-----------+"
+        )
+
+        return table_str
 
     @pytest.mark.parametrize(
         "control_property, value",
@@ -175,6 +303,72 @@ class TestSimplex:
         assert getattr(self.simplex, control_property) == value
 
     @pytest.mark.parametrize(
+        "wrong_property, value",
+        [
+            ("populationSize", 200),
+            ("fWeight", 0.3),
+            ("crossoverProbability", 0.4),
+            ("strategy", Strategies.BestWithJitter),
+            ("targetValue", 2.0),
+            ("numGenerations", 50),
+            ("nLive", 1500),
+            ("nMCMC", 1),
+            ("propScale", 0.5),
+            ("nsTolerance", 0.8),
+            ("nSamples", 500),
+            ("nChains", 1000),
+            ("jumpProbability", 0.7),
+            ("pUnitGamma", 0.3),
+            ("boundHandling", BoundHandling.Fold),
+            ("adaptPCR", False),
+        ],
+    )
+    def test_initialise_non_simplex_properties(self, wrong_property: str, value: Any) -> None:
+        incorrect_procedures = [key for (key, value) in fields.items() if wrong_property in value]
+        with pytest.warns(
+            UserWarning,
+            match=f'\nThe current controls procedure is "simplex", but the property'
+            f' "{wrong_property}" applies instead to the'
+            f' {", ".join(incorrect_procedures)} procedure.\n\n'
+            f' The fields for the "simplex" controls procedure are:\n'
+            f'    {", ".join(fields["simplex"])}\n',
+        ):
+            Controls(procedure="simplex", **{wrong_property: value})
+
+    @pytest.mark.parametrize(
+        "wrong_property, value",
+        [
+            ("populationSize", 200),
+            ("fWeight", 0.3),
+            ("crossoverProbability", 0.4),
+            ("strategy", Strategies.BestWithJitter),
+            ("targetValue", 2.0),
+            ("numGenerations", 50),
+            ("nLive", 1500),
+            ("nMCMC", 1),
+            ("propScale", 0.5),
+            ("nsTolerance", 0.8),
+            ("nSamples", 500),
+            ("nChains", 1000),
+            ("jumpProbability", 0.7),
+            ("pUnitGamma", 0.3),
+            ("boundHandling", BoundHandling.Fold),
+            ("adaptPCR", False),
+        ],
+    )
+    def test_set_non_simplex_properties(self, wrong_property: str, value: Any) -> None:
+        incorrect_procedures = [key for (key, value) in fields.items() if wrong_property in value]
+        with pytest.warns(
+            UserWarning,
+            match=f'\nThe current controls procedure is "simplex", but the property'
+            f' "{wrong_property}" applies instead to the'
+            f' {", ".join(incorrect_procedures)} procedure.\n\n'
+            f' The fields for the "simplex" controls procedure are:\n'
+            f'    {", ".join(fields["simplex"])}\n',
+        ):
+            setattr(self.simplex, wrong_property, value)
+
+    @pytest.mark.parametrize(
         "control_property, value",
         [
             ("xTolerance", -4e-6),
@@ -185,50 +379,16 @@ class TestSimplex:
     )
     def test_simplex_property_errors(self, control_property: str, value: Union[float, int]) -> None:
         """Tests the property errors of Simplex class."""
-        with pytest.raises(pydantic.ValidationError) as exp:
+        with pytest.raises(pydantic.ValidationError, match="Input should be greater than 0"):
             setattr(self.simplex, control_property, value)
-        assert exp.value.errors()[0]["msg"] == "Input should be greater than 0"
 
-    def test_simplex_extra_property_error(self) -> None:
-        """Tests the extra property setter in Simplex class."""
-        with pytest.raises(pydantic.ValidationError) as exp:
-            self.simplex.test = 1
-        assert exp.value.errors()[0]["msg"] == "Object has no attribute 'test'"
-
-    def test_simplex_initialise_procedure_error(self) -> None:
-        """Tests the procedure property can only be initialised as "simplex" in Simplex class."""
-        with pytest.raises(pydantic.ValidationError) as exp:
-            Controls(procedure="test")
-        assert exp.value.errors()[0]["msg"] == "Input should be 'calculate', 'simplex', 'de', 'ns' or 'dream'"
-
-    def test_simplex_set_procedure_error(self) -> None:
-        """Tests the procedure property is frozen in Simplex class."""
-        with pytest.raises(pydantic.ValidationError) as exp:
-            self.simplex.procedure = "test"
-        assert exp.value.errors()[0]["msg"] == "Input should be 'calculate', 'simplex', 'de', 'ns' or 'dream'"
-
-    def test_repr(self) -> None:
+    def test_repr(self, table_str) -> None:
         """Tests the Simplex model __repr__."""
-        table = self.simplex.__repr__()
-        table_str = (
-            "+------------------+-----------+\n"
-            "|     Property     |   Value   |\n"
-            "+------------------+-----------+\n"
-            "|    procedure     |  simplex  |\n"
-            "|     parallel     |   single  |\n"
-            "| calcSldDuringFit |   False   |\n"
-            "|  resampleParams  | [0.9, 50] |\n"
-            "|     display      |    iter   |\n"
-            "|    xTolerance    |   1e-06   |\n"
-            "|  funcTolerance   |   1e-06   |\n"
-            "|   maxFuncEvals   |   10000   |\n"
-            "|  maxIterations   |    1000   |\n"
-            "|    updateFreq    |     -1    |\n"
-            "|  updatePlotFreq  |     1     |\n"
-            "+------------------+-----------+"
-        )
+        assert self.simplex.__repr__() == table_str
 
-        assert table == table_str
+    def test_str(self, table_str) -> None:
+        """Tests the Simplex model __repr__."""
+        assert self.simplex.__str__() == table_str
 
 
 class TestDE:
@@ -237,6 +397,30 @@ class TestDE:
     @pytest.fixture(autouse=True)
     def setup_class(self):
         self.de = Controls(procedure=Procedures.DE)
+
+    @pytest.fixture
+    def table_str(self):
+        table_str = (
+            "+----------------------+--------------------------------------+\n"
+            "|       Property       |                Value                 |\n"
+            "+----------------------+--------------------------------------+\n"
+            "|      procedure       |                  de                  |\n"
+            "|       parallel       |                single                |\n"
+            "|   calcSldDuringFit   |                False                 |\n"
+            "|    resampleParams    |              [0.9, 50]               |\n"
+            "|       display        |                 iter                 |\n"
+            "|    populationSize    |                  20                  |\n"
+            "|       fWeight        |                 0.5                  |\n"
+            "| crossoverProbability |                 0.8                  |\n"
+            "|       strategy       | Strategies.RandomWithPerVectorDither |\n"
+            "|     targetValue      |                 1.0                  |\n"
+            "|    numGenerations    |                 500                  |\n"
+            "|      updateFreq      |                  -1                  |\n"
+            "|    updatePlotFreq    |                  1                   |\n"
+            "+----------------------+--------------------------------------+"
+        )
+
+        return table_str
 
     @pytest.mark.parametrize(
         "control_property, value",
@@ -279,6 +463,68 @@ class TestDE:
         assert getattr(self.de, control_property) == value
 
     @pytest.mark.parametrize(
+        "wrong_property, value",
+        [
+            ("xTolerance", 4e-6),
+            ("funcTolerance", 3e-4),
+            ("maxFuncEvals", 100),
+            ("maxIterations", 50),
+            ("nLive", 1500),
+            ("nMCMC", 1),
+            ("propScale", 0.5),
+            ("nsTolerance", 0.8),
+            ("nSamples", 500),
+            ("nChains", 1000),
+            ("jumpProbability", 0.7),
+            ("pUnitGamma", 0.3),
+            ("boundHandling", BoundHandling.Fold),
+            ("adaptPCR", False),
+        ],
+    )
+    def test_initialise_non_de_properties(self, wrong_property: str, value: Any) -> None:
+        incorrect_procedures = [key for (key, value) in fields.items() if wrong_property in value]
+        with pytest.warns(
+            UserWarning,
+            match=f'\nThe current controls procedure is "de", but the property'
+            f' "{wrong_property}" applies instead to the'
+            f' {", ".join(incorrect_procedures)} procedure.\n\n'
+            f' The fields for the "de" controls procedure are:\n'
+            f'    {", ".join(fields["de"])}\n',
+        ):
+            Controls(procedure="de", **{wrong_property: value})
+
+    @pytest.mark.parametrize(
+        "wrong_property, value",
+        [
+            ("xTolerance", 4e-6),
+            ("funcTolerance", 3e-4),
+            ("maxFuncEvals", 100),
+            ("maxIterations", 50),
+            ("nLive", 1500),
+            ("nMCMC", 1),
+            ("propScale", 0.5),
+            ("nsTolerance", 0.8),
+            ("nSamples", 500),
+            ("nChains", 1000),
+            ("jumpProbability", 0.7),
+            ("pUnitGamma", 0.3),
+            ("boundHandling", BoundHandling.Fold),
+            ("adaptPCR", False),
+        ],
+    )
+    def test_set_non_de_properties(self, wrong_property: str, value: Any) -> None:
+        incorrect_procedures = [key for (key, value) in fields.items() if wrong_property in value]
+        with pytest.warns(
+            UserWarning,
+            match=f'\nThe current controls procedure is "de", but the property'
+            f' "{wrong_property}" applies instead to the'
+            f' {", ".join(incorrect_procedures)} procedure.\n\n'
+            f' The fields for the "de" controls procedure are:\n'
+            f'    {", ".join(fields["de"])}\n',
+        ):
+            setattr(self.de, wrong_property, value)
+
+    @pytest.mark.parametrize(
         "value, msg",
         [
             (0, "Input should be greater than 0"),
@@ -287,9 +533,8 @@ class TestDE:
     )
     def test_de_crossoverProbability_error(self, value: int, msg: str) -> None:
         """Tests the crossoverProbability setter error in DE class."""
-        with pytest.raises(pydantic.ValidationError) as exp:
+        with pytest.raises(pydantic.ValidationError, match=msg):
             self.de.crossoverProbability = value
-        assert exp.value.errors()[0]["msg"] == msg
 
     @pytest.mark.parametrize(
         "control_property, value",
@@ -308,52 +553,16 @@ class TestDE:
         value: Union[int, float],
     ) -> None:
         """Tests the targetValue, numGenerations, populationSize setter error in DE class."""
-        with pytest.raises(pydantic.ValidationError) as exp:
+        with pytest.raises(pydantic.ValidationError, match="Input should be greater than or equal to 1"):
             setattr(self.de, control_property, value)
-        assert exp.value.errors()[0]["msg"] == "Input should be greater than or equal to 1"
 
-    def test_de_extra_property_error(self) -> None:
-        """Tests the extra property setter in DE class."""
-        with pytest.raises(pydantic.ValidationError) as exp:
-            self.de.test = 1
-        assert exp.value.errors()[0]["msg"] == "Object has no attribute 'test'"
-
-    def test_de_initialise_procedure_error(self) -> None:
-        """Tests the procedure property can only be initialised as "de" in DE class."""
-        with pytest.raises(pydantic.ValidationError) as exp:
-            Controls(procedure="test")
-        assert exp.value.errors()[0]["msg"] == "Input should be 'calculate', 'simplex', 'de', 'ns' or 'dream'"
-
-    def test_de_set_procedure_error(self) -> None:
-        """Tests the procedure property is frozen in DE class."""
-        with pytest.raises(pydantic.ValidationError) as exp:
-            self.de.procedure = "test"
-        assert exp.value.errors()[0]["msg"] == "Input should be 'calculate', 'simplex', 'de', 'ns' or 'dream'"
-
-    def test_repr(self) -> None:
+    def test_repr(self, table_str) -> None:
         """Tests the DE model __repr__."""
-        table = self.de.__repr__()
-        table_str = (
-            "+----------------------+--------------------------------------+\n"
-            "|       Property       |                Value                 |\n"
-            "+----------------------+--------------------------------------+\n"
-            "|      procedure       |                  de                  |\n"
-            "|       parallel       |                single                |\n"
-            "|   calcSldDuringFit   |                False                 |\n"
-            "|    resampleParams    |              [0.9, 50]               |\n"
-            "|       display        |                 iter                 |\n"
-            "|    populationSize    |                  20                  |\n"
-            "|       fWeight        |                 0.5                  |\n"
-            "| crossoverProbability |                 0.8                  |\n"
-            "|       strategy       | Strategies.RandomWithPerVectorDither |\n"
-            "|     targetValue      |                 1.0                  |\n"
-            "|    numGenerations    |                 500                  |\n"
-            "|      updateFreq      |                  -1                  |\n"
-            "|    updatePlotFreq    |                  1                   |\n"
-            "+----------------------+--------------------------------------+"
-        )
+        assert self.de.__repr__() == table_str
 
-        assert table == table_str
+    def test_str(self, table_str) -> None:
+        """Tests the DE model __str__."""
+        assert self.de.__str__() == table_str
 
 
 class TestNS:
@@ -362,6 +571,26 @@ class TestNS:
     @pytest.fixture(autouse=True)
     def setup_class(self):
         self.ns = Controls(procedure=Procedures.NS)
+
+    @pytest.fixture
+    def table_str(self):
+        table_str = (
+            "+------------------+-----------+\n"
+            "|     Property     |   Value   |\n"
+            "+------------------+-----------+\n"
+            "|    procedure     |     ns    |\n"
+            "|     parallel     |   single  |\n"
+            "| calcSldDuringFit |   False   |\n"
+            "|  resampleParams  | [0.9, 50] |\n"
+            "|     display      |    iter   |\n"
+            "|      nLive       |    150    |\n"
+            "|      nMCMC       |    0.0    |\n"
+            "|    propScale     |    0.1    |\n"
+            "|   nsTolerance    |    0.1    |\n"
+            "+------------------+-----------+"
+        )
+
+        return table_str
 
     @pytest.mark.parametrize(
         "control_property, value",
@@ -400,6 +629,76 @@ class TestNS:
         assert getattr(self.ns, control_property) == value
 
     @pytest.mark.parametrize(
+        "wrong_property, value",
+        [
+            ("xTolerance", 4e-6),
+            ("funcTolerance", 3e-4),
+            ("maxFuncEvals", 100),
+            ("maxIterations", 50),
+            ("updateFreq", 4),
+            ("updatePlotFreq", 3),
+            ("populationSize", 200),
+            ("fWeight", 0.3),
+            ("crossoverProbability", 0.4),
+            ("strategy", Strategies.BestWithJitter),
+            ("targetValue", 2.0),
+            ("numGenerations", 50),
+            ("nSamples", 500),
+            ("nChains", 1000),
+            ("jumpProbability", 0.7),
+            ("pUnitGamma", 0.3),
+            ("boundHandling", BoundHandling.Fold),
+            ("adaptPCR", False),
+        ],
+    )
+    def test_initialise_non_ns_properties(self, wrong_property: str, value: Any) -> None:
+        incorrect_procedures = [key for (key, value) in fields.items() if wrong_property in value]
+        with pytest.warns(
+            UserWarning,
+            match=f'\nThe current controls procedure is "ns", but the property'
+            f' "{wrong_property}" applies instead to the'
+            f' {", ".join(incorrect_procedures)} procedure.\n\n'
+            f' The fields for the "ns" controls procedure are:\n'
+            f'    {", ".join(fields["ns"])}\n',
+        ):
+            Controls(procedure="ns", **{wrong_property: value})
+
+    @pytest.mark.parametrize(
+        "wrong_property, value",
+        [
+            ("xTolerance", 4e-6),
+            ("funcTolerance", 3e-4),
+            ("maxFuncEvals", 100),
+            ("maxIterations", 50),
+            ("updateFreq", 4),
+            ("updatePlotFreq", 3),
+            ("populationSize", 200),
+            ("fWeight", 0.3),
+            ("crossoverProbability", 0.4),
+            ("strategy", Strategies.BestWithJitter),
+            ("targetValue", 2.0),
+            ("numGenerations", 50),
+            ("nSamples", 500),
+            ("nChains", 1000),
+            ("jumpProbability", 0.7),
+            ("pUnitGamma", 0.3),
+            ("boundHandling", BoundHandling.Fold),
+            ("adaptPCR", False),
+        ],
+    )
+    def test_set_non_ns_properties(self, wrong_property: str, value: Any) -> None:
+        incorrect_procedures = [key for (key, value) in fields.items() if wrong_property in value]
+        with pytest.warns(
+            UserWarning,
+            match=f'\nThe current controls procedure is "ns", but the property'
+            f' "{wrong_property}" applies instead to the'
+            f' {", ".join(incorrect_procedures)} procedure.\n\n'
+            f' The fields for the "ns" controls procedure are:\n'
+            f'    {", ".join(fields["ns"])}\n',
+        ):
+            setattr(self.ns, wrong_property, value)
+
+    @pytest.mark.parametrize(
         "control_property, value, bound",
         [
             ("nMCMC", -0.6, 0),
@@ -409,9 +708,8 @@ class TestNS:
     )
     def test_ns_setter_error(self, control_property: str, value: Union[int, float], bound: int) -> None:
         """Tests the nMCMC, nsTolerance, nLive setter error in NS class."""
-        with pytest.raises(pydantic.ValidationError) as exp:
+        with pytest.raises(pydantic.ValidationError, match=f"Input should be greater than or equal to {bound}"):
             setattr(self.ns, control_property, value)
-        assert exp.value.errors()[0]["msg"] == f"Input should be greater than or equal to {bound}"
 
     @pytest.mark.parametrize(
         "value, msg",
@@ -422,48 +720,16 @@ class TestNS:
     )
     def test_ns_propScale_error(self, value: int, msg: str) -> None:
         """Tests the propScale error in NS class."""
-        with pytest.raises(pydantic.ValidationError) as exp:
+        with pytest.raises(pydantic.ValidationError, match=msg):
             self.ns.propScale = value
-        assert exp.value.errors()[0]["msg"] == msg
 
-    def test_ns_extra_property_error(self) -> None:
-        """Tests the extra property setter in NS class."""
-        with pytest.raises(pydantic.ValidationError) as exp:
-            self.ns.test = 1
-        assert exp.value.errors()[0]["msg"] == "Object has no attribute 'test'"
-
-    def test_ns_initialise_procedure_error(self) -> None:
-        """Tests the procedure property can only be initialised as "ns" in NS class."""
-        with pytest.raises(pydantic.ValidationError) as exp:
-            Controls(procedure="test")
-        assert exp.value.errors()[0]["msg"] == "Input should be 'calculate', 'simplex', 'de', 'ns' or 'dream'"
-
-    def test_ns_procedure_error(self) -> None:
-        """Tests the procedure property is frozen in NS class."""
-        with pytest.raises(pydantic.ValidationError) as exp:
-            self.ns.procedure = "test"
-        assert exp.value.errors()[0]["msg"] == "Input should be 'calculate', 'simplex', 'de', 'ns' or 'dream'"
-
-    def test_control_class_ns_repr(self) -> None:
+    def test_control_class_ns_repr(self, table_str) -> None:
         """Tests the NS model __repr__."""
-        table = self.ns.__repr__()
-        table_str = (
-            "+------------------+-----------+\n"
-            "|     Property     |   Value   |\n"
-            "+------------------+-----------+\n"
-            "|    procedure     |     ns    |\n"
-            "|     parallel     |   single  |\n"
-            "| calcSldDuringFit |   False   |\n"
-            "|  resampleParams  | [0.9, 50] |\n"
-            "|     display      |    iter   |\n"
-            "|      nLive       |    150    |\n"
-            "|      nMCMC       |    0.0    |\n"
-            "|    propScale     |    0.1    |\n"
-            "|   nsTolerance    |    0.1    |\n"
-            "+------------------+-----------+"
-        )
+        assert self.ns.__repr__() == table_str
 
-        assert table == table_str
+    def test_control_class_ns_str(self, table_str) -> None:
+        """Tests the NS model __str__."""
+        assert self.ns.__str__() == table_str
 
 
 class TestDream:
@@ -472,6 +738,28 @@ class TestDream:
     @pytest.fixture(autouse=True)
     def setup_class(self):
         self.dream = Controls(procedure=Procedures.Dream)
+
+    @pytest.fixture
+    def table_str(self):
+        table_str = (
+            "+------------------+-----------+\n"
+            "|     Property     |   Value   |\n"
+            "+------------------+-----------+\n"
+            "|    procedure     |   dream   |\n"
+            "|     parallel     |   single  |\n"
+            "| calcSldDuringFit |   False   |\n"
+            "|  resampleParams  | [0.9, 50] |\n"
+            "|     display      |    iter   |\n"
+            "|     nSamples     |   20000   |\n"
+            "|     nChains      |     10    |\n"
+            "| jumpProbability  |    0.5    |\n"
+            "|    pUnitGamma    |    0.2    |\n"
+            "|  boundHandling   |  reflect  |\n"
+            "|     adaptPCR     |    True   |\n"
+            "+------------------+-----------+"
+        )
+
+        return table_str
 
     @pytest.mark.parametrize(
         "control_property, value",
@@ -514,6 +802,72 @@ class TestDream:
         assert getattr(self.dream, control_property) == value
 
     @pytest.mark.parametrize(
+        "wrong_property, value",
+        [
+            ("xTolerance", 4e-6),
+            ("funcTolerance", 3e-4),
+            ("maxFuncEvals", 100),
+            ("maxIterations", 50),
+            ("updateFreq", 4),
+            ("updatePlotFreq", 3),
+            ("populationSize", 200),
+            ("fWeight", 0.3),
+            ("crossoverProbability", 0.4),
+            ("strategy", Strategies.BestWithJitter),
+            ("targetValue", 2.0),
+            ("numGenerations", 50),
+            ("nLive", 1500),
+            ("nMCMC", 1),
+            ("propScale", 0.5),
+            ("nsTolerance", 0.8),
+        ],
+    )
+    def test_initialise_non_dream_properties(self, wrong_property: str, value: Any) -> None:
+        incorrect_procedures = [key for (key, value) in fields.items() if wrong_property in value]
+        with pytest.warns(
+            UserWarning,
+            match=f'\nThe current controls procedure is "dream", but the property'
+            f' "{wrong_property}" applies instead to the'
+            f' {", ".join(incorrect_procedures)} procedure.\n\n'
+            f' The fields for the "dream" controls procedure are:\n'
+            f'    {", ".join(fields["dream"])}\n',
+        ):
+            Controls(procedure="dream", **{wrong_property: value})
+
+    @pytest.mark.parametrize(
+        "wrong_property, value",
+        [
+            ("xTolerance", 4e-6),
+            ("funcTolerance", 3e-4),
+            ("maxFuncEvals", 100),
+            ("maxIterations", 50),
+            ("updateFreq", 4),
+            ("updatePlotFreq", 3),
+            ("populationSize", 200),
+            ("fWeight", 0.3),
+            ("crossoverProbability", 0.4),
+            ("strategy", Strategies.BestWithJitter),
+            ("targetValue", 2.0),
+            ("numGenerations", 50),
+            ("nLive", 1500),
+            ("nMCMC", 1),
+            ("propScale", 0.5),
+            ("nsTolerance", 0.8),
+        ],
+    )
+    def test_set_non_dream_properties(self, wrong_property: str, value: Any) -> None:
+        incorrect_procedures = [key for (key, value) in fields.items() if wrong_property in value]
+        with pytest.warns(
+            UserWarning,
+            match=f'\nThe current controls procedure is "dream", but the property'
+            f' "{wrong_property}" applies instead to the'
+            f' {", ".join(incorrect_procedures)} procedure.\n\n'
+            f' The fields for the "dream" controls procedure are:\n'
+            f'    {", ".join(fields["dream"])}\n',
+        ):
+            setattr(self.dream, wrong_property, value)
+
+    @pytest.mark.parametrize(
         "control_property, value, msg",
         [
             ("jumpProbability", 0, "Input should be greater than 0"),
@@ -524,61 +878,25 @@ class TestDream:
     )
     def test_dream_jumpProbability_pUnitGamma_error(self, control_property: str, value: int, msg: str) -> None:
         """Tests the jumpProbability and pUnitGamma setter errors in Dream class."""
-        with pytest.raises(pydantic.ValidationError) as exp:
+        with pytest.raises(pydantic.ValidationError, match=msg):
             setattr(self.dream, control_property, value)
-        assert exp.value.errors()[0]["msg"] == msg
 
     @pytest.mark.parametrize("value", [-80, -2])
     def test_dream_nSamples_error(self, value: int) -> None:
         """Tests the nSamples setter error in Dream class."""
-        with pytest.raises(pydantic.ValidationError) as exp:
+        with pytest.raises(pydantic.ValidationError, match="Input should be greater than or equal to 0"):
             self.dream.nSamples = value
-        assert exp.value.errors()[0]["msg"] == "Input should be greater than or equal to 0"
 
     @pytest.mark.parametrize("value", [-5, 0])
     def test_dream_nChains_error(self, value: int) -> None:
         """Tests the nChains setter error in Dream class."""
-        with pytest.raises(pydantic.ValidationError) as exp:
+        with pytest.raises(pydantic.ValidationError, match="Input should be greater than 0"):
             self.dream.nChains = value
-        assert exp.value.errors()[0]["msg"] == "Input should be greater than 0"
 
-    def test_dream_extra_property_error(self) -> None:
-        """Tests the extra property setter in Dream class."""
-        with pytest.raises(pydantic.ValidationError) as exp:
-            self.dream.test = 1
-        assert exp.value.errors()[0]["msg"] == "Object has no attribute 'test'"
-
-    def test_dream_initialise_procedure_error(self) -> None:
-        """Tests the procedure property can only be initialised as "dream" in Dream class."""
-        with pytest.raises(pydantic.ValidationError) as exp:
-            Controls(procedure="test")
-        assert exp.value.errors()[0]["msg"] == "Input should be 'calculate', 'simplex', 'de', 'ns' or 'dream'"
-
-    def test_dream_procedure_error(self) -> None:
-        """Tests the procedure property is frozen in Dream class."""
-        with pytest.raises(pydantic.ValidationError) as exp:
-            self.dream.procedure = "test"
-        assert exp.value.errors()[0]["msg"] == "Input should be 'calculate', 'simplex', 'de', 'ns' or 'dream'"
-
-    def test_control_class_dream_repr(self) -> None:
+    def test_control_class_dream_repr(self, table_str) -> None:
         """Tests the Dream model __repr__."""
-        table = self.dream.__repr__()
-        table_str = (
-            "+------------------+-----------+\n"
-            "|     Property     |   Value   |\n"
-            "+------------------+-----------+\n"
-            "|    procedure     |   dream   |\n"
-            "|     parallel     |   single  |\n"
-            "| calcSldDuringFit |   False   |\n"
-            "|  resampleParams  | [0.9, 50] |\n"
-            "|     display      |    iter   |\n"
-            "|     nSamples     |   20000   |\n"
-            "|     nChains      |     10    |\n"
-            "| jumpProbability  |    0.5    |\n"
-            "|    pUnitGamma    |    0.2    |\n"
-            "|  boundHandling   |  reflect  |\n"
-            "|     adaptPCR     |    True   |\n"
-            "+------------------+-----------+"
-        )
+        assert self.dream.__repr__() == table_str
 
-        assert table == table_str
+    def test_control_class_dream_str(self, table_str) -> None:
+        """Tests the Dream model __str__."""
+        assert self.dream.__str__() == table_str
