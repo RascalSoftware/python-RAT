@@ -5,27 +5,8 @@ from typing import Any, Union
 import pydantic
 import pytest
 
-from RATpy.controls import Controls
+from RATpy.controls import Controls, fields
 from RATpy.utils.enums import BoundHandling, Display, Parallel, Procedures, Strategies
-
-common_fields = ["procedure", "parallel", "calcSldDuringFit", "resampleParams", "display"]
-update_fields = ["updateFreq", "updatePlotFreq"]
-fields = {
-    "calculate": common_fields,
-    "simplex": [*common_fields, "xTolerance", "funcTolerance", "maxFuncEvals", "maxIterations", *update_fields],
-    "de": [
-        *common_fields,
-        "populationSize",
-        "fWeight",
-        "crossoverProbability",
-        "strategy",
-        "targetValue",
-        "numGenerations",
-        *update_fields,
-    ],
-    "ns": [*common_fields, "nLive", "nMCMC", "propScale", "nsTolerance"],
-    "dream": [*common_fields, "nSamples", "nChains", "jumpProbability", "pUnitGamma", "boundHandling", "adaptPCR"],
-}
 
 
 def test_initialise_procedure_error() -> None:
@@ -255,8 +236,8 @@ class TestSimplex:
             "|  funcTolerance   |   1e-06   |\n"
             "|   maxFuncEvals   |   10000   |\n"
             "|  maxIterations   |    1000   |\n"
-            "|    updateFreq    |     -1    |\n"
-            "|  updatePlotFreq  |     1     |\n"
+            "|    updateFreq    |     1     |\n"
+            "|  updatePlotFreq  |     20    |\n"
             "+------------------+-----------+"
         )
 
@@ -274,8 +255,8 @@ class TestSimplex:
             ("funcTolerance", 1e-6),
             ("maxFuncEvals", 10000),
             ("maxIterations", 1000),
-            ("updateFreq", -1),
-            ("updatePlotFreq", 1),
+            ("updateFreq", 1),
+            ("updatePlotFreq", 20),
         ],
     )
     def test_simplex_property_values(self, control_property: str, value: Any) -> None:
@@ -415,8 +396,8 @@ class TestDE:
             "|       strategy       | Strategies.RandomWithPerVectorDither |\n"
             "|     targetValue      |                 1.0                  |\n"
             "|    numGenerations    |                 500                  |\n"
-            "|      updateFreq      |                  -1                  |\n"
-            "|    updatePlotFreq    |                  1                   |\n"
+            "|      updateFreq      |                  1                   |\n"
+            "|    updatePlotFreq    |                  20                  |\n"
             "+----------------------+--------------------------------------+"
         )
 

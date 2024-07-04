@@ -49,8 +49,8 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid"):
     maxFuncEvals: int = Field(10000, gt=0)
     maxIterations: int = Field(1000, gt=0)
     # Simplex and DE
-    updateFreq: int = -1
-    updatePlotFreq: int = 1
+    updateFreq: int = 1
+    updatePlotFreq: int = 20
     # DE
     populationSize: int = Field(20, ge=1)
     fWeight: float = 0.5
@@ -110,8 +110,8 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid"):
                 warnings.warn(
                     f'\nThe current controls procedure is "{new_procedure}", but the property'
                     f' "{field}" applies instead to the {", ".join(incorrect_procedures)} procedure.\n\n'
-                    f' The fields for the'
-                    f' "{new_procedure}" controls procedure are:\n    {", ".join(fields[new_procedure])}\n',
+                    f' The fields for the "{new_procedure}" controls procedure are:\n'
+                    f'    {", ".join(fields[new_procedure])}\n',
                     stacklevel=2,
                 )
 

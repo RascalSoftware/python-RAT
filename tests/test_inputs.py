@@ -476,8 +476,8 @@ def standard_layers_controls():
     controls.funcTolerance = 1.0e-6
     controls.maxFuncEvals = 10000
     controls.maxIterations = 1000
-    controls.updateFreq = -1
-    controls.updatePlotFreq = 1
+    controls.updateFreq = 1
+    controls.updatePlotFreq = 20
     controls.populationSize = 20
     controls.fWeight = 0.5
     controls.crossoverProbability = 0.8
@@ -521,8 +521,8 @@ def custom_xy_controls():
     controls.funcTolerance = 1.0e-6
     controls.maxFuncEvals = 10000
     controls.maxIterations = 1000
-    controls.updateFreq = -1
-    controls.updatePlotFreq = 1
+    controls.updateFreq = 1
+    controls.updatePlotFreq = 20
     controls.populationSize = 20
     controls.fWeight = 0.5
     controls.crossoverProbability = 0.8
