@@ -474,7 +474,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
         self._protected_parameters = self.get_all_protected_parameters()
         return self
 
-    def __repr__(self):
+    def __str__(self):
         output = ""
         for key, value in self.__dict__.items():
             if value:
@@ -482,11 +482,8 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
                 try:
                     output += value.value + "\n\n"  # For enums
                 except AttributeError:
-                    output += repr(value) + "\n\n"
+                    output += str(value) + "\n\n"
         return output
-
-    def __str__(self) -> str:
-        return self.__repr__()
 
     def get_all_names(self):
         """Record the names of all models defined in the project."""

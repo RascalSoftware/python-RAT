@@ -52,7 +52,7 @@ class ClassList(collections.UserList):
 
         super().__init__(init_list)
 
-    def __repr__(self):
+    def __str__(self):
         try:
             [model.__dict__ for model in self.data]
         except AttributeError:

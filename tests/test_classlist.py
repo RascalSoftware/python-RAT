@@ -139,17 +139,17 @@ class TestInitialisation:
             ClassList(input_list, name_field=name_field)
 
 
-def test_repr_table(two_name_class_list: ClassList, two_name_class_list_table: str) -> None:
+def test_str_table(two_name_class_list: ClassList, two_name_class_list_table: str) -> None:
     """For classes with the __dict__ attribute, we should be able to print the ClassList like a table."""
-    assert repr(two_name_class_list) == two_name_class_list_table
+    assert str(two_name_class_list) == two_name_class_list_table
 
 
-def test_repr_empty_table() -> None:
+def test_str_empty_table() -> None:
     """For empty classes with the __dict__ attribute, we should be able to print the contents of the ClassList as a
     list.
     """
     empty_attributes = InputAttributes()
-    assert repr(ClassList(empty_attributes)) == repr([empty_attributes])
+    assert str(ClassList(empty_attributes)) == str([empty_attributes])
 
 
 @pytest.mark.parametrize(
@@ -158,15 +158,15 @@ def test_repr_empty_table() -> None:
         (["Alice", "Bob"]),
     ],
 )
-def test_repr_list(input_list: list[str]) -> None:
+def test_str_list(input_list: list[str]) -> None:
     """For classes without the __dict__ attribute, we should be able to print the ClassList as a list."""
     class_list = ClassList(input_list)
-    assert repr(class_list) == str(input_list)
+    assert str(class_list) == str(input_list)
 
 
-def test_repr_empty_classlist() -> None:
+def test_str_empty_classlist() -> None:
     """For empty ClassLists, we should be able to print the ClassList as an empty list."""
-    assert repr(ClassList()) == repr([])
+    assert str(ClassList()) == str([])
 
 
 @pytest.mark.parametrize(

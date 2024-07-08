@@ -133,10 +133,11 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid"):
         return {model_field: getattr(self, model_field) for model_field in fields[self.procedure]}
 
     def __repr__(self) -> str:
+        fields_repr = ", ".join(repr(v) if a is None else f"{a}={v!r}" for a, v in self.model_dump().items())
+        return f"{self.__repr_name__()}({fields_repr})"
+
+    def __str__(self) -> str:
         table = prettytable.PrettyTable()
         table.field_names = ["Property", "Value"]
         table.add_rows([[k, v] for k, v in self.model_dump().items()])
         return table.get_string()
-
-    def __str__(self) -> str:
-        return self.__repr__()

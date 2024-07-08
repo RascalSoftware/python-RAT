@@ -205,10 +205,6 @@ class TestCalculate:
             self.calculate.resampleParams = value
         assert exp.value.errors()[0]["msg"] == msg
 
-    def test_repr(self, table_str) -> None:
-        """Tests the Calculate model __repr__."""
-        assert self.calculate.__repr__() == table_str
-
     def test_str(self, table_str) -> None:
         """Tests the Calculate model __str__."""
         assert self.calculate.__str__() == table_str
@@ -363,12 +359,8 @@ class TestSimplex:
         with pytest.raises(pydantic.ValidationError, match="Input should be greater than 0"):
             setattr(self.simplex, control_property, value)
 
-    def test_repr(self, table_str) -> None:
-        """Tests the Simplex model __repr__."""
-        assert self.simplex.__repr__() == table_str
-
     def test_str(self, table_str) -> None:
-        """Tests the Simplex model __repr__."""
+        """Tests the Simplex model __str__."""
         assert self.simplex.__str__() == table_str
 
 
@@ -537,10 +529,6 @@ class TestDE:
         with pytest.raises(pydantic.ValidationError, match="Input should be greater than or equal to 1"):
             setattr(self.de, control_property, value)
 
-    def test_repr(self, table_str) -> None:
-        """Tests the DE model __repr__."""
-        assert self.de.__repr__() == table_str
-
     def test_str(self, table_str) -> None:
         """Tests the DE model __str__."""
         assert self.de.__str__() == table_str
@@ -703,10 +691,6 @@ class TestNS:
         """Tests the propScale error in NS class."""
         with pytest.raises(pydantic.ValidationError, match=msg):
             self.ns.propScale = value
-
-    def test_control_class_ns_repr(self, table_str) -> None:
-        """Tests the NS model __repr__."""
-        assert self.ns.__repr__() == table_str
 
     def test_control_class_ns_str(self, table_str) -> None:
         """Tests the NS model __str__."""
@@ -873,10 +857,6 @@ class TestDream:
         """Tests the nChains setter error in Dream class."""
         with pytest.raises(pydantic.ValidationError, match="Input should be greater than 0"):
             self.dream.nChains = value
-
-    def test_control_class_dream_repr(self, table_str) -> None:
-        """Tests the Dream model __repr__."""
-        assert self.dream.__repr__() == table_str
 
     def test_control_class_dream_str(self, table_str) -> None:
         """Tests the Dream model __str__."""

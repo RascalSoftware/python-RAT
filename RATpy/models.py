@@ -4,6 +4,7 @@ import pathlib
 from typing import Any, Union
 
 import numpy as np
+import prettytable
 from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
 
 from RATpy.utils.enums import BackgroundActions, Hydration, Languages, Priors, TypeOptions
@@ -12,6 +13,8 @@ try:
     from enum import StrEnum
 except ImportError:
     from strenum import StrEnum
+
+np.set_printoptions(threshold=100)
 
 
 def int_sequence():
@@ -42,6 +45,12 @@ class RATModel(BaseModel, validate_assignment=True, extra="forbid"):
             for a, v in self.__repr_args__()
         )
         return f"{self.__repr_name__()}({fields_repr})"
+
+    def __str__(self):
+        table = prettytable.PrettyTable()
+        table.field_names = ["Field", "Value"]
+        table.add_rows([[k, v] for k, v in self.model_dump().items()])
+        return table.get_string()
 
 
 class Background(RATModel):
@@ -197,15 +206,6 @@ class Data(RATModel, arbitrary_types_allowed=True):
             )
         else:
             return NotImplemented  # delegate to the other item in the comparison
-
-    def __repr__(self):
-        """Only include the name if the data is empty."""
-        fields_repr = (
-            f"name={self.name!r}"
-            if self.data.size == 0
-            else ", ".join(repr(v) if a is None else f"{a}={v!r}" for a, v in self.__repr_args__())
-        )
-        return f"{self.__repr_name__()}({fields_repr})"
 
 
 class DomainContrast(RATModel):
