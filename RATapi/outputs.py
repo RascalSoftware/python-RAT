@@ -8,15 +8,26 @@ import numpy as np
 import RATapi.rat_core
 from RATapi.utils.enums import Procedures
 
+np.set_printoptions(threshold=100)
+
+
+class RATResult:
+    def __str__(self):
+        output = f"{self.__class__.__name__}(\n"
+        for key, value in self.__dict__.items():
+            output += f"\t{key}={str(value)},\n"
+        output += ")"
+        return output
+
 
 @dataclass
-class CalculationResults:
+class CalculationResults(RATResult):
     chiValues: np.ndarray
     sumChi: float
 
 
 @dataclass
-class ContrastParams:
+class ContrastParams(RATResult):
     backgroundParams: np.ndarray
     scalefactors: np.ndarray
     bulkIn: np.ndarray
@@ -39,9 +50,24 @@ class Results:
     fitParams: np.ndarray
     fitNames: list[str]
 
+    def __str__(self):
+        output = ""
+        for key, value in self.__dict__.items():
+            if isinstance(value, list):
+                if isinstance(value[0], list):
+                    output += f"{key}=[\n" + ",\n".join(map(str, value)) + "\n],\n"
+                elif isinstance(value[0], np.ndarray):
+                    # output += f"{key}=[\narray(" + "),\narray(".join(map(str, value)) + ")\n]\n"
+                    output += f"{key}=[\n{str(value)}\n],\n"
+                else:
+                    output += f"{key}={str(value)},\n"
+            else:
+                output += f"{key}={str(value)},\n"
+        return output
+
 
 @dataclass
-class PredictionIntervals:
+class PredictionIntervals(RATResult):
     reflectivity: list
     sld: list
     reflectivityXData: list
@@ -50,14 +76,14 @@ class PredictionIntervals:
 
 
 @dataclass
-class ConfidenceIntervals:
+class ConfidenceIntervals(RATResult):
     percentile95: np.ndarray
     percentile65: np.ndarray
     mean: np.ndarray
 
 
 @dataclass
-class DreamParams:
+class DreamParams(RATResult):
     nParams: float
     nChains: float
     nGenerations: float
@@ -80,7 +106,7 @@ class DreamParams:
 
 
 @dataclass
-class DreamOutput:
+class DreamOutput(RATResult):
     allChains: np.ndarray
     outlierChains: np.ndarray
     runtime: float
@@ -92,7 +118,7 @@ class DreamOutput:
 
 
 @dataclass
-class NestedSamplerOutput:
+class NestedSamplerOutput(RATResult):
     logZ: float
     nestSamples: np.ndarray
     postSamples: np.ndarray
