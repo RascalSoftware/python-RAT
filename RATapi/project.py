@@ -33,16 +33,26 @@ model_in_classlist = {
 }
 
 values_defined_in = {
-    "backgrounds.value_1": "background_parameters",
-    "backgrounds.value_2": "background_parameters",
-    "backgrounds.value_3": "background_parameters",
-    "backgrounds.value_4": "background_parameters",
-    "backgrounds.value_5": "background_parameters",
-    "resolutions.value_1": "resolution_parameters",
-    "resolutions.value_2": "resolution_parameters",
-    "resolutions.value_3": "resolution_parameters",
-    "resolutions.value_4": "resolution_parameters",
-    "resolutions.value_5": "resolution_parameters",
+    "backgrounds.constant.value_1": "background_parameters",
+    "backgrounds.constant.value_2": "background_parameters",
+    "backgrounds.constant.value_3": "background_parameters",
+    "backgrounds.constant.value_4": "background_parameters",
+    "backgrounds.constant.value_5": "background_parameters",
+    "backgrounds.data.value_1": "data",
+    "backgrounds.data.value_2": "data",
+    "backgrounds.data.value_3": "data",
+    "backgrounds.data.value_4": "data",
+    "backgrounds.data.value_5": "data",
+    "resolutions.constant.value_1": "resolution_parameters",
+    "resolutions.constant.value_2": "resolution_parameters",
+    "resolutions.constant.value_3": "resolution_parameters",
+    "resolutions.constant.value_4": "resolution_parameters",
+    "resolutions.constant.value_5": "resolution_parameters",
+    "resolutions.data.value_1": "data",
+    "resolutions.data.value_2": "data",
+    "resolutions.data.value_3": "data",
+    "resolutions.data.value_4": "data",
+    "resolutions.data.value_5": "data",
     "layers.thickness": "parameters",
     "layers.SLD": "parameters",
     "layers.SLD_real": "parameters",
@@ -434,8 +444,13 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
     def cross_check_model_values(self) -> "Project":
         """Certain model fields should contain values defined elsewhere in the project."""
         value_fields = ["value_1", "value_2", "value_3", "value_4", "value_5"]
-        self.check_allowed_values("backgrounds", value_fields, self.background_parameters.get_names())
-        self.check_allowed_values("resolutions", value_fields, self.resolution_parameters.get_names())
+        self.check_allowed_background_resolution_values(
+            "backgrounds", value_fields, self.background_parameters.get_names(), self.data.get_names()
+        )
+        self.check_allowed_background_resolution_values(
+            "resolutions", value_fields, self.resolution_parameters.get_names(), self.data.get_names()
+        )
+
         self.check_allowed_values(
             "layers",
             ["thickness", "SLD", "SLD_real", "SLD_imaginary", "roughness"],
@@ -524,6 +539,49 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
                     raise ValueError(
                         f'The value "{value}" in the "{field}" field of "{attribute}" must be defined in '
                         f'"{values_defined_in[f"{attribute}.{field}"]}".',
+                    )
+
+    def check_allowed_background_resolution_values(
+        self, attribute: str, field_list: list[str], allowed_constants: list[str], allowed_data: list[str]
+    ) -> None:
+        """Check the values of the given fields in the given model are in the supplied list of allowed values.
+
+        For backgrounds and resolutions, the list of allowed values depends on whether the type of the
+        background/resolution is "constant" or "data".
+
+        Parameters
+        ----------
+        attribute : str
+            The attribute of Project being validated.
+        field_list : list [str]
+            The fields of the attribute to be checked for valid values.
+        allowed_constants : list [str]
+            The list of allowed values for the fields given in field_list if the type is "constant".
+        allowed_data : list [str]
+            The list of allowed values for the fields given in field_list if the type is "data".
+
+        Raises
+        ------
+        ValueError
+            Raised if any field in field_list has a value not specified in allowed_constants or allowed_data as
+            appropriate.
+
+        """
+        class_list = getattr(self, attribute)
+        for model in class_list:
+            if model.type == TypeOptions.Constant:
+                allowed_values = allowed_constants
+            elif model.type == TypeOptions.Data:
+                allowed_values = allowed_data
+            else:
+                raise ValueError('"Function" type backgrounds and resolutions are not yet supported.')
+
+            for field in field_list:
+                value = getattr(model, field, "")
+                if value and value not in allowed_values:
+                    raise ValueError(
+                        f'The value "{value}" in the "{field}" field of "{attribute}" must be defined in '
+                        f'"{values_defined_in[f"{attribute}.{model.type}.{field}"]}".',
                     )
 
     def check_contrast_model_allowed_values(
