@@ -11,6 +11,7 @@ import pytest
 import RATapi
 import RATapi.outputs
 import RATapi.rat_core
+from RATapi.run import get_time_string
 from RATapi.utils.enums import Calculations, Geometries, LayerModels, Procedures
 from tests.utils import check_results_equal
 
@@ -568,3 +569,22 @@ def test_run(test_procedure, test_output_problem, test_output_results, test_baye
         project, results = RATapi.run(input_project, RATapi.Controls(procedure=test_procedure))
 
     check_results_equal(test_results, results)
+
+
+@pytest.mark.parametrize(
+    ["time", "expected_time_string"],
+    [
+        (0.123456, "0.123 seconds"),
+        (12.3456, "12.346 seconds"),
+        (60.0, "1 minute, 0.000 seconds"),
+        (90.0, "1 minute, 30.000 seconds"),
+        (200.0, "3 minutes, 20.000 seconds"),
+        (3600.0, "1 hour, 0 minutes, 0.000 seconds"),
+        (5400.0, "1 hour, 30 minutes, 0.000 seconds"),
+        (3666.0, "1 hour, 1 minute, 6.000 seconds"),
+        (4000.0, "1 hour, 6 minutes, 40.000 seconds"),
+        (21966.0, "6 hours, 6 minutes, 6.000 seconds"),
+    ],
+)
+def test_get_time_string(time, expected_time_string) -> None:
+    assert get_time_string(time) == expected_time_string
