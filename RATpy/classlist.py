@@ -8,6 +8,7 @@ import warnings
 from collections.abc import Iterable, Sequence
 from typing import Any, Union
 
+import numpy as np
 import prettytable
 
 
@@ -56,15 +57,26 @@ class ClassList(collections.UserList):
         try:
             [model.__dict__ for model in self.data]
         except AttributeError:
-            output = repr(self.data)
+            output = str(self.data)
         else:
             if any(model.__dict__ for model in self.data):
                 table = prettytable.PrettyTable()
                 table.field_names = ["index"] + [key.replace("_", " ") for key in self.data[0].__dict__]
-                table.add_rows([[index] + list(model.__dict__.values()) for index, model in enumerate(self.data)])
+                table.add_rows(
+                    [
+                        [index]
+                        + list(
+                            f"{'Data array: ['+' x '.join(str(i) for i in v.shape) if v.size > 0 else '['}]"
+                            if isinstance(v, np.ndarray)
+                            else str(v)
+                            for v in model.__dict__.values()
+                        )
+                        for index, model in enumerate(self.data)
+                    ]
+                )
                 output = table.get_string()
             else:
-                output = repr(self.data)
+                output = str(self.data)
         return output
 
     def __setitem__(self, index: int, item: object) -> None:

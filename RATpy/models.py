@@ -14,8 +14,6 @@ try:
 except ImportError:
     from strenum import StrEnum
 
-np.set_printoptions(threshold=100)
-
 
 def int_sequence():
     """Iterate through integers for use as model counters."""
@@ -48,8 +46,8 @@ class RATModel(BaseModel, validate_assignment=True, extra="forbid"):
 
     def __str__(self):
         table = prettytable.PrettyTable()
-        table.field_names = ["Field", "Value"]
-        table.add_rows([[k, v] for k, v in self.model_dump().items()])
+        table.field_names = [key.replace("_", " ") for key in self.__dict__]
+        table.add_row(list(self.__dict__.values()))
         return table.get_string()
 
 
@@ -206,6 +204,13 @@ class Data(RATModel, arbitrary_types_allowed=True):
             )
         else:
             return NotImplemented  # delegate to the other item in the comparison
+
+    def __str__(self):
+        table = prettytable.PrettyTable()
+        table.field_names = [key.replace("_", " ") for key in self.__dict__]
+        array_entry = f"{'Data array: ['+' x '.join(str(i) for i in self.data.shape) if self.data.size > 0 else '['}]"
+        table.add_row([self.name, array_entry, self.data_range, self.simulation_range])
+        return table.get_string()
 
 
 class DomainContrast(RATModel):
