@@ -12,8 +12,7 @@ concurrency:
 
 jobs:
   test:
-
-    if: ${{ github.event.workflow_run.conclusion == "success" }}
+    
     strategy:
       fail-fast: false
       matrix:
@@ -25,6 +24,7 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
+    if: ${{ github.event.workflow_run.conclusion == "success" }}
     steps:
       - uses: actions/checkout@v4      
         with:
