@@ -2,7 +2,7 @@ name: Run Unit Tests
 
 on:
   workflow_run:
-    workflows: ["Ruff"]
+    workflows: [Ruff]
     types:
       - completed
 
