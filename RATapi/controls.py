@@ -91,7 +91,7 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid"):
                 f'{", ".join(fields.get("procedure", []))}\n',
             }
             custom_error_list = custom_pydantic_validation_error(exc.errors(), custom_error_msgs)
-            raise ValidationError.from_exception_data(exc.title, custom_error_list) from None
+            raise ValidationError.from_exception_data(exc.title, custom_error_list, hide_input=True) from None
 
         if isinstance(model_input, validated_self.__class__):
             # This is for changing fields in a defined model

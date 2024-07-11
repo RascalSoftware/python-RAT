@@ -706,7 +706,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
             except ValidationError as exc:
                 class_list.data = previous_state
                 custom_error_list = custom_pydantic_validation_error(exc.errors())
-                raise ValidationError.from_exception_data(exc.title, custom_error_list) from None
+                raise ValidationError.from_exception_data(exc.title, custom_error_list, hide_input=True) from None
             except (TypeError, ValueError):
                 class_list.data = previous_state
                 raise
