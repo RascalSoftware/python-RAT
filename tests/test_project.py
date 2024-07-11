@@ -52,8 +52,8 @@ def test_project():
 
 
 @pytest.fixture
-def default_project_repr():
-    """A string of the output of repr() for a Project model with no parameters specified."""
+def default_project_str():
+    """A string of the output of str() for a Project model with no parameters specified."""
     return (
         "Calculation: ---------------------------------------------------------------------------------------\n\n"
         "non polarised\n\n"
@@ -839,9 +839,9 @@ def test_allowed_domain_contrast_models() -> None:
         RATpy.Project(calculation=Calculations.Domains, domain_contrasts=RATpy.ClassList(test_contrast))
 
 
-def test_repr(default_project_repr: str) -> None:
+def test_str(default_project_str: str) -> None:
     """We should be able to print the "Project" model as a formatted list of the fields."""
-    assert repr(RATpy.Project()) == default_project_repr
+    assert str(RATpy.Project()) == default_project_str
 
 
 def test_get_all_names(test_project) -> None:

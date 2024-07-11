@@ -10,7 +10,7 @@ import RATpy as RAT
 path = pathlib.Path(__file__).parent.resolve()
 
 project = setup_problem.make_example_problem()
-controls = RAT.set_controls()
+controls = RAT.Controls()
 
 # Python
 start = time.time()

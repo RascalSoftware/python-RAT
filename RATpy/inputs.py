@@ -13,10 +13,7 @@ from RATpy.utils.enums import Calculations, Languages, LayerModels, TypeOptions
 
 
 def make_input(
-    project: RATpy.Project,
-    controls: Union[
-        RATpy.controls.Calculate, RATpy.controls.Simplex, RATpy.controls.DE, RATpy.controls.NS, RATpy.controls.Dream
-    ],
+    project: RATpy.Project, controls: RATpy.Controls
 ) -> tuple[ProblemDefinition, Cells, Limits, Priors, Control]:
     """Constructs the inputs required for the compiled RAT code using the data defined in the input project and
     controls.
@@ -25,7 +22,7 @@ def make_input(
     ----------
     project : RAT.Project
         The project model, which defines the physical system under study.
-    controls : Union[RAT.controls.Calculate, RAT.controls.Simplex, RAT.controls.DE, RAT.controls.NS, RAT.controls.Dream]
+    controls : RAT.Controls
         The controls model, which defines algorithmic properties.
 
     Returns
@@ -419,17 +416,12 @@ def get_python_handle(file_name: str, function_name: str, path: Union[str, pathl
     return handle
 
 
-def make_controls(
-    controls: Union[
-        RATpy.controls.Calculate, RATpy.controls.Simplex, RATpy.controls.DE, RATpy.controls.NS, RATpy.controls.Dream
-    ],
-    checks: Checks,
-) -> Control:
+def make_controls(input_controls: RATpy.Controls, checks: Checks) -> Control:
     """Converts the controls object to the format required by the compiled RAT code.
 
     Parameters
     ----------
-    controls : Union[RAT.controls.Calculate, RAT.controls.Simplex, RAT.controls.DE, RAT.controls.NS, RAT.controls.Dream]
+    input_controls : RAT.Controls
         The controls model, which defines algorithmic properties.
     checks : Rat.rat_core.Checks
         States whether or not to fit each parameter defined in the project.
@@ -440,41 +432,40 @@ def make_controls(
         The controls object used in the compiled RAT code.
 
     """
-    full_controls = RATpy.controls.Controls(**controls.model_dump())
-    cpp_controls = Control()
+    controls = Control()
 
-    cpp_controls.procedure = full_controls.procedure
-    cpp_controls.parallel = full_controls.parallel
-    cpp_controls.calcSldDuringFit = full_controls.calcSldDuringFit
-    cpp_controls.resampleParams = full_controls.resampleParams
-    cpp_controls.display = full_controls.display
+    controls.procedure = input_controls.procedure
+    controls.parallel = input_controls.parallel
+    controls.calcSldDuringFit = input_controls.calcSldDuringFit
+    controls.resampleParams = input_controls.resampleParams
+    controls.display = input_controls.display
     # Simplex
-    cpp_controls.xTolerance = full_controls.xTolerance
-    cpp_controls.funcTolerance = full_controls.funcTolerance
-    cpp_controls.maxFuncEvals = full_controls.maxFuncEvals
-    cpp_controls.maxIterations = full_controls.maxIterations
-    cpp_controls.updateFreq = full_controls.updateFreq
-    cpp_controls.updatePlotFreq = full_controls.updatePlotFreq
+    controls.xTolerance = input_controls.xTolerance
+    controls.funcTolerance = input_controls.funcTolerance
+    controls.maxFuncEvals = input_controls.maxFuncEvals
+    controls.maxIterations = input_controls.maxIterations
+    controls.updateFreq = input_controls.updateFreq
+    controls.updatePlotFreq = input_controls.updatePlotFreq
     # DE
-    cpp_controls.populationSize = full_controls.populationSize
-    cpp_controls.fWeight = full_controls.fWeight
-    cpp_controls.crossoverProbability = full_controls.crossoverProbability
-    cpp_controls.strategy = full_controls.strategy
-    cpp_controls.targetValue = full_controls.targetValue
-    cpp_controls.numGenerations = full_controls.numGenerations
+    controls.populationSize = input_controls.populationSize
+    controls.fWeight = input_controls.fWeight
+    controls.crossoverProbability = input_controls.crossoverProbability
+    controls.strategy = input_controls.strategy.value  # Required for the IntEnum
+    controls.targetValue = input_controls.targetValue
+    controls.numGenerations = input_controls.numGenerations
     # NS
-    cpp_controls.nLive = full_controls.nLive
-    cpp_controls.nMCMC = full_controls.nMCMC
-    cpp_controls.propScale = full_controls.propScale
-    cpp_controls.nsTolerance = full_controls.nsTolerance
+    controls.nLive = input_controls.nLive
+    controls.nMCMC = input_controls.nMCMC
+    controls.propScale = input_controls.propScale
+    controls.nsTolerance = input_controls.nsTolerance
     # Dream
-    cpp_controls.nSamples = full_controls.nSamples
-    cpp_controls.nChains = full_controls.nChains
-    cpp_controls.jumpProbability = full_controls.jumpProbability
-    cpp_controls.pUnitGamma = full_controls.pUnitGamma
-    cpp_controls.boundHandling = full_controls.boundHandling
-    cpp_controls.adaptPCR = full_controls.adaptPCR
+    controls.nSamples = input_controls.nSamples
+    controls.nChains = input_controls.nChains
+    controls.jumpProbability = input_controls.jumpProbability
+    controls.pUnitGamma = input_controls.pUnitGamma
+    controls.boundHandling = input_controls.boundHandling
+    controls.adaptPCR = input_controls.adaptPCR
     # Checks
-    cpp_controls.checks = checks
+    controls.checks = checks
 
-    return cpp_controls
+    return controls

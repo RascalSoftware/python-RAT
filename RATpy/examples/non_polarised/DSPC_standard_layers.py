@@ -352,7 +352,7 @@ problem.contrasts.append(
     model=stack,
 )
 
-controls = RAT.set_controls()
+controls = RAT.Controls()
 
 problem, results = RAT.run(problem, controls)
 RAT.plotting.plot_ref_sld(problem, results, True)

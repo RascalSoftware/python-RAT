@@ -4,6 +4,7 @@ import pathlib
 from typing import Any, Union
 
 import numpy as np
+import prettytable
 from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
 
 from RATpy.utils.enums import BackgroundActions, Hydration, Languages, Priors, TypeOptions
@@ -42,6 +43,12 @@ class RATModel(BaseModel, validate_assignment=True, extra="forbid"):
             for a, v in self.__repr_args__()
         )
         return f"{self.__repr_name__()}({fields_repr})"
+
+    def __str__(self):
+        table = prettytable.PrettyTable()
+        table.field_names = [key.replace("_", " ") for key in self.__dict__]
+        table.add_row(list(self.__dict__.values()))
+        return table.get_string()
 
 
 class Background(RATModel):
@@ -198,14 +205,12 @@ class Data(RATModel, arbitrary_types_allowed=True):
         else:
             return NotImplemented  # delegate to the other item in the comparison
 
-    def __repr__(self):
-        """Only include the name if the data is empty."""
-        fields_repr = (
-            f"name={self.name!r}"
-            if self.data.size == 0
-            else ", ".join(repr(v) if a is None else f"{a}={v!r}" for a, v in self.__repr_args__())
-        )
-        return f"{self.__repr_name__()}({fields_repr})"
+    def __str__(self):
+        table = prettytable.PrettyTable()
+        table.field_names = [key.replace("_", " ") for key in self.__dict__]
+        array_entry = f"{'Data array: ['+' x '.join(str(i) for i in self.data.shape) if self.data.size > 0 else '['}]"
+        table.add_row([self.name, array_entry, self.data_range, self.simulation_range])
+        return table.get_string()
 
 
 class DomainContrast(RATModel):

@@ -69,7 +69,7 @@ problem.contrasts.append(
 
 
 # Now we can run our simulation as usual, and plot the results
-controls = RAT.set_controls()
+controls = RAT.Controls()
 
 problem, results = RAT.run(problem, controls)
 RAT.plotting.plot_ref_sld(problem, results, True)

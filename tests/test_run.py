@@ -565,6 +565,6 @@ def test_run(test_procedure, test_output_problem, test_output_results, test_baye
         mock.MagicMock(return_value=(test_output_problem, test_output_results, test_bayes)),
     ):
         # Use default project as we patch RATMain to give the desired outputs
-        project, results = RATpy.run(input_project, RATpy.set_controls(procedure=test_procedure))
+        project, results = RATpy.run(input_project, RATpy.Controls(procedure=test_procedure))
 
     check_results_equal(test_results, results)

@@ -141,7 +141,7 @@ problem.contrasts.append(
 )
 
 # Now make a controls block
-controls = RAT.set_controls(parallel="contrasts", resampleParams=[0.9, 150.0])
+controls = RAT.Controls(parallel="contrasts", resampleParams=[0.9, 150.0])
 
 # Run the code and plot the results
 problem, results = RAT.run(problem, controls)
