@@ -4,7 +4,12 @@ Python-RAT is the Python interface for the [Reflectivity Algorithm Toolbox](http
 
 Install
 =======
-To install in local directory:
+To install in local directory, first set up the submodule:
+
+    git submodule init
+    git submodule update
+
+Then install with pip:
 
     pip install -e .
 
