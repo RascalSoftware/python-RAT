@@ -6,6 +6,8 @@ Install
 =======
 To install in local directory:
 
+    git clone --recurse-submodules https://github.com/RascalSoftware/python-RAT.git
+    cd python-RAT
     pip install -e .
 
 matlabengine is an optional dependency only required for Matlab custom functions. The version of matlabengine should match the version of Matlab installed on the machine. This can be installed as shown below:
