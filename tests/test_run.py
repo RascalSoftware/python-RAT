@@ -8,10 +8,10 @@ from unittest import mock
 import numpy as np
 import pytest
 
-import RATpy
-import RATpy.outputs
-import RATpy.rat_core
-from RATpy.utils.enums import Calculations, Geometries, LayerModels, Procedures
+import RATapi
+import RATapi.outputs
+import RATapi.rat_core
+from RATapi.utils.enums import Calculations, Geometries, LayerModels, Procedures
 from tests.utils import check_results_equal
 
 
@@ -20,7 +20,7 @@ def input_project():
     """A cut-down version of the input Project object for a reflectivity calculation set out in
     "DSPC_standard_layers.py".
     """
-    project = RATpy.Project(
+    project = RATapi.Project(
         name="original_dspc_bilayer",
         calculation="non polarised",
         model="standard layers",
@@ -268,7 +268,7 @@ def reflectivity_calculation_problem():
     """The output C++ ProblemDefinition object for a reflectivity calculation of the project set out in
     "DSPC_standard_layers.py".
     """
-    problem = RATpy.rat_core.ProblemDefinition()
+    problem = RATapi.rat_core.ProblemDefinition()
     problem.TF = Calculations.NonPolarised
     problem.modelType = LayerModels.StandardLayers
     problem.geometry = Geometries.SubstrateLiquid
@@ -405,7 +405,7 @@ def dream_problem():
 
     This optimisation used the parameters: nSamples=50000, nChains=10.
     """
-    problem = RATpy.rat_core.ProblemDefinition()
+    problem = RATapi.rat_core.ProblemDefinition()
     problem.TF = Calculations.NonPolarised
     problem.modelType = LayerModels.StandardLayers
     problem.geometry = Geometries.SubstrateLiquid
@@ -560,11 +560,11 @@ def test_run(test_procedure, test_output_problem, test_output_results, test_baye
     test_results = request.getfixturevalue(test_results)
 
     with mock.patch.object(
-        RATpy.rat_core,
+        RATapi.rat_core,
         "RATMain",
         mock.MagicMock(return_value=(test_output_problem, test_output_results, test_bayes)),
     ):
         # Use default project as we patch RATMain to give the desired outputs
-        project, results = RATpy.run(input_project, RATpy.Controls(procedure=test_procedure))
+        project, results = RATapi.run(input_project, RATapi.Controls(procedure=test_procedure))
 
     check_results_equal(test_results, results)

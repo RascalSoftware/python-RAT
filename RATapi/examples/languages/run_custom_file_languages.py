@@ -5,7 +5,7 @@ import time
 
 import setup_problem
 
-import RATpy as RAT
+import RATapi as RAT
 
 path = pathlib.Path(__file__).parent.resolve()
 

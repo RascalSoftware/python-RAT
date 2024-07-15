@@ -8,8 +8,8 @@ from setuptools import Extension, find_packages, setup
 from setuptools.command.build_clib import build_clib
 from setuptools.command.build_ext import build_ext
 
-__version__ = "0.0.0"
-PACKAGE_NAME = "RATpy"
+__version__ = "0.0.0.dev0"
+PACKAGE_NAME = "RATapi"
 
 with open("README.md") as f:
     LONG_DESCRIPTION = f.read()
@@ -19,7 +19,7 @@ libevent = ("eventManager", {"sources": ["cpp/RAT/events/eventManager.cpp"], "in
 
 ext_modules = [
     Extension(
-        "RATpy.rat_core",
+        "RATapi.rat_core",
         sources=["cpp/rat.cpp", *glob("cpp/RAT/*.c*")],
         include_dirs=[
             # Path to pybind11 headers
@@ -160,7 +160,7 @@ setup(
     long_description_content_type="text/markdown",
     packages=find_packages(),
     include_package_data=True,
-    package_data={"": [get_shared_object_name(libevent[0])], "RATpy.examples": ["data/*.dat"]},
+    package_data={"": [get_shared_object_name(libevent[0])], "RATapi.examples": ["data/*.dat"]},
     cmdclass={"build_clib": BuildClib, "build_ext": BuildExt},
     libraries=[libevent],
     ext_modules=ext_modules,

@@ -7,7 +7,7 @@ from typing import Any, Union
 
 import pytest
 
-from RATpy.classlist import ClassList
+from RATapi.classlist import ClassList
 from tests.utils import InputAttributes, SubInputAttributes
 
 

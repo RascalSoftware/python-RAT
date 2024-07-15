@@ -5,15 +5,15 @@ import os
 import pathlib
 from typing import Callable, Union
 
-import RATpy
-import RATpy.controls
-import RATpy.wrappers
-from RATpy.rat_core import Cells, Checks, Control, Limits, Priors, ProblemDefinition
-from RATpy.utils.enums import Calculations, Languages, LayerModels, TypeOptions
+import RATapi
+import RATapi.controls
+import RATapi.wrappers
+from RATapi.rat_core import Cells, Checks, Control, Limits, Priors, ProblemDefinition
+from RATapi.utils.enums import Calculations, Languages, LayerModels, TypeOptions
 
 
 def make_input(
-    project: RATpy.Project, controls: RATpy.Controls
+    project: RATapi.Project, controls: RATapi.Controls
 ) -> tuple[ProblemDefinition, Cells, Limits, Priors, Control]:
     """Constructs the inputs required for the compiled RAT code using the data defined in the input project and
     controls.
@@ -67,7 +67,7 @@ def make_input(
     limits = Limits()
     priors = Priors()
 
-    for class_list in RATpy.project.parameter_class_lists:
+    for class_list in RATapi.project.parameter_class_lists:
         setattr(checks, checks_field[class_list], [int(element.fit) for element in getattr(project, class_list)])
         setattr(
             limits,
@@ -86,11 +86,11 @@ def make_input(
     priors.qzshift = []
 
     priors.priorNames = [
-        param.name for class_list in RATpy.project.parameter_class_lists for param in getattr(project, class_list)
+        param.name for class_list in RATapi.project.parameter_class_lists for param in getattr(project, class_list)
     ]
     priors.priorValues = [
         [prior_id[param.prior_type], param.mu, param.sigma]
-        for class_list in RATpy.project.parameter_class_lists
+        for class_list in RATapi.project.parameter_class_lists
         for param in getattr(project, class_list)
     ]
 
@@ -102,7 +102,7 @@ def make_input(
     return problem, cells, limits, priors, cpp_controls
 
 
-def make_problem(project: RATpy.Project) -> ProblemDefinition:
+def make_problem(project: RATapi.Project) -> ProblemDefinition:
     """Constructs the problem input required for the compiled RAT code.
 
     Parameters
@@ -180,25 +180,25 @@ def make_problem(project: RATpy.Project) -> ProblemDefinition:
     problem.numberOfDomainContrasts = len(project.domain_contrasts)
     problem.fitParams = [
         param.value
-        for class_list in RATpy.project.parameter_class_lists
+        for class_list in RATapi.project.parameter_class_lists
         for param in getattr(project, class_list)
         if param.fit
     ]
     problem.fitLimits = [
         [param.min, param.max]
-        for class_list in RATpy.project.parameter_class_lists
+        for class_list in RATapi.project.parameter_class_lists
         for param in getattr(project, class_list)
         if param.fit
     ]
     problem.otherParams = [
         param.value
-        for class_list in RATpy.project.parameter_class_lists
+        for class_list in RATapi.project.parameter_class_lists
         for param in getattr(project, class_list)
         if not param.fit
     ]
     problem.otherLimits = [
         [param.min, param.max]
-        for class_list in RATpy.project.parameter_class_lists
+        for class_list in RATapi.project.parameter_class_lists
         for param in getattr(project, class_list)
         if not param.fit
     ]
@@ -208,7 +208,7 @@ def make_problem(project: RATpy.Project) -> ProblemDefinition:
     return problem
 
 
-def make_resample(project: RATpy.Project) -> list[int]:
+def make_resample(project: RATapi.Project) -> list[int]:
     """Constructs the "resample" field of the problem input required for the compiled RAT code.
 
     Parameters
@@ -225,7 +225,7 @@ def make_resample(project: RATpy.Project) -> list[int]:
     return [contrast.resample for contrast in project.contrasts]
 
 
-def make_data_present(project: RATpy.Project) -> list[int]:
+def make_data_present(project: RATapi.Project) -> list[int]:
     """Constructs the "dataPresent" field of the problem input required for the compiled RAT code.
 
     Parameters
@@ -281,7 +281,7 @@ def check_indices(problem: ProblemDefinition) -> None:
             )
 
 
-def make_cells(project: RATpy.Project) -> Cells:
+def make_cells(project: RATapi.Project) -> Cells:
     """Constructs the cells input required for the compiled RAT code.
 
     Note that the order of the inputs (i.e, f1 to f20) has been hard--coded into the compiled RAT code.
@@ -352,9 +352,9 @@ def make_cells(project: RATpy.Project) -> Cells:
         if custom_file.language == Languages.Python:
             file_handles.append(get_python_handle(custom_file.filename, custom_file.function_name, custom_file.path))
         elif custom_file.language == Languages.Matlab:
-            file_handles.append(RATpy.wrappers.MatlabWrapper(full_path).getHandle())
+            file_handles.append(RATapi.wrappers.MatlabWrapper(full_path).getHandle())
         elif custom_file.language == Languages.Cpp:
-            file_handles.append(RATpy.wrappers.DylibWrapper(full_path, custom_file.function_name).getHandle())
+            file_handles.append(RATapi.wrappers.DylibWrapper(full_path, custom_file.function_name).getHandle())
 
     # Populate the set of cells
     cells = Cells()
@@ -416,7 +416,7 @@ def get_python_handle(file_name: str, function_name: str, path: Union[str, pathl
     return handle
 
 
-def make_controls(input_controls: RATpy.Controls, checks: Checks) -> Control:
+def make_controls(input_controls: RATapi.Controls, checks: Checks) -> Control:
     """Converts the controls object to the format required by the compiled RAT code.
 
     Parameters

@@ -9,10 +9,10 @@ from typing import Any, Callable
 import numpy as np
 from pydantic import BaseModel, ValidationError, ValidationInfo, field_validator, model_validator
 
-import RATpy.models
-from RATpy.classlist import ClassList
-from RATpy.utils.custom_errors import custom_pydantic_validation_error
-from RATpy.utils.enums import Calculations, Geometries, LayerModels, Priors, TypeOptions
+import RATapi.models
+from RATapi.classlist import ClassList
+from RATapi.utils.custom_errors import custom_pydantic_validation_error
+from RATapi.utils.enums import Calculations, Geometries, LayerModels, Priors, TypeOptions
 
 # Map project fields to pydantic models
 model_in_classlist = {
@@ -109,7 +109,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
     parameters: ClassList = ClassList()
 
     bulk_in: ClassList = ClassList(
-        RATpy.models.Parameter(
+        RATapi.models.Parameter(
             name="SLD Air",
             min=0.0,
             value=0.0,
@@ -122,7 +122,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
     )
 
     bulk_out: ClassList = ClassList(
-        RATpy.models.Parameter(
+        RATapi.models.Parameter(
             name="SLD D2O",
             min=6.2e-6,
             value=6.35e-6,
@@ -135,7 +135,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
     )
 
     scalefactors: ClassList = ClassList(
-        RATpy.models.Parameter(
+        RATapi.models.Parameter(
             name="Scalefactor 1",
             min=0.02,
             value=0.23,
@@ -148,7 +148,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
     )
 
     domain_ratios: ClassList = ClassList(
-        RATpy.models.Parameter(
+        RATapi.models.Parameter(
             name="Domain Ratio 1",
             min=0.4,
             value=0.5,
@@ -161,7 +161,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
     )
 
     background_parameters: ClassList = ClassList(
-        RATpy.models.Parameter(
+        RATapi.models.Parameter(
             name="Background Param 1",
             min=1e-7,
             value=1e-6,
@@ -174,11 +174,11 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
     )
 
     backgrounds: ClassList = ClassList(
-        RATpy.models.Background(name="Background 1", type=TypeOptions.Constant, value_1="Background Param 1"),
+        RATapi.models.Background(name="Background 1", type=TypeOptions.Constant, value_1="Background Param 1"),
     )
 
     resolution_parameters: ClassList = ClassList(
-        RATpy.models.Parameter(
+        RATapi.models.Parameter(
             name="Resolution Param 1",
             min=0.01,
             value=0.03,
@@ -191,7 +191,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
     )
 
     resolutions: ClassList = ClassList(
-        RATpy.models.Resolution(name="Resolution 1", type=TypeOptions.Constant, value_1="Resolution Param 1"),
+        RATapi.models.Resolution(name="Resolution 1", type=TypeOptions.Constant, value_1="Resolution Param 1"),
     )
 
     custom_files: ClassList = ClassList()
@@ -229,7 +229,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
         if info.field_name == "contrasts" and info.data["calculation"] == Calculations.Domains:
             model_name = "ContrastWithRatio"
 
-        model = getattr(RATpy.models, model_name)
+        model = getattr(RATapi.models, model_name)
         if not all(isinstance(element, model) for element in value):
             raise ValueError(f'"{info.field_name}" ClassList contains objects other than "{model_name}"')
         return value
@@ -243,32 +243,32 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
         layer_field = self.layers
         if not hasattr(layer_field, "_class_handle"):
             if self.absorption:
-                layer_field._class_handle = RATpy.models.AbsorptionLayer
+                layer_field._class_handle = RATapi.models.AbsorptionLayer
             else:
-                layer_field._class_handle = RATpy.models.Layer
+                layer_field._class_handle = RATapi.models.Layer
 
         contrast_field = self.contrasts
         if not hasattr(contrast_field, "_class_handle"):
             if self.calculation == Calculations.Domains:
-                contrast_field._class_handle = RATpy.models.ContrastWithRatio
+                contrast_field._class_handle = RATapi.models.ContrastWithRatio
             else:
-                contrast_field._class_handle = RATpy.models.Contrast
+                contrast_field._class_handle = RATapi.models.Contrast
 
         for field_name, model in model_in_classlist.items():
             field = getattr(self, field_name)
             if not hasattr(field, "_class_handle"):
-                field._class_handle = getattr(RATpy.models, model)
+                field._class_handle = getattr(RATapi.models, model)
 
         if "Substrate Roughness" not in self.parameters.get_names():
             self.parameters.insert(
                 0,
-                RATpy.models.ProtectedParameter(
+                RATapi.models.ProtectedParameter(
                     name="Substrate Roughness",
                     min=1.0,
                     value=3.0,
                     max=5.0,
                     fit=True,
-                    prior_type=RATpy.models.Priors.Uniform,
+                    prior_type=RATapi.models.Priors.Uniform,
                     mu=0.0,
                     sigma=np.inf,
                 ),
@@ -277,10 +277,10 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
             # If substrate roughness is included as a standard parameter replace it with a protected parameter
             substrate_roughness_values = self.parameters[self.parameters.index("Substrate Roughness")].model_dump()
             self.parameters.remove("Substrate Roughness")
-            self.parameters.insert(0, RATpy.models.ProtectedParameter(**substrate_roughness_values))
+            self.parameters.insert(0, RATapi.models.ProtectedParameter(**substrate_roughness_values))
 
         if "Simulation" not in self.data.get_names():
-            self.data.insert(0, RATpy.models.Data(name="Simulation", simulation_range=[0.005, 0.7]))
+            self.data.insert(0, RATapi.models.Data(name="Simulation", simulation_range=[0.005, 0.7]))
 
         self._all_names = self.get_all_names()
         self._contrast_model_field = self.get_contrast_model_field()
@@ -336,28 +336,28 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
         handle = self.contrasts._class_handle.__name__
         if self.calculation == Calculations.Domains and handle == "Contrast":
             for contrast in self.contrasts:
-                contrast_list.append(RATpy.models.ContrastWithRatio(**contrast.model_dump()))
+                contrast_list.append(RATapi.models.ContrastWithRatio(**contrast.model_dump()))
             self.contrasts.data = contrast_list
             self.domain_ratios.data = [
-                RATpy.models.Parameter(
+                RATapi.models.Parameter(
                     name="Domain Ratio 1",
                     min=0.4,
                     value=0.5,
                     max=0.6,
                     fit=False,
-                    prior_type=RATpy.models.Priors.Uniform,
+                    prior_type=RATapi.models.Priors.Uniform,
                     mu=0.0,
                     sigma=np.inf,
                 ),
             ]
-            self.contrasts._class_handle = RATpy.models.ContrastWithRatio
+            self.contrasts._class_handle = RATapi.models.ContrastWithRatio
         elif self.calculation != Calculations.Domains and handle == "ContrastWithRatio":
             for contrast in self.contrasts:
                 contrast_params = contrast.model_dump()
                 del contrast_params["domain_ratio"]
-                contrast_list.append(RATpy.models.Contrast(**contrast_params))
+                contrast_list.append(RATapi.models.Contrast(**contrast_params))
             self.contrasts.data = contrast_list
-            self.contrasts._class_handle = RATpy.models.Contrast
+            self.contrasts._class_handle = RATapi.models.Contrast
         return self
 
     @model_validator(mode="after")
@@ -400,16 +400,16 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
         handle = self.layers._class_handle.__name__
         if self.absorption and handle == "Layer":
             for layer in self.layers:
-                layer_list.append(RATpy.models.AbsorptionLayer(**layer.model_dump()))
+                layer_list.append(RATapi.models.AbsorptionLayer(**layer.model_dump()))
             self.layers.data = layer_list
-            self.layers._class_handle = RATpy.models.AbsorptionLayer
+            self.layers._class_handle = RATapi.models.AbsorptionLayer
         elif not self.absorption and handle == "AbsorptionLayer":
             for layer in self.layers:
                 layer_params = layer.model_dump()
                 del layer_params["SLD_imaginary"]
-                layer_list.append(RATpy.models.Layer(**layer_params))
+                layer_list.append(RATapi.models.Layer(**layer_params))
             self.layers.data = layer_list
-            self.layers._class_handle = RATpy.models.Layer
+            self.layers._class_handle = RATapi.models.Layer
         return self
 
     @model_validator(mode="after")
@@ -463,7 +463,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
         """Protected parameters should not be deleted. If this is attempted, raise an error."""
         for class_list in parameter_class_lists:
             protected_parameters = [
-                param.name for param in getattr(self, class_list) if isinstance(param, RATpy.models.ProtectedParameter)
+                param.name for param in getattr(self, class_list) if isinstance(param, RATapi.models.ProtectedParameter)
             ]
             # All previously existing protected parameters should be present in new list
             if not all(element in protected_parameters for element in self._protected_parameters[class_list]):
@@ -493,7 +493,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
         """Record the protected parameters defined in the project."""
         return {
             class_list: [
-                param.name for param in getattr(self, class_list) if isinstance(param, RATpy.models.ProtectedParameter)
+                param.name for param in getattr(self, class_list) if isinstance(param, RATapi.models.ProtectedParameter)
             ]
             for class_list in parameter_class_lists
         }
@@ -605,17 +605,17 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
             )
 
             # Need imports
-            f.write("import RATpy\nfrom RATpy.models import *\nfrom numpy import array, inf\n\n")
+            f.write("import RATapi\nfrom RATapi.models import *\nfrom numpy import array, inf\n\n")
 
             f.write(
-                f"{obj_name} = RATpy.Project(\n{indent}name='{self.name}', calculation='{self.calculation}',"
+                f"{obj_name} = RATapi.Project(\n{indent}name='{self.name}', calculation='{self.calculation}',"
                 f" model='{self.model}', geometry='{self.geometry}', absorption={self.absorption},\n",
             )
 
             for class_list in class_lists:
                 contents = getattr(self, class_list).data
                 if contents:
-                    f.write(f"{indent}{class_list}=RATpy.ClassList({contents}),\n")
+                    f.write(f"{indent}{class_list}=RATapi.ClassList({contents}),\n")
             f.write(f"{indent})\n")
 
     def _classlist_wrapper(self, class_list: ClassList, func: Callable):
