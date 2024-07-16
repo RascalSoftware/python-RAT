@@ -6,8 +6,8 @@ from unittest.mock import MagicMock, patch
 import matplotlib.pyplot as plt
 import pytest
 
-from RATpy.rat_core import PlotEventData
-from RATpy.utils.plotting import Figure, plot_ref_sld_helper
+from RATapi.rat_core import PlotEventData
+from RATapi.utils.plotting import Figure, plot_ref_sld_helper
 
 TEST_DIR_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_data")
 
@@ -125,7 +125,7 @@ def test_eventhandler_variable_update(fig: Figure) -> None:
     assert fig._close_clicked
 
 
-@patch("RATpy.utils.plotting.plt.waitforbuttonpress")
+@patch("RATapi.utils.plotting.plt.waitforbuttonpress")
 def test_wait_for_close(mock: MagicMock, fig: Figure) -> None:
     """Tests the _wait_for_close method stops the
     while loop when _esc_pressed is True.
@@ -140,7 +140,7 @@ def test_wait_for_close(mock: MagicMock, fig: Figure) -> None:
     assert fig._esc_pressed
 
 
-@patch("RATpy.utils.plotting.makeSLDProfileXY")
+@patch("RATapi.utils.plotting.makeSLDProfileXY")
 def test_sld_profile_function_call(mock: MagicMock) -> None:
     """Tests the makeSLDProfileXY function called with
     correct args.

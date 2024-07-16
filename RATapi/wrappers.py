@@ -5,7 +5,7 @@ from typing import Callable, Tuple
 import numpy as np
 from numpy.typing import ArrayLike
 
-import RATpy.rat_core
+import RATapi.rat_core
 
 
 def start_matlab():
@@ -93,7 +93,7 @@ class DylibWrapper:
     """
 
     def __init__(self, filename, function_name) -> None:
-        self.engine = RATpy.rat_core.DylibEngine(filename, function_name)
+        self.engine = RATapi.rat_core.DylibEngine(filename, function_name)
 
     def getHandle(self) -> Callable[[ArrayLike, ArrayLike, ArrayLike, int, int], Tuple[ArrayLike, float]]:
         """Returns a wrapper for the custom dynamic library function

@@ -7,11 +7,11 @@ from unittest import mock
 import numpy as np
 import pytest
 
-import RATpy
-import RATpy.wrappers
-from RATpy.inputs import check_indices, make_cells, make_controls, make_input, make_problem
-from RATpy.rat_core import Cells, Checks, Control, Limits, Priors, ProblemDefinition
-from RATpy.utils.enums import (
+import RATapi
+import RATapi.wrappers
+from RATapi.inputs import check_indices, make_cells, make_controls, make_input, make_problem
+from RATapi.rat_core import Cells, Checks, Control, Limits, Priors, ProblemDefinition
+from RATapi.utils.enums import (
     BoundHandling,
     Calculations,
     Display,
@@ -27,8 +27,8 @@ from tests.utils import dummy_function
 @pytest.fixture
 def standard_layers_project():
     """Add parameters to the default project for a non polarised calculation."""
-    test_project = RATpy.Project(
-        data=RATpy.ClassList([RATpy.models.Data(name="Test Data", data=np.array([[1.0, 1.0, 1.0]]))]),
+    test_project = RATapi.Project(
+        data=RATapi.ClassList([RATapi.models.Data(name="Test Data", data=np.array([[1.0, 1.0, 1.0]]))]),
     )
     test_project.parameters.append(name="Test Thickness")
     test_project.parameters.append(name="Test SLD")
@@ -61,9 +61,9 @@ def standard_layers_project():
 @pytest.fixture
 def domains_project():
     """Add parameters to the default project for a domains calculation."""
-    test_project = RATpy.Project(
+    test_project = RATapi.Project(
         calculation=Calculations.Domains,
-        data=RATpy.ClassList([RATpy.models.Data(name="Test Data", data=np.array([[1.0, 1.0, 1.0]]))]),
+        data=RATapi.ClassList([RATapi.models.Data(name="Test Data", data=np.array([[1.0, 1.0, 1.0]]))]),
     )
     test_project.parameters.append(name="Test Thickness")
     test_project.parameters.append(name="Test SLD")
@@ -94,7 +94,7 @@ def domains_project():
 @pytest.fixture
 def custom_xy_project():
     """Add parameters to the default project for a non polarised calculation and use the custom xy model."""
-    test_project = RATpy.Project(model=LayerModels.CustomXY)
+    test_project = RATapi.Project(model=LayerModels.CustomXY)
     test_project.parameters.append(name="Test Thickness")
     test_project.parameters.append(name="Test SLD")
     test_project.parameters.append(name="Test Roughness")
@@ -378,17 +378,17 @@ def non_polarised_priors():
     """The expected priors object from "standard_layers_project" and "custom_xy_project"."""
     priors = Priors()
     priors.param = [
-        ["Substrate Roughness", RATpy.utils.enums.Priors.Uniform, 0.0, np.inf],
-        ["Test Thickness", RATpy.utils.enums.Priors.Uniform, 0.0, np.inf],
-        ["Test SLD", RATpy.utils.enums.Priors.Uniform, 0.0, np.inf],
-        ["Test Roughness", RATpy.utils.enums.Priors.Uniform, 0.0, np.inf],
+        ["Substrate Roughness", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf],
+        ["Test Thickness", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf],
+        ["Test SLD", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf],
+        ["Test Roughness", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf],
     ]
-    priors.backgroundParam = [["Background Param 1", RATpy.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.backgroundParam = [["Background Param 1", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.qzshift = []
-    priors.scalefactor = [["Scalefactor 1", RATpy.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.bulkIn = [["SLD Air", RATpy.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.bulkOut = [["SLD D2O", RATpy.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.resolutionParam = [["Resolution Param 1", RATpy.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.scalefactor = [["Scalefactor 1", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.bulkIn = [["SLD Air", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.bulkOut = [["SLD D2O", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.resolutionParam = [["Resolution Param 1", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.domainRatio = []
     priors.priorNames = [
         "Substrate Roughness",
@@ -421,18 +421,18 @@ def domains_priors():
     """The expected priors object from "domains_project"."""
     priors = Priors()
     priors.param = [
-        ["Substrate Roughness", RATpy.utils.enums.Priors.Uniform, 0.0, np.inf],
-        ["Test Thickness", RATpy.utils.enums.Priors.Uniform, 0.0, np.inf],
-        ["Test SLD", RATpy.utils.enums.Priors.Uniform, 0.0, np.inf],
-        ["Test Roughness", RATpy.utils.enums.Priors.Uniform, 0.0, np.inf],
+        ["Substrate Roughness", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf],
+        ["Test Thickness", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf],
+        ["Test SLD", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf],
+        ["Test Roughness", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf],
     ]
-    priors.backgroundParam = [["Background Param 1", RATpy.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.backgroundParam = [["Background Param 1", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.qzshift = []
-    priors.scalefactor = [["Scalefactor 1", RATpy.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.bulkIn = [["SLD Air", RATpy.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.bulkOut = [["SLD D2O", RATpy.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.resolutionParam = [["Resolution Param 1", RATpy.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.domainRatio = [["Domain Ratio 1", RATpy.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.scalefactor = [["Scalefactor 1", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.bulkIn = [["SLD Air", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.bulkOut = [["SLD D2O", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.resolutionParam = [["Resolution Param 1", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.domainRatio = [["Domain Ratio 1", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.priorNames = [
         "Substrate Roughness",
         "Test Thickness",
@@ -623,19 +623,19 @@ def test_make_input(test_project, test_problem, test_cells, test_limits, test_pr
     mocked_matlab_future.result.return_value = mocked_engine
 
     with mock.patch.object(
-        RATpy.wrappers.MatlabWrapper,
+        RATapi.wrappers.MatlabWrapper,
         "loader",
         mocked_matlab_future,
-    ), mock.patch.object(RATpy.rat_core, "DylibEngine", mock.MagicMock()), mock.patch.object(
-        RATpy.inputs,
+    ), mock.patch.object(RATapi.rat_core, "DylibEngine", mock.MagicMock()), mock.patch.object(
+        RATapi.inputs,
         "get_python_handle",
         mock.MagicMock(return_value=dummy_function),
     ), mock.patch.object(
-        RATpy.wrappers.MatlabWrapper,
+        RATapi.wrappers.MatlabWrapper,
         "getHandle",
         mock.MagicMock(return_value=dummy_function),
-    ), mock.patch.object(RATpy.wrappers.DylibWrapper, "getHandle", mock.MagicMock(return_value=dummy_function)):
-        problem, cells, limits, priors, controls = make_input(test_project, RATpy.Controls())
+    ), mock.patch.object(RATapi.wrappers.DylibWrapper, "getHandle", mock.MagicMock(return_value=dummy_function)):
+        problem, cells, limits, priors, controls = make_input(test_project, RATapi.Controls())
 
     check_problem_equal(problem, test_problem)
     check_cells_equal(cells, test_cells)
@@ -762,18 +762,18 @@ def test_make_cells(test_project, test_cells, request) -> None:
     mocked_engine = mock.MagicMock()
     mocked_matlab_future.result.return_value = mocked_engine
     with mock.patch.object(
-        RATpy.wrappers.MatlabWrapper,
+        RATapi.wrappers.MatlabWrapper,
         "loader",
         mocked_matlab_future,
-    ), mock.patch.object(RATpy.rat_core, "DylibEngine", mock.MagicMock()), mock.patch.object(
-        RATpy.inputs,
+    ), mock.patch.object(RATapi.rat_core, "DylibEngine", mock.MagicMock()), mock.patch.object(
+        RATapi.inputs,
         "get_python_handle",
         mock.MagicMock(return_value=dummy_function),
     ), mock.patch.object(
-        RATpy.wrappers.MatlabWrapper,
+        RATapi.wrappers.MatlabWrapper,
         "getHandle",
         mock.MagicMock(return_value=dummy_function),
-    ), mock.patch.object(RATpy.wrappers.DylibWrapper, "getHandle", mock.MagicMock(return_value=dummy_function)):
+    ), mock.patch.object(RATapi.wrappers.DylibWrapper, "getHandle", mock.MagicMock(return_value=dummy_function)):
         cells = make_cells(test_project)
 
     check_cells_equal(cells, test_cells)
@@ -781,14 +781,14 @@ def test_make_cells(test_project, test_cells, request) -> None:
 
 def test_get_python_handle():
     path = pathlib.Path(__file__).parent.resolve()
-    assert RATpy.inputs.get_python_handle("utils.py", "dummy_function", path).__code__ == dummy_function.__code__
+    assert RATapi.inputs.get_python_handle("utils.py", "dummy_function", path).__code__ == dummy_function.__code__
 
 
 def test_make_controls(standard_layers_controls, test_checks) -> None:
     """The controls object should contain the full set of controls parameters, with the appropriate set defined by the
     input controls.
     """
-    controls = make_controls(RATpy.Controls(), test_checks)
+    controls = make_controls(RATapi.Controls(), test_checks)
     check_controls_equal(controls, standard_layers_controls)
 
 

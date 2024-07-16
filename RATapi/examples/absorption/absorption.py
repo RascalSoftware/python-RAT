@@ -5,7 +5,7 @@ import pathlib
 
 import numpy as np
 
-import RATpy as RAT
+import RATapi as RAT
 
 problem = RAT.Project(
     name="Absorption example",

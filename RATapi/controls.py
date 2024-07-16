@@ -11,8 +11,8 @@ from pydantic import (
     model_validator,
 )
 
-from RATpy.utils.custom_errors import custom_pydantic_validation_error
-from RATpy.utils.enums import BoundHandling, Display, Parallel, Procedures, Strategies
+from RATapi.utils.custom_errors import custom_pydantic_validation_error
+from RATapi.utils.enums import BoundHandling, Display, Parallel, Procedures, Strategies
 
 common_fields = ["procedure", "parallel", "calcSldDuringFit", "resampleParams", "display"]
 update_fields = ["updateFreq", "updatePlotFreq"]

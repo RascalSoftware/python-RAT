@@ -1,6 +1,6 @@
 import numpy as np
 
-import RATpy.outputs
+import RATapi.outputs
 
 
 class InputAttributes:
@@ -43,10 +43,10 @@ def check_results_equal(actual_results, expected_results) -> None:
     ]
 
     assert (
-        isinstance(actual_results, RATpy.outputs.Results) and isinstance(expected_results, RATpy.outputs.Results)
+        isinstance(actual_results, RATapi.outputs.Results) and isinstance(expected_results, RATapi.outputs.Results)
     ) or (
-        isinstance(actual_results, RATpy.outputs.BayesResults)
-        and isinstance(expected_results, RATpy.outputs.BayesResults)
+        isinstance(actual_results, RATapi.outputs.BayesResults)
+        and isinstance(expected_results, RATapi.outputs.BayesResults)
     )
 
     # The first set of fields are either 1D or 2D python lists containing numpy arrays.
@@ -74,8 +74,8 @@ def check_results_equal(actual_results, expected_results) -> None:
     for field in contrast_param_fields:
         assert (getattr(actual_results.contrastParams, field) == getattr(expected_results.contrastParams, field)).all()
 
-    if isinstance(actual_results, RATpy.outputs.BayesResults) and isinstance(
-        expected_results, RATpy.outputs.BayesResults
+    if isinstance(actual_results, RATapi.outputs.BayesResults) and isinstance(
+        expected_results, RATapi.outputs.BayesResults
     ):
         check_bayes_fields_equal(actual_results, expected_results)
 

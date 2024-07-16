@@ -5,8 +5,8 @@ from typing import Any, Union
 import pydantic
 import pytest
 
-from RATpy.controls import Controls, fields
-from RATpy.utils.enums import BoundHandling, Display, Parallel, Procedures, Strategies
+from RATapi.controls import Controls, fields
+from RATapi.utils.enums import BoundHandling, Display, Parallel, Procedures, Strategies
 
 
 def test_initialise_procedure_error() -> None:

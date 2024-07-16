@@ -7,7 +7,7 @@ import numpy as np
 import prettytable
 from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
 
-from RATpy.utils.enums import BackgroundActions, Hydration, Languages, Priors, TypeOptions
+from RATapi.utils.enums import BackgroundActions, Hydration, Languages, Priors, TypeOptions
 
 try:
     from enum import StrEnum

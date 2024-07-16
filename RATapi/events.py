@@ -1,7 +1,7 @@
 import os
 from typing import Callable, List, Union
 
-from RATpy.rat_core import EventBridge, EventTypes, PlotEventData, ProgressEventData
+from RATapi.rat_core import EventBridge, EventTypes, PlotEventData, ProgressEventData
 
 
 def notify(event_type: EventTypes, data: Union[str, PlotEventData, ProgressEventData]) -> None:

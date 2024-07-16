@@ -2,7 +2,7 @@
 
 import pathlib
 
-import RATpy as RAT
+import RATapi as RAT
 
 problem = RAT.Project(calculation="domains", model="custom layers", geometry="substrate/liquid")
 
