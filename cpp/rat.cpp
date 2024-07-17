@@ -192,19 +192,25 @@ class EventBridge
     };
     
     py::list unpackDataToCell(int rows, int cols, double* data, double* nData, 
-                              double* data2, double* nData2, int dataCol)   
+                              double* data2, double* nData2, bool isOutput2D=false)   
     {
         py::list allResults;
-        int dims[2] = {0, dataCol};
+        int dims[2] = {0, 0};
         int offset = 0;
         for (int i = 0; i < rows; i++){
-            py::list rowList;
-            dims[0] = (int)nData[i] / dataCol;
+            dims[0] = (int)nData[2*i];
+            dims[1] = (int)nData[2*i+1];
             auto result = py::array_t<double,  py::array::f_style>({dims[0], dims[1]});
             std::memcpy(result.request().ptr, data + offset, result.nbytes());
             offset += result.size();
-            rowList.append(result);
-            allResults.append(rowList);
+            if (isOutput2D){
+                py::list rowList;
+                rowList.append(result);
+                allResults.append(rowList);
+            }
+            else{
+                allResults.append(result);
+            }
         }
 
         if (data2 != NULL && nData2 != NULL)
@@ -212,7 +218,8 @@ class EventBridge
             // This is used to unpack the domains data into the second column 
             offset = 0;
             for ( int i = 0; i < rows; i++){
-                dims[0] = (int)nData2[i] / dataCol;
+                dims[0] = (int)nData2[2*i];
+                dims[1] = (int)nData2[2*i+1];
                 auto result = py::array_t<double,  py::array::f_style>({dims[0], dims[1]});
                 std::memcpy(result.request().ptr, data2 + offset, result.nbytes());
                 offset +=  result.size();
@@ -252,18 +259,18 @@ class EventBridge
             std::memcpy(eventData.dataPresent.request().ptr, pEvent->data->dataPresent, eventData.dataPresent.nbytes());
 
             eventData.reflectivity = unpackDataToCell(pEvent->data->nContrast, 1, 
-                                                      pEvent->data->reflect, pEvent->data->nReflect, NULL, NULL, 2);
+                                                      pEvent->data->reflect, pEvent->data->nReflect, NULL, NULL);
 
             eventData.shiftedData = unpackDataToCell(pEvent->data->nContrast, 1, 
-                                                     pEvent->data->shiftedData, pEvent->data->nShiftedData, NULL, NULL, 3);
+                                                     pEvent->data->shiftedData, pEvent->data->nShiftedData, NULL, NULL);
             
             eventData.sldProfiles = unpackDataToCell(pEvent->data->nContrast, (pEvent->data->nSldProfiles2 == NULL) ? 1 : 2,
                                                      pEvent->data->sldProfiles, pEvent->data->nSldProfiles, 
-                                                     pEvent->data->sldProfiles2, pEvent->data->nSldProfiles2, 2);
-
+                                                     pEvent->data->sldProfiles2, pEvent->data->nSldProfiles2, true);
+            
             eventData.resampledLayers = unpackDataToCell(pEvent->data->nContrast, (pEvent->data->nLayers2 == NULL) ? 1 : 2, 
-                                                   pEvent->data->layers, pEvent->data->nLayers, 
-                                                   pEvent->data->layers2, pEvent->data->nLayers, 2);
+                                                         pEvent->data->layers, pEvent->data->nLayers, 
+                                                         pEvent->data->layers2, pEvent->data->nLayers2, true);
             this->callback(event.type, eventData);
         }
     };

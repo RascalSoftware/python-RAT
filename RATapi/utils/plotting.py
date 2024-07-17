@@ -2,6 +2,7 @@
 
 from typing import Optional, Union
 
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes._axes import Axes
@@ -10,45 +11,6 @@ import RATapi
 import RATapi.inputs
 import RATapi.outputs
 from RATapi.rat_core import PlotEventData, makeSLDProfileXY
-
-
-class Figure:
-    """Creates a plotting figure."""
-
-    def __init__(self, row: int = 1, col: int = 1):
-        """Initializes the figure and the subplots.
-
-        Parameters
-        ----------
-        row : int, default: 1
-              The number of rows in subplot
-        col : int, default: 1
-              The number of columns in subplot
-
-        """
-        self._fig, self._ax = plt.subplots(row, col, num="Reflectivity Algorithms Toolbox (RAT)")
-        plt.show(block=False)
-        self._esc_pressed = False
-        self._close_clicked = False
-        self._fig.canvas.mpl_connect("key_press_event", self._process_button_press)
-        self._fig.canvas.mpl_connect("close_event", self._close)
-
-    def wait_for_close(self):
-        """Waits for the user to close the figure
-        using the esc key.
-        """
-        while not (self._esc_pressed or self._close_clicked):
-            plt.waitforbuttonpress(timeout=0.005)
-        plt.close(self._fig)
-
-    def _process_button_press(self, event):
-        """Process the key_press_event."""
-        if event.key == "escape":
-            self._esc_pressed = True
-
-    def _close(self, _):
-        """Process the close_event."""
-        self._close_clicked = True
 
 
 def plot_errorbars(ax: Axes, x: np.ndarray, y: np.ndarray, err: np.ndarray, one_sided: bool, color: str):
@@ -75,7 +37,7 @@ def plot_errorbars(ax: Axes, x: np.ndarray, y: np.ndarray, err: np.ndarray, one_
     ax.scatter(x=x, y=y, s=3, marker="o", color=color)
 
 
-def plot_ref_sld_helper(data: PlotEventData, fig: Optional[Figure] = None, delay: bool = True):
+def plot_ref_sld_helper(data: PlotEventData, fig: Optional[matplotlib.pyplot.figure] = None, delay: bool = True):
     """Clears the previous plots and updates the ref and SLD plots.
 
     Parameters
@@ -83,25 +45,30 @@ def plot_ref_sld_helper(data: PlotEventData, fig: Optional[Figure] = None, delay
     data : PlotEventData
            The plot event data that contains all the information
            to generate the ref and sld plots
-    fig : Figure, optional
+    fig : matplotlib.pyplot.figure, optional
           The figure class that has two subplots
     delay : bool, default: True
             Controls whether to delay 0.005s after plot is created
 
     Returns
     -------
-    fig : Figure
+    fig : matplotlib.pyplot.figure
           The figure class that has two subplots
 
     """
-    if fig is None:
-        fig = Figure(1, 2)
-    elif fig._ax.shape != (2,):
-        fig._fig.clf()
-        fig._ax = fig._fig.subplots(1, 2)
+    preserve_zoom = False
 
-    ref_plot = fig._ax[0]
-    sld_plot = fig._ax[1]
+    if fig is None:
+        fig = plt.subplots(1, 2)[0]
+    elif len(fig.axes) != 2:
+        fig.clf()
+        fig.subplots(1, 2)
+
+    ref_plot = fig.axes[0]
+    sld_plot = fig.axes[1]
+    if ref_plot.lines and fig.canvas.toolbar is not None:
+        preserve_zoom = True
+        fig.canvas.toolbar.push_current()
 
     # Clears the previous plots
     ref_plot.cla()
@@ -170,6 +137,8 @@ def plot_ref_sld_helper(data: PlotEventData, fig: Optional[Figure] = None, delay
     sld_plot.legend()
     sld_plot.grid()
 
+    if preserve_zoom:
+        fig.canvas.toolbar.back()
     if delay:
         plt.pause(0.005)
 
@@ -204,8 +173,52 @@ def plot_ref_sld(
     data.subRoughs = results.contrastParams.subRoughs
     data.resample = RATapi.inputs.make_resample(project)
 
-    figure = Figure(1, 2)
+    figure = plt.subplots(1, 2)[0]
 
     plot_ref_sld_helper(data, figure)
-    if block:
-        figure.wait_for_close()
+
+    plt.show(block=block)
+
+
+class LivePlot:
+    """Creates a plot that gets updates from the plot event during a
+    calculation
+
+    Parameters
+    ----------
+    block : bool, default: False
+            Indicates the plot should block until it is closed
+
+    """
+
+    def __init__(self, block=False):
+        self.block = block
+        self.closed = False
+
+    def __enter__(self):
+        self.figure = plt.subplots(1, 2)[0]
+        self.figure.canvas.mpl_connect("close_event", self._setCloseState)
+        self.figure.show()
+        RATapi.events.register(RATapi.events.EventTypes.Plot, self.plotEvent)
+
+        return self.figure
+
+    def _setCloseState(self, _):
+        """Close event handler"""
+        self.closed = True
+
+    def plotEvent(self, event):
+        """Callback for the plot event.
+
+        Parameters
+        ----------
+        event: PlotEventData
+            The plot event data.
+        """
+        if not self.closed and self.figure.number in plt.get_fignums():
+            plot_ref_sld_helper(event, self.figure)
+
+    def __exit__(self, _exc_type, _exc_val, _traceback):
+        RATapi.events.clear(RATapi.events.EventTypes.Plot, self.plotEvent)
+        if not self.closed and self.figure.number in plt.get_fignums():
+            plt.show(block=self.block)

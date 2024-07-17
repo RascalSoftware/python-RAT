@@ -25,6 +25,11 @@ def test_event_register() -> None:
         [first_callback, second_callback]
     )
 
+    RATapi.events.clear(RATapi.events.EventTypes.Message, second_callback)
+    result = RATapi.events.get_event_callback(RATapi.events.EventTypes.Message)
+    assert result == [first_callback]
+    result = RATapi.events.get_event_callback(RATapi.events.EventTypes.Plot)
+    assert result == [second_callback]
     RATapi.events.clear()
     assert RATapi.events.get_event_callback(RATapi.events.EventTypes.Plot) == []
     assert RATapi.events.get_event_callback(RATapi.events.EventTypes.Message) == []
