@@ -3,6 +3,7 @@ import time
 import RATapi.rat_core
 from RATapi.inputs import make_input
 from RATapi.outputs import make_results
+from RATapi.utils.enums import Display
 
 
 def run(project, controls):
@@ -21,9 +22,10 @@ def run(project, controls):
 
     problem_definition, cells, limits, priors, cpp_controls = make_input(project, controls)
 
-    print("Starting RAT " + horizontal_line)
-    start = time.time()
+    if controls.display != Display.Off:
+        print("Starting RAT " + horizontal_line)
 
+    start = time.time()
     problem_definition, output_results, bayes_results = RATapi.rat_core.RATMain(
         problem_definition,
         cells,
@@ -33,7 +35,8 @@ def run(project, controls):
     )
     end = time.time()
 
-    print(f"Elapsed time is {get_time_string(end-start)}\n")
+    if controls.display != Display.Off:
+        print(f"Elapsed time is {end-start:.3f} seconds\n")
 
     results = make_results(controls.procedure, output_results, bayes_results)
 
@@ -42,7 +45,9 @@ def run(project, controls):
         for index, value in enumerate(getattr(problem_definition, parameter_field[class_list])):
             getattr(project, class_list)[index].value = value
 
-    print("Finished RAT " + horizontal_line)
+    if controls.display != Display.Off:
+        print("Finished RAT " + horizontal_line)
+
     return project, results
 
 
