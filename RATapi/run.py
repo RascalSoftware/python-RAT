@@ -49,22 +49,3 @@ def run(project, controls):
         print("Finished RAT " + horizontal_line)
 
     return project, results
-
-
-def get_time_string(total_time: float) -> str:
-    """Return a string of the time elapsed in an appropriate format."""
-    hours = int(total_time // 3600)
-    minutes = int((total_time % 3600) // 60)
-    seconds = (total_time % 3600) % 60
-
-    if hours > 0:
-        time_string = (
-            f"{hours} hour{'s' if hours != 1 else ''}, {minutes} minute{'s' if minutes != 1 else ''},"
-            f" {seconds:.3f} seconds"
-        )
-    elif minutes > 0:
-        time_string = f"{minutes} minute{'s' if minutes != 1 else ''}, {seconds:.3f} seconds"
-    else:
-        time_string = f"{seconds:.3f} seconds"
-
-    return time_string
