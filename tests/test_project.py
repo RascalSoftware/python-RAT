@@ -1207,7 +1207,7 @@ def test_wrap_iadd(test_project, class_list: str, model_type: str, field: str, m
         pydantic.ValidationError,
         match=f"1 validation error for Project\n  Value error, The value "
         f'"undefined" in the "{field}" field of "{class_list}" must be '
-        f'defined in '
+        f"defined in "
         f'"{RATapi.project.values_defined_in[class_list_str]}".',
     ):
         test_attribute += [input_model(**{**model_params, field: "undefined"})]
@@ -1251,7 +1251,7 @@ def test_wrap_append(test_project, class_list: str, model_type: str, field: str,
         pydantic.ValidationError,
         match=f"1 validation error for Project\n  Value error, The value "
         f'"undefined" in the "{field}" field of "{class_list}" must be '
-        f'defined in '
+        f"defined in "
         f'"{RATapi.project.values_defined_in[class_list_str]}".',
     ):
         test_attribute.append(input_model(**{**model_params, field: "undefined"}))
@@ -1295,7 +1295,7 @@ def test_wrap_insert(test_project, class_list: str, model_type: str, field: str,
         pydantic.ValidationError,
         match=f"1 validation error for Project\n  Value error, The value "
         f'"undefined" in the "{field}" field of "{class_list}" must be '
-        f'defined in '
+        f"defined in "
         f'"{RATapi.project.values_defined_in[class_list_str]}".',
     ):
         test_attribute.insert(0, input_model(**{**model_params, field: "undefined"}))
@@ -1470,7 +1470,7 @@ def test_wrap_extend(test_project, class_list: str, model_type: str, field: str,
         pydantic.ValidationError,
         match=f"1 validation error for Project\n  Value error, The value "
         f'"undefined" in the "{field}" field of "{class_list}" must be '
-        f'defined in '
+        f"defined in "
         f'"{RATapi.project.values_defined_in[class_list_str]}".',
     ):
         test_attribute.extend([input_model(**{**model_params, field: "undefined"})])

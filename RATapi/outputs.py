@@ -1,21 +1,61 @@
 """Converts outputs from the compiled RAT code to python dataclasses"""
 
 from dataclasses import dataclass
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 import numpy as np
 
 import RATapi.rat_core
 from RATapi.utils.enums import Procedures
 
-np.set_printoptions(threshold=100)
+
+def get_field_string(field: str, value: Any, array_limit: int):
+    """Returns a string representation of class fields where large and multidimensional arrays are represented by their
+    shape.
+
+    Parameters
+    ----------
+    field : str
+        The name of the field in the RAT output class.
+    value : Any
+        The value of the given field in the RAT output class.
+    array_limit : int
+        The maximum length of 1D arrays which will be fully displayed.
+
+    Returns
+    -------
+    field_string : str
+        The string representation of the field in the RAT output class.
+    """
+    array_text = "Data array: "
+    if isinstance(value, list) and len(value) > 0:
+        if isinstance(value[0], np.ndarray):
+            array_strings = [f"{array_text}[{' x '.join(str(i) for i in array.shape)}]" for array in value]
+            field_string = f"{field} = [{', '.join(str(string) for string in array_strings)}],\n"
+        elif isinstance(value[0], list) and len(value[0]) > 0 and isinstance(value[0][0], np.ndarray):
+            array_strings = [
+                [f"{array_text}[{' x '.join(str(i) for i in array.shape)}]" for array in sub_list] for sub_list in value
+            ]
+            list_strings = [f"[{', '.join(string for string in list_string)}]" for list_string in array_strings]
+            field_string = f"{field} = [{', '.join(list_strings)}],\n"
+        else:
+            field_string = f"{field} = {str(value)},\n"
+    elif isinstance(value, np.ndarray):
+        if value.ndim == 1 and value.size < array_limit:
+            field_string = f"{field} = {str(value) if value.size > 0 else '[]'},\n"
+        else:
+            field_string = f"{field} = {array_text}[{' x '.join(str(i) for i in value.shape)}],\n"
+    else:
+        field_string = f"{field} = {str(value)},\n"
+
+    return field_string
 
 
 class RATResult:
     def __str__(self):
         output = f"{self.__class__.__name__}(\n"
         for key, value in self.__dict__.items():
-            output += f"\t{key}={str(value)},\n"
+            output += "\t" + get_field_string(key, value, 100)
         output += ")"
         return output
 
@@ -53,16 +93,7 @@ class Results:
     def __str__(self):
         output = ""
         for key, value in self.__dict__.items():
-            if isinstance(value, list):
-                if isinstance(value[0], list):
-                    output += f"{key}=[\n" + ",\n".join(map(str, value)) + "\n],\n"
-                elif isinstance(value[0], np.ndarray):
-                    # output += f"{key}=[\narray(" + "),\narray(".join(map(str, value)) + ")\n]\n"
-                    output += f"{key}=[\n{str(value)}\n],\n"
-                else:
-                    output += f"{key}={str(value)},\n"
-            else:
-                output += f"{key}={str(value)},\n"
+            output += get_field_string(key, value, 100)
         return output
 
 
