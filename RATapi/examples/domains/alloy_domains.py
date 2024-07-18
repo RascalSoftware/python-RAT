@@ -18,7 +18,7 @@ def alloy_domains(params, bulkIn, bulkOut, contrast, domain):
     gold = [goldThick, goldSLD, goldRough]
 
     # Make the model depending on which domain we are looking at
-    if domain == 1:
+    if domain == 0:
         output = [alloyUp, gold]
     else:
         output = [alloyDn, gold]

@@ -1146,7 +1146,7 @@ BayesResults bayesResultsFromStruct8T(const RAT::struct8_T results)
     bayesResults.dreamParams.delta = results.dreamParams.delta;
     bayesResults.dreamParams.steps = results.dreamParams.steps;
     bayesResults.dreamParams.zeta = results.dreamParams.zeta;
-    bayesResults.dreamParams.outlier = std::string(results.dreamParams.outlier);
+    bayesResults.dreamParams.outlier = std::string(results.dreamParams.outlier, 3);
     bayesResults.dreamParams.adaptPCR = results.dreamParams.adaptPCR;
     bayesResults.dreamParams.thinning = results.dreamParams.thinning;
     bayesResults.dreamParams.epsilon = results.dreamParams.epsilon;

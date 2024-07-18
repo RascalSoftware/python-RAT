@@ -33,7 +33,7 @@ def domains_XY_model(params, bulk_in, bulk_out, contrast, domain):
     oxSLD = vfOxide * 3.41e-6
 
     # Layer SLD depends on whether we are calculating the domain or not
-    if domain == 1:
+    if domain == 0:
         laySLD = vfLayer * layerSLD
     else:
         laySLD = vfLayer * domainSLD

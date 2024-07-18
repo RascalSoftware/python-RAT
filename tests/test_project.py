@@ -11,7 +11,7 @@ import pydantic
 import pytest
 
 import RATapi
-from RATapi.utils.enums import Calculations, LayerModels
+from RATapi.utils.enums import Calculations, LayerModels, TypeOptions
 
 layer_params = {"thickness": "Test Thickness", "SLD": "Test SLD", "roughness": "Test Roughness"}
 absorption_layer_params = {
@@ -881,13 +881,15 @@ def test_get_all_protected_parameters(test_project) -> None:
     "test_value",
     [
         "",
-        "Background Param 1",
+        "Substrate Roughness",
     ],
 )
 def test_check_allowed_values(test_value: str) -> None:
     """We should not raise an error if string values are defined and on the list of allowed values."""
-    project = RATapi.Project.model_construct(backgrounds=RATapi.ClassList(RATapi.models.Background(value_1=test_value)))
-    assert project.check_allowed_values("backgrounds", ["value_1"], ["Background Param 1"]) is None
+    project = RATapi.Project.model_construct(
+        layers=RATapi.ClassList(RATapi.models.Layer(**dict(layer_params, roughness=test_value)))
+    )
+    assert project.check_allowed_values("layers", ["roughness"], ["Substrate Roughness"]) is None
 
 
 @pytest.mark.parametrize(
@@ -898,13 +900,98 @@ def test_check_allowed_values(test_value: str) -> None:
 )
 def test_check_allowed_values_not_on_list(test_value: str) -> None:
     """If string values are defined and are not included on the list of allowed values we should raise a ValueError."""
-    project = RATapi.Project.model_construct(backgrounds=RATapi.ClassList(RATapi.models.Background(value_1=test_value)))
+    project = RATapi.Project.model_construct(
+        layers=RATapi.ClassList(RATapi.models.Layer(**dict(layer_params, roughness=test_value)))
+    )
+    with pytest.raises(
+        ValueError,
+        match=f'The value "{test_value}" in the "roughness" field of "layers" must be defined in "parameters".',
+    ):
+        project.check_allowed_values("layers", ["roughness"], ["Substrate Roughness"])
+
+
+@pytest.mark.parametrize(
+    "test_value",
+    [
+        "",
+        "Background Param 1",
+    ],
+)
+def test_check_allowed_background_resolution_values_constant(test_value: str) -> None:
+    """We should not raise an error if string values are defined and on the appropriate list of allowed values."""
+    project = RATapi.Project.model_construct(
+        backgrounds=RATapi.ClassList(RATapi.models.Background(type=TypeOptions.Constant, value_1=test_value))
+    )
+    assert (
+        project.check_allowed_background_resolution_values(
+            "backgrounds", ["value_1"], ["Background Param 1"], ["Simulation"]
+        )
+        is None
+    )
+
+
+@pytest.mark.parametrize(
+    "test_value",
+    [
+        "",
+        "Simulation",
+    ],
+)
+def test_check_allowed_background_resolution_values_data(test_value: str) -> None:
+    """We should not raise an error if string values are defined and on the appropriate list of allowed values."""
+    project = RATapi.Project.model_construct(
+        backgrounds=RATapi.ClassList(RATapi.models.Background(type=TypeOptions.Data, value_1=test_value))
+    )
+    assert (
+        project.check_allowed_background_resolution_values(
+            "backgrounds", ["value_1"], ["Background Param 1"], ["Simulation"]
+        )
+        is None
+    )
+
+
+@pytest.mark.parametrize(
+    "test_value",
+    ["Undefined Param", "Simulation"],
+)
+def test_check_allowed_background_resolution_values_not_on_constant_list(test_value: str) -> None:
+    """If string values are defined and are not included on the correct list of allowed values we should raise a
+    ValueError.
+    """
+    project = RATapi.Project.model_construct(
+        backgrounds=RATapi.ClassList(RATapi.models.Background(type=TypeOptions.Constant, value_1=test_value))
+    )
     with pytest.raises(
         ValueError,
         match=f'The value "{test_value}" in the "value_1" field of "backgrounds" must be '
         f'defined in "background_parameters".',
     ):
-        project.check_allowed_values("backgrounds", ["value_1"], ["Background Param 1"])
+        project.check_allowed_background_resolution_values(
+            "backgrounds", ["value_1"], ["Background Param 1"], ["Simulation"]
+        )
+
+
+@pytest.mark.parametrize(
+    "test_value",
+    [
+        "Undefined Param",
+        "Background Param 1",
+    ],
+)
+def test_check_allowed_background_resolution_values_on_data_list(test_value: str) -> None:
+    """If string values are defined and are not included on the correct list of allowed values we should raise a
+    ValueError.
+    """
+    project = RATapi.Project.model_construct(
+        backgrounds=RATapi.ClassList(RATapi.models.Background(type=TypeOptions.Data, value_1=test_value))
+    )
+    with pytest.raises(
+        ValueError,
+        match=f'The value "{test_value}" in the "value_1" field of "backgrounds" must be ' f'defined in "data".',
+    ):
+        project.check_allowed_background_resolution_values(
+            "backgrounds", ["value_1"], ["Background Param 1"], ["Simulation"]
+        )
 
 
 @pytest.mark.parametrize(
@@ -1010,40 +1097,41 @@ def test_write_script_wrong_extension(test_project, extension: str) -> None:
 
 
 @pytest.mark.parametrize(
-    ["class_list", "field"],
+    ["class_list", "model_type", "field"],
     [
-        ("backgrounds", "value_1"),
-        ("backgrounds", "value_2"),
-        ("backgrounds", "value_3"),
-        ("backgrounds", "value_4"),
-        ("backgrounds", "value_5"),
-        ("resolutions", "value_1"),
-        ("resolutions", "value_2"),
-        ("resolutions", "value_3"),
-        ("resolutions", "value_4"),
-        ("resolutions", "value_5"),
-        ("layers", "thickness"),
-        ("layers", "SLD"),
-        ("layers", "roughness"),
-        ("contrasts", "data"),
-        ("contrasts", "background"),
-        ("contrasts", "bulk_in"),
-        ("contrasts", "bulk_out"),
-        ("contrasts", "scalefactor"),
-        ("contrasts", "resolution"),
+        ("backgrounds", "constant", "value_1"),
+        ("backgrounds", "constant", "value_2"),
+        ("backgrounds", "constant", "value_3"),
+        ("backgrounds", "constant", "value_4"),
+        ("backgrounds", "constant", "value_5"),
+        ("resolutions", "constant", "value_1"),
+        ("resolutions", "constant", "value_2"),
+        ("resolutions", "constant", "value_3"),
+        ("resolutions", "constant", "value_4"),
+        ("resolutions", "constant", "value_5"),
+        ("layers", "", "thickness"),
+        ("layers", "", "SLD"),
+        ("layers", "", "roughness"),
+        ("contrasts", "", "data"),
+        ("contrasts", "", "background"),
+        ("contrasts", "", "bulk_in"),
+        ("contrasts", "", "bulk_out"),
+        ("contrasts", "", "scalefactor"),
+        ("contrasts", "", "resolution"),
     ],
 )
-def test_wrap_set(test_project, class_list: str, field: str) -> None:
+def test_wrap_set(test_project, class_list: str, model_type: str, field: str) -> None:
     """If we set the field values of a model in a ClassList as undefined values, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
+    class_list_str = f"{class_list}{f'.{model_type}' if model_type else ''}.{field}"
 
     with pytest.raises(
         pydantic.ValidationError,
-        match=f'1 validation error for Project\n  Value error, The value '
+        match=f"1 validation error for Project\n  Value error, The value "
         f'"undefined" in the "{field}" field of "{class_list}" must be '
-        f'defined in '
-        f'"{RATapi.project.values_defined_in[f"{class_list}.{field}"]}".',
+        f"defined in "
+        f'"{RATapi.project.values_defined_in[class_list_str]}".',
     ):
         test_attribute.set_fields(0, **{field: "undefined"})
 
@@ -1085,41 +1173,42 @@ def test_wrap_del(test_project, class_list: str, parameter: str, field: str) -> 
 
 
 @pytest.mark.parametrize(
-    ["class_list", "field", "model_params"],
+    ["class_list", "model_type", "field", "model_params"],
     [
-        ("backgrounds", "value_1", {}),
-        ("backgrounds", "value_2", {}),
-        ("backgrounds", "value_3", {}),
-        ("backgrounds", "value_4", {}),
-        ("backgrounds", "value_5", {}),
-        ("resolutions", "value_1", {}),
-        ("resolutions", "value_2", {}),
-        ("resolutions", "value_3", {}),
-        ("resolutions", "value_4", {}),
-        ("resolutions", "value_5", {}),
-        ("layers", "thickness", layer_params),
-        ("layers", "SLD", layer_params),
-        ("layers", "roughness", layer_params),
-        ("contrasts", "data", {}),
-        ("contrasts", "background", {}),
-        ("contrasts", "bulk_in", {}),
-        ("contrasts", "bulk_out", {}),
-        ("contrasts", "scalefactor", {}),
-        ("contrasts", "resolution", {}),
+        ("backgrounds", "constant", "value_1", {}),
+        ("backgrounds", "constant", "value_2", {}),
+        ("backgrounds", "constant", "value_3", {}),
+        ("backgrounds", "constant", "value_4", {}),
+        ("backgrounds", "constant", "value_5", {}),
+        ("resolutions", "constant", "value_1", {}),
+        ("resolutions", "constant", "value_2", {}),
+        ("resolutions", "constant", "value_3", {}),
+        ("resolutions", "constant", "value_4", {}),
+        ("resolutions", "constant", "value_5", {}),
+        ("layers", "", "thickness", layer_params),
+        ("layers", "", "SLD", layer_params),
+        ("layers", "", "roughness", layer_params),
+        ("contrasts", "", "data", {}),
+        ("contrasts", "", "background", {}),
+        ("contrasts", "", "bulk_in", {}),
+        ("contrasts", "", "bulk_out", {}),
+        ("contrasts", "", "scalefactor", {}),
+        ("contrasts", "", "resolution", {}),
     ],
 )
-def test_wrap_iadd(test_project, class_list: str, field: str, model_params: dict) -> None:
+def test_wrap_iadd(test_project, class_list: str, model_type: str, field: str, model_params: dict) -> None:
     """If we add a model containing undefined values to a ClassList, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
     input_model = getattr(RATapi.models, RATapi.project.model_in_classlist[class_list])
+    class_list_str = f"{class_list}{f'.{model_type}' if model_type else ''}.{field}"
 
     with pytest.raises(
         pydantic.ValidationError,
-        match=f'1 validation error for Project\n  Value error, The value '
+        match=f"1 validation error for Project\n  Value error, The value "
         f'"undefined" in the "{field}" field of "{class_list}" must be '
-        f'defined in '
-        f'"{RATapi.project.values_defined_in[f"{class_list}.{field}"]}".',
+        f"defined in "
+        f'"{RATapi.project.values_defined_in[class_list_str]}".',
     ):
         test_attribute += [input_model(**{**model_params, field: "undefined"})]
 
@@ -1128,41 +1217,42 @@ def test_wrap_iadd(test_project, class_list: str, field: str, model_params: dict
 
 
 @pytest.mark.parametrize(
-    ["class_list", "field", "model_params"],
+    ["class_list", "model_type", "field", "model_params"],
     [
-        ("backgrounds", "value_1", {}),
-        ("backgrounds", "value_2", {}),
-        ("backgrounds", "value_3", {}),
-        ("backgrounds", "value_4", {}),
-        ("backgrounds", "value_5", {}),
-        ("resolutions", "value_1", {}),
-        ("resolutions", "value_2", {}),
-        ("resolutions", "value_3", {}),
-        ("resolutions", "value_4", {}),
-        ("resolutions", "value_5", {}),
-        ("layers", "thickness", layer_params),
-        ("layers", "SLD", layer_params),
-        ("layers", "roughness", layer_params),
-        ("contrasts", "data", {}),
-        ("contrasts", "background", {}),
-        ("contrasts", "bulk_in", {}),
-        ("contrasts", "bulk_out", {}),
-        ("contrasts", "scalefactor", {}),
-        ("contrasts", "resolution", {}),
+        ("backgrounds", "constant", "value_1", {}),
+        ("backgrounds", "constant", "value_2", {}),
+        ("backgrounds", "constant", "value_3", {}),
+        ("backgrounds", "constant", "value_4", {}),
+        ("backgrounds", "constant", "value_5", {}),
+        ("resolutions", "constant", "value_1", {}),
+        ("resolutions", "constant", "value_2", {}),
+        ("resolutions", "constant", "value_3", {}),
+        ("resolutions", "constant", "value_4", {}),
+        ("resolutions", "constant", "value_5", {}),
+        ("layers", "", "thickness", layer_params),
+        ("layers", "", "SLD", layer_params),
+        ("layers", "", "roughness", layer_params),
+        ("contrasts", "", "data", {}),
+        ("contrasts", "", "background", {}),
+        ("contrasts", "", "bulk_in", {}),
+        ("contrasts", "", "bulk_out", {}),
+        ("contrasts", "", "scalefactor", {}),
+        ("contrasts", "", "resolution", {}),
     ],
 )
-def test_wrap_append(test_project, class_list: str, field: str, model_params: dict) -> None:
+def test_wrap_append(test_project, class_list: str, model_type: str, field: str, model_params: dict) -> None:
     """If we append a model containing undefined values to a ClassList, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
     input_model = getattr(RATapi.models, RATapi.project.model_in_classlist[class_list])
+    class_list_str = f"{class_list}{f'.{model_type}' if model_type else ''}.{field}"
 
     with pytest.raises(
         pydantic.ValidationError,
-        match=f'1 validation error for Project\n  Value error, The value '
+        match=f"1 validation error for Project\n  Value error, The value "
         f'"undefined" in the "{field}" field of "{class_list}" must be '
-        f'defined in '
-        f'"{RATapi.project.values_defined_in[f"{class_list}.{field}"]}".',
+        f"defined in "
+        f'"{RATapi.project.values_defined_in[class_list_str]}".',
     ):
         test_attribute.append(input_model(**{**model_params, field: "undefined"}))
 
@@ -1171,41 +1261,42 @@ def test_wrap_append(test_project, class_list: str, field: str, model_params: di
 
 
 @pytest.mark.parametrize(
-    ["class_list", "field", "model_params"],
+    ["class_list", "model_type", "field", "model_params"],
     [
-        ("backgrounds", "value_1", {}),
-        ("backgrounds", "value_2", {}),
-        ("backgrounds", "value_3", {}),
-        ("backgrounds", "value_4", {}),
-        ("backgrounds", "value_5", {}),
-        ("resolutions", "value_1", {}),
-        ("resolutions", "value_2", {}),
-        ("resolutions", "value_3", {}),
-        ("resolutions", "value_4", {}),
-        ("resolutions", "value_5", {}),
-        ("layers", "thickness", layer_params),
-        ("layers", "SLD", layer_params),
-        ("layers", "roughness", layer_params),
-        ("contrasts", "data", {}),
-        ("contrasts", "background", {}),
-        ("contrasts", "bulk_in", {}),
-        ("contrasts", "bulk_out", {}),
-        ("contrasts", "scalefactor", {}),
-        ("contrasts", "resolution", {}),
+        ("backgrounds", "constant", "value_1", {}),
+        ("backgrounds", "constant", "value_2", {}),
+        ("backgrounds", "constant", "value_3", {}),
+        ("backgrounds", "constant", "value_4", {}),
+        ("backgrounds", "constant", "value_5", {}),
+        ("resolutions", "constant", "value_1", {}),
+        ("resolutions", "constant", "value_2", {}),
+        ("resolutions", "constant", "value_3", {}),
+        ("resolutions", "constant", "value_4", {}),
+        ("resolutions", "constant", "value_5", {}),
+        ("layers", "", "thickness", layer_params),
+        ("layers", "", "SLD", layer_params),
+        ("layers", "", "roughness", layer_params),
+        ("contrasts", "", "data", {}),
+        ("contrasts", "", "background", {}),
+        ("contrasts", "", "bulk_in", {}),
+        ("contrasts", "", "bulk_out", {}),
+        ("contrasts", "", "scalefactor", {}),
+        ("contrasts", "", "resolution", {}),
     ],
 )
-def test_wrap_insert(test_project, class_list: str, field: str, model_params: dict) -> None:
+def test_wrap_insert(test_project, class_list: str, model_type: str, field: str, model_params: dict) -> None:
     """If we insert a model containing undefined values into a ClassList, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
     input_model = getattr(RATapi.models, RATapi.project.model_in_classlist[class_list])
+    class_list_str = f"{class_list}{f'.{model_type}' if model_type else ''}.{field}"
 
     with pytest.raises(
         pydantic.ValidationError,
-        match=f'1 validation error for Project\n  Value error, The value '
+        match=f"1 validation error for Project\n  Value error, The value "
         f'"undefined" in the "{field}" field of "{class_list}" must be '
-        f'defined in '
-        f'"{RATapi.project.values_defined_in[f"{class_list}.{field}"]}".',
+        f"defined in "
+        f'"{RATapi.project.values_defined_in[class_list_str]}".',
     ):
         test_attribute.insert(0, input_model(**{**model_params, field: "undefined"}))
 
@@ -1345,41 +1436,42 @@ def test_wrap_clear(test_project, class_list: str, parameter: str, field: str) -
 
 
 @pytest.mark.parametrize(
-    ["class_list", "field", "model_params"],
+    ["class_list", "model_type", "field", "model_params"],
     [
-        ("backgrounds", "value_1", {}),
-        ("backgrounds", "value_2", {}),
-        ("backgrounds", "value_3", {}),
-        ("backgrounds", "value_4", {}),
-        ("backgrounds", "value_5", {}),
-        ("resolutions", "value_1", {}),
-        ("resolutions", "value_2", {}),
-        ("resolutions", "value_3", {}),
-        ("resolutions", "value_4", {}),
-        ("resolutions", "value_5", {}),
-        ("layers", "thickness", layer_params),
-        ("layers", "SLD", layer_params),
-        ("layers", "roughness", layer_params),
-        ("contrasts", "data", {}),
-        ("contrasts", "background", {}),
-        ("contrasts", "bulk_in", {}),
-        ("contrasts", "bulk_out", {}),
-        ("contrasts", "scalefactor", {}),
-        ("contrasts", "resolution", {}),
+        ("backgrounds", "constant", "value_1", {}),
+        ("backgrounds", "constant", "value_2", {}),
+        ("backgrounds", "constant", "value_3", {}),
+        ("backgrounds", "constant", "value_4", {}),
+        ("backgrounds", "constant", "value_5", {}),
+        ("resolutions", "constant", "value_1", {}),
+        ("resolutions", "constant", "value_2", {}),
+        ("resolutions", "constant", "value_3", {}),
+        ("resolutions", "constant", "value_4", {}),
+        ("resolutions", "constant", "value_5", {}),
+        ("layers", "", "thickness", layer_params),
+        ("layers", "", "SLD", layer_params),
+        ("layers", "", "roughness", layer_params),
+        ("contrasts", "", "data", {}),
+        ("contrasts", "", "background", {}),
+        ("contrasts", "", "bulk_in", {}),
+        ("contrasts", "", "bulk_out", {}),
+        ("contrasts", "", "scalefactor", {}),
+        ("contrasts", "", "resolution", {}),
     ],
 )
-def test_wrap_extend(test_project, class_list: str, field: str, model_params: dict) -> None:
+def test_wrap_extend(test_project, class_list: str, model_type: str, field: str, model_params: dict) -> None:
     """If we extend a ClassList with model containing undefined values, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
     input_model = getattr(RATapi.models, RATapi.project.model_in_classlist[class_list])
+    class_list_str = f"{class_list}{f'.{model_type}' if model_type else ''}.{field}"
 
     with pytest.raises(
         pydantic.ValidationError,
-        match=f'1 validation error for Project\n  Value error, The value '
+        match=f"1 validation error for Project\n  Value error, The value "
         f'"undefined" in the "{field}" field of "{class_list}" must be '
-        f'defined in '
-        f'"{RATapi.project.values_defined_in[f"{class_list}.{field}"]}".',
+        f"defined in "
+        f'"{RATapi.project.values_defined_in[class_list_str]}".',
     ):
         test_attribute.extend([input_model(**{**model_params, field: "undefined"})])
 
