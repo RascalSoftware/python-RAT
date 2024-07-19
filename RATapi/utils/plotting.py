@@ -1,7 +1,10 @@
 """Plots using the matplotlib library"""
 
+from math import ceil, floor, sqrt
 from typing import Optional, Union
 
+import corner
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes._axes import Axes
@@ -36,7 +39,7 @@ def plot_errorbars(ax: Axes, x: np.ndarray, y: np.ndarray, err: np.ndarray, one_
     ax.scatter(x=x, y=y, s=3, marker="o", color=color)
 
 
-def plot_ref_sld_helper(data: PlotEventData, fig: Optional[plt.figure] = None, delay: bool = True):
+def plot_ref_sld_helper(data: PlotEventData, fig: Optional[matplotlib.pyplot.figure] = None, delay: bool = True):
     """Clears the previous plots and updates the ref and SLD plots.
 
     Parameters
@@ -62,7 +65,6 @@ def plot_ref_sld_helper(data: PlotEventData, fig: Optional[plt.figure] = None, d
     elif len(fig.axes) != 2:
         fig.clf()
         fig.subplots(1, 2)
-    fig.subplots_adjust(wspace=0.3)
 
     ref_plot = fig.axes[0]
     sld_plot = fig.axes[1]
@@ -224,3 +226,61 @@ class LivePlot:
         RATapi.events.clear(RATapi.events.EventTypes.Plot, self.plotEvent)
         if not self.closed and self.figure.number in plt.get_fignums():
             plt.show(block=self.block)
+
+
+def plot_corner(results: RATapi.outputs.BayesResults, block: bool = False):
+    """Create a corner plot from a Bayesian analysis.
+    Parameters
+    ----------
+    results : BayesResults
+        The results from a Bayesian calculation.
+    block : bool, default False
+        Whether Python should block until the plot is closed.
+    """
+    try:
+        chain = results.chain
+        # wrap the names because otherwise long names poke into the neighbouring box
+        fit_names = ["\n".join(fitname.split(" ")) for fitname in results.fitNames]
+    except AttributeError as err:
+        raise ValueError(
+            "Corner plotting is only available for the results of Bayesian analysis (NS or DREAM)"
+        ) from err
+
+    fig = corner.corner(chain, titles=fit_names, show_titles=True, title_fmt=None)
+    fig.show()
+    if block:
+        fig.wait_for_close()
+
+
+def plot_hists(results: RATapi.outputs.BayesResults, block: bool = False):
+    """Plot marginalised posteriors from a Bayesian analysis.
+    Parameters
+    ----------
+    results : BayesResults
+        The results from a Bayesian calculation.
+    block : bool, default False
+        Whether Python should block until the plot is closed.
+    """
+    try:
+        _, nplots = results.chain.shape
+        fit_names = results.fitNames
+    except AttributeError as err:
+        raise ValueError(
+            "Corner plotting is only available for the results of Bayesian analysis (NS or DREAM)"
+        ) from err
+
+    nrows, ncols = ceil(sqrt(nplots)), floor(sqrt(nplots))
+
+    fig = plt.subplots(nrows, ncols, figsize=(2 * nrows, 2.5 * ncols))[0]
+    axs = fig.get_axes()
+    for i in range(0, nplots):
+        counts, bins = np.histogram(results.chain[:, i])
+        axs[i].hist(bins[:-1], bins, weights=counts, edgecolor="black", linewidth=1.2, color="white")
+        axs[i].set_title(fit_names[i])
+    for i in range(nplots, len(axs)):  # blank unused plots
+        axs[i].set_visible(False)
+
+    fig.tight_layout()
+    fig.show()
+    if block:
+        fig.wait_for_close()
