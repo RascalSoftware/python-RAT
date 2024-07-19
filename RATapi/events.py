@@ -57,11 +57,26 @@ def register(event_type: EventTypes, callback: Callable[[Union[str, PlotEventDat
     __event_callbacks[event_type].add(callback)
 
 
-def clear() -> None:
-    """Clears all event callbacks."""
-    __event_impl.clear()
-    for key in __event_callbacks:
-        __event_callbacks[key] = set()
+def clear(key=None, callback=None) -> None:
+    """Clears all event callbacks or specific callback.
+
+    Parameters
+    ----------
+    callback : Callable[[Union[str, PlotEventData, ProgressEventData]], None]
+        The callback for when the event is triggered.
+
+    """
+    if key is None and callback is None:
+        for key in __event_callbacks:
+            __event_callbacks[key] = set()
+    elif key is not None and callback is not None:
+        __event_callbacks[key].remove(callback)
+
+    for value in __event_callbacks.values():
+        if value:
+            break
+    else:
+        __event_impl.clear()
 
 
 dir_path = os.path.dirname(os.path.realpath(__file__))

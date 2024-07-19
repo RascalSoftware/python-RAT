@@ -1,13 +1,13 @@
 import os
 import pickle
-import re
 from unittest.mock import MagicMock, patch
 
 import matplotlib.pyplot as plt
 import pytest
 
-from RATapi.rat_core import PlotEventData
-from RATapi.utils.plotting import Figure, plot_ref_sld_helper
+from RATapi.events import notify
+from RATapi.rat_core import EventTypes, PlotEventData
+from RATapi.utils.plotting import LivePlot, plot_ref_sld, plot_ref_sld_helper
 
 TEST_DIR_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_data")
 
@@ -31,39 +31,38 @@ def data() -> PlotEventData:
 
 
 @pytest.fixture
-def fig() -> Figure:
+def fig() -> plt.figure:
     """Creates the fixture for the tests."""
     plt.close("all")
-    figure = Figure(1, 3)
-    fig = plot_ref_sld_helper(fig=figure, data=data())
-    return fig
+    figure = plt.subplots(1, 3)[0]
+    return plot_ref_sld_helper(fig=figure, data=data())
 
 
-def test_figure_axis_formating(fig: Figure) -> None:
+def test_figure_axis_formating(fig: plt.figure) -> None:
     """Tests the axis formating of the figure."""
-    ref_plot = fig._ax[0]
-    sld_plot = fig._ax[1]
+    ref_plot = fig.axes[0]
+    sld_plot = fig.axes[1]
 
-    assert fig._fig.axes[0].get_subplotspec().get_gridspec().get_geometry() == (1, 2)
-    assert fig._ax.shape == (2,)
+    assert fig.axes[0].get_subplotspec().get_gridspec().get_geometry() == (1, 2)
+    assert len(fig.axes) == 2
 
-    assert ref_plot.get_xlabel() == "Qz"
+    assert ref_plot.get_xlabel() == "$Q_{z} (\u00c5^{-1})$"
     assert ref_plot.get_xscale() == "log"
-    assert ref_plot.get_ylabel() == "Ref"
+    assert ref_plot.get_ylabel() == "Reflectivity"
     assert ref_plot.get_yscale() == "log"
     assert [label._text for label in ref_plot.get_legend().texts] == ["ref 1", "ref 2", "ref 3"]
 
-    assert sld_plot.get_xlabel() == "Z"
+    assert sld_plot.get_xlabel() == "$Z (\u00c5)$"
     assert sld_plot.get_xscale() == "linear"
-    assert sld_plot.get_ylabel() == "SLD"
+    assert sld_plot.get_ylabel() == "$SLD (\u00c5^{-2})$"
     assert sld_plot.get_yscale() == "linear"
     assert [label._text for label in sld_plot.get_legend().texts] == ["sld 1", "sld 2", "sld 3"]
 
 
-def test_figure_color_formating(fig: Figure) -> None:
+def test_figure_color_formating(fig: plt.figure) -> None:
     """Tests the color formating of the figure."""
-    ref_plot = fig._ax[0]
-    sld_plot = fig._ax[1]
+    ref_plot = fig.axes[0]
+    sld_plot = fig.axes[1]
 
     assert len(ref_plot.get_lines()) == 3
     assert len(sld_plot.get_lines()) == 6
@@ -81,63 +80,6 @@ def test_figure_color_formating(fig: Figure) -> None:
 
         # Tests whether the color of the sld and resampled_sld match on the sld_plot
         assert sld_plot.get_lines()[ax1].get_color() == sld_plot.get_lines()[ax2].get_color()
-
-
-def test_eventhandlers_linked_to_figure(fig: Figure) -> None:
-    """Tests whether the eventhandlers for close_event
-    and key_press_event in the figure are linked to the
-    class methods.
-    """
-    pattern = r"\(([^\]]+)\)"
-    index = 0
-
-    for ix, val in fig._fig.canvas.callbacks.callbacks["close_event"].items():
-        if str(type(val)) == "<class 'weakref.WeakMethod'>":
-            index = ix
-            break
-    canvas_close_event_callback = fig._fig.canvas.callbacks.callbacks["close_event"][index]._func_ref.__repr__()
-    close_event_callback = re.findall(pattern, canvas_close_event_callback)[0]
-    assert close_event_callback == "_close"
-    assert hasattr(Figure, "_close")
-
-    for ix, val in fig._fig.canvas.callbacks.callbacks["key_press_event"].items():
-        if str(type(val)) == "<class 'weakref.WeakMethod'>":
-            index = ix
-            break
-    canvas_key_press_event_callback = fig._fig.canvas.callbacks.callbacks["key_press_event"][index]._func_ref.__repr__()
-    key_press_event_callback = re.findall(pattern, canvas_key_press_event_callback)[0]
-    assert key_press_event_callback == "_process_button_press"
-    assert hasattr(Figure, "_process_button_press")
-
-
-def test_eventhandler_variable_update(fig: Figure) -> None:
-    """Tests whether the eventhandlers for close_event
-    and key_press_event update variables that stop
-    while loop in wait_for_close.
-    """
-    assert not fig._esc_pressed
-    on_key_mock_event = type("MockEvent", (object,), {"key": "escape"})
-    fig._process_button_press(on_key_mock_event)
-    assert fig._esc_pressed
-
-    assert not fig._close_clicked
-    fig._close("test")
-    assert fig._close_clicked
-
-
-@patch("RATapi.utils.plotting.plt.waitforbuttonpress")
-def test_wait_for_close(mock: MagicMock, fig: Figure) -> None:
-    """Tests the _wait_for_close method stops the
-    while loop when _esc_pressed is True.
-    """
-
-    def mock_wait_for_button_press(timeout):
-        fig._esc_pressed = True
-
-    mock.side_effect = mock_wait_for_button_press
-    assert not fig._esc_pressed
-    fig.wait_for_close()
-    assert fig._esc_pressed
 
 
 @patch("RATapi.utils.plotting.makeSLDProfileXY")
@@ -165,3 +107,53 @@ def test_sld_profile_function_call(mock: MagicMock) -> None:
     assert mock.call_args_list[2].args[2] == 0.0
     assert mock.call_args_list[2].args[4] == 153
     assert mock.call_args_list[2].args[5] == 1.0
+
+
+@patch("RATapi.utils.plotting.makeSLDProfileXY")
+def test_live_plot(mock: MagicMock) -> None:
+    plot_data = data()
+
+    with LivePlot() as figure:
+        assert len(figure.axes) == 2
+        notify(EventTypes.Plot, plot_data)
+        plt.close(figure)
+        notify(EventTypes.Plot, plot_data)
+
+    assert mock.call_count == 3
+    assert mock.call_args_list[0].args[0] == 2.07e-06
+    assert mock.call_args_list[0].args[1] == 6.28e-06
+    assert mock.call_args_list[0].args[2] == 0.0
+    assert mock.call_args_list[0].args[4] == 82
+    assert mock.call_args_list[0].args[5] == 1.0
+
+    assert mock.call_args_list[1].args[0] == 2.07e-06
+    assert mock.call_args_list[1].args[1] == 1.83e-06
+    assert mock.call_args_list[1].args[2] == 0.0
+    assert mock.call_args_list[1].args[4] == 128
+    assert mock.call_args_list[1].args[5] == 1.0
+
+    assert mock.call_args_list[2].args[0] == 2.07e-06
+    assert mock.call_args_list[2].args[1] == -5.87e-07
+    assert mock.call_args_list[2].args[2] == 0.0
+    assert mock.call_args_list[2].args[4] == 153
+    assert mock.call_args_list[2].args[5] == 1.0
+
+
+@patch("RATapi.utils.plotting.plot_ref_sld_helper")
+def test_plot_ref_sld(mock: MagicMock, input_project, reflectivity_calculation_results) -> None:
+    plot_ref_sld(input_project, reflectivity_calculation_results)
+    mock.assert_called_once()
+    data = mock.call_args[0][0]
+    figure = mock.call_args[0][1]
+
+    assert figure.axes[0].get_subplotspec().get_gridspec().get_geometry() == (1, 2)
+    assert len(figure.axes) == 2
+
+    assert data.modelType == input_project.model
+    assert data.reflectivity == reflectivity_calculation_results.reflectivity
+    assert data.shiftedData == reflectivity_calculation_results.shiftedData
+    assert data.sldProfiles == reflectivity_calculation_results.sldProfiles
+    assert data.resampledLayers == reflectivity_calculation_results.resampledLayers
+    assert data.dataPresent.size == 0
+    assert (data.subRoughs == reflectivity_calculation_results.contrastParams.subRoughs).all()
+    assert data.resample.size == 0
