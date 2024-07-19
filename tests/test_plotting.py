@@ -7,7 +7,7 @@ import pytest
 
 from RATapi.events import notify
 from RATapi.rat_core import EventTypes, PlotEventData
-from RATapi.utils.plotting import LivePlot, plot_ref_sld_helper
+from RATapi.utils.plotting import LivePlot, plot_ref_sld, plot_ref_sld_helper
 
 TEST_DIR_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_data")
 
@@ -46,15 +46,15 @@ def test_figure_axis_formating(fig: plt.figure) -> None:
     assert fig.axes[0].get_subplotspec().get_gridspec().get_geometry() == (1, 2)
     assert len(fig.axes) == 2
 
-    assert ref_plot.get_xlabel() == "Qz"
+    assert ref_plot.get_xlabel() == "$Q_{z} (\u00c5^{-1})$"
     assert ref_plot.get_xscale() == "log"
-    assert ref_plot.get_ylabel() == "Ref"
+    assert ref_plot.get_ylabel() == "Reflectivity"
     assert ref_plot.get_yscale() == "log"
     assert [label._text for label in ref_plot.get_legend().texts] == ["ref 1", "ref 2", "ref 3"]
 
-    assert sld_plot.get_xlabel() == "Z"
+    assert sld_plot.get_xlabel() == "$Z (\u00c5)$"
     assert sld_plot.get_xscale() == "linear"
-    assert sld_plot.get_ylabel() == "SLD"
+    assert sld_plot.get_ylabel() == "$SLD (\u00c5^{-2})$"
     assert sld_plot.get_yscale() == "linear"
     assert [label._text for label in sld_plot.get_legend().texts] == ["sld 1", "sld 2", "sld 3"]
 
@@ -137,3 +137,23 @@ def test_live_plot(mock: MagicMock) -> None:
     assert mock.call_args_list[2].args[2] == 0.0
     assert mock.call_args_list[2].args[4] == 153
     assert mock.call_args_list[2].args[5] == 1.0
+
+
+@patch("RATapi.utils.plotting.plot_ref_sld_helper")
+def test_plot_ref_sld(mock: MagicMock, input_project, reflectivity_calculation_results) -> None:
+    plot_ref_sld(input_project, reflectivity_calculation_results)
+    mock.assert_called_once()
+    data = mock.call_args[0][0]
+    figure = mock.call_args[0][1]
+
+    assert figure.axes[0].get_subplotspec().get_gridspec().get_geometry() == (1, 2)
+    assert len(figure.axes) == 2
+
+    assert data.modelType == input_project.model
+    assert data.reflectivity == reflectivity_calculation_results.reflectivity
+    assert data.shiftedData == reflectivity_calculation_results.shiftedData
+    assert data.sldProfiles == reflectivity_calculation_results.sldProfiles
+    assert data.resampledLayers == reflectivity_calculation_results.resampledLayers
+    assert data.dataPresent.size == 0
+    assert (data.subRoughs == reflectivity_calculation_results.contrastParams.subRoughs).all()
+    assert data.resample.size == 0

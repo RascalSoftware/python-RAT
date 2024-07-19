@@ -2,7 +2,6 @@
 
 from typing import Optional, Union
 
-import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes._axes import Axes
@@ -37,7 +36,7 @@ def plot_errorbars(ax: Axes, x: np.ndarray, y: np.ndarray, err: np.ndarray, one_
     ax.scatter(x=x, y=y, s=3, marker="o", color=color)
 
 
-def plot_ref_sld_helper(data: PlotEventData, fig: Optional[matplotlib.pyplot.figure] = None, delay: bool = True):
+def plot_ref_sld_helper(data: PlotEventData, fig: Optional[plt.figure] = None, delay: bool = True):
     """Clears the previous plots and updates the ref and SLD plots.
 
     Parameters
@@ -63,6 +62,7 @@ def plot_ref_sld_helper(data: PlotEventData, fig: Optional[matplotlib.pyplot.fig
     elif len(fig.axes) != 2:
         fig.clf()
         fig.subplots(1, 2)
+    fig.subplots_adjust(wspace=0.3)
 
     ref_plot = fig.axes[0]
     sld_plot = fig.axes[1]
@@ -127,13 +127,13 @@ def plot_ref_sld_helper(data: PlotEventData, fig: Optional[matplotlib.pyplot.fig
     # Format the axis
     ref_plot.set_yscale("log")
     ref_plot.set_xscale("log")
-    ref_plot.set_xlabel("Qz")
-    ref_plot.set_ylabel("Ref")
+    ref_plot.set_xlabel("$Q_{z} (\u00c5^{-1})$")
+    ref_plot.set_ylabel("Reflectivity")
     ref_plot.legend()
     ref_plot.grid()
 
-    sld_plot.set_xlabel("Z")
-    sld_plot.set_ylabel("SLD")
+    sld_plot.set_xlabel("$Z (\u00c5)$")
+    sld_plot.set_ylabel("$SLD (\u00c5^{-2})$")
     sld_plot.legend()
     sld_plot.grid()
 
