@@ -361,3 +361,26 @@ def plot_hists(results: RATapi.outputs.BayesResults, block: bool = False, num_bi
     fig.show()
     if block:
         fig.wait_for_close()
+
+
+def plot_bayes(project: RATapi.Project, results: RATapi.outputs.BayesResults):
+    """Plot the results of a Bayesian analysis with confidence information.
+
+    This produces an unshaded reflectivity/SLD plot, a reflectivity/SLD plot with shaded 95% confidence
+    intervals, a grid of histograms giving probability density for each parameter, and a corner plot for
+    all parameters.
+
+    Parameters
+    project : Project
+              An instance of the Project class
+    results : Union[Results, BayesResults]
+              The result from the calculation
+    block : bool, default: False
+            Indicates the plot should block until it is closed
+
+    """
+
+    plot_ref_sld(project, results)
+    plot_ref_sld(project, results, bayes=95)
+    plot_hists(results)
+    plot_corner(results)
