@@ -321,7 +321,7 @@ def panel_plot_helper(plot_func: Callable, indices: list[int]) -> matplotlib.fig
     Parameters
     ----------
     plot_func : Callable
-        A function to create an Axes object with the plot for one parameter, given its index.
+        A function which plots one parameter on an Axes object, given its index.
 
     """
     nplots = len(indices)
@@ -426,6 +426,25 @@ def plot_chain(
     fig.show()
     if block:
         fig.wait_for_close()
+
+
+def plot_contour(results: RATapi.outputs.BayesResults, idx1: int, idx2: int):
+    """Plot a 2D histogram of two indexed parameters.
+
+    Parameters
+    ----------
+    results: RATapi.outputs.BayesResults
+        The results of a Bayesian analysis.
+    idx1: int
+        The index of the parameter on the x-axis.
+    idx2: int
+        The index of the parameter on the y-axis.
+    """
+
+    ax = plt.subplots(1, 1)[1]
+    corner.hist2d(results.chain[:, idx1], results.chain[:, idx2])
+    ax.set_xlabel(results.fitNames[idx1])
+    ax.set_ylabel(results.fitNames[idx2])
 
 
 def plot_bayes(project: RATapi.Project, results: RATapi.outputs.BayesResults):
