@@ -228,14 +228,17 @@ class LivePlot:
             plt.show(block=self.block)
 
 
-def plot_corner(results: RATapi.outputs.BayesResults, block: bool = False):
+def plot_corner(results: RATapi.outputs.BayesResults, block: bool = False, **corner_kwargs):
     """Create a corner plot from a Bayesian analysis.
+
     Parameters
     ----------
     results : BayesResults
         The results from a Bayesian calculation.
     block : bool, default False
         Whether Python should block until the plot is closed.
+    **corner_kwargs : dict
+        Extra keyword arguments to pass to the `corner` library.
     """
     try:
         chain = results.chain
@@ -246,20 +249,30 @@ def plot_corner(results: RATapi.outputs.BayesResults, block: bool = False):
             "Corner plotting is only available for the results of Bayesian analysis (NS or DREAM)"
         ) from err
 
-    fig = corner.corner(chain, titles=fit_names, show_titles=True, title_fmt=None)
+    fig = corner.corner(
+        chain,
+        titles=fit_names,
+        show_titles=True,
+        title_fmt=None,
+        hist_kwargs={"density": True},
+        **corner_kwargs,
+    )
     fig.show()
     if block:
         fig.wait_for_close()
 
 
-def plot_hists(results: RATapi.outputs.BayesResults, block: bool = False):
+def plot_hists(results: RATapi.outputs.BayesResults, block: bool = False, num_bins: int = 25):
     """Plot marginalised posteriors from a Bayesian analysis.
+
     Parameters
     ----------
     results : BayesResults
         The results from a Bayesian calculation.
     block : bool, default False
         Whether Python should block until the plot is closed.
+    num_bins : int, default 25
+        The number of bins to use for each histogram.
     """
     try:
         _, nplots = results.chain.shape
@@ -274,8 +287,15 @@ def plot_hists(results: RATapi.outputs.BayesResults, block: bool = False):
     fig = plt.subplots(nrows, ncols, figsize=(2 * nrows, 2.5 * ncols))[0]
     axs = fig.get_axes()
     for i in range(0, nplots):
-        counts, bins = np.histogram(results.chain[:, i])
-        axs[i].hist(bins[:-1], bins, weights=counts, edgecolor="black", linewidth=1.2, color="white")
+        counts, bins = np.histogram(results.chain[:, i], bins=num_bins, density=True)
+        axs[i].hist(
+            bins[:-1],
+            bins,
+            weights=counts,
+            edgecolor="black",
+            linewidth=1.2,
+            color="white",
+        )
         axs[i].set_title(fit_names[i])
     for i in range(nplots, len(axs)):  # blank unused plots
         axs[i].set_visible(False)
