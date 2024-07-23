@@ -1,7 +1,7 @@
 """Plots using the matplotlib library"""
 
 from math import ceil, floor, sqrt
-from typing import Optional, Union
+from typing import Literal, Optional, Union
 
 import corner
 import matplotlib
@@ -39,7 +39,12 @@ def plot_errorbars(ax: Axes, x: np.ndarray, y: np.ndarray, err: np.ndarray, one_
     ax.scatter(x=x, y=y, s=3, marker="o", color=color)
 
 
-def plot_ref_sld_helper(data: PlotEventData, fig: Optional[matplotlib.pyplot.figure] = None, delay: bool = True):
+def plot_ref_sld_helper(
+    data: PlotEventData,
+    fig: Optional[matplotlib.pyplot.figure] = None,
+    delay: bool = True,
+    confidence_intervals: Union[dict, None] = None,
+):
     """Clears the previous plots and updates the ref and SLD plots.
 
     Parameters
@@ -51,6 +56,9 @@ def plot_ref_sld_helper(data: PlotEventData, fig: Optional[matplotlib.pyplot.fig
           The figure class that has two subplots
     delay : bool, default: True
             Controls whether to delay 0.005s after plot is created
+    confidence_intervals : dict or None, default None
+        The Bayesian confidence intervals for reflectivity and SLD.
+        Only relevant if the procedure used is Bayesian (NS or DREAM)
 
     Returns
     -------
@@ -66,8 +74,8 @@ def plot_ref_sld_helper(data: PlotEventData, fig: Optional[matplotlib.pyplot.fig
         fig.clf()
         fig.subplots(1, 2)
 
-    ref_plot = fig.axes[0]
-    sld_plot = fig.axes[1]
+    ref_plot: plt.Axes = fig.axes[0]
+    sld_plot: plt.Axes = fig.axes[1]
     if ref_plot.lines and fig.canvas.toolbar is not None:
         preserve_zoom = True
         fig.canvas.toolbar.push_current()
@@ -85,6 +93,12 @@ def plot_ref_sld_helper(data: PlotEventData, fig: Optional[matplotlib.pyplot.fig
         # Plot the reflectivity on plot (1,1)
         ref_plot.plot(r[:, 0], r[:, 1] / div, label=name, linewidth=2)
         color = ref_plot.get_lines()[-1].get_color()
+
+        # Plot confidence intervals if required
+        if confidence_intervals is not None:
+            ref_min, ref_max = confidence_intervals["reflectivity"][i]
+            ref_x_data = confidence_intervals["reflectivity-x-data"][i][0]
+            ref_plot.fill_between(ref_x_data, ref_min / div, ref_max / div, alpha=0.6, color="grey")
 
         if data.dataPresent[i]:
             sd_x = sd[:, 0]
@@ -104,6 +118,12 @@ def plot_ref_sld_helper(data: PlotEventData, fig: Optional[matplotlib.pyplot.fig
         for j in range(len(sld)):
             label = name if len(sld) == 1 else f"{name} Domain {j+1}"
             sld_plot.plot(sld[j][:, 0], sld[j][:, 1], label=label, linewidth=1)
+
+        # Plot confidence intervals if required
+        if confidence_intervals is not None:
+            sld_min, sld_max = confidence_intervals["sld"][i][j]
+            sld_x_data = confidence_intervals["sld-x-data"][i][j][0]
+            sld_plot.fill_between(sld_x_data, sld_min, sld_max, alpha=0.6, color="grey")
 
         if data.resample[i] == 1 or data.modelType == "custom xy":
             layers = data.resampledLayers[i][0]
@@ -152,6 +172,7 @@ def plot_ref_sld(
     project: RATapi.Project,
     results: Union[RATapi.outputs.Results, RATapi.outputs.BayesResults],
     block: bool = False,
+    bayes: Literal[65, 95, None] = None,
 ):
     """Plots the reflectivity and SLD profiles.
 
@@ -163,6 +184,10 @@ def plot_ref_sld(
               The result from the calculation
     block : bool, default: False
             Indicates the plot should block until it is closed
+    bayes : 65, 95 or None, default None
+            Whether to shade Bayesian confidence intervals. Can be `None`
+            (if no intervals), `65` to show 65% confidence intervals,
+            and `95` to show 95% confidence intervals.
 
     """
     data = PlotEventData()
@@ -177,9 +202,37 @@ def plot_ref_sld(
     data.resample = RATapi.inputs.make_resample(project)
     data.contrastNames = [contrast.name for contrast in project.contrasts]
 
+    if bayes:
+        try:
+            # the predictionIntervals data consists of 5 rows:
+            # row 0: min with 95% confidence
+            # row 1: min with 65% confidence
+            # row 2: mean
+            # row 3: max with 65% confidence
+            # row 4: max with 95% confidence
+            interval = [0, 4] if bayes == 95 else [1, 3]
+            confidence_intervals = {
+                "reflectivity": [
+                    (ref_inter[interval[0]], ref_inter[interval[1]])
+                    for ref_inter in results.predictionIntervals.reflectivity
+                ],
+                "sld": [
+                    [(sld_inter[interval[0]], sld_inter[interval[1]]) for sld_inter in sld]
+                    for sld in results.predictionIntervals.sld
+                ],
+                "reflectivity-x-data": results.predictionIntervals.reflectivityXData,
+                "sld-x-data": results.predictionIntervals.sldXData,
+            }
+        except AttributeError as err:
+            raise ValueError(
+                "Corner plotting is only available for the results of Bayesian analysis (NS or DREAM)"
+            ) from err
+    else:
+        confidence_intervals = None
+
     figure = plt.subplots(1, 2)[0]
 
-    plot_ref_sld_helper(data, figure)
+    plot_ref_sld_helper(data, figure, confidence_intervals=confidence_intervals)
 
     plt.show(block=block)
 
@@ -282,10 +335,12 @@ def plot_hists(results: RATapi.outputs.BayesResults, block: bool = False, num_bi
             "Corner plotting is only available for the results of Bayesian analysis (NS or DREAM)"
         ) from err
 
+    # calculate grid size for grid of subplots
     nrows, ncols = ceil(sqrt(nplots)), floor(sqrt(nplots))
 
     fig = plt.subplots(nrows, ncols, figsize=(2 * nrows, 2.5 * ncols))[0]
     axs = fig.get_axes()
+
     for i in range(0, nplots):
         counts, bins = np.histogram(results.chain[:, i], bins=num_bins, density=True)
         axs[i].hist(
@@ -297,7 +352,9 @@ def plot_hists(results: RATapi.outputs.BayesResults, block: bool = False, num_bi
             color="white",
         )
         axs[i].set_title(fit_names[i])
-    for i in range(nplots, len(axs)):  # blank unused plots
+
+    # blank unused plots
+    for i in range(nplots, len(axs)):
         axs[i].set_visible(False)
 
     fig.tight_layout()
