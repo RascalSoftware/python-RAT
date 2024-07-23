@@ -1,7 +1,7 @@
 """Plots using the matplotlib library"""
 
 from math import ceil, floor, sqrt
-from typing import Literal, Optional, Union
+from typing import Callable, Literal, Optional, Union
 
 import corner
 import matplotlib
@@ -315,6 +315,31 @@ def plot_corner(results: RATapi.outputs.BayesResults, block: bool = False, **cor
         fig.wait_for_close()
 
 
+def panel_plot_helper(plot_func: Callable, indices: list[int]) -> matplotlib.figure.Figure:
+    """Helper function for panel-based plots.
+
+    Parameters
+    ----------
+    plot_func : Callable
+        A function to create an Axes object with the plot for one parameter, given its index.
+
+    """
+    nplots = len(indices)
+    nrows, ncols = ceil(sqrt(nplots)), floor(sqrt(nplots))
+    fig = plt.subplots(nrows, ncols, figsize=(2 * nrows, 2.5 * ncols))[0]
+    axs = fig.get_axes()
+
+    for plot_num, index in enumerate(indices):
+        plot_func(axs[plot_num], index)
+
+    # blank unused plots
+    for i in range(nplots, len(axs)):
+        axs[i].set_visible(False)
+
+    fig.tight_layout()
+    return fig
+
+
 def plot_hists(results: RATapi.outputs.BayesResults, block: bool = False, num_bins: int = 25):
     """Plot marginalised posteriors from a Bayesian analysis.
 
@@ -335,16 +360,9 @@ def plot_hists(results: RATapi.outputs.BayesResults, block: bool = False, num_bi
             "Corner plotting is only available for the results of Bayesian analysis (NS or DREAM)"
         ) from err
 
-    # calculate grid size for grid of subplots
-    _, nplots = chain.shape
-    nrows, ncols = ceil(sqrt(nplots)), floor(sqrt(nplots))
-
-    fig = plt.subplots(nrows, ncols, figsize=(2 * nrows, 2.5 * ncols))[0]
-    axs = fig.get_axes()
-
-    for i in range(0, nplots):
+    def plot_one_hist(axes: Axes, i: int):
         counts, bins = np.histogram(chain[:, i], bins=num_bins, density=True)
-        axs[i].hist(
+        axes.hist(
             bins[:-1],
             bins,
             weights=counts,
@@ -352,13 +370,33 @@ def plot_hists(results: RATapi.outputs.BayesResults, block: bool = False, num_bi
             linewidth=1.2,
             color="white",
         )
-        axs[i].set_title(fit_names[i])
+        axes.set_title(fit_names[i])
 
-    # blank unused plots
-    for i in range(nplots, len(axs)):
-        axs[i].set_visible(False)
+    fig = panel_plot_helper(plot_one_hist, range(0, len(fit_names)))
+    fig.show()
+    if block:
+        fig.wait_for_close()
 
-    fig.tight_layout()
+
+def plot_chain(results: RATapi.outputs.BayesResults, maxpoints: int = 15000, block: bool = False):
+    """Plot the MCMC chain for each parameter of a Bayesian analysis.
+
+    Parameters
+    ----------
+    results : RATapi.outputs.BayesResults
+        The results of a Bayesian analysis.
+    maxpoints : int
+        The maximum number of points to plot for each parameter.
+    """
+    chain = results.chain
+    nsimulations, nplots = chain.shape
+    skip = floor(nsimulations / maxpoints)  # to evenly distribute points plotted
+
+    def plot_one_chain(axes: Axes, i: int):
+        axes.plot(range(0, nsimulations, skip), chain[:, i][0:nsimulations:skip])
+        axes.set_title(results.fitNames[i])
+
+    fig = panel_plot_helper(plot_one_chain, range(0, nplots))
     fig.show()
     if block:
         fig.wait_for_close()
