@@ -328,7 +328,7 @@ def plot_hists(results: RATapi.outputs.BayesResults, block: bool = False, num_bi
         The number of bins to use for each histogram.
     """
     try:
-        _, nplots = results.chain.shape
+        chain = results.chain
         fit_names = results.fitNames
     except AttributeError as err:
         raise ValueError(
@@ -336,13 +336,14 @@ def plot_hists(results: RATapi.outputs.BayesResults, block: bool = False, num_bi
         ) from err
 
     # calculate grid size for grid of subplots
+    _, nplots = chain.shape
     nrows, ncols = ceil(sqrt(nplots)), floor(sqrt(nplots))
 
     fig = plt.subplots(nrows, ncols, figsize=(2 * nrows, 2.5 * ncols))[0]
     axs = fig.get_axes()
 
     for i in range(0, nplots):
-        counts, bins = np.histogram(results.chain[:, i], bins=num_bins, density=True)
+        counts, bins = np.histogram(chain[:, i], bins=num_bins, density=True)
         axs[i].hist(
             bins[:-1],
             bins,
