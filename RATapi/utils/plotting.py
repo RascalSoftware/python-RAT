@@ -340,13 +340,21 @@ def panel_plot_helper(plot_func: Callable, indices: list[int]) -> matplotlib.fig
     return fig
 
 
-def plot_hists(results: RATapi.outputs.BayesResults, block: bool = False, num_bins: int = 25):
+def plot_hists(
+    results: RATapi.outputs.BayesResults,
+    indices: Union[list[int], None] = None,
+    block: bool = False,
+    num_bins: int = 25,
+):
     """Plot marginalised posteriors from a Bayesian analysis.
 
     Parameters
     ----------
     results : BayesResults
         The results from a Bayesian calculation.
+    indices : list[int], default None
+        The indices of a subset of parameters if required.
+        If None, uses all indices.
     block : bool, default False
         Whether Python should block until the plot is closed.
     num_bins : int, default 25
@@ -359,6 +367,8 @@ def plot_hists(results: RATapi.outputs.BayesResults, block: bool = False, num_bi
         raise ValueError(
             "Corner plotting is only available for the results of Bayesian analysis (NS or DREAM)"
         ) from err
+    if indices is None:
+        indices = range(0, len(fit_names))
 
     def plot_one_hist(axes: Axes, i: int):
         counts, bins = np.histogram(chain[:, i], bins=num_bins, density=True)
@@ -372,31 +382,47 @@ def plot_hists(results: RATapi.outputs.BayesResults, block: bool = False, num_bi
         )
         axes.set_title(fit_names[i])
 
-    fig = panel_plot_helper(plot_one_hist, range(0, len(fit_names)))
+    fig = panel_plot_helper(plot_one_hist, indices)
     fig.show()
     if block:
         fig.wait_for_close()
 
 
-def plot_chain(results: RATapi.outputs.BayesResults, maxpoints: int = 15000, block: bool = False):
+def plot_chain(
+    results: RATapi.outputs.BayesResults,
+    indices: Union[list[int], None] = None,
+    maxpoints: int = 15000,
+    block: bool = False,
+):
     """Plot the MCMC chain for each parameter of a Bayesian analysis.
 
     Parameters
     ----------
     results : RATapi.outputs.BayesResults
         The results of a Bayesian analysis.
+    indices : list[int], default None
+        The indices of a subset of parameters if required.
+        If None, uses all indices.
     maxpoints : int
         The maximum number of points to plot for each parameter.
     """
-    chain = results.chain
-    nsimulations, nplots = chain.shape
-    skip = floor(nsimulations / maxpoints)  # to evenly distribute points plotted
+    try:
+        chain = results.chain
+        nsimulations, nplots = chain.shape
+        skip = floor(nsimulations / maxpoints)  # to evenly distribute points plotted
+    except AttributeError as err:
+        raise ValueError(
+            "Corner plotting is only available for the results of Bayesian analysis (NS or DREAM)"
+        ) from err
+
+    if indices is None:
+        indices = range(0, nplots)
 
     def plot_one_chain(axes: Axes, i: int):
         axes.plot(range(0, nsimulations, skip), chain[:, i][0:nsimulations:skip])
         axes.set_title(results.fitNames[i])
 
-    fig = panel_plot_helper(plot_one_chain, range(0, nplots))
+    fig = panel_plot_helper(plot_one_chain, indices)
     fig.show()
     if block:
         fig.wait_for_close()
