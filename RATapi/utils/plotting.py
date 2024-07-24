@@ -9,6 +9,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes._axes import Axes
+from scipy.ndimage import gaussian_filter1d
 from scipy.stats import gaussian_kde, lognorm, norm
 
 import RATapi
@@ -414,13 +415,11 @@ def plot_hists(
     def plot_one_hist(axes: Axes, i: int):
         parameter_chain = chain[:, i]
         counts, bins = np.histogram(parameter_chain, **hist_settings)
-
-        # if we need a KDE, generate it now rather than twice
-        if smooth or estimated_density == "kernel":
-            kde = gaussian_kde(parameter_chain)
+        mean_y = mean(parameter_chain)
+        sd_y = stdev(parameter_chain)
 
         if smooth:
-            pass
+            counts = gaussian_filter1d(counts, sd_y)
         axes.hist(
             bins[:-1],
             bins,
@@ -432,8 +431,6 @@ def plot_hists(
         axes.set_title(fit_names[i])
 
         if estimated_density:
-            mean_y = mean(parameter_chain)
-            sd_y = stdev(parameter_chain)
             dx = bins[1] - bins[0]
             if estimated_density == "normal":
                 t = np.linspace(mean_y - 3.5 * sd_y, mean_y + 3.5 * sd_y)
@@ -443,6 +440,7 @@ def plot_hists(
                 axes.plot(t, lognorm.pdf(t, mean(log(parameter_chain), stdev(log(parameter_chain)))))
             elif estimated_density == "kernel":
                 t = np.linspace(bins[0] - 2 * dx, bins[-1] + 2 * dx, 200)
+                kde = gaussian_kde(parameter_chain)
                 axes.plot(t, kde.evaluate(t))
 
     fig = panel_plot_helper(plot_one_hist, indices)
