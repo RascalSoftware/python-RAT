@@ -171,7 +171,7 @@ setup(
         "pydantic >= 2.7.2",
         "matplotlib >= 3.8.3",
         "corner >= 2.2.2",
-        "scipy >= 1.14.0",
+        "scipy >= 1.13.1",
     ],
     extras_require={
         ':python_version < "3.11"': ["StrEnum >= 0.4.15"],
