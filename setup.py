@@ -165,7 +165,14 @@ setup(
     libraries=[libevent],
     ext_modules=ext_modules,
     python_requires=">=3.9",
-    install_requires=["numpy >= 1.20", "prettytable >= 3.9.0", "pydantic >= 2.7.2", "matplotlib >= 3.8.3"],
+    install_requires=[
+        "numpy >= 1.20",
+        "prettytable >= 3.9.0",
+        "pydantic >= 2.7.2",
+        "matplotlib >= 3.8.3",
+        "corner >= 2.2.2",
+        "scipy >= 1.14.0",
+    ],
     extras_require={
         ':python_version < "3.11"': ["StrEnum >= 0.4.15"],
         "Dev": ["pytest>=7.4.0", "pytest-cov>=4.1.0", "ruff>=0.4.10"],
