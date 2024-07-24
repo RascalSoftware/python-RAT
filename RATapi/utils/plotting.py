@@ -1,6 +1,7 @@
 """Plots using the matplotlib library"""
 
-from math import ceil, floor, sqrt
+from math import ceil, floor, log, sqrt
+from statistics import mean, stdev
 from typing import Callable, Literal, Optional, Union
 
 import corner
@@ -8,6 +9,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes._axes import Axes
+from scipy.stats import gaussian_kde, lognorm, norm
 
 import RATapi
 import RATapi.inputs
@@ -315,6 +317,26 @@ def plot_corner(results: RATapi.outputs.BayesResults, block: bool = False, **cor
         fig.wait_for_close()
 
 
+def plot_contour(results: RATapi.outputs.BayesResults, idx1: int, idx2: int):
+    """Plot a 2D histogram of two indexed parameters.
+
+    Parameters
+    ----------
+    results : RATapi.outputs.BayesResults
+        The results of a Bayesian analysis.
+    idx1 : int
+        The index of the parameter on the x-axis.
+    idx2: int
+        The index of the parameter on the y-axis.
+
+    """
+
+    ax = plt.subplots(1, 1)[1]
+    corner.hist2d(results.chain[:, idx1], results.chain[:, idx2])
+    ax.set_xlabel(results.fitNames[idx1])
+    ax.set_ylabel(results.fitNames[idx2])
+
+
 def panel_plot_helper(plot_func: Callable, indices: list[int]) -> matplotlib.figure.Figure:
     """Helper function for panel-based plots.
 
@@ -344,7 +366,9 @@ def plot_hists(
     results: RATapi.outputs.BayesResults,
     indices: Union[list[int], None] = None,
     block: bool = False,
-    num_bins: int = 25,
+    smooth: bool = True,
+    estimated_density: Literal["normal", "lognor", "kernel", None] = None,
+    **hist_settings,
 ):
     """Plot marginalised posteriors from a Bayesian analysis.
 
@@ -357,8 +381,19 @@ def plot_hists(
         If None, uses all indices.
     block : bool, default False
         Whether Python should block until the plot is closed.
-    num_bins : int, default 25
-        The number of bins to use for each histogram.
+    smooth : bool, default True
+        Whether to apply a [TODO] smoothing to the histogram.
+        Defaults to True.
+    estimated_density : 'normal', 'lognor', 'kernel' or None, default None
+        If None (default), ignore. Else, add an estimated density
+        of the given form on top of the histogram by the following estimations:
+        'normal': normal Gaussian.
+        'lognor': Log-normal probability density.
+        'kernel': kernel density estimation.
+    **hist_settings :
+        Settings passed to `np.histogram`. By default, the settings
+        passed are `bins = 25` and `density = True`.
+
     """
     try:
         chain = results.chain
@@ -370,8 +405,22 @@ def plot_hists(
     if indices is None:
         indices = range(0, len(fit_names))
 
+    # apply default settings if not set by user
+    default_settings = {"bins": 25, "density": True}
+    for setting, value in default_settings.items():
+        if setting not in hist_settings:
+            hist_settings[setting] = value
+
     def plot_one_hist(axes: Axes, i: int):
-        counts, bins = np.histogram(chain[:, i], bins=num_bins, density=True)
+        parameter_chain = chain[:, i]
+        counts, bins = np.histogram(parameter_chain, **hist_settings)
+
+        # if we need a KDE, generate it now rather than twice
+        if smooth or estimated_density == "kernel":
+            kde = gaussian_kde(parameter_chain)
+
+        if smooth:
+            pass
         axes.hist(
             bins[:-1],
             bins,
@@ -381,6 +430,20 @@ def plot_hists(
             color="white",
         )
         axes.set_title(fit_names[i])
+
+        if estimated_density:
+            mean_y = mean(parameter_chain)
+            sd_y = stdev(parameter_chain)
+            dx = bins[1] - bins[0]
+            if estimated_density == "normal":
+                t = np.linspace(mean_y - 3.5 * sd_y, mean_y + 3.5 * sd_y)
+                axes.plot(t, norm.pdf(t, mean_y, sd_y**2))
+            elif estimated_density == "lognor":
+                t = np.linspace(bins[0] - 0.5 * dx, bins[-1] + 2 * dx)
+                axes.plot(t, lognorm.pdf(t, mean(log(parameter_chain), stdev(log(parameter_chain)))))
+            elif estimated_density == "kernel":
+                t = np.linspace(bins[0] - 2 * dx, bins[-1] + 2 * dx, 200)
+                axes.plot(t, kde.evaluate(t))
 
     fig = panel_plot_helper(plot_one_hist, indices)
     fig.show()
@@ -405,6 +468,7 @@ def plot_chain(
         If None, uses all indices.
     maxpoints : int
         The maximum number of points to plot for each parameter.
+
     """
     try:
         chain = results.chain
@@ -426,25 +490,6 @@ def plot_chain(
     fig.show()
     if block:
         fig.wait_for_close()
-
-
-def plot_contour(results: RATapi.outputs.BayesResults, idx1: int, idx2: int):
-    """Plot a 2D histogram of two indexed parameters.
-
-    Parameters
-    ----------
-    results: RATapi.outputs.BayesResults
-        The results of a Bayesian analysis.
-    idx1: int
-        The index of the parameter on the x-axis.
-    idx2: int
-        The index of the parameter on the y-axis.
-    """
-
-    ax = plt.subplots(1, 1)[1]
-    corner.hist2d(results.chain[:, idx1], results.chain[:, idx2])
-    ax.set_xlabel(results.fitNames[idx1])
-    ax.set_ylabel(results.fitNames[idx2])
 
 
 def plot_bayes(project: RATapi.Project, results: RATapi.outputs.BayesResults):
