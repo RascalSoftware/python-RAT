@@ -372,13 +372,15 @@ def plot_corner(
 
     fig, axes = plt.subplots(num_params, num_params, figsize=(2 * num_params, 2 * num_params))
     # i is row, j is column
-    for i in range(0, num_params):
-        for j in range(0, num_params):
+    for i, row_param in enumerate(params):
+        for j, col_param in enumerate(params):
             current_axes: Axes = axes[i][j]
             if i == j:  # diagonal: histograms
-                plot_hist(results, param=j, smooth=smooth, axes=current_axes, **hist_kwargs)
+                plot_hist(results, param=row_param, smooth=smooth, axes=current_axes, **hist_kwargs)
             elif i > j:  # lower triangle: 2d histograms
-                plot_contour(results, x_param=i, y_param=j, smooth=smooth, axes=current_axes, **hist2d_kwargs)
+                plot_contour(
+                    results, x_param=row_param, y_param=col_param, smooth=smooth, axes=current_axes, **hist2d_kwargs
+                )
             elif i < j:  # upper triangle: no plot
                 current_axes.set_visible(False)
             # remove label if on inside of corner plot
