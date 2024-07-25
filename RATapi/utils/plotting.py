@@ -3,6 +3,7 @@
 from functools import wraps
 from math import ceil, floor, sqrt
 from statistics import mean, stdev
+from textwrap import fill
 from typing import Callable, Literal, Optional, Union
 
 import matplotlib
@@ -218,6 +219,8 @@ def plot_ref_sld(
                 interval = [0, 4]
             elif bayes == 65:
                 interval = [1, 3]
+            else:
+                raise ValueError("Parameter `bayes` must be 95, 65 or None")
             confidence_intervals = {
                 "reflectivity": [
                     (ref_inter[interval[0]], ref_inter[interval[1]])
@@ -453,7 +456,8 @@ def plot_hist(
         linewidth=1.2,
         color="white",
     )
-    axes.set_title(results.fitNames[param])
+
+    axes.set_title(fill(results.fitNames[param], 20))  # use `fill` to wrap long titles
 
     if estimated_density:
         dx = bins[1] - bins[0]
