@@ -288,27 +288,17 @@ class LivePlot:
             plt.show(block=self.block)
 
 
-def assert_bayesian(name: str, takes_project: bool = False):
+def assert_bayesian(name: str):
     """Decorator to ensure the results passed to a function are Bayesian.
 
     Parameters
     ----------
     name : str
         The name of the plot for the error message.
-    takes_project : bool
-        Whether the first variable of the plot is 'project'
-        (as in plot_bayes) or 'results' (as in most plots)
+
     """
 
     def decorator(func: Callable):
-        if takes_project:
-
-            @wraps(func)
-            def inner(project, results, *args, **kwargs):
-                if isinstance(results, RATapi.outputs.BayesResults):
-                    return func(project, results, *args, **kwargs)
-                raise ValueError(f"{name} plots are only available for the results of Bayesian analysis (NS or DREAM)")
-
         @wraps(func)
         def inner(results, *args, **kwargs):
             if isinstance(results, RATapi.outputs.BayesResults):
@@ -693,7 +683,6 @@ def plot_chain_panel(
         fig.wait_for_close()
 
 
-@assert_bayesian(name="Bayes", takes_project=True)
 def plot_bayes(project: RATapi.Project, results: RATapi.outputs.BayesResults):
     """Plot the results of a Bayesian analysis with confidence information.
 
@@ -710,7 +699,10 @@ def plot_bayes(project: RATapi.Project, results: RATapi.outputs.BayesResults):
             Indicates the plot should block until it is closed
 
     """
-    plot_ref_sld(project, results)
-    plot_ref_sld(project, results, bayes=95)
-    plot_hist_panel(results)
-    plot_corner(results)
+    if isinstance(results, RATapi.outputs.BayesResults):
+        plot_ref_sld(project, results)
+        plot_ref_sld(project, results, bayes=95)
+        plot_hist_panel(results)
+        plot_corner(results)
+    else:
+        raise ValueError("Bayes plots are only available for the results of Bayesian analysis (NS or DREAM)")
