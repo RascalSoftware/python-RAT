@@ -170,7 +170,6 @@ setup(
         "prettytable >= 3.9.0",
         "pydantic >= 2.7.2",
         "matplotlib >= 3.8.3",
-        "corner >= 2.2.2",
         "scipy >= 1.13.1",
     ],
     extras_require={

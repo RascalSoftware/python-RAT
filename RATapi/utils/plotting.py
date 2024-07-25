@@ -1,10 +1,10 @@
 """Plots using the matplotlib library"""
 
-from math import ceil, floor, log, sqrt
+from functools import wraps
+from math import ceil, floor, sqrt
 from statistics import mean, stdev
 from typing import Callable, Literal, Optional, Union
 
-import corner
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -76,6 +76,7 @@ def plot_ref_sld_helper(
     elif len(fig.axes) != 2:
         fig.clf()
         fig.subplots(1, 2)
+    fig.subplots_adjust(wspace=0.3)
 
     ref_plot: plt.Axes = fig.axes[0]
     sld_plot: plt.Axes = fig.axes[1]
@@ -206,14 +207,17 @@ def plot_ref_sld(
     data.contrastNames = [contrast.name for contrast in project.contrasts]
 
     if bayes:
-        try:
+        if isinstance(results, RATapi.outputs.BayesResults):
             # the predictionIntervals data consists of 5 rows:
             # row 0: min with 95% confidence
             # row 1: min with 65% confidence
             # row 2: mean
             # row 3: max with 65% confidence
             # row 4: max with 95% confidence
-            interval = [0, 4] if bayes == 95 else [1, 3]
+            if bayes == 95:
+                interval = [0, 4]
+            elif bayes == 65:
+                interval = [1, 3]
             confidence_intervals = {
                 "reflectivity": [
                     (ref_inter[interval[0]], ref_inter[interval[1]])
@@ -226,10 +230,10 @@ def plot_ref_sld(
                 "reflectivity-x-data": results.predictionIntervals.reflectivityXData,
                 "sld-x-data": results.predictionIntervals.sldXData,
             }
-        except AttributeError as err:
+        else:
             raise ValueError(
-                "Corner plotting is only available for the results of Bayesian analysis (NS or DREAM)"
-            ) from err
+                "Shaded confidence intervals are only available for the results of Bayesian analysis (NS or DREAM)"
+            )
     else:
         confidence_intervals = None
 
@@ -284,7 +288,47 @@ class LivePlot:
             plt.show(block=self.block)
 
 
-def plot_corner(results: RATapi.outputs.BayesResults, block: bool = False, **corner_kwargs):
+def assert_bayesian(name: str, takes_project: bool = False):
+    """Decorator to ensure the results passed to a function are Bayesian.
+
+    Parameters
+    ----------
+    name : str
+        The name of the plot for the error message.
+    takes_project : bool
+        Whether the first variable of the plot is 'project'
+        (as in plot_bayes) or 'results' (as in most plots)
+    """
+
+    def decorator(func: Callable):
+        if takes_project:
+
+            @wraps(func)
+            def inner(project, results, *args, **kwargs):
+                if isinstance(results, RATapi.outputs.BayesResults):
+                    return func(project, results, *args, **kwargs)
+                raise ValueError(f"{name} plots are only available for the results of Bayesian analysis (NS or DREAM)")
+
+        @wraps(func)
+        def inner(results, *args, **kwargs):
+            if isinstance(results, RATapi.outputs.BayesResults):
+                return func(results, *args, **kwargs)
+            raise ValueError(f"{name} plots are only available for the results of Bayesian analysis (NS or DREAM)")
+
+        return inner
+
+    return decorator
+
+
+@assert_bayesian("Corner")
+def plot_corner(
+    results: RATapi.outputs.BayesResults,
+    params: Union[list[Union[int, str]], None] = None,
+    smooth: bool = True,
+    block: bool = False,
+    hist_kwargs: Union[dict, None] = None,
+    hist2d_kwargs: Union[dict, None] = None,
+):
     """Create a corner plot from a Bayesian analysis.
 
     Parameters
@@ -293,49 +337,215 @@ def plot_corner(results: RATapi.outputs.BayesResults, block: bool = False, **cor
         The results from a Bayesian calculation.
     block : bool, default False
         Whether Python should block until the plot is closed.
-    **corner_kwargs : dict
-        Extra keyword arguments to pass to the `corner` library.
+    params : list[int or str], default None
+        The indices or names of a subset of parameters if required.
+        If None, uses all indices.
+    smooth : bool, default True
+        Whether to apply Gaussian smoothing to the corner plot.
+    hist_kwargs : dict
+        Extra keyword arguments to pass to the 1d histograms.
+        Default is {'density': True, 'bins': 25}
+    hist2d_kwargs : dict
+        Extra keyword arguments to pass to the 2d histograms.
+        Default is {'density': True, 'bins': 25}
     """
-    try:
-        chain = results.chain
-        # wrap the names because otherwise long names poke into the neighbouring box
-        fit_names = ["\n".join(fitname.split(" ")) for fitname in results.fitNames]
-    except AttributeError as err:
-        raise ValueError(
-            "Corner plotting is only available for the results of Bayesian analysis (NS or DREAM)"
-        ) from err
 
-    fig = corner.corner(
-        chain,
-        titles=fit_names,
-        show_titles=True,
-        title_fmt=None,
-        hist_kwargs={"density": True},
-        **corner_kwargs,
-    )
+    # first convert names to indices if given
+    def name_to_index(param: Union[str, int]):
+        """Convert parameter names to indices."""
+        if isinstance(param, str):
+            return results.fitNames.index(param)
+        return param
+
+    if params is None:
+        params = range(0, len(results.fitNames))
+    else:
+        params = list(map(name_to_index, params))
+
+    # defaults are applied inside each function - just pass blank dicts for now
+    if hist_kwargs is None:
+        hist_kwargs = {}
+    if hist2d_kwargs is None:
+        hist2d_kwargs = {}
+
+    num_params = len(params)
+
+    fig, axes = plt.subplots(num_params, num_params, figsize=(2 * num_params, 2 * num_params))
+    # i is row, j is column
+    for i in range(0, num_params):
+        for j in range(0, num_params):
+            current_axes: Axes = axes[i][j]
+            if i == j:  # diagonal: histograms
+                plot_hist(results, param=j, smooth=smooth, axes=current_axes, **hist_kwargs)
+            elif i > j:  # lower triangle: 2d histograms
+                plot_contour(results, x_param=i, y_param=j, smooth=smooth, axes=current_axes, **hist2d_kwargs)
+            elif i < j:  # upper triangle: no plot
+                current_axes.set_visible(False)
+            # remove label if on inside of corner plot
+            if j != 0:
+                current_axes.get_yaxis().set_visible(False)
+            if i != len(params) - 1:
+                current_axes.get_xaxis().set_visible(False)
+            # make labels invisible as titles cover that
+            current_axes.set_ylabel("")
+            current_axes.set_xlabel("")
+
+    fig.tight_layout()
     fig.show()
     if block:
         fig.wait_for_close()
 
 
-def plot_contour(results: RATapi.outputs.BayesResults, idx1: int, idx2: int):
-    """Plot a 2D histogram of two indexed parameters.
+@assert_bayesian("Histogram")
+def plot_hist(
+    results: RATapi.outputs.BayesResults,
+    param: Union[int, str],
+    block: bool = False,
+    smooth: bool = True,
+    estimated_density: Literal["normal", "lognor", "kernel", None] = None,
+    axes: Union[Axes, None] = None,
+    **hist_settings,
+):
+    """Plot the marginalised posterior for a parameter of a Bayesian analysis.
+
+    Parameters
+    ----------
+    results : BayesResults
+        The results from a Bayesian calculation.
+    param : Union[int, str]
+        Either the index or name of a parameter.
+    block : bool, default False
+        Whether Python should block until the plot is closed.
+    smooth : bool, default True
+        Whether to apply a [TODO] smoothing to the histogram.
+        Defaults to True.
+    estimated_density : 'normal', 'lognor', 'kernel' or None, default None
+        If None (default), ignore. Else, add an estimated density
+        of the given form on top of the histogram by the following estimations:
+        'normal': normal Gaussian.
+        'lognor': Log-normal probability density.
+        'kernel': kernel density estimation.
+    axes: Axes or None, default None
+        If provided, plot on the given Axes object.
+    **hist_settings :
+        Settings passed to `np.histogram`. By default, the settings
+        passed are `bins = 25` and `density = True`.
+    """
+    chain = results.chain
+    if isinstance(param, str):
+        param = results.fitNames.index(param)
+
+    if axes is None:
+        fig, axes = plt.subplots(1, 1)
+    else:
+        fig = None
+
+    # apply default settings if not set by user
+    default_settings = {"bins": 25, "density": True}
+    for setting, value in default_settings.items():
+        if setting not in hist_settings:
+            hist_settings[setting] = value
+
+    parameter_chain = chain[:, param]
+    counts, bins = np.histogram(parameter_chain, **hist_settings)
+    mean_y = mean(parameter_chain)
+    sd_y = stdev(parameter_chain)
+
+    if smooth:
+        counts = gaussian_filter1d(counts, sd_y / 6)
+    axes.hist(
+        bins[:-1],
+        bins,
+        weights=counts,
+        edgecolor="black",
+        linewidth=1.2,
+        color="white",
+    )
+    axes.set_title(results.fitNames[param])
+
+    if estimated_density:
+        dx = bins[1] - bins[0]
+        if estimated_density == "normal":
+            t = np.linspace(mean_y - 3.5 * sd_y, mean_y + 3.5 * sd_y)
+            axes.plot(t, norm.pdf(t, loc=mean_y, scale=sd_y**2))
+        elif estimated_density == "lognor":
+            t = np.linspace(bins[0] - 0.5 * dx, bins[-1] + 2 * dx)
+            axes.plot(t, lognorm.pdf(t, mean(np.log(parameter_chain)), stdev(np.log(parameter_chain))))
+        elif estimated_density == "kernel":
+            t = np.linspace(bins[0] - 2 * dx, bins[-1] + 2 * dx, 200)
+            kde = gaussian_kde(parameter_chain)
+            axes.plot(t, kde.evaluate(t))
+
+    if fig is not None:
+        fig.show()
+        if block:
+            fig.wait_for_close()
+
+
+@assert_bayesian("Contour")
+def plot_contour(
+    results: RATapi.outputs.BayesResults,
+    x_param: Union[int, str],
+    y_param: Union[int, str],
+    smooth: bool = True,
+    block: bool = False,
+    axes: Union[Axes, None] = None,
+    **hist2d_settings,
+):
+    """Plot a 2D histogram of two indexed chain parameters, with contours.
 
     Parameters
     ----------
     results : RATapi.outputs.BayesResults
         The results of a Bayesian analysis.
-    idx1 : int
-        The index of the parameter on the x-axis.
-    idx2: int
-        The index of the parameter on the y-axis.
+    x_param : int
+        The index or name of the parameter on the x-axis.
+    y_param : int
+        The index or name ofthe parameter on the y-axis.
+    smooth : bool, default True
+        If True, apply Gaussian smoothing to the histogram.
+    axes: Axes or None, default None
+        If provided, plot on the given Axes object.
+    **hist2d_settings:
+        Settings passed to `np.histogram2d`.
+        Default settings are `bins = 25`.
 
     """
+    if axes is None:
+        fig, axes = plt.subplots(1, 1)
+    else:
+        fig = None
+    if isinstance(x_param, str):
+        x_param = results.fitNames.index(x_param)
+    if isinstance(y_param, str):
+        y_param = results.fitNames.index(y_param)
 
-    ax = plt.subplots(1, 1)[1]
-    corner.hist2d(results.chain[:, idx1], results.chain[:, idx2])
-    ax.set_xlabel(results.fitNames[idx1])
-    ax.set_ylabel(results.fitNames[idx2])
+    default_settings = {"bins": 25}
+    for setting, value in default_settings.items():
+        if setting not in hist2d_settings:
+            hist2d_settings[setting] = value
+
+    counts, y_bins, x_bins = np.histogram2d(results.chain[:, x_param], results.chain[:, y_param], **hist2d_settings)
+    counts = counts.T  # for some reason the counts given by numpy are sideways
+    if smooth:
+        # perform a 1d smooth along both axes
+        sd_x = stdev(results.chain[:, x_param])
+        sd_y = stdev(results.chain[:, y_param])
+        counts = gaussian_filter1d(counts, axis=0, sigma=sd_x / 6)
+        counts = gaussian_filter1d(counts, axis=1, sigma=sd_y / 6)
+
+    bin_area = (x_bins[1] - x_bins[0]) * (y_bins[1] - y_bins[0])
+    counts *= (bin_area * hist2d_settings["bins"]) / np.sum(counts)
+
+    axes.pcolormesh(x_bins, y_bins, counts.max() - counts.T, cmap=matplotlib.colormaps["Greys"].reversed())
+    axes.contour(x_bins[:-1], y_bins[:-1], counts.max() - counts.T, colors="black")
+    axes.set_xlabel(results.fitNames[x_param])
+    axes.set_ylabel(results.fitNames[y_param])
+
+    if fig is not None:
+        fig.show()
+        if block:
+            fig.wait_for_close()
 
 
 def panel_plot_helper(plot_func: Callable, indices: list[int]) -> matplotlib.figure.Figure:
@@ -346,6 +556,10 @@ def panel_plot_helper(plot_func: Callable, indices: list[int]) -> matplotlib.fig
     plot_func : Callable
         A function which plots one parameter on an Axes object, given its index.
 
+    Returns
+    -------
+    matplotlib.figure.Figure
+        A figure containing a grid of plots over the indices in `indices`.
     """
     nplots = len(indices)
     nrows, ncols = ceil(sqrt(nplots)), floor(sqrt(nplots))
@@ -363,95 +577,78 @@ def panel_plot_helper(plot_func: Callable, indices: list[int]) -> matplotlib.fig
     return fig
 
 
-def plot_hists(
+@assert_bayesian("Histogram")
+def plot_hist_panel(
     results: RATapi.outputs.BayesResults,
-    indices: Union[list[int], None] = None,
+    params: Union[list[Union[int, str]], None] = None,
     block: bool = False,
     smooth: bool = True,
-    estimated_density: Literal["normal", "lognor", "kernel", None] = None,
+    estimated_density: dict[Literal["normal", "lognor", "kernel", None]] = None,
     **hist_settings,
 ):
-    """Plot marginalised posteriors from a Bayesian analysis.
+    """Plot marginalised posteriors for several parameters from a Bayesian analysis.
 
     Parameters
     ----------
     results : BayesResults
         The results from a Bayesian calculation.
-    indices : list[int], default None
-        The indices of a subset of parameters if required.
+    params : list[int], default None
+        The indices or names of a subset of parameters if required.
         If None, uses all indices.
     block : bool, default False
         Whether Python should block until the plot is closed.
     smooth : bool, default True
         Whether to apply a [TODO] smoothing to the histogram.
         Defaults to True.
-    estimated_density : 'normal', 'lognor', 'kernel' or None, default None
-        If None (default), ignore. Else, add an estimated density
-        of the given form on top of the histogram by the following estimations:
+    estimated_density : dict, default None
+        If None (default), ignore. Else, a dictionary where the keys are
+        indices or names of parameters, and values denote an estimated density
+        of the given form on top of the histogram:
+        None : do not plot estimated density for this parameter.
         'normal': normal Gaussian.
         'lognor': Log-normal probability density.
         'kernel': kernel density estimation.
-    **hist_settings :
+    hist_settings :
         Settings passed to `np.histogram`. By default, the settings
         passed are `bins = 25` and `density = True`.
 
     """
-    try:
-        chain = results.chain
-        fit_names = results.fitNames
-    except AttributeError as err:
-        raise ValueError(
-            "Corner plotting is only available for the results of Bayesian analysis (NS or DREAM)"
-        ) from err
-    if indices is None:
-        indices = range(0, len(fit_names))
 
-    # apply default settings if not set by user
-    default_settings = {"bins": 25, "density": True}
-    for setting, value in default_settings.items():
-        if setting not in hist_settings:
-            hist_settings[setting] = value
+    # first convert names to indices if given
+    def name_to_index(param: Union[str, int]):
+        """Convert parameter names to indices."""
+        if isinstance(param, str):
+            return results.fitNames.index(param)
+        return param
 
-    def plot_one_hist(axes: Axes, i: int):
-        parameter_chain = chain[:, i]
-        counts, bins = np.histogram(parameter_chain, **hist_settings)
-        mean_y = mean(parameter_chain)
-        sd_y = stdev(parameter_chain)
+    if params is None:
+        params = range(0, len(results.fitNames))
+    else:
+        params = list(map(name_to_index, params))
 
-        if smooth:
-            counts = gaussian_filter1d(counts, sd_y)
-        axes.hist(
-            bins[:-1],
-            bins,
-            weights=counts,
-            edgecolor="black",
-            linewidth=1.2,
-            color="white",
-        )
-        axes.set_title(fit_names[i])
+    if estimated_density is not None:
+        for key, value in estimated_density.items():
+            temp = {}  # as dictionary cannot change size during iteration
+            temp[name_to_index(key)] = value
+        estimated_density = temp
+    else:
+        estimated_density = {}
 
-        if estimated_density:
-            dx = bins[1] - bins[0]
-            if estimated_density == "normal":
-                t = np.linspace(mean_y - 3.5 * sd_y, mean_y + 3.5 * sd_y)
-                axes.plot(t, norm.pdf(t, mean_y, sd_y**2))
-            elif estimated_density == "lognor":
-                t = np.linspace(bins[0] - 0.5 * dx, bins[-1] + 2 * dx)
-                axes.plot(t, lognorm.pdf(t, mean(log(parameter_chain), stdev(log(parameter_chain)))))
-            elif estimated_density == "kernel":
-                t = np.linspace(bins[0] - 2 * dx, bins[-1] + 2 * dx, 200)
-                kde = gaussian_kde(parameter_chain)
-                axes.plot(t, kde.evaluate(t))
-
-    fig = panel_plot_helper(plot_one_hist, indices)
+    fig = panel_plot_helper(
+        lambda ax, i: plot_hist(
+            results, i, smooth=smooth, estimated_density=estimated_density.get(i, None), axes=ax, **hist_settings
+        ),
+        params,
+    )
     fig.show()
     if block:
         fig.wait_for_close()
 
 
-def plot_chain(
+@assert_bayesian("Chain")
+def plot_chain_panel(
     results: RATapi.outputs.BayesResults,
-    indices: Union[list[int], None] = None,
+    params: Union[list[Union[int, str]], None] = None,
     maxpoints: int = 15000,
     block: bool = False,
 ):
@@ -461,35 +658,40 @@ def plot_chain(
     ----------
     results : RATapi.outputs.BayesResults
         The results of a Bayesian analysis.
-    indices : list[int], default None
-        The indices of a subset of parameters if required.
+    params : list[int], default None
+        The indices or names of a subset of parameters if required.
         If None, uses all indices.
     maxpoints : int
         The maximum number of points to plot for each parameter.
 
     """
-    try:
-        chain = results.chain
-        nsimulations, nplots = chain.shape
-        skip = floor(nsimulations / maxpoints)  # to evenly distribute points plotted
-    except AttributeError as err:
-        raise ValueError(
-            "Corner plotting is only available for the results of Bayesian analysis (NS or DREAM)"
-        ) from err
+    chain = results.chain
+    nsimulations, nplots = chain.shape
+    skip = floor(nsimulations / maxpoints)  # to evenly distribute points plotted
 
-    if indices is None:
-        indices = range(0, nplots)
+    # convert names to indices if given
+    def name_to_index(param: Union[str, int]):
+        """Convert parameter names to indices."""
+        if isinstance(param, str):
+            return results.fitNames.index(param)
+        return param
+
+    if params is None:
+        params = range(0, len(results.fitNames))
+    else:
+        params = list(map(name_to_index, params))
 
     def plot_one_chain(axes: Axes, i: int):
         axes.plot(range(0, nsimulations, skip), chain[:, i][0:nsimulations:skip])
         axes.set_title(results.fitNames[i])
 
-    fig = panel_plot_helper(plot_one_chain, indices)
+    fig = panel_plot_helper(plot_one_chain, params)
     fig.show()
     if block:
         fig.wait_for_close()
 
 
+@assert_bayesian(name="Bayes", takes_project=True)
 def plot_bayes(project: RATapi.Project, results: RATapi.outputs.BayesResults):
     """Plot the results of a Bayesian analysis with confidence information.
 
@@ -506,8 +708,7 @@ def plot_bayes(project: RATapi.Project, results: RATapi.outputs.BayesResults):
             Indicates the plot should block until it is closed
 
     """
-
     plot_ref_sld(project, results)
     plot_ref_sld(project, results, bayes=95)
-    plot_hists(results)
+    plot_hist_panel(results)
     plot_corner(results)
