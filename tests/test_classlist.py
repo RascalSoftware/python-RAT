@@ -767,10 +767,13 @@ def test__validate_name_field(two_name_class_list: ClassList, input_dict: dict[s
     "input_dict",
     [
         ({"name": "Alice"}),
+        ({"name": "ALICE"}),
+        ({"name": "alice"}),
     ],
 )
 def test__validate_name_field_not_unique(two_name_class_list: ClassList, input_dict: dict[str, Any]) -> None:
-    """We should raise a ValueError if we input values containing a name_field defined in an object in the ClassList."""
+    """We should raise a ValueError if we input values containing a name_field defined in an object in the ClassList,
+    accounting for case sensitivity."""
     with pytest.raises(
         ValueError,
         match=f"Input arguments contain the {two_name_class_list.name_field} "
@@ -801,11 +804,13 @@ def test__check_unique_name_fields(two_name_class_list: ClassList, input_list: I
     "input_list",
     [
         ([InputAttributes(name="Alice"), InputAttributes(name="Alice")]),
+        ([InputAttributes(name="Alice"), InputAttributes(name="ALICE")]),
+        ([InputAttributes(name="Alice"), InputAttributes(name="alice")]),
     ],
 )
 def test__check_unique_name_fields_not_unique(two_name_class_list: ClassList, input_list: Iterable) -> None:
-    """We should raise a ValueError if an input list contains multiple objects with matching name_field values
-    defined.
+    """We should raise a ValueError if an input list contains multiple objects with (case-insensitive) matching
+    name_field values defined.
     """
     with pytest.raises(
         ValueError,
@@ -846,7 +851,11 @@ def test__check_classes_different_classes(input_list: Iterable) -> None:
     ["value", "expected_output"],
     [
         ("Alice", InputAttributes(name="Alice")),
+        ("ALICE", InputAttributes(name="Alice")),
+        ("alice", InputAttributes(name="Alice")),
         ("Eve", "Eve"),
+        ("EVE", "EVE"),
+        ("eve", "eve"),
     ],
 )
 def test__get_item_from_name_field(

@@ -301,9 +301,9 @@ class ClassList(collections.UserList):
             Raised if the input arguments contain a name_field value already defined in the ClassList.
 
         """
-        names = self.get_names()
+        names = [name.lower() for name in self.get_names()]
         with contextlib.suppress(KeyError):
-            if input_args[self.name_field] in names:
+            if input_args[self.name_field].lower() in names:
                 raise ValueError(
                     f"Input arguments contain the {self.name_field} '{input_args[self.name_field]}', "
                     f"which is already specified in the ClassList",
@@ -324,7 +324,7 @@ class ClassList(collections.UserList):
             Raised if the input list defines more than one object with the same value of name_field.
 
         """
-        names = [getattr(model, self.name_field) for model in input_list if hasattr(model, self.name_field)]
+        names = [getattr(model, self.name_field).lower() for model in input_list if hasattr(model, self.name_field)]
         if len(set(names)) != len(names):
             raise ValueError(f"Input list contains objects with the same value of the {self.name_field} attribute")
 
@@ -360,7 +360,12 @@ class ClassList(collections.UserList):
             object with that value of the name_field attribute cannot be found.
 
         """
-        return next((model for model in self.data if getattr(model, self.name_field) == value), value)
+        try:
+            lower_value = value.lower()
+        except AttributeError:
+            lower_value = value
+
+        return next((model for model in self.data if getattr(model, self.name_field).lower() == lower_value), value)
 
     @staticmethod
     def _determine_class_handle(input_list: Sequence[object]):
