@@ -649,8 +649,8 @@ def plot_hist_panel(
         params = list(map(name_to_index, params))
 
     if estimated_density is not None:
+        temp = {}  # as dictionary cannot change size during iteration
         for key, value in estimated_density.items():
-            temp = {}  # as dictionary cannot change size during iteration
             temp[name_to_index(key)] = value
         estimated_density = temp
     else:
