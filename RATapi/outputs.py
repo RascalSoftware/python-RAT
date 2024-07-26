@@ -185,7 +185,7 @@ def make_results(
         resample=output_results.contrastParams.resample,
     )
 
-    if procedure in [Procedures.NS, Procedures.Dream]:
+    if procedure in [Procedures.NS, Procedures.DREAM]:
         prediction_intervals = PredictionIntervals(
             reflectivity=bayes_results.predictionIntervals.reflectivity,
             sld=bayes_results.predictionIntervals.sld,
