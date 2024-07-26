@@ -68,8 +68,10 @@ class ClassList(collections.UserList):
                         + list(
                             f"{'Data array: ['+' x '.join(str(i) for i in v.shape) if v.size > 0 else '['}]"
                             if isinstance(v, np.ndarray)
+                            else "\n".join(element for element in v)
+                            if k == "model"
                             else str(v)
-                            for v in model.__dict__.values()
+                            for k, v in model.__dict__.items()
                         )
                         for index, model in enumerate(self.data)
                     ]

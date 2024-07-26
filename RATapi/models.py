@@ -77,6 +77,26 @@ class Contrast(RATModel):
     resample: bool = False
     model: list[str] = []
 
+    def __str__(self):
+        table = prettytable.PrettyTable()
+        table.field_names = [key.replace("_", " ") for key in self.__dict__]
+        model_entry = "\n".join(element for element in self.model)
+        table.add_row(
+            [
+                self.name,
+                self.data,
+                self.background,
+                self.background_action,
+                self.bulk_in,
+                self.bulk_out,
+                self.scalefactor,
+                self.resolution,
+                self.resample,
+                model_entry,
+            ]
+        )
+        return table.get_string()
+
 
 class ContrastWithRatio(RATModel):
     """Groups together all of the components of the model including domain terms."""
@@ -92,6 +112,26 @@ class ContrastWithRatio(RATModel):
     resample: bool = False
     domain_ratio: str = ""
     model: list[str] = []
+
+    def __str__(self):
+        table = prettytable.PrettyTable()
+        table.field_names = [key.replace("_", " ") for key in self.__dict__]
+        model_entry = "\n".join(element for element in self.model)
+        table.add_row(
+            [
+                self.name,
+                self.data,
+                self.background,
+                self.background_action,
+                self.bulk_in,
+                self.bulk_out,
+                self.scalefactor,
+                self.resolution,
+                self.resample,
+                model_entry,
+            ]
+        )
+        return table.get_string()
 
 
 class CustomFile(RATModel):
@@ -218,6 +258,13 @@ class DomainContrast(RATModel):
 
     name: str = Field(default_factory=lambda: "New Domain Contrast " + next(domain_contrast_number), min_length=1)
     model: list[str] = []
+
+    def __str__(self):
+        table = prettytable.PrettyTable()
+        table.field_names = [key.replace("_", " ") for key in self.__dict__]
+        model_entry = "\n".join(element for element in self.model)
+        table.add_row([self.name, model_entry])
+        return table.get_string()
 
 
 class Layer(RATModel, populate_by_name=True):
