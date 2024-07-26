@@ -319,6 +319,7 @@ def plot_corner(
     params: Union[list[Union[int, str]], None] = None,
     smooth: bool = True,
     block: bool = False,
+    return_fig: bool = False,
     hist_kwargs: Union[dict, None] = None,
     hist2d_kwargs: Union[dict, None] = None,
 ):
@@ -328,13 +329,15 @@ def plot_corner(
     ----------
     results : BayesResults
         The results from a Bayesian calculation.
-    block : bool, default False
-        Whether Python should block until the plot is closed.
     params : list[int or str], default None
         The indices or names of a subset of parameters if required.
         If None, uses all indices.
     smooth : bool, default True
         Whether to apply Gaussian smoothing to the corner plot.
+    block : bool, default False
+        Whether Python should block until the plot is closed.
+    return_fig: bool, default False
+        If True, return the figure as an object instead of showing it.
     hist_kwargs : dict
         Extra keyword arguments to pass to the 1d histograms.
         Default is {'density': True, 'bins': 25}
@@ -386,6 +389,8 @@ def plot_corner(
             current_axes.set_xlabel("")
 
     fig.tight_layout()
+    if return_fig:
+        return fig
     fig.show()
     if block:
         fig.wait_for_close()
@@ -395,10 +400,11 @@ def plot_corner(
 def plot_hist(
     results: RATapi.outputs.BayesResults,
     param: Union[int, str],
-    block: bool = False,
     smooth: bool = True,
     estimated_density: Literal["normal", "lognor", "kernel", None] = None,
     axes: Union[Axes, None] = None,
+    block: bool = False,
+    return_fig: bool = False,
     **hist_settings,
 ):
     """Plot the marginalised posterior for a parameter of a Bayesian analysis.
@@ -422,6 +428,10 @@ def plot_hist(
         'kernel': kernel density estimation.
     axes: Axes or None, default None
         If provided, plot on the given Axes object.
+    block : bool, default False
+        Whether Python should block until the plot is closed.
+    return_fig: bool, default False
+        If True, return the figure as an object instead of showing it.
     **hist_settings :
         Settings passed to `np.histogram`. By default, the settings
         passed are `bins = 25` and `density = True`.
@@ -472,7 +482,13 @@ def plot_hist(
             kde = gaussian_kde(parameter_chain)
             axes.plot(t, kde.evaluate(t))
 
+    # adding the estimated density extends the figure range - reset it to histogram range
+    x_range = hist_settings.get("range", (parameter_chain.min(), parameter_chain.max()))
+    axes.set_xlim(x_range)
+
     if fig is not None:
+        if return_fig:
+            return fig
         fig.show()
         if block:
             fig.wait_for_close()
@@ -484,8 +500,9 @@ def plot_contour(
     x_param: Union[int, str],
     y_param: Union[int, str],
     smooth: bool = True,
-    block: bool = False,
     axes: Union[Axes, None] = None,
+    block: bool = False,
+    return_fig: bool = False,
     **hist2d_settings,
 ):
     """Plot a 2D histogram of two indexed chain parameters, with contours.
@@ -502,6 +519,10 @@ def plot_contour(
         If True, apply Gaussian smoothing to the histogram.
     axes: Axes or None, default None
         If provided, plot on the given Axes object.
+    block : bool, default False
+        Whether Python should block until the plot is closed.
+    return_fig: bool, default False
+        If True, return the figure as an object instead of showing it.
     **hist2d_settings:
         Settings passed to `np.histogram2d`.
         Default settings are `bins = 25`.
@@ -539,6 +560,8 @@ def plot_contour(
     axes.set_ylabel(results.fitNames[y_param])
 
     if fig is not None:
+        if return_fig:
+            return fig
         fig.show()
         if block:
             fig.wait_for_close()
@@ -558,7 +581,7 @@ def panel_plot_helper(plot_func: Callable, indices: list[int]) -> matplotlib.fig
         A figure containing a grid of plots over the indices in `indices`.
     """
     nplots = len(indices)
-    nrows, ncols = ceil(sqrt(nplots)), floor(sqrt(nplots))
+    nrows, ncols = ceil(sqrt(nplots)), round(sqrt(nplots))
     fig = plt.subplots(nrows, ncols, figsize=(2 * nrows, 2.5 * ncols))[0]
     axs = fig.get_axes()
 
@@ -577,9 +600,10 @@ def panel_plot_helper(plot_func: Callable, indices: list[int]) -> matplotlib.fig
 def plot_hist_panel(
     results: RATapi.outputs.BayesResults,
     params: Union[list[Union[int, str]], None] = None,
-    block: bool = False,
     smooth: bool = True,
     estimated_density: dict[Literal["normal", "lognor", "kernel", None]] = None,
+    block: bool = False,
+    return_fig: bool = False,
     **hist_settings,
 ):
     """Plot marginalised posteriors for several parameters from a Bayesian analysis.
@@ -591,8 +615,6 @@ def plot_hist_panel(
     params : list[int], default None
         The indices or names of a subset of parameters if required.
         If None, uses all indices.
-    block : bool, default False
-        Whether Python should block until the plot is closed.
     smooth : bool, default True
         Whether to apply a [TODO] smoothing to the histogram.
         Defaults to True.
@@ -604,6 +626,10 @@ def plot_hist_panel(
         'normal': normal Gaussian.
         'lognor': Log-normal probability density.
         'kernel': kernel density estimation.
+    block : bool, default False
+        Whether Python should block until the plot is closed.
+    return_fig: bool, default False
+        If True, return the figure as an object instead of showing it.
     hist_settings :
         Settings passed to `np.histogram`. By default, the settings
         passed are `bins = 25` and `density = True`.
@@ -636,6 +662,8 @@ def plot_hist_panel(
         ),
         params,
     )
+    if return_fig:
+        return fig
     fig.show()
     if block:
         fig.wait_for_close()
@@ -647,6 +675,7 @@ def plot_chain_panel(
     params: Union[list[Union[int, str]], None] = None,
     maxpoints: int = 15000,
     block: bool = False,
+    return_fig: bool = False,
 ):
     """Plot the MCMC chain for each parameter of a Bayesian analysis.
 
@@ -659,6 +688,10 @@ def plot_chain_panel(
         If None, uses all indices.
     maxpoints : int
         The maximum number of points to plot for each parameter.
+    block : bool, default False
+        Whether Python should block until the plot is closed.
+    return_fig: bool, default False
+        If True, return the figure as an object instead of showing it.
 
     """
     chain = results.chain
@@ -682,6 +715,8 @@ def plot_chain_panel(
         axes.set_title(results.fitNames[i])
 
     fig = panel_plot_helper(plot_one_chain, params)
+    if return_fig:
+        return fig
     fig.show()
     if block:
         fig.wait_for_close()
