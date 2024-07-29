@@ -880,3 +880,12 @@ def test_determine_class_handle(input_list: ClassList, expected_type: type) -> N
     for all elements in the ClassList.
     """
     assert ClassList._determine_class_handle(input_list) == expected_type
+
+
+def test_get_item(two_name_class_list):
+    """Test item names can be gotten by name, index, object or slice."""
+    assert two_name_class_list[0] == two_name_class_list["Alice"]
+    assert two_name_class_list[1] == two_name_class_list["Bob"]
+    assert two_name_class_list[:] == two_name_class_list
+    alice = InputAttributes(name="Alice")
+    assert two_name_class_list[alice] == two_name_class_list["Alice"]
