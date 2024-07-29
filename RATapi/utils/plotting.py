@@ -102,8 +102,7 @@ def plot_ref_sld_helper(
         # Plot confidence intervals if required
         if confidence_intervals is not None:
             ref_min, ref_max = confidence_intervals["reflectivity"][i]
-            ref_x_data = confidence_intervals["reflectivity-x-data"][i][0]
-            ref_plot.fill_between(ref_x_data, ref_min / div, ref_max / div, alpha=0.6, color="grey")
+            ref_plot.fill_between(r[:, 0], ref_min / div, ref_max / div, alpha=0.6, color="grey")
 
         if data.dataPresent[i]:
             sd_x = sd[:, 0]
@@ -127,8 +126,7 @@ def plot_ref_sld_helper(
         # Plot confidence intervals if required
         if confidence_intervals is not None:
             sld_min, sld_max = confidence_intervals["sld"][i][j]
-            sld_x_data = confidence_intervals["sld-x-data"][i][j][0]
-            sld_plot.fill_between(sld_x_data, sld_min, sld_max, alpha=0.6, color="grey")
+            sld_plot.fill_between(sld[j][:, 0], sld_min, sld_max, alpha=0.6, color="grey")
 
         if data.resample[i] == 1 or data.modelType == "custom xy":
             layers = data.resampledLayers[i][0]
@@ -230,8 +228,6 @@ def plot_ref_sld(
                     [(sld_inter[interval[0]], sld_inter[interval[1]]) for sld_inter in sld]
                     for sld in results.predictionIntervals.sld
                 ],
-                "reflectivity-x-data": results.predictionIntervals.reflectivityXData,
-                "sld-x-data": results.predictionIntervals.sldXData,
             }
         else:
             raise ValueError(
@@ -401,6 +397,7 @@ def plot_hist(
     results: RATapi.outputs.BayesResults,
     param: Union[int, str],
     smooth: bool = True,
+    sigma: Union[float, None] = None,
     estimated_density: Literal["normal", "lognor", "kernel", None] = None,
     axes: Union[Axes, None] = None,
     block: bool = False,
@@ -418,8 +415,11 @@ def plot_hist(
     block : bool, default False
         Whether Python should block until the plot is closed.
     smooth : bool, default True
-        Whether to apply a [TODO] smoothing to the histogram.
+        Whether to apply Gaussian smoothing to the histogram.
         Defaults to True.
+    sigma: float or None, default None
+        If given, is used as the sigma-parameter for the Gaussian smoothing.
+        If None, the default (1/3rd of parameter chain standard deviation) is used.
     estimated_density : 'normal', 'lognor', 'kernel' or None, default None
         If None (default), ignore. Else, add an estimated density
         of the given form on top of the histogram by the following estimations:
@@ -457,7 +457,9 @@ def plot_hist(
     sd_y = stdev(parameter_chain)
 
     if smooth:
-        counts = gaussian_filter1d(counts, sd_y / 6)
+        if sigma is None:
+            sigma = sd_y / 2
+        counts = gaussian_filter1d(counts, sigma)
     axes.hist(
         bins[:-1],
         bins,
@@ -500,6 +502,7 @@ def plot_contour(
     x_param: Union[int, str],
     y_param: Union[int, str],
     smooth: bool = True,
+    sigma: Union[tuple[float], None] = None,
     axes: Union[Axes, None] = None,
     block: bool = False,
     return_fig: bool = False,
@@ -517,6 +520,9 @@ def plot_contour(
         The index or name ofthe parameter on the y-axis.
     smooth : bool, default True
         If True, apply Gaussian smoothing to the histogram.
+    sigma : tuple[float] or None, default None
+        If given, is used as parameters for Gaussian smoothing in x and y direction respectively.
+        If None, defaults to the standard deviation of the parameter chain in either direction.
     axes: Axes or None, default None
         If provided, plot on the given Axes object.
     block : bool, default False
@@ -545,11 +551,16 @@ def plot_contour(
     counts, y_bins, x_bins = np.histogram2d(results.chain[:, x_param], results.chain[:, y_param], **hist2d_settings)
     counts = counts.T  # for some reason the counts given by numpy are sideways
     if smooth:
+        if sigma is None:
+            sd_x = stdev(results.chain[:, x_param])
+            sd_y = stdev(results.chain[:, y_param])
+            sigma_x = sd_x / 2
+            sigma_y = sd_y / 2
+        else:
+            sigma_x, sigma_y = sigma
         # perform a 1d smooth along both axes
-        sd_x = stdev(results.chain[:, x_param])
-        sd_y = stdev(results.chain[:, y_param])
-        counts = gaussian_filter1d(counts, axis=0, sigma=sd_x / 6)
-        counts = gaussian_filter1d(counts, axis=1, sigma=sd_y / 6)
+        counts = gaussian_filter1d(counts, axis=0, sigma=sigma_x)
+        counts = gaussian_filter1d(counts, axis=1, sigma=sigma_y)
 
     bin_area = (x_bins[1] - x_bins[0]) * (y_bins[1] - y_bins[0])
     counts *= (bin_area * hist2d_settings["bins"]) / np.sum(counts)
@@ -582,7 +593,7 @@ def panel_plot_helper(plot_func: Callable, indices: list[int]) -> matplotlib.fig
     """
     nplots = len(indices)
     nrows, ncols = ceil(sqrt(nplots)), round(sqrt(nplots))
-    fig = plt.subplots(nrows, ncols, figsize=(2 * nrows, 2.5 * ncols))[0]
+    fig = plt.subplots(nrows, ncols, figsize=(2.5 * ncols, 2 * nrows))[0]
     axs = fig.get_axes()
 
     for plot_num, index in enumerate(indices):
