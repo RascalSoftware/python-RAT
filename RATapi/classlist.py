@@ -79,6 +79,15 @@ class ClassList(collections.UserList):
                 output = str(self.data)
         return output
 
+    def __getitem__(self, index: Union[int, slice, str, object]) -> object:
+        """Get an item by its index, name, a slice, or the object itself."""
+        if isinstance(index, (int, slice)):
+            return self.data[index]
+        elif isinstance(index, (str, object)):
+            return self.data[self.index(index)]
+        else:
+            raise IndexError("ClassLists can only be indexed by integers, slices, name strings, or objects.")
+
     def __setitem__(self, index: int, item: object) -> None:
         """Replace the object at an existing index of the ClassList."""
         self._setitem(index, item)
