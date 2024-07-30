@@ -889,3 +889,4 @@ def test_get_item(two_name_class_list):
     assert two_name_class_list[:] == two_name_class_list
     alice = InputAttributes(name="Alice")
     assert two_name_class_list[alice] == two_name_class_list["Alice"]
+    assert two_name_class_list[alice] == two_name_class_list[0]
