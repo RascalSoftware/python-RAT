@@ -3,7 +3,7 @@
 from pathlib import Path
 from typing import Iterable, Union
 
-from scipy.io.matlab import MatlabOpaque, loadmat
+from scipy.io.matlab import MatlabOpaque, loadmat, savemat
 
 from RATapi import Project
 from RATapi.classlist import ClassList
@@ -211,3 +211,211 @@ def r1_to_project_class(filename: str) -> Project:
     )
 
     return project
+
+
+def project_class_to_r1(project: Project, save: str = "RAT_project") -> Union[dict, None]:
+    """Convert a RAT Project to a RasCAL1 project struct.
+
+    Parameters
+    ----------
+    project : Project
+        The RAT Project to convert.
+    save : str, default "RAT_project"
+        If given, saves as a .mat file with the given filename.
+        If empty, return the R1 struct dict.
+
+    Returns
+    -------
+    dict or None
+        If `save` is False, return the r1 struct. Else, return nothing.
+    """
+
+    def convert_parameters(params: ClassList, name: str, value: str, constr: str, fit: str, number: str = ""):
+        """Convert a list of parameters to r1 data fields.
+
+        Parameters
+        ----------
+        params: ClassList
+            A list of parameter type from the Project.
+        names, constrs, values, fits : str
+            The keys for names, constraints, values
+            and whether to fit for a type of parameter.
+        number : str, optional, default ""
+            Key for the length of the parameter list if not blank.
+
+        Returns
+        -------
+        dict
+            A dict of the relevant struct fields.
+        """
+        output = {
+            name: [p.name for p in params],
+            value: [p.value for p in params],
+            constr: [[p.min, p.max] for p in params],
+            fit: [int(p.fit) for p in params],
+        }
+        if number:
+            output[number] = len(params)
+
+        return output
+
+    r1 = {
+        # set name, type, experiment type
+        "name": project.name,
+        "module": {
+            "type": project.model,
+            "experiment_type": project.geometry,
+        },
+    }
+    # parameter names, values, constraints, fits
+    r1.update(
+        convert_parameters(
+            project.parameters,
+            "paramnames",
+            "params",
+            "constr",
+            "fityesno",
+        )
+    )
+    # scalefactors names, values, constraints, fit, and number
+    r1.update(
+        convert_parameters(
+            project.scalefactors,
+            "scalesNames",
+            "scalefac",
+            "scaleconstr",
+            "scalefac_fityesno",
+            "numberOfScales",
+        )
+    )
+    # bulk in names, values, constraints, fit, and number
+    r1.update(
+        convert_parameters(
+            project.bulk_in,
+            "nbaNames",
+            "nba",
+            "nbairs_constr",
+            "nbairs_fityesno",
+            "numberOfNbas",
+        )
+    )
+    # bulk out names, values, constraints, fit, and number
+    r1.update(
+        convert_parameters(
+            project.bulk_out,
+            "nbsNames",
+            "nbs",
+            "nbsubs_constr",
+            "nbsubs_fityesno",
+            "numberOfNbss",
+        )
+    )
+
+    shifts = {
+        "numberOfShifts": 1,
+        "shiftsNames": "Shift 1",
+        "shifts_horisontal": 0,
+        "shifts_fityesno": 0,
+        "shifts_constr": [-1e-4, 1e-4],
+    }
+    r1.update(shifts)
+
+    resolutions = {
+        "resolNames": [r.name for r in project.resolutions],
+        "resolution": [project.resolution_parameters[r.value_1].value for r in project.resolutions],
+        "resolution_constr": [
+            [project.resolution_parameters[r.value_1].min, project.resolution_parameters[r.value_1].max]
+            for r in project.resolutions
+        ],
+        "resolution_fityesno": [int(project.resolution_parameters[r.value_1].fit) for r in project.resolutions],
+        "numberOfResolutions": len(project.resolutions),
+    }
+    r1.update(resolutions)
+
+    backgrounds = {
+        "backsNames": [b.name for b in project.backgrounds],
+        "backs": [project.background_parameters[b.value_1].value for b in project.backgrounds],
+        "backs_constr": [
+            [project.background_parameters[b.value_1].min, project.background_parameters[b.value_1].max]
+            for b in project.backgrounds
+        ],
+        "backgrounds_fityesno": [int(project.background_parameters[b.value_1].fit) for b in project.backgrounds],
+        "numberOfBacks": len(project.backgrounds),
+    }
+    r1.update(backgrounds)
+
+    if project.model == LayerModels.StandardLayers:
+        layer_info = {
+            "numberOfLayers": len(project.layers),
+            "layersDetails": [
+                [
+                    project.parameters.index(layer.thickness, True),
+                    project.parameters.index(layer.sld, True),
+                    project.parameters.index(layer.roughness, True),
+                    project.parameters.index(layer.hydration, True),
+                    layer.name,
+                    str(layer.hydrate_with),
+                ]
+                for layer in project.layers
+            ],
+        }
+        r1["module"]["name"] = ""
+    else:
+        layer_info = {"numberOfLayers": 0, "layersDetails": []}
+        # note R1 only supports one custom file!
+        r1["module"]["name"] = project.custom_files[0].path
+    r1.update(layer_info)
+
+    contrasts = {
+        "contrastBulkIns": [project.bulk_in.index(c.bulk_in, True) for c in project.contrasts],
+        "contrastBulkOuts": [project.bulk_out.index(c.bulk_out, True) for c in project.contrasts],
+        "contrastScales": [project.scalefactors.index(c.scalefactor, True) for c in project.contrasts],
+        "data": [project.data[c.data].data for c in project.contrasts],
+        "simLimits": [project.data[c.data].simulation_range for c in project.contrasts],
+        "dataLimits": [project.data[c.data].data_range for c in project.contrasts],
+        "fitlowrange": [project.data[c.data].data_range[0] for c in project.contrasts],
+        "fithirange": [project.data[c.data].data_range[1] for c in project.contrasts],
+        "contrastRepeatSLDs": [[0, 1] for _ in project.contrasts],
+        # some of the data is a bit complex for a (readable) list comp; create empty lists and append below
+        "contrastResolutions": [],
+        "contrastBacks": [],
+        "dataPresent": [],
+        "include_data": [],
+        "dataTypes": [],
+        "contrastLayers": [],
+        "contrastNumberOfLayers": [],
+    }
+    for contrast in project.contrasts:
+        # R1 stores contrast resolutions and background by the index of the relevant parameter
+        resolution = project.resolutions[contrast.resolution]
+        contrasts["contrastResolutions"].append(project.resolution_parameters.index(resolution.value_1, True))
+
+        background = project.backgrounds[contrast.resolution]
+        contrasts["contrastBacks"].append(project.background_parameters.index(background.value_1, True))
+
+        data = contrast.data
+        if "simulation" in data.name:
+            contrasts["dataPresent"].append(0)
+            contrasts["include_data"].append(0)
+            contrasts["dataTypes"].append("Simulation")
+        else:
+            contrasts["dataPresent"].append(1)
+            contrasts["include_data"].append(1)
+            contrasts["dataTypes"].append("Ascii File")
+
+        if project.model == LayerModels.StandardLayers:
+            model = contrast.model
+            contrasts["contrastsNumberOfLayers"].append(len(model))
+            contrasts["contrastLayers"].append(",".join(project.layers.index(layer) for layer in model))
+        else:
+            contrasts["contrastNumberOfLayers"].append(0)
+            contrasts["contrastLayers"].append("")
+
+    r1.update(contrasts)
+
+    if save:
+        if save[-4:] != ".mat":
+            save += ".mat"
+        savemat(save, {"problem": r1})
+        return None
+    return r1
