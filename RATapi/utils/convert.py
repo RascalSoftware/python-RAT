@@ -157,11 +157,11 @@ def r1_to_project_class(filename: str) -> Project:
         [
             Contrast(
                 name=name,
-                background=backs[back - 1].name,
-                resolution=mat_project["resolNames"][res - 1],
-                scalefactor=scale_facs[scale - 1].name,
-                bulk_in=bulk_ins[bulk_in - 1].name,
-                bulk_out=bulk_outs[bulk_out - 1].name,
+                background=backs[int(back) - 1].name,
+                resolution=mat_project["resolNames"][int(res) - 1],
+                scalefactor=scale_facs[int(scale) - 1].name,
+                bulk_in=bulk_ins[int(bulk_in) - 1].name,
+                bulk_out=bulk_outs[int(bulk_out) - 1].name,
                 data=data[i].name,
             )
             for i, (name, back, res, scale, bulk_in, bulk_out) in enumerate(
@@ -189,7 +189,7 @@ def r1_to_project_class(filename: str) -> Project:
             contrast.model = layers_list
 
     else:
-        custom_filepath = mat_module["name"]
+        custom_filepath = mat_module["name"] + ".m"
         model_name = Path(custom_filepath).stem
         custom_file = ClassList([CustomFile(name=model_name, filename=custom_filepath, language=Languages.Matlab)])
         for contrast in contrasts:
@@ -259,12 +259,15 @@ def project_class_to_r1(project: Project, save: str = "RAT_project") -> Union[di
 
         return output
 
+    # translate RAT geometries into R1 experiment types
+    r1_geoms_dict = {Geometries.AirSubstrate: "Air / Liquid (or solid)", Geometries.SubstrateLiquid: "Solid / Liquid"}
+
     r1 = {
         # set name, type, experiment type
         "name": project.name,
         "module": {
-            "type": project.model,
-            "experiment_type": project.geometry,
+            "type": str(project.model),
+            "experiment_type": r1_geoms_dict[project.geometry],
         },
     }
     # parameter names, values, constraints, fits
@@ -283,7 +286,7 @@ def project_class_to_r1(project: Project, save: str = "RAT_project") -> Union[di
             project.scalefactors,
             "scalesNames",
             "scalefac",
-            "scaleconstr",
+            "scale_constr",
             "scalefac_fityesno",
             "numberOfScales",
         )
@@ -350,7 +353,7 @@ def project_class_to_r1(project: Project, save: str = "RAT_project") -> Union[di
             "layersDetails": [
                 [
                     project.parameters.index(layer.thickness, True),
-                    project.parameters.index(layer.sld, True),
+                    project.parameters.index(layer.SLD, True),
                     project.parameters.index(layer.roughness, True),
                     project.parameters.index(layer.hydration, True),
                     layer.name,
@@ -363,12 +366,13 @@ def project_class_to_r1(project: Project, save: str = "RAT_project") -> Union[di
     else:
         layer_info = {"numberOfLayers": 0, "layersDetails": []}
         # note R1 only supports one custom file!
-        r1["module"]["name"] = project.custom_files[0].path
+        r1["module"]["name"] = project.custom_files[0].name
     r1.update(layer_info)
 
     contrasts = {
-        "contrastBulkIns": [project.bulk_in.index(c.bulk_in, True) for c in project.contrasts],
-        "contrastBulkOuts": [project.bulk_out.index(c.bulk_out, True) for c in project.contrasts],
+        "contrastNames": [c.name for c in project.contrasts],
+        "contrastNbas": [project.bulk_in.index(c.bulk_in, True) for c in project.contrasts],
+        "contrastNbss": [project.bulk_out.index(c.bulk_out, True) for c in project.contrasts],
         "contrastScales": [project.scalefactors.index(c.scalefactor, True) for c in project.contrasts],
         "data": [project.data[c.data].data for c in project.contrasts],
         "simLimits": [project.data[c.data].simulation_range for c in project.contrasts],
@@ -376,6 +380,7 @@ def project_class_to_r1(project: Project, save: str = "RAT_project") -> Union[di
         "fitlowrange": [project.data[c.data].data_range[0] for c in project.contrasts],
         "fithirange": [project.data[c.data].data_range[1] for c in project.contrasts],
         "contrastRepeatSLDs": [[0, 1] for _ in project.contrasts],
+        "contrastFiles": [project.data[c.data].name for c in project.contrasts],
         # some of the data is a bit complex for a (readable) list comp; create empty lists and append below
         "contrastResolutions": [],
         "contrastBacks": [],
@@ -383,17 +388,17 @@ def project_class_to_r1(project: Project, save: str = "RAT_project") -> Union[di
         "include_data": [],
         "dataTypes": [],
         "contrastLayers": [],
-        "contrastNumberOfLayers": [],
+        "contrastsNumberOfLayers": [],
     }
     for contrast in project.contrasts:
         # R1 stores contrast resolutions and background by the index of the relevant parameter
         resolution = project.resolutions[contrast.resolution]
         contrasts["contrastResolutions"].append(project.resolution_parameters.index(resolution.value_1, True))
 
-        background = project.backgrounds[contrast.resolution]
+        background = project.backgrounds[contrast.background]
         contrasts["contrastBacks"].append(project.background_parameters.index(background.value_1, True))
 
-        data = contrast.data
+        data = project.data[contrast.data]
         if "simulation" in data.name:
             contrasts["dataPresent"].append(0)
             contrasts["include_data"].append(0)
@@ -406,16 +411,22 @@ def project_class_to_r1(project: Project, save: str = "RAT_project") -> Union[di
         if project.model == LayerModels.StandardLayers:
             model = contrast.model
             contrasts["contrastsNumberOfLayers"].append(len(model))
-            contrasts["contrastLayers"].append(",".join(project.layers.index(layer) for layer in model))
+            contrasts["contrastLayers"].append(",".join(str(project.layers.index(layer)) for layer in model))
         else:
-            contrasts["contrastNumberOfLayers"].append(0)
+            contrasts["contrastsNumberOfLayers"].append(0)
             contrasts["contrastLayers"].append("")
 
     r1.update(contrasts)
 
+    # finally, .mat files just contain a string for any single-item list, so process and fix that
+    for key, value in r1.items():
+        if isinstance(value, list) and len(value) == 1:
+            r1[key] = value[0]
+
     if save:
         if save[-4:] != ".mat":
             save += ".mat"
+
         savemat(save, {"problem": r1})
         return None
     return r1

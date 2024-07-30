@@ -3,7 +3,6 @@
 import os
 
 import pytest
-import scipy.io
 
 from RATapi.utils.convert import project_class_to_r1, r1_to_project_class
 
@@ -28,12 +27,14 @@ def test_r1_involution(project, request, monkeypatch):
     original_project = request.getfixturevalue(project)
     r1_struct = project_class_to_r1(original_project, "")
 
-    def mock_load():
+    # rather than writing the struct to a file and reading the file, just directly
+    # hand the struct over
+    def mock_load(ignored_filename, **ignored_settings):
         """Load the generated R1 struct instead of reading a file."""
-        return r1_struct
+        return {"problem": r1_struct}
 
-    monkeypatch.setattr(scipy.io, "loadmat", mock_load)
+    monkeypatch.setattr("RATapi.utils.convert.loadmat", mock_load, raising=True)
 
-    converted_project = r1_to_project_class(project)  # not that the parameter matters...
+    converted_project = r1_to_project_class(project)
 
     assert original_project == converted_project
