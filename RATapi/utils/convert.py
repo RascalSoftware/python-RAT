@@ -124,8 +124,6 @@ def r1_to_project_class(filename: str) -> Project:
         ]
     )
 
-    # just one contrast file can be given with multiple data objects, so
-
     data = ClassList(
         [
             Data(
