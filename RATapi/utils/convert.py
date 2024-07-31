@@ -3,11 +3,12 @@
 from pathlib import Path
 from typing import Iterable, Union
 
-from scipy.io.matlab import MatlabOpaque, loadmat, savemat
+from numpy import array
+from scipy.io.matlab import MatlabOpaque, loadmat
 
 from RATapi import Project
 from RATapi.classlist import ClassList
-from RATapi.models import Background, Contrast, CustomFile, Data, Parameter
+from RATapi.models import Background, Contrast, CustomFile, Data, Layer, Parameter
 from RATapi.utils.enums import Geometries, Languages, LayerModels
 
 
@@ -123,6 +124,8 @@ def r1_to_project_class(filename: str) -> Project:
         ]
     )
 
+    # just one contrast file can be given with multiple data objects, so
+
     data = ClassList(
         [
             Data(
@@ -180,18 +183,41 @@ def r1_to_project_class(filename: str) -> Project:
     # set model for each contrast and add custom files
     if layer_model == LayerModels.StandardLayers:
         custom_file = ClassList()
+        layers = ClassList(
+            [
+                Layer(
+                    name=name,
+                    thickness=params[thickness - 1].name,
+                    SLD=params[sld - 1].name,
+                    roughness=params[roughness - 1].name,
+                    hydration=params[hydration - 1].name,
+                    hydrate_with=hydrate_with,
+                )
+                # R1 layers are 6-item arrays, unpack into a Layer object
+                for thickness, sld, roughness, hydration, name, hydrate_with in mat_project["layersDetails"]
+            ]
+        )
+
         for i, contrast in enumerate(contrasts):
             # if there is only one layer, contrastsNumberOfLayers is an int; otherwise it is a list
-            if mat_project["contrastsNumberOfLayers"] == 0 or mat_project["contrastsNumberOfLayers"][i] == 0:
+            if (
+                isinstance(mat_project["contrastsNumberOfLayers"], int)
+                and mat_project["contrastsNumberOfLayers"] == 0
+                or mat_project["contrastsNumberOfLayers"][i] == 0
+            ):
                 continue
-            contrast_layers = mat_project["contrastLayers"][i]
-            layers_list = [mat_project.layersDetails[layer[4]] for layer in contrast_layers]
-            contrast.model = layers_list
+            # contrastLayers is not an array, but rather a string with commas between entries
+            contrast_layers = mat_project["contrastLayers"][i].split(",")
+            contrast_layers = [
+                int(x) - 1 for x in contrast_layers if x != ""
+            ]  # remove empty string from hanging commas
+            contrast.model = [layers[i].name for i in contrast_layers]
 
     else:
-        custom_filepath = mat_module["name"] + ".m"
+        custom_filepath = mat_module["name"]
         model_name = Path(custom_filepath).stem
         custom_file = ClassList([CustomFile(name=model_name, filename=custom_filepath, language=Languages.Matlab)])
+        layers = ClassList()
         for contrast in contrasts:
             contrast.model = [model_name]
 
@@ -206,6 +232,7 @@ def r1_to_project_class(filename: str) -> Project:
         bulk_out=bulk_outs,
         scalefactors=scale_facs,
         data=data,
+        layers=layers,
         contrasts=contrasts,
         custom_files=custom_file,
     )
@@ -411,22 +438,40 @@ def project_class_to_r1(project: Project, save: str = "RAT_project") -> Union[di
         if project.model == LayerModels.StandardLayers:
             model = contrast.model
             contrasts["contrastsNumberOfLayers"].append(len(model))
-            contrasts["contrastLayers"].append(",".join(str(project.layers.index(layer)) for layer in model))
+            contrasts["contrastLayers"].append(",".join(str(project.layers.index(layer) + 1) for layer in model))
         else:
             contrasts["contrastsNumberOfLayers"].append(0)
             contrasts["contrastLayers"].append("")
 
     r1.update(contrasts)
 
-    # finally, .mat files just contain a string for any single-item list, so process and fix that
+    # some final processing:
+    # .mat files just contain the item for any single-item list, so process and fix that
+    # also, `savemat` will only write cells instead of matrices for object-type ndarrays. convert lists to those
     for key, value in r1.items():
-        if isinstance(value, list) and len(value) == 1:
-            r1[key] = value[0]
+        if isinstance(value, list):
+            if len(value) == 1:
+                r1[key] = value[0]
+            else:
+                if not all(isinstance(x, type(r1[key][0])) for x in r1[key]):
+                    r1[key] = array(value, dtype="object")
 
     if save:
         if save[-4:] != ".mat":
             save += ".mat"
 
-        savemat(save, {"problem": r1})
+        # scipy.io.savemat doesn't do cells properly:
+        # https://github.com/scipy/scipy/issues/3756
+        # rather than fiddling we just use matlab
+        try:
+            from matlab.engine import start_matlab
+        except ImportError as err:
+            raise ImportError(
+                "The matlabengine package must be installed to convert project classes to R1 structs."
+            ) from err
+        eng = start_matlab()
+        eng.workspace["problem"] = r1
+        eng.save(save, "problem", nargout=0)
+        eng.exit()
         return None
     return r1

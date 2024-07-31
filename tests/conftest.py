@@ -5,6 +5,7 @@ import RATapi
 import RATapi.classlist
 import RATapi.outputs
 import RATapi.rat_core
+from RATapi.examples import DSPC_standard_layers
 
 
 @pytest.fixture
@@ -6191,5 +6192,13 @@ def r1_monolayer():
         resample=False,
         model=["Model_IIb"],
     )
+
+    return project
+
+
+@pytest.fixture
+def dspc_bilayer():
+    """The Project from the MATLAB DSPC standard layers example."""
+    project, _ = DSPC_standard_layers()
 
     return project
