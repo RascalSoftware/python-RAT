@@ -102,7 +102,9 @@ def plot_ref_sld_helper(
         # Plot confidence intervals if required
         if confidence_intervals is not None:
             ref_min, ref_max = confidence_intervals["reflectivity"][i]
-            ref_plot.fill_between(r[:, 0], ref_min / div, ref_max / div, alpha=0.6, color="grey")
+            # FIXME: remove x-data once rascalsoftware/RAT#249 is merged
+            ref_x_data = confidence_intervals["reflectivity-x-data"][i][0]
+            ref_plot.fill_between(ref_x_data, ref_min / div, ref_max / div, alpha=0.6, color="grey")
 
         if data.dataPresent[i]:
             sd_x = sd[:, 0]
@@ -126,7 +128,9 @@ def plot_ref_sld_helper(
         # Plot confidence intervals if required
         if confidence_intervals is not None:
             sld_min, sld_max = confidence_intervals["sld"][i][j]
-            sld_plot.fill_between(sld[j][:, 0], sld_min, sld_max, alpha=0.6, color="grey")
+            # FIXME: remove x-data once rascalsoftware/RAT#249 is merged
+            sld_x_data = confidence_intervals["sld-x-data"][i][j][0]
+            sld_plot.fill_between(sld_x_data, sld_min, sld_max, alpha=0.6, color="grey")
 
         if data.resample[i] == 1 or data.modelType == "custom xy":
             layers = data.resampledLayers[i][0]
@@ -228,6 +232,9 @@ def plot_ref_sld(
                     [(sld_inter[interval[0]], sld_inter[interval[1]]) for sld_inter in sld]
                     for sld in results.predictionIntervals.sld
                 ],
+                # FIXME: remove x-data once rascalsoftware/RAT#249 is merged
+                "reflectivity-x-data": results.predictionIntervals.reflectivityXData,
+                "sld-x-data": results.predictionIntervals.sldXData,
             }
         else:
             raise ValueError(
