@@ -6,8 +6,32 @@ except ImportError:
     from strenum import StrEnum
 
 
+class RATEnum(StrEnum):
+    @classmethod
+    def _missing_(cls, value: str):
+        value = value.lower()
+
+        # Replace common alternative spellings
+        value = value.replace("-", " ").replace("_", " ").replace("++", "pp").replace("polarized", "polarised")
+
+        for member in cls:
+            if member.value.lower() == value:
+                return member
+        return None
+
+
 # Controls
-class Parallel(StrEnum):
+class Procedures(RATEnum):
+    """Defines the available options for procedures"""
+
+    Calculate = "calculate"
+    Simplex = "simplex"
+    DE = "DE"
+    NS = "NS"
+    DREAM = "DREAM"
+
+
+class Parallel(RATEnum):
     """Defines the available options for parallelization"""
 
     Single = "single"
@@ -15,32 +39,13 @@ class Parallel(StrEnum):
     Contrasts = "contrasts"
 
 
-class Procedures(StrEnum):
-    """Defines the available options for procedures"""
-
-    Calculate = "calculate"
-    Simplex = "simplex"
-    DE = "de"
-    NS = "ns"
-    Dream = "dream"
-
-
-class Display(StrEnum):
+class Display(RATEnum):
     """Defines the available options for display"""
 
     Off = "off"
     Iter = "iter"
     Notify = "notify"
     Final = "final"
-
-
-class BoundHandling(StrEnum):
-    """Defines the available options for bound handling"""
-
-    Off = "off"
-    Reflect = "reflect"
-    Bound = "bound"
-    Fold = "fold"
 
 
 class Strategies(Enum):
@@ -54,48 +59,56 @@ class Strategies(Enum):
     RandomEitherOrAlgorithm = 6
 
 
+class BoundHandling(RATEnum):
+    """Defines the available options for bound handling"""
+
+    Off = "off"
+    Reflect = "reflect"
+    Bound = "bound"
+    Fold = "fold"
+
+
 # Models
-class Hydration(StrEnum):
-    None_ = "none"
-    BulkIn = "bulk in"
-    BulkOut = "bulk out"
-    Oil = "oil"
-
-
-class Languages(StrEnum):
-    Cpp = "cpp"
-    Python = "python"
-    Matlab = "matlab"
-
-
-class Priors(StrEnum):
-    Uniform = "uniform"
-    Gaussian = "gaussian"
-
-
-class TypeOptions(StrEnum):
+class TypeOptions(RATEnum):
     Constant = "constant"
     Data = "data"
     Function = "function"
 
 
-class BackgroundActions(StrEnum):
+class BackgroundActions(RATEnum):
     Add = "add"
     Subtract = "subtract"
 
 
+class Languages(RATEnum):
+    Cpp = "Cpp"
+    Python = "python"
+    Matlab = "matlab"
+
+
+class Hydration(RATEnum):
+    None_ = "none"
+    BulkIn = "bulk in"
+    BulkOut = "bulk out"
+
+
+class Priors(RATEnum):
+    Uniform = "uniform"
+    Gaussian = "gaussian"
+
+
 # Project
-class Calculations(StrEnum):
+class Calculations(RATEnum):
     NonPolarised = "non polarised"
     Domains = "domains"
 
 
-class Geometries(StrEnum):
-    AirSubstrate = "air/substrate"
-    SubstrateLiquid = "substrate/liquid"
-
-
-class LayerModels(StrEnum):
+class LayerModels(RATEnum):
     CustomLayers = "custom layers"
     CustomXY = "custom xy"
     StandardLayers = "standard layers"
+
+
+class Geometries(RATEnum):
+    AirSubstrate = "air/substrate"
+    SubstrateLiquid = "substrate/liquid"

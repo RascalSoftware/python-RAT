@@ -175,7 +175,7 @@ def test_get_field_string(test_value, array_limit, expected_field_string) -> Non
     ["test_procedure", "test_output_results", "test_bayes", "test_results"],
     [
         (Procedures.Calculate, "reflectivity_calculation_output_results", None, "reflectivity_calculation_results"),
-        (Procedures.Dream, "dream_output_results", "dream_bayes", "dream_results"),
+        (Procedures.DREAM, "dream_output_results", "dream_bayes", "dream_results"),
     ],
 )
 def test_make_results(test_procedure, test_output_results, test_bayes, test_results, request) -> None:

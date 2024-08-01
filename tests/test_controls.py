@@ -13,14 +13,14 @@ def test_initialise_procedure_error() -> None:
     """Tests for a ValidationError if the procedure property of the Controls class is initialised with an invalid
     value.
     """
-    with pytest.raises(pydantic.ValidationError, match="Input should be 'calculate', 'simplex', 'de', 'ns' or 'dream'"):
+    with pytest.raises(pydantic.ValidationError, match="Input should be 'calculate', 'simplex', 'DE', 'NS' or 'DREAM'"):
         Controls(procedure="test")
 
 
 def test_set_procedure_error() -> None:
     """Tests for a ValidationError if the procedure property of the Controls class is set to an invalid value."""
     controls = Controls()
-    with pytest.raises(pydantic.ValidationError, match="Input should be 'calculate', 'simplex', 'de', 'ns' or 'dream'"):
+    with pytest.raises(pydantic.ValidationError, match="Input should be 'calculate', 'simplex', 'DE', 'NS' or 'DREAM'"):
         controls.procedure = "test"
 
 
@@ -119,7 +119,7 @@ class TestCalculate:
             f' The fields for the "calculate" controls procedure are:\n'
             f'    {", ".join(fields["calculate"])}\n',
         ):
-            Controls(procedure="calculate", **{wrong_property: value})
+            Controls(procedure=Procedures.Calculate, **{wrong_property: value})
 
     @pytest.mark.parametrize(
         "wrong_property, value",
@@ -174,7 +174,7 @@ class TestCalculate:
         ):
             self.calculate.calcSldDuringFit = value
 
-    @pytest.mark.parametrize("value", ["test", "iterate", "FINAL", True, 1, 3.0])
+    @pytest.mark.parametrize("value", ["test", "iterate", True, 1, 3.0])
     def test_calculate_display_validation(self, value: Any) -> None:
         """Tests the display setter validation in Calculate class."""
         with pytest.raises(pydantic.ValidationError, match="Input should be 'off', 'iter', 'notify' or 'final'"):
@@ -310,7 +310,7 @@ class TestSimplex:
             f' The fields for the "simplex" controls procedure are:\n'
             f'    {", ".join(fields["simplex"])}\n',
         ):
-            Controls(procedure="simplex", **{wrong_property: value})
+            Controls(procedure=Procedures.Simplex, **{wrong_property: value})
 
     @pytest.mark.parametrize(
         "wrong_property, value",
@@ -377,7 +377,7 @@ class TestDE:
             "+----------------------+--------------------------------------+\n"
             "|       Property       |                Value                 |\n"
             "+----------------------+--------------------------------------+\n"
-            "|      procedure       |                  de                  |\n"
+            "|      procedure       |                  DE                  |\n"
             "|       parallel       |                single                |\n"
             "|   calcSldDuringFit   |                False                 |\n"
             "|    resampleParams    |              [0.9, 50]               |\n"
@@ -458,13 +458,13 @@ class TestDE:
         incorrect_procedures = [key for (key, value) in fields.items() if wrong_property in value]
         with pytest.warns(
             UserWarning,
-            match=f'\nThe current controls procedure is "de", but the property'
+            match=f'\nThe current controls procedure is "DE", but the property'
             f' "{wrong_property}" applies instead to the'
             f' {", ".join(incorrect_procedures)} procedure.\n\n'
-            f' The fields for the "de" controls procedure are:\n'
-            f'    {", ".join(fields["de"])}\n',
+            f' The fields for the "DE" controls procedure are:\n'
+            f'    {", ".join(fields["DE"])}\n',
         ):
-            Controls(procedure="de", **{wrong_property: value})
+            Controls(procedure=Procedures.DE, **{wrong_property: value})
 
     @pytest.mark.parametrize(
         "wrong_property, value",
@@ -489,11 +489,11 @@ class TestDE:
         incorrect_procedures = [key for (key, value) in fields.items() if wrong_property in value]
         with pytest.warns(
             UserWarning,
-            match=f'\nThe current controls procedure is "de", but the property'
+            match=f'\nThe current controls procedure is "DE", but the property'
             f' "{wrong_property}" applies instead to the'
             f' {", ".join(incorrect_procedures)} procedure.\n\n'
-            f' The fields for the "de" controls procedure are:\n'
-            f'    {", ".join(fields["de"])}\n',
+            f' The fields for the "DE" controls procedure are:\n'
+            f'    {", ".join(fields["DE"])}\n',
         ):
             setattr(self.de, wrong_property, value)
 
@@ -547,7 +547,7 @@ class TestNS:
             "+------------------+-----------+\n"
             "|     Property     |   Value   |\n"
             "+------------------+-----------+\n"
-            "|    procedure     |     ns    |\n"
+            "|    procedure     |     NS    |\n"
             "|     parallel     |   single  |\n"
             "| calcSldDuringFit |   False   |\n"
             "|  resampleParams  | [0.9, 50] |\n"
@@ -624,13 +624,13 @@ class TestNS:
         incorrect_procedures = [key for (key, value) in fields.items() if wrong_property in value]
         with pytest.warns(
             UserWarning,
-            match=f'\nThe current controls procedure is "ns", but the property'
+            match=f'\nThe current controls procedure is "NS", but the property'
             f' "{wrong_property}" applies instead to the'
             f' {", ".join(incorrect_procedures)} procedure.\n\n'
-            f' The fields for the "ns" controls procedure are:\n'
-            f'    {", ".join(fields["ns"])}\n',
+            f' The fields for the "NS" controls procedure are:\n'
+            f'    {", ".join(fields["NS"])}\n',
         ):
-            Controls(procedure="ns", **{wrong_property: value})
+            Controls(procedure=Procedures.NS, **{wrong_property: value})
 
     @pytest.mark.parametrize(
         "wrong_property, value",
@@ -659,11 +659,11 @@ class TestNS:
         incorrect_procedures = [key for (key, value) in fields.items() if wrong_property in value]
         with pytest.warns(
             UserWarning,
-            match=f'\nThe current controls procedure is "ns", but the property'
+            match=f'\nThe current controls procedure is "NS", but the property'
             f' "{wrong_property}" applies instead to the'
             f' {", ".join(incorrect_procedures)} procedure.\n\n'
-            f' The fields for the "ns" controls procedure are:\n'
-            f'    {", ".join(fields["ns"])}\n',
+            f' The fields for the "NS" controls procedure are:\n'
+            f'    {", ".join(fields["NS"])}\n',
         ):
             setattr(self.ns, wrong_property, value)
 
@@ -702,7 +702,7 @@ class TestDream:
 
     @pytest.fixture(autouse=True)
     def setup_class(self):
-        self.dream = Controls(procedure=Procedures.Dream)
+        self.dream = Controls(procedure=Procedures.DREAM)
 
     @pytest.fixture
     def table_str(self):
@@ -710,7 +710,7 @@ class TestDream:
             "+------------------+-----------+\n"
             "|     Property     |   Value   |\n"
             "+------------------+-----------+\n"
-            "|    procedure     |   dream   |\n"
+            "|    procedure     |   DREAM   |\n"
             "|     parallel     |   single  |\n"
             "| calcSldDuringFit |   False   |\n"
             "|  resampleParams  | [0.9, 50] |\n"
@@ -733,7 +733,7 @@ class TestDream:
             ("calcSldDuringFit", False),
             ("resampleParams", [0.9, 50]),
             ("display", Display.Iter),
-            ("procedure", Procedures.Dream),
+            ("procedure", Procedures.DREAM),
             ("nSamples", 20000),
             ("nChains", 10),
             ("jumpProbability", 0.5),
@@ -791,13 +791,13 @@ class TestDream:
         incorrect_procedures = [key for (key, value) in fields.items() if wrong_property in value]
         with pytest.warns(
             UserWarning,
-            match=f'\nThe current controls procedure is "dream", but the property'
+            match=f'\nThe current controls procedure is "DREAM", but the property'
             f' "{wrong_property}" applies instead to the'
             f' {", ".join(incorrect_procedures)} procedure.\n\n'
-            f' The fields for the "dream" controls procedure are:\n'
-            f'    {", ".join(fields["dream"])}\n',
+            f' The fields for the "DREAM" controls procedure are:\n'
+            f'    {", ".join(fields["DREAM"])}\n',
         ):
-            Controls(procedure="dream", **{wrong_property: value})
+            Controls(procedure=Procedures.DREAM, **{wrong_property: value})
 
     @pytest.mark.parametrize(
         "wrong_property, value",
@@ -824,11 +824,11 @@ class TestDream:
         incorrect_procedures = [key for (key, value) in fields.items() if wrong_property in value]
         with pytest.warns(
             UserWarning,
-            match=f'\nThe current controls procedure is "dream", but the property'
+            match=f'\nThe current controls procedure is "DREAM", but the property'
             f' "{wrong_property}" applies instead to the'
             f' {", ".join(incorrect_procedures)} procedure.\n\n'
-            f' The fields for the "dream" controls procedure are:\n'
-            f'    {", ".join(fields["dream"])}\n',
+            f' The fields for the "DREAM" controls procedure are:\n'
+            f'    {", ".join(fields["DREAM"])}\n',
         ):
             setattr(self.dream, wrong_property, value)
 

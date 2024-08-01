@@ -244,7 +244,9 @@ def test_initialise_wrong_layers(
         (RATapi.models.ContrastWithRatio, Calculations.NonPolarised, "Contrast"),
     ],
 )
-def test_initialise_wrong_contrasts(input_model: Callable, calculation: Calculations, actual_model_name: str) -> None:
+def test_initialise_wrong_contrasts(
+    input_model: RATapi.models, calculation: Calculations, actual_model_name: str
+) -> None:
     """If the "Project" model is initialised with the incorrect contrast model given the value of calculation, we should
     raise a ValidationError.
     """
@@ -257,19 +259,45 @@ def test_initialise_wrong_contrasts(input_model: Callable, calculation: Calculat
         RATapi.Project(calculation=calculation, contrasts=RATapi.ClassList(input_model()))
 
 
+def test_initialise_without_substrate_roughness() -> None:
+    """If the "Project" model is initialised without "Substrate Roughness" as a parameter, add it as a protected
+    parameter to the front of the "parameters" ClassList.
+    """
+    project = RATapi.Project(parameters=RATapi.ClassList(RATapi.models.Parameter(name="Test Parameter")))
+    assert project.parameters[0] == RATapi.models.ProtectedParameter(
+        name="Substrate Roughness",
+        min=1.0,
+        value=3.0,
+        max=5.0,
+        fit=True,
+        prior_type=RATapi.models.Priors.Uniform,
+        mu=0.0,
+        sigma=np.inf,
+    )
+
+
 @pytest.mark.parametrize(
     "input_parameter",
     [
-        (RATapi.models.Parameter(name="Test Parameter")),
-        (RATapi.models.Parameter(name="Substrate Roughness")),
+        RATapi.models.Parameter(name="Substrate Roughness"),
+        RATapi.models.Parameter(name="SUBSTRATE ROUGHNESS"),
+        RATapi.models.Parameter(name="substrate roughness"),
     ],
 )
-def test_initialise_without_substrate_roughness(input_parameter: Callable) -> None:
-    """If the "Project" model is initialised without "Substrate Roughness as a protected parameter, add it to the front
-    of the "parameters" ClassList.
+def test_initialise_without_protected_substrate_roughness(input_parameter: RATapi.models.Parameter) -> None:
+    """If the "Project" model is initialised without "Substrate Roughness" as a protected parameter, add it to the
+    front of the "parameters" ClassList.
     """
-    project = RATapi.Project(parameters=RATapi.ClassList(RATapi.models.Parameter(name="Substrate Roughness")))
-    assert project.parameters[0] == RATapi.models.ProtectedParameter(name="Substrate Roughness")
+    project = RATapi.Project(parameters=RATapi.ClassList(input_parameter))
+    assert project.parameters[0] == RATapi.models.ProtectedParameter(name=input_parameter.name)
+
+
+def test_initialise_without_simulation() -> None:
+    """If the "Project" model is initialised without "Simulation" in the "data" ClassList, add it to the front of the
+    "data" ClassList.
+    """
+    project = RATapi.Project(parameters=RATapi.ClassList(RATapi.models.Parameter(name="Test Parameter")))
+    assert project.data[0] == RATapi.models.Data(name="Simulation", simulation_range=[0.005, 0.7])
 
 
 @pytest.mark.parametrize(

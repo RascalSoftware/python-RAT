@@ -299,7 +299,7 @@ def dream_problem():
             None,
             "reflectivity_calculation_results",
         ),
-        (Procedures.Dream, "dream_problem", "dream_output_results", "dream_bayes", "dream_results"),
+        (Procedures.DREAM, "dream_problem", "dream_output_results", "dream_bayes", "dream_results"),
     ],
 )
 def test_run(test_procedure, test_output_problem, test_output_results, test_bayes, test_results, request) -> None:

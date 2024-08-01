@@ -269,7 +269,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
             if not hasattr(field, "_class_handle"):
                 field._class_handle = getattr(RATapi.models, model)
 
-        if "Substrate Roughness" not in self.parameters.get_names():
+        if "Substrate Roughness" not in [name.title() for name in self.parameters.get_names()]:
             self.parameters.insert(
                 0,
                 RATapi.models.ProtectedParameter(
@@ -283,13 +283,13 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
                     sigma=np.inf,
                 ),
             )
-        elif "Substrate Roughness" not in self.get_all_protected_parameters().values():
+        elif "Substrate Roughness" not in [name.title() for name in self.get_all_protected_parameters()["parameters"]]:
             # If substrate roughness is included as a standard parameter replace it with a protected parameter
             substrate_roughness_values = self.parameters[self.parameters.index("Substrate Roughness")].model_dump()
             self.parameters.remove("Substrate Roughness")
             self.parameters.insert(0, RATapi.models.ProtectedParameter(**substrate_roughness_values))
 
-        if "Simulation" not in self.data.get_names():
+        if "Simulation" not in [name.title() for name in self.data.get_names()]:
             self.data.insert(0, RATapi.models.Data(name="Simulation", simulation_range=[0.005, 0.7]))
 
         self._all_names = self.get_all_names()
