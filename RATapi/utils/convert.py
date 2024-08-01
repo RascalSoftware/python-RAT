@@ -38,8 +38,7 @@ def r1_to_project_class(filename: str) -> Project:
     # R1 uses a different name for custom xy layer model
     if layer_model == "custom XY profile":
         layer_model = "custom xy"
-    # FIXME: when case sensitivity is fixed, the .lower can be removed
-    layer_model = LayerModels(layer_model.lower())
+    layer_model = LayerModels(layer_model)
 
     def zip_if_several(*params) -> Union[tuple, list[tuple]]:
         """Zips parameters if necessary, but can handle single-item parameters.
