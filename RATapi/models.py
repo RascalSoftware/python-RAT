@@ -62,6 +62,14 @@ class Background(RATModel):
     value_4: str = ""
     value_5: str = ""
 
+    @model_validator(mode="after")
+    def validate_background(self):
+        """Ensure that correct parameters have been given for the background type."""
+        if self.type == TypeOptions.Data:
+            raise NotImplementedError("Data backgrounds are not yet supported.")
+        elif self.type == TypeOptions.Function:
+            raise NotImplementedError("Function backgrounds are not yet supported.")
+
 
 class Contrast(RATModel):
     """Groups together all of the components of the model."""
