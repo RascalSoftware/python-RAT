@@ -128,7 +128,7 @@ def make_problem(project: RATapi.Project) -> ProblemDefinition:
     contrast_background_params = []
 
     for contrast in project.contrasts:
-        background = project.backgrounds[project.backgrounds.index(contrast.background)]
+        background = project.backgrounds[contrast.background]
         if background.type == TypeOptions.Data:
             contrast_background_params.append(-1)
         else:
@@ -138,7 +138,7 @@ def make_problem(project: RATapi.Project) -> ProblemDefinition:
     contrast_resolution_params = []
 
     for contrast in project.contrasts:
-        resolution = project.resolutions[project.resolutions.index(contrast.resolution)]
+        resolution = project.resolutions[contrast.resolution]
         if resolution.type == TypeOptions.Data:
             contrast_resolution_params.append(-1)
         else:
@@ -239,9 +239,7 @@ def make_data_present(project: RATapi.Project) -> list[int]:
         The "dataPresent" field of the problem input used in the compiled RAT code.
 
     """
-    return [
-        1 if project.data[project.data.index(contrast.data)].data.size != 0 else 0 for contrast in project.contrasts
-    ]
+    return [1 if project.data[contrast.data].data.size != 0 else 0 for contrast in project.contrasts]
 
 
 def check_indices(problem: ProblemDefinition) -> None:
