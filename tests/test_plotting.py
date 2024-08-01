@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
-from matplotlib.collections import QuadMesh
+from matplotlib.collections import PolyCollection, QuadMesh
 from matplotlib.patches import Rectangle
 
 import RATapi.utils.plotting as RATplot
@@ -50,8 +50,22 @@ def domains_data() -> PlotEventData:
 def fig(request) -> plt.figure:
     """Creates the fixture for the tests."""
     plt.close("all")
-    figure = plt.subplots(1, 3)[0]
+    figure = plt.subplots(1, 2)[0]
     return RATplot.plot_ref_sld_helper(fig=figure, data=domains_data() if request.param else data())
+
+
+@pytest.fixture
+def bayes_fig() -> plt.figure:
+    plt.close("all")
+    figure = plt.subplots(1, 2)[0]
+    dat = data()
+    confidence_intervals = {
+        "reflectivity": [[1, 5] for curve in dat.reflectivity],
+        "sld": [[[1, 5] for curve in profile] for profile in dat.sldProfiles],
+        "reflectivity-x-data": [[[0 for x in curve]] for curve in dat.reflectivity],
+        "sld-x-data": [[[[0 for x in profile]] for profile in sld] for sld in dat.sldProfiles],
+    }
+    return RATplot.plot_ref_sld_helper(data=dat, fig=figure, confidence_intervals=confidence_intervals)
 
 
 @pytest.mark.parametrize("fig", [False, True], indirect=True)
@@ -87,7 +101,7 @@ def test_figure_axis_formating(fig: plt.figure) -> None:
         ]
 
 
-def test_figure_color_formating(fig: plt.figure) -> None:
+def test_ref_sld_color_formating(fig: plt.figure) -> None:
     """Tests the color formating of the figure."""
     ref_plot = fig.axes[0]
     sld_plot = fig.axes[1]
@@ -108,6 +122,18 @@ def test_figure_color_formating(fig: plt.figure) -> None:
 
         # Tests whether the color of the sld and resampled_sld match on the sld_plot
         assert sld_plot.get_lines()[ax1].get_color() == sld_plot.get_lines()[ax2].get_color()
+
+
+@pytest.mark.parametrize("bayes", [65, 95])
+def test_ref_sld_bayes(fig, bayes_fig, bayes):
+    """Test that shading is correctly added to the figure when confidence intervals are supplied."""
+    # the shading is of type PolyCollection
+    for axes in fig.axes:
+        components = axes.get_children()
+        assert not any(isinstance(comp, PolyCollection) for comp in components)
+    for axes in bayes_fig.axes:
+        components = axes.get_children()
+        assert any(isinstance(comp, PolyCollection) for comp in components)
 
 
 @patch("RATapi.utils.plotting.makeSLDProfileXY")
@@ -208,7 +234,9 @@ def test_assert_bayesian(dream_results, reflectivity_calculation_results):
         pass
 
     test_plot(dream_results)
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match=r"test plots are only available for the results of Bayesian analysis \(NS or DREAM\)"
+    ):
         test_plot(reflectivity_calculation_results)
 
 
@@ -237,13 +265,15 @@ def test_panel_helper(indices):
     for i in range(nplots, expected_num_axes):
         assert fig.axes[i].get_visible() is False
 
+    plt.close(fig)
+
 
 @pytest.mark.parametrize("param", ["CW Thickness", "D2O", 5])
 @pytest.mark.parametrize("hist_settings", [{}, {"bins": 18}, {"density": False, "range": (0, 5)}])
 @pytest.mark.parametrize("est_dens", [None, "normal", "lognor", "kernel"])
 def test_hist(dream_results, param, hist_settings, est_dens):
     """Tests the formatting of the histogram plot."""
-    fig: plt.Figure = RATplot.plot_hist(
+    fig: plt.Figure = RATplot.plot_one_hist(
         dream_results, param, estimated_density=est_dens, **hist_settings, return_fig=True
     )
     ax = fig.axes[0]
@@ -271,6 +301,8 @@ def test_hist(dream_results, param, hist_settings, est_dens):
         param_chain = dream_results.chain[:, param_index]
         expected_range = (param_chain.min(), param_chain.max())
     assert ax.get_xbound() == expected_range
+
+    plt.close(fig)
 
 
 @pytest.mark.parametrize(["x_param", "y_param"], [["CW Thickness", "D2O"], ["Bilayer Heads Thickness", 5], [2, 7]])
@@ -306,6 +338,8 @@ def test_contour(dream_results, x_param, y_param, hist2d_settings):
         y_expected_range = (y_param_chain.min(), y_param_chain.max())
     assert ax.get_xbound() == y_expected_range
     assert ax.get_ybound() == x_expected_range
+
+    plt.close(fig)
 
 
 @pytest.mark.parametrize(
@@ -344,6 +378,8 @@ def test_corner(dream_results, params):
                     dream_results.fitNames[params[i]] if isinstance(params[i], int) else params[i], 20
                 )
 
+    plt.close(fig)
+
 
 @pytest.mark.parametrize(
     "params", [None, [2, 3], [1, 5, "D2O"], ["Bilayer Heads Thickness", "Bilayer Heads Hydration", "D2O"]]
@@ -351,7 +387,8 @@ def test_corner(dream_results, params):
 @patch("RATapi.plotting.panel_plot_helper")
 def test_hist_panel(mock_panel_helper: MagicMock, params, dream_results):
     """Test chain panel name-to-index (panel helper has already been tested)"""
-    RATplot.plot_hist_panel(dream_results, params)
+    fig = RATplot.plot_hists(dream_results, params, return_fig=True)
+    plt.close(fig)
     if params is None:
         params = range(0, len(dream_results.fitNames))
 
@@ -365,7 +402,9 @@ def test_hist_panel(mock_panel_helper: MagicMock, params, dream_results):
 @patch("RATapi.plotting.panel_plot_helper")
 def test_chain_panel(mock_panel_helper: MagicMock, params, dream_results):
     """Test chain panel name-to-index (panel helper has already been tested)"""
-    RATplot.plot_chain_panel(dream_results, params)
+    # return fig just to avoid plt.show() being called
+    fig = RATplot.plot_chain(dream_results, params, return_fig=True)
+    plt.close(fig)
     if params is None:
         params = range(0, len(dream_results.fitNames))
 
@@ -374,19 +413,21 @@ def test_chain_panel(mock_panel_helper: MagicMock, params, dream_results):
 
 
 @patch("RATapi.plotting.plot_ref_sld")
-@patch("RATapi.plotting.plot_hist_panel")
+@patch("RATapi.plotting.plot_hists")
 @patch("RATapi.plotting.plot_corner")
 def test_bayes_calls(
-    mock_corner: MagicMock, mock_hist_panel: MagicMock, mock_ref_sld: MagicMock, input_project, dream_results
+    mock_corner: MagicMock, mock_hists: MagicMock, mock_ref_sld: MagicMock, input_project, dream_results
 ):
     """Test that the Bayes plot calls the required plotting subroutines."""
     RATplot.plot_bayes(input_project, dream_results)
     assert mock_ref_sld.call_count == 2
-    mock_hist_panel.assert_called_once()
+    mock_hists.assert_called_once()
     mock_corner.assert_called_once()
 
 
 def test_bayes_validation(input_project, reflectivity_calculation_results):
     """Ensure that plot_bayes fails if given regular Results."""
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match=r"Bayes plots are only available for the results of Bayesian analysis \(NS or DREAM\)"
+    ):
         RATplot.plot_bayes(input_project, reflectivity_calculation_results)

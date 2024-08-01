@@ -179,8 +179,9 @@ def plot_ref_sld(
     project: RATapi.Project,
     results: Union[RATapi.outputs.Results, RATapi.outputs.BayesResults],
     block: bool = False,
+    return_fig: bool = False,
     bayes: Literal[65, 95, None] = None,
-):
+) -> Union[plt.Figure, None]:
     """Plots the reflectivity and SLD profiles.
 
     Parameters
@@ -191,10 +192,17 @@ def plot_ref_sld(
               The result from the calculation
     block : bool, default: False
             Indicates the plot should block until it is closed
+    return_fig : bool, default False
+        If True, return the figure instead of displaying it.
     bayes : 65, 95 or None, default None
             Whether to shade Bayesian confidence intervals. Can be `None`
             (if no intervals), `65` to show 65% confidence intervals,
             and `95` to show 95% confidence intervals.
+
+    Returns
+    -------
+    Figure or None
+        Returns Figure if `return_fig` is True, else returns nothing.
 
     """
     data = PlotEventData()
@@ -246,6 +254,9 @@ def plot_ref_sld(
     figure = plt.subplots(1, 2)[0]
 
     plot_ref_sld_helper(data, figure, confidence_intervals=confidence_intervals)
+
+    if return_fig:
+        return figure
 
     plt.show(block=block)
 
@@ -347,6 +358,12 @@ def plot_corner(
     hist2d_kwargs : dict
         Extra keyword arguments to pass to the 2d histograms.
         Default is {'density': True, 'bins': 25}
+
+    Returns
+    -------
+    Figure or None
+        If `return_fig` is True, return the figure - otherwise, return nothing.
+
     """
 
     # first convert names to indices if given
@@ -375,7 +392,7 @@ def plot_corner(
         for j, col_param in enumerate(params):
             current_axes: Axes = axes[i][j]
             if i == j:  # diagonal: histograms
-                plot_hist(results, param=row_param, smooth=smooth, axes=current_axes, **hist_kwargs)
+                plot_one_hist(results, param=row_param, smooth=smooth, axes=current_axes, **hist_kwargs)
             elif i > j:  # lower triangle: 2d histograms
                 plot_contour(
                     results, x_param=row_param, y_param=col_param, smooth=smooth, axes=current_axes, **hist2d_kwargs
@@ -400,7 +417,7 @@ def plot_corner(
 
 
 @assert_bayesian("Histogram")
-def plot_hist(
+def plot_one_hist(
     results: RATapi.outputs.BayesResults,
     param: Union[int, str],
     smooth: bool = True,
@@ -442,6 +459,12 @@ def plot_hist(
     **hist_settings :
         Settings passed to `np.histogram`. By default, the settings
         passed are `bins = 25` and `density = True`.
+
+    Returns
+    -------
+    Figure or None
+        If `return_fig` is True, return the figure - otherwise, return nothing.
+
     """
     chain = results.chain
     if isinstance(param, str):
@@ -454,9 +477,7 @@ def plot_hist(
 
     # apply default settings if not set by user
     default_settings = {"bins": 25, "density": True}
-    for setting, value in default_settings.items():
-        if setting not in hist_settings:
-            hist_settings[setting] = value
+    hist_settings = {**default_settings, **hist_settings}
 
     parameter_chain = chain[:, param]
     counts, bins = np.histogram(parameter_chain, **hist_settings)
@@ -490,6 +511,11 @@ def plot_hist(
             t = np.linspace(bins[0] - 2 * dx, bins[-1] + 2 * dx, 200)
             kde = gaussian_kde(parameter_chain)
             axes.plot(t, kde.evaluate(t))
+        else:
+            raise ValueError(
+                f"{estimated_density} is not a supported estimated density function."
+                " Supported functions are 'normal' 'lognor' or 'kernel'."
+            )
 
     # adding the estimated density extends the figure range - reset it to histogram range
     x_range = hist_settings.get("range", (parameter_chain.min(), parameter_chain.max()))
@@ -538,7 +564,12 @@ def plot_contour(
         If True, return the figure as an object instead of showing it.
     **hist2d_settings:
         Settings passed to `np.histogram2d`.
-        Default settings are `bins = 25`.
+        Default settings are `bins = 25` and `density = True`.
+
+    Returns
+    -------
+    Figure or None
+        If `return_fig` is True, return the figure - otherwise, return nothing.
 
     """
     if axes is None:
@@ -550,27 +581,20 @@ def plot_contour(
     if isinstance(y_param, str):
         y_param = results.fitNames.index(y_param)
 
-    default_settings = {"bins": 25}
-    for setting, value in default_settings.items():
-        if setting not in hist2d_settings:
-            hist2d_settings[setting] = value
+    default_settings = {"bins": 25, "density": True}
+    hist2d_settings = {**default_settings, **hist2d_settings}
 
     counts, y_bins, x_bins = np.histogram2d(results.chain[:, x_param], results.chain[:, y_param], **hist2d_settings)
     counts = counts.T  # for some reason the counts given by numpy are sideways
     if smooth:
         if sigma is None:
-            sd_x = stdev(results.chain[:, x_param])
-            sd_y = stdev(results.chain[:, y_param])
-            sigma_x = sd_x / 2
-            sigma_y = sd_y / 2
+            sigma_x = stdev(results.chain[:, x_param]) / 2
+            sigma_y = stdev(results.chain[:, y_param]) / 2
         else:
             sigma_x, sigma_y = sigma
         # perform a 1d smooth along both axes
         counts = gaussian_filter1d(counts, axis=0, sigma=sigma_x)
         counts = gaussian_filter1d(counts, axis=1, sigma=sigma_y)
-
-    bin_area = (x_bins[1] - x_bins[0]) * (y_bins[1] - y_bins[0])
-    counts *= (bin_area * hist2d_settings["bins"]) / np.sum(counts)
 
     axes.pcolormesh(x_bins, y_bins, counts.max() - counts.T, cmap=matplotlib.colormaps["Greys"].reversed())
     axes.contour(x_bins[:-1], y_bins[:-1], counts.max() - counts.T, colors="black")
@@ -615,10 +639,11 @@ def panel_plot_helper(plot_func: Callable, indices: list[int]) -> matplotlib.fig
 
 
 @assert_bayesian("Histogram")
-def plot_hist_panel(
+def plot_hists(
     results: RATapi.outputs.BayesResults,
     params: Union[list[Union[int, str]], None] = None,
     smooth: bool = True,
+    sigma: Union[float, None] = None,
     estimated_density: dict[Literal["normal", "lognor", "kernel", None]] = None,
     block: bool = False,
     return_fig: bool = False,
@@ -634,8 +659,11 @@ def plot_hist_panel(
         The indices or names of a subset of parameters if required.
         If None, uses all indices.
     smooth : bool, default True
-        Whether to apply a [TODO] smoothing to the histogram.
+        Whether to apply a Gaussian smoothing to the histogram.
         Defaults to True.
+    sigma: float or None, default None
+        If given, is used as the sigma-parameter for the Gaussian smoothing.
+        If None, the default (1/3rd of parameter chain standard deviation) is used.
     estimated_density : dict, default None
         If None (default), ignore. Else, a dictionary where the keys are
         indices or names of parameters, and values denote an estimated density
@@ -644,6 +672,9 @@ def plot_hist_panel(
         'normal': normal Gaussian.
         'lognor': Log-normal probability density.
         'kernel': kernel density estimation.
+        To apply a default estimated density function to all parameters that haven't been specifically set,
+        pass the 'default' key,
+        e.g. to apply 'normal' to all unset parameters, set `estimated_density = {'default': 'normal'}`.
     block : bool, default False
         Whether Python should block until the plot is closed.
     return_fig: bool, default False
@@ -652,31 +683,61 @@ def plot_hist_panel(
         Settings passed to `np.histogram`. By default, the settings
         passed are `bins = 25` and `density = True`.
 
+    Returns
+    -------
+    Figure or None
+        If `return_fig` is True, return the figure - otherwise, return nothing.
+
     """
 
     # first convert names to indices if given
     def name_to_index(param: Union[str, int]):
         """Convert parameter names to indices."""
+        names = results.fitNames
         if isinstance(param, str):
-            return results.fitNames.index(param)
-        return param
+            if param not in names:
+                raise ValueError(f"Parameter {param} is not in this analysis.")
+            param = names.index(param)
+        elif isinstance(param, int):
+            if param > len(names) or param < 0:
+                raise IndexError(f"Index {param} has been given, but indices must be between zero and {len(names)}.")
+        else:
+            raise ValueError(f"Parameters must be given as indices or names, not {type(param)}.")
 
     if params is None:
         params = range(0, len(results.fitNames))
     else:
-        params = list(map(name_to_index, params))
+        params = map(name_to_index, params)
 
     if estimated_density is not None:
-        temp = {}  # as dictionary cannot change size during iteration
+        default = estimated_density.get("default")
+        # create temp dictionary as dictionary cannot change size during iteration
+        temp = {param: default for param in results.fitNames}
+        del estimated_density["default"]
         for key, value in estimated_density.items():
-            temp[name_to_index(key)] = value
+            if value not in ["normal", "lognor", "kernel"]:
+                raise ValueError(
+                    f"Parameter {key} has estimated density function {value},"
+                    " which is not supported. Supported estimated density functions"
+                    " are 'normal', 'lognor', and 'kernel'."
+                )
+            try:
+                temp[name_to_index(key)] = value
+            except (ValueError, IndexError) as err:
+                raise ValueError(f"Non-existent parameter {key} given to `estimated_density`.") from err
         estimated_density = temp
     else:
         estimated_density = {}
 
     fig = panel_plot_helper(
-        lambda ax, i: plot_hist(
-            results, i, smooth=smooth, estimated_density=estimated_density.get(i, None), axes=ax, **hist_settings
+        lambda ax, i: plot_one_hist(
+            results,
+            i,
+            smooth=smooth,
+            sigma=sigma,
+            estimated_density=estimated_density.get(i, None),
+            axes=ax,
+            **hist_settings,
         ),
         params,
     )
@@ -688,7 +749,7 @@ def plot_hist_panel(
 
 
 @assert_bayesian("Chain")
-def plot_chain_panel(
+def plot_chain(
     results: RATapi.outputs.BayesResults,
     params: Union[list[Union[int, str]], None] = None,
     maxpoints: int = 15000,
@@ -710,6 +771,11 @@ def plot_chain_panel(
         Whether Python should block until the plot is closed.
     return_fig: bool, default False
         If True, return the figure as an object instead of showing it.
+
+    Returns
+    -------
+    Figure or None
+        If `return_fig` is True, return the figure - otherwise, return nothing.
 
     """
     chain = results.chain
@@ -759,7 +825,7 @@ def plot_bayes(project: RATapi.Project, results: RATapi.outputs.BayesResults):
     if isinstance(results, RATapi.outputs.BayesResults):
         plot_ref_sld(project, results)
         plot_ref_sld(project, results, bayes=95)
-        plot_hist_panel(results)
+        plot_hists(results)
         plot_corner(results)
     else:
         raise ValueError("Bayes plots are only available for the results of Bayesian analysis (NS or DREAM)")
