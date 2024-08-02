@@ -11,8 +11,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
+  run_ruff:
+    uses: ./.github/workflows/run_ruff.yml
 
+  test:
+    needs: [run_ruff]
     strategy:
       fail-fast: false
       matrix:

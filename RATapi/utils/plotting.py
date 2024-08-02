@@ -74,14 +74,14 @@ def plot_ref_sld_helper(data: PlotEventData, fig: Optional[plt.figure] = None, d
     ref_plot.cla()
     sld_plot.cla()
 
-    for i, (r, sd, sld, layer) in enumerate(
-        zip(data.reflectivity, data.shiftedData, data.sldProfiles, data.resampledLayers),
+    for i, (r, sd, sld, name) in enumerate(
+        zip(data.reflectivity, data.shiftedData, data.sldProfiles, data.contrastNames),
     ):
         # Calculate the divisor
         div = 1 if i == 0 else 2 ** (4 * (i + 1))
 
         # Plot the reflectivity on plot (1,1)
-        ref_plot.plot(r[:, 0], r[:, 1] / div, label=f"ref {i+1}", linewidth=2)
+        ref_plot.plot(r[:, 0], r[:, 1] / div, label=name, linewidth=2)
         color = ref_plot.get_lines()[-1].get_color()
 
         if data.dataPresent[i]:
@@ -100,7 +100,8 @@ def plot_ref_sld_helper(data: PlotEventData, fig: Optional[plt.figure] = None, d
 
         # Plot the slds on plot (1,2)
         for j in range(len(sld)):
-            sld_plot.plot(sld[j][:, 0], sld[j][:, 1], label=f"sld {i+1}", linewidth=1)
+            label = name if len(sld) == 1 else f"{name} Domain {j+1}"
+            sld_plot.plot(sld[j][:, 0], sld[j][:, 1], label=label, linewidth=1)
 
         if data.resample[i] == 1 or data.modelType == "custom xy":
             layers = data.resampledLayers[i][0]
@@ -172,6 +173,7 @@ def plot_ref_sld(
     data.dataPresent = RATapi.inputs.make_data_present(project)
     data.subRoughs = results.contrastParams.subRoughs
     data.resample = RATapi.inputs.make_resample(project)
+    data.contrastNames = [contrast.name for contrast in project.contrasts]
 
     figure = plt.subplots(1, 2)[0]
 
