@@ -63,8 +63,12 @@ class Background(RATModel):
     value_5: str = ""
 
     @model_validator(mode="after")
-    def validate_background(self):
-        """Ensure that correct parameters have been given for the background type."""
+    def validate_unimplemented_backgrounds(self):
+        """Raise an error if currently unsupported Data or Function backgrounds are used."""
+        # FIXME: once data/function backgrounds have been implemented,
+        # please remember to remove the @pytest.mark.skip decorators used to skip the tests:
+        # - tests/test_project.py::test_check_allowed_background_resolution_values_data
+        # - tests/test_project.py::test_check_allowed_background_resolution_values_on_data_list
         if self.type == TypeOptions.Data:
             raise NotImplementedError("Data backgrounds are not yet supported.")
         elif self.type == TypeOptions.Function:

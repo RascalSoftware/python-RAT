@@ -958,6 +958,7 @@ def test_check_allowed_background_resolution_values_constant(test_value: str) ->
     )
 
 
+@pytest.mark.skip("Data backgrounds not currently supported.")
 @pytest.mark.parametrize(
     "test_value",
     [
@@ -999,6 +1000,7 @@ def test_check_allowed_background_resolution_values_not_on_constant_list(test_va
         )
 
 
+@pytest.mark.skip("Data backgrounds not currently supported.")
 @pytest.mark.parametrize(
     "test_value",
     [
