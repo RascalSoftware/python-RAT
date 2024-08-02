@@ -19,7 +19,7 @@ update_fields = ["updateFreq", "updatePlotFreq"]
 fields = {
     "calculate": common_fields,
     "simplex": [*common_fields, "xTolerance", "funcTolerance", "maxFuncEvals", "maxIterations", *update_fields],
-    "DE": [
+    "de": [
         *common_fields,
         "populationSize",
         "fWeight",
@@ -29,8 +29,8 @@ fields = {
         "numGenerations",
         *update_fields,
     ],
-    "NS": [*common_fields, "nLive", "nMCMC", "propScale", "nsTolerance"],
-    "DREAM": [*common_fields, "nSamples", "nChains", "jumpProbability", "pUnitGamma", "boundHandling", "adaptPCR"],
+    "ns": [*common_fields, "nLive", "nMCMC", "propScale", "nsTolerance"],
+    "dream": [*common_fields, "nSamples", "nChains", "jumpProbability", "pUnitGamma", "boundHandling", "adaptPCR"],
 }
 
 

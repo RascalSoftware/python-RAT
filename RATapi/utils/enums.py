@@ -26,9 +26,9 @@ class Procedures(RATEnum):
 
     Calculate = "calculate"
     Simplex = "simplex"
-    DE = "DE"
-    NS = "NS"
-    DREAM = "DREAM"
+    DE = "de"
+    NS = "ns"
+    DREAM = "dream"
 
 
 class Parallel(RATEnum):
@@ -81,7 +81,7 @@ class BackgroundActions(RATEnum):
 
 
 class Languages(RATEnum):
-    Cpp = "Cpp"
+    Cpp = "cpp"
     Python = "python"
     Matlab = "matlab"
 
