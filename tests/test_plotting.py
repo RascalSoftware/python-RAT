@@ -13,7 +13,7 @@ TEST_DIR_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_
 
 
 def data() -> PlotEventData:
-    """Creates the fixture for the tests."""
+    """Creates the data for the tests."""
     data_path = os.path.join(TEST_DIR_PATH, "plotting_data.pickle")
     with open(data_path, "rb") as f:
         loaded_data = pickle.load(f)
@@ -27,17 +27,29 @@ def data() -> PlotEventData:
     data.reflectivity = loaded_data["reflectivity"]
     data.shiftedData = loaded_data["shiftedData"]
     data.sldProfiles = loaded_data["sldProfiles"]
+    data.contrastNames = ["D2O", "SMW", "H2O"]
+
     return data
 
 
-@pytest.fixture
-def fig() -> plt.figure:
+def domains_data() -> PlotEventData:
+    """Creates the fake domains data for the tests."""
+    domains_data = data()
+    for sld_list in domains_data.sldProfiles:
+        sld_list.append(sld_list[0])
+
+    return domains_data
+
+
+@pytest.fixture(params=[False])
+def fig(request) -> plt.figure:
     """Creates the fixture for the tests."""
     plt.close("all")
     figure = plt.subplots(1, 3)[0]
-    return plot_ref_sld_helper(fig=figure, data=data())
+    return plot_ref_sld_helper(fig=figure, data=domains_data() if request.param else data())
 
 
+@pytest.mark.parametrize("fig", [False, True], indirect=True)
 def test_figure_axis_formating(fig: plt.figure) -> None:
     """Tests the axis formating of the figure."""
     ref_plot = fig.axes[0]
@@ -50,13 +62,24 @@ def test_figure_axis_formating(fig: plt.figure) -> None:
     assert ref_plot.get_xscale() == "log"
     assert ref_plot.get_ylabel() == "Reflectivity"
     assert ref_plot.get_yscale() == "log"
-    assert [label._text for label in ref_plot.get_legend().texts] == ["ref 1", "ref 2", "ref 3"]
+    assert [label._text for label in ref_plot.get_legend().texts] == ["D2O", "SMW", "H2O"]
 
     assert sld_plot.get_xlabel() == "$Z (\u00c5)$"
     assert sld_plot.get_xscale() == "linear"
     assert sld_plot.get_ylabel() == "$SLD (\u00c5^{-2})$"
     assert sld_plot.get_yscale() == "linear"
-    assert [label._text for label in sld_plot.get_legend().texts] == ["sld 1", "sld 2", "sld 3"]
+    labels = [label._text for label in sld_plot.get_legend().texts]
+    if len(labels) == 3:
+        assert labels == ["D2O", "SMW", "H2O"]
+    else:
+        assert labels == [
+            "D2O Domain 1",
+            "D2O Domain 2",
+            "SMW Domain 1",
+            "SMW Domain 2",
+            "H2O Domain 1",
+            "H2O Domain 2",
+        ]
 
 
 def test_figure_color_formating(fig: plt.figure) -> None:
@@ -157,3 +180,4 @@ def test_plot_ref_sld(mock: MagicMock, input_project, reflectivity_calculation_r
     assert data.dataPresent.size == 0
     assert (data.subRoughs == reflectivity_calculation_results.contrastParams.subRoughs).all()
     assert data.resample.size == 0
+    assert len(data.contrastNames) == 0

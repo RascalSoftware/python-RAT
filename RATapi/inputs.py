@@ -387,6 +387,7 @@ def make_cells(project: RATapi.Project) -> Cells:
     ]
 
     cells.f20 = [param.name for param in project.domain_ratios]
+    cells.f21 = [contrast.name for contrast in project.contrasts]
 
     return cells
 

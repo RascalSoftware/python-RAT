@@ -171,6 +171,7 @@ struct PlotEventData
     py::array_t<double> resample;
     py::array_t<double> dataPresent;
     std::string modelType;
+    py::list contrastNames;
 };
 
 class EventBridge
@@ -271,6 +272,13 @@ class EventBridge
             eventData.resampledLayers = unpackDataToCell(pEvent->data->nContrast, (pEvent->data->nLayers2 == NULL) ? 1 : 2, 
                                                          pEvent->data->layers, pEvent->data->nLayers, 
                                                          pEvent->data->layers2, pEvent->data->nLayers2, true);
+            
+            int offset = 0;
+            for (int i = 0; i < pEvent->data->nContrast; i++){
+               eventData.contrastNames.append(std::string(pEvent->data->contrastNames + offset, 
+                                                          pEvent->data->nContrastNames[i]));
+               offset += pEvent->data->nContrastNames[i];
+            }
             this->callback(event.type, eventData);
         }
     };
@@ -445,6 +453,7 @@ struct Cells {
     py::list f18;
     py::list f19;
     py::list f20;
+    py::list f21;
 };
 
 struct ProblemDefinition {
@@ -835,7 +844,7 @@ RAT::cell_7 createCell7(const Cells& cells)
     cells_struct.f2 = customCaller("Cells.f2", pyListToRatCellWrap3, cells.f2);
     cells_struct.f3 = customCaller("Cells.f3", pyListToRatCellWrap2, cells.f3);
     cells_struct.f4 = customCaller("Cells.f4", pyListToRatCellWrap2, cells.f4);
-    cells_struct.f5 = customCaller("Cells.f5", pyListToRatCellWrap4, cells.f5); //improve this error
+    cells_struct.f5 = customCaller("Cells.f5", pyListToRatCellWrap4, cells.f5);
     cells_struct.f6 = customCaller("Cells.f6", pyListToRatCellWrap5, cells.f6);
     cells_struct.f7 = customCaller("Cells.f7", pyListToRatCellWrap6, cells.f7);
     cells_struct.f8 = customCaller("Cells.f8", pyListToRatCellWrap6, cells.f8);
@@ -851,6 +860,7 @@ RAT::cell_7 createCell7(const Cells& cells)
     cells_struct.f18 = customCaller("Cells.f18", pyListToRatCellWrap2, cells.f18);
     cells_struct.f19 = customCaller("Cells.f19", pyListToRatCellWrap4, cells.f19);
     cells_struct.f20 = customCaller("Cells.f20", pyListToRatCellWrap6, cells.f20);
+    cells_struct.f21 = customCaller("Cells.f21", pyListToRatCellWrap6, cells.f21);
 
     return cells_struct;
 }
@@ -1257,7 +1267,8 @@ PYBIND11_MODULE(rat_core, m) {
         .def_readwrite("subRoughs", &PlotEventData::subRoughs)
         .def_readwrite("resample", &PlotEventData::resample)
         .def_readwrite("dataPresent", &PlotEventData::dataPresent)
-        .def_readwrite("modelType", &PlotEventData::modelType);
+        .def_readwrite("modelType", &PlotEventData::modelType)
+        .def_readwrite("contrastNames", &PlotEventData::contrastNames);
 
     py::class_<ProgressEventData>(m, "ProgressEventData")
         .def(py::init<>())
@@ -1402,7 +1413,8 @@ PYBIND11_MODULE(rat_core, m) {
         .def_readwrite("f17", &Cells::f17)
         .def_readwrite("f18", &Cells::f18)
         .def_readwrite("f19", &Cells::f19)
-        .def_readwrite("f20", &Cells::f20);
+        .def_readwrite("f20", &Cells::f20)
+        .def_readwrite("f21", &Cells::f21);
 
     py::class_<Control>(m, "Control")
         .def(py::init<>())

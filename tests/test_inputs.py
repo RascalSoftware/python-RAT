@@ -281,6 +281,7 @@ def standard_layers_cells():
     cells.f18 = []
     cells.f19 = []
     cells.f20 = []
+    cells.f21 = ["D2O"]
 
     return cells
 
@@ -309,6 +310,7 @@ def domains_cells():
     cells.f18 = [[0, 1], [0, 1]]
     cells.f19 = [[1], [1]]
     cells.f20 = ["Domain Ratio 1"]
+    cells.f21 = ["D2O"]
 
     return cells
 
@@ -337,6 +339,7 @@ def custom_xy_cells():
     cells.f18 = []
     cells.f19 = []
     cells.f20 = []
+    cells.f21 = ["D2O"]
 
     return cells
 
