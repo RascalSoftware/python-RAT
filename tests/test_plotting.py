@@ -392,7 +392,9 @@ def test_hist_panel(mock_panel_helper: MagicMock, params, dream_results):
     if params is None:
         params = range(0, len(dream_results.fitNames))
 
-    for param in mock_panel_helper.call_args()[1]:
+    passed_params = mock_panel_helper.call_args.args[1]
+    assert len(passed_params) == len(params)
+    for param in passed_params:
         assert param == (dream_results.fitNames.index(param) if isinstance(param, str) else param)
 
 
