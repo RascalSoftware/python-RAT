@@ -2,7 +2,7 @@
 
 from functools import wraps
 from math import ceil, floor, sqrt
-from statistics import mean, stdev
+from statistics import stdev
 from textwrap import fill
 from typing import Callable, Literal, Optional, Union
 
@@ -481,8 +481,8 @@ def plot_one_hist(
 
     parameter_chain = chain[:, param]
     counts, bins = np.histogram(parameter_chain, **hist_settings)
-    mean_y = mean(parameter_chain)
-    sd_y = stdev(parameter_chain)
+    mean_y = np.mean(parameter_chain)
+    sd_y = np.std(parameter_chain)
 
     if smooth:
         if sigma is None:
@@ -506,7 +506,7 @@ def plot_one_hist(
             axes.plot(t, norm.pdf(t, loc=mean_y, scale=sd_y**2))
         elif estimated_density == "lognor":
             t = np.linspace(bins[0] - 0.5 * dx, bins[-1] + 2 * dx)
-            axes.plot(t, lognorm.pdf(t, mean(np.log(parameter_chain)), stdev(np.log(parameter_chain))))
+            axes.plot(t, lognorm.pdf(t, np.mean(np.log(parameter_chain)), np.std(np.log(parameter_chain))))
         elif estimated_density == "kernel":
             t = np.linspace(bins[0] - 2 * dx, bins[-1] + 2 * dx, 200)
             kde = gaussian_kde(parameter_chain)
@@ -703,11 +703,12 @@ def plot_hists(
                 raise IndexError(f"Index {param} has been given, but indices must be between zero and {len(names)}.")
         else:
             raise ValueError(f"Parameters must be given as indices or names, not {type(param)}.")
+        return param
 
     if params is None:
         params = range(0, len(results.fitNames))
     else:
-        params = map(name_to_index, params)
+        params = list(map(name_to_index, params))
 
     if estimated_density is not None:
         default = estimated_density.get("default")
