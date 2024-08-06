@@ -85,7 +85,7 @@ def dream_str():
         "'Background parameter D2O', 'Background parameter SMW', 'D2O', 'SMW'],\n"
         "predictionIntervals = PredictionIntervals(\n"
         "\treflectivity = [Data array: [5 x 21], Data array: [5 x 21]],\n"
-        "\tsld = [[Data array: [5 x 7]], [Data array: [5 x 7]]],\n"
+        "\tsld = [[Data array: [5 x 30], Data array: [5 x 30]]],\n"
         "\treflectivityXData = [Data array: [1 x 21], Data array: [1 x 21]],\n"
         "\tsldXData = [[Data array: [1 x 30], Data array: [1 x 30]]],\n"
         "\tsampleChi = Data array: [1000],\n"
