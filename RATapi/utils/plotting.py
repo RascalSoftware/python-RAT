@@ -379,12 +379,12 @@ def plot_corner(
         If `return_fig` is True, return the figure - otherwise, return nothing.
 
     """
-    fitname_to_ind = partial(name_to_index, names=results.fitNames)
+    fitname_to_index = partial(name_to_index, names=results.fitNames)
 
     if params is None:
         params = range(0, len(results.fitNames))
     else:
-        params = list(map(fitname_to_ind, params))
+        params = list(map(fitname_to_index, params))
 
     # defaults are applied inside each function - just pass blank dicts for now
     if hist_kwargs is None:
@@ -700,33 +700,38 @@ def plot_hists(
     """
 
     # first convert names to indices if given
-    fitname_to_ind = partial(name_to_index, names=results.fitNames)
+    fitname_to_index = partial(name_to_index, names=results.fitNames)
 
     if params is None:
         params = range(0, len(results.fitNames))
     else:
-        params = list(map(fitname_to_ind, params))
+        params = list(map(fitname_to_index, params))
 
     if estimated_density is not None:
-        if isinstance(estimated_density, str):
-            estimated_density = {"default": estimated_density}
-        default = estimated_density.get("default")
-        # create temp dictionary as dictionary cannot change size during iteration
-        temp = {results.fitNames.index(param): default for param in results.fitNames}
-        if default is not None:
-            del estimated_density["default"]
-        for key, value in estimated_density.items():
-            if value not in ["normal", "lognor", "kernel"]:
+
+        def validate_dens_type(dens_type: Union[str, None], param: str):
+            """Check estimated density is a supported type."""
+            if dens_type not in [None, "normal", "lognor", "kernel"]:
                 raise ValueError(
-                    f"Parameter {key} has estimated density function {value},"
+                    f"Parameter {param} has estimated density function {dens_type},"
                     " which is not supported. Supported estimated density functions"
                     " are 'normal', 'lognor', and 'kernel'."
                 )
-            try:
-                temp[name_to_index(key, results.fitNames)] = value
-            except (ValueError, IndexError) as err:
-                raise ValueError(f"Non-existent parameter {key} given to `estimated_density`.") from err
-        estimated_density = temp
+            return dens_type
+
+        if isinstance(estimated_density, str):
+            validate_dens_type(estimated_density, "default")
+            estimated_density = {fitname_to_index(param): estimated_density for param in params}
+        else:
+            default = estimated_density.pop("default", None)
+            validate_dens_type(default, "default")
+            default_density = {fitname_to_index(param): default for param in params}
+            # convert names to indices and ensure density types given are correct
+            estimated_density = {
+                name_to_index(k, results.fitNames): validate_dens_type(v, k) for k, v in estimated_density.items()
+            }
+            # merge other estimated densities into default dict
+            estimated_density = {**default_density, **estimated_density}
     else:
         estimated_density = {}
 
@@ -784,12 +789,12 @@ def plot_chain(
     skip = floor(nsimulations / maxpoints)  # to evenly distribute points plotted
 
     # convert names to indices if given
-    fitname_to_ind = partial(name_to_index, names=results.fitNames)
+    fitname_to_index = partial(name_to_index, names=results.fitNames)
 
     if params is None:
         params = range(0, len(results.fitNames))
     else:
-        params = list(map(fitname_to_ind, params))
+        params = list(map(fitname_to_index, params))
 
     def plot_one_chain(axes: Axes, i: int):
         axes.plot(range(0, nsimulations, skip), chain[:, i][0:nsimulations:skip])

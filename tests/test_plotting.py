@@ -440,14 +440,15 @@ def test_standardise_est_dens(mock_plot_hist: MagicMock, input, expected_dict, d
     est_dens_dict = {keys_called[i]: est_density[i] for i in range(0, len(keys_called))}
 
     assert expected_dict == est_dens_dict
+    plt.close("all")
 
 
 @pytest.mark.parametrize("input", [{250: "lognor"}, {"Oxide Quickness": "normal"}, {"D2O": "Rattian"}, {-5: "lognor"}])
 def test_est_dens_error(dream_results, input):
     """Ensure a bad estimated density input raises an error."""
-    # the error message contains the phrase "parameter {key}" in both cases, so use that
+    # the error message contains the phrase "Parameter {key}" or "Index {key}", so use that
     # to ensure we're not getting some random ValueError
-    with pytest.raises(ValueError, match=f"[P|p]arameter {(list(input.keys())[0])}"):
+    with pytest.raises((ValueError, IndexError), match=f"Parameter|Index {(list(input.keys())[0])}"):
         RATplot.plot_hists(dream_results, estimated_density=input)
 
 
