@@ -35,7 +35,17 @@ resolution_number = int_sequence()
 
 
 class RATModel(BaseModel, validate_assignment=True, extra="forbid"):
-    """A BaseModel where enums are represented by their value."""
+    """A BaseModel where *args are accepted, enums are represented by their value and the output format is a table."""
+
+    def __init__(self, *args, **kwargs):
+        """Allow RAT to accept both *args and **kwargs, where the keyword arguments dominate."""
+        data = {}
+        model_fields = list(self.model_fields.keys())
+        for i, arg in enumerate(args):
+            data[model_fields[i]] = arg
+
+        data.update(kwargs)
+        super().__init__(**data)
 
     def __repr__(self):
         fields_repr = ", ".join(
