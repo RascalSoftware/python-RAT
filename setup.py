@@ -171,6 +171,7 @@ setup(
         "pydantic >= 2.7.2",
         "matplotlib >= 3.8.3",
         "scipy >= 1.13.1",
+        "tqdm>=4.66.5",
     ],
     extras_require={
         ':python_version < "3.11"': ["StrEnum >= 0.4.15"],
