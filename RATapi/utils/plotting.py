@@ -1,6 +1,6 @@
 """Plots using the matplotlib library"""
 
-from functools import wraps
+from functools import partial, wraps
 from math import ceil, floor, sqrt
 from statistics import stdev
 from textwrap import fill
@@ -327,6 +327,20 @@ def assert_bayesian(name: str):
     return decorator
 
 
+def name_to_index(param: Union[str, int], names: list[str]):
+    """Convert parameter names to indices."""
+    if isinstance(param, str):
+        if param not in names:
+            raise ValueError(f"Parameter {param} is not in this analysis.")
+        param = names.index(param)
+    elif isinstance(param, int):
+        if param > len(names) or param < 0:
+            raise IndexError(f"Index {param} has been given, but indices must be between zero and {len(names)}.")
+    else:
+        raise ValueError(f"Parameters must be given as indices or names, not {type(param)}.")
+    return param
+
+
 @assert_bayesian("Corner")
 def plot_corner(
     results: RATapi.outputs.BayesResults,
@@ -365,18 +379,12 @@ def plot_corner(
         If `return_fig` is True, return the figure - otherwise, return nothing.
 
     """
-
-    # first convert names to indices if given
-    def name_to_index(param: Union[str, int]):
-        """Convert parameter names to indices."""
-        if isinstance(param, str):
-            return results.fitNames.index(param)
-        return param
+    fitname_to_ind = partial(name_to_index, names=results.fitNames)
 
     if params is None:
         params = range(0, len(results.fitNames))
     else:
-        params = list(map(name_to_index, params))
+        params = list(map(fitname_to_ind, params))
 
     # defaults are applied inside each function - just pass blank dicts for now
     if hist_kwargs is None:
@@ -467,8 +475,7 @@ def plot_one_hist(
 
     """
     chain = results.chain
-    if isinstance(param, str):
-        param = results.fitNames.index(param)
+    param = name_to_index(param, results.fitNames)
 
     if axes is None:
         fig, axes = plt.subplots(1, 1)
@@ -576,10 +583,8 @@ def plot_contour(
         fig, axes = plt.subplots(1, 1)
     else:
         fig = None
-    if isinstance(x_param, str):
-        x_param = results.fitNames.index(x_param)
-    if isinstance(y_param, str):
-        y_param = results.fitNames.index(y_param)
+    x_param = name_to_index(x_param, results.fitNames)
+    y_param = name_to_index(y_param, results.fitNames)
 
     default_settings = {"bins": 25, "density": True}
     hist2d_settings = {**default_settings, **hist2d_settings}
@@ -644,7 +649,9 @@ def plot_hists(
     params: Union[list[Union[int, str]], None] = None,
     smooth: bool = True,
     sigma: Union[float, None] = None,
-    estimated_density: dict[Literal["normal", "lognor", "kernel", None]] = None,
+    estimated_density: Union[
+        dict[Literal["normal", "lognor", "kernel", None]], Literal["normal", "lognor", "kernel", None]
+    ] = None,
     block: bool = False,
     return_fig: bool = False,
     **hist_settings,
@@ -665,14 +672,16 @@ def plot_hists(
         If given, is used as the sigma-parameter for the Gaussian smoothing.
         If None, the default (1/3rd of parameter chain standard deviation) is used.
     estimated_density : dict, default None
-        If None (default), ignore. Else, a dictionary where the keys are
+        If None (default), ignore.
+        Can also be a string 'normal', 'lognor' or 'kernel' to apply the same estimated density to all parameters.
+        Else, a dictionary where the keys are
         indices or names of parameters, and values denote an estimated density
         of the given form on top of the histogram:
         None : do not plot estimated density for this parameter.
         'normal': normal Gaussian.
         'lognor': Log-normal probability density.
         'kernel': kernel density estimation.
-        To apply a default estimated density function to all parameters that haven't been specifically set,
+        To provide a default estimated density function to all parameters that haven't been specifically set,
         pass the 'default' key,
         e.g. to apply 'normal' to all unset parameters, set `estimated_density = {'default': 'normal'}`.
     block : bool, default False
@@ -691,30 +700,21 @@ def plot_hists(
     """
 
     # first convert names to indices if given
-    def name_to_index(param: Union[str, int]):
-        """Convert parameter names to indices."""
-        names = results.fitNames
-        if isinstance(param, str):
-            if param not in names:
-                raise ValueError(f"Parameter {param} is not in this analysis.")
-            param = names.index(param)
-        elif isinstance(param, int):
-            if param > len(names) or param < 0:
-                raise IndexError(f"Index {param} has been given, but indices must be between zero and {len(names)}.")
-        else:
-            raise ValueError(f"Parameters must be given as indices or names, not {type(param)}.")
-        return param
+    fitname_to_ind = partial(name_to_index, names=results.fitNames)
 
     if params is None:
         params = range(0, len(results.fitNames))
     else:
-        params = list(map(name_to_index, params))
+        params = list(map(fitname_to_ind, params))
 
     if estimated_density is not None:
+        if isinstance(estimated_density, str):
+            estimated_density = {"default": estimated_density}
         default = estimated_density.get("default")
         # create temp dictionary as dictionary cannot change size during iteration
-        temp = {param: default for param in results.fitNames}
-        del estimated_density["default"]
+        temp = {results.fitNames.index(param): default for param in results.fitNames}
+        if default is not None:
+            del estimated_density["default"]
         for key, value in estimated_density.items():
             if value not in ["normal", "lognor", "kernel"]:
                 raise ValueError(
@@ -723,7 +723,7 @@ def plot_hists(
                     " are 'normal', 'lognor', and 'kernel'."
                 )
             try:
-                temp[name_to_index(key)] = value
+                temp[name_to_index(key, results.fitNames)] = value
             except (ValueError, IndexError) as err:
                 raise ValueError(f"Non-existent parameter {key} given to `estimated_density`.") from err
         estimated_density = temp
@@ -784,16 +784,12 @@ def plot_chain(
     skip = floor(nsimulations / maxpoints)  # to evenly distribute points plotted
 
     # convert names to indices if given
-    def name_to_index(param: Union[str, int]):
-        """Convert parameter names to indices."""
-        if isinstance(param, str):
-            return results.fitNames.index(param)
-        return param
+    fitname_to_ind = partial(name_to_index, names=results.fitNames)
 
     if params is None:
         params = range(0, len(results.fitNames))
     else:
-        params = list(map(name_to_index, params))
+        params = list(map(fitname_to_ind, params))
 
     def plot_one_chain(axes: Axes, i: int):
         axes.plot(range(0, nsimulations, skip), chain[:, i][0:nsimulations:skip])

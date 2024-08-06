@@ -55,15 +55,21 @@ def fig(request) -> plt.figure:
 
 
 @pytest.fixture
-def bayes_fig() -> plt.figure:
+def bayes_fig(request) -> plt.figure:
     plt.close("all")
     figure = plt.subplots(1, 2)[0]
     dat = data()
+
     confidence_intervals = {
-        "reflectivity": [[1, 5] for curve in dat.reflectivity],
-        "sld": [[[1, 5] for curve in profile] for profile in dat.sldProfiles],
-        "reflectivity-x-data": [[[0 for x in curve]] for curve in dat.reflectivity],
-        "sld-x-data": [[[[0 for x in profile]] for profile in sld] for sld in dat.sldProfiles],
+        "reflectivity": [
+            (curve[:, 1] - curve[:, 1] * 0.5, curve[:, 1] + curve[:, 1] * 0.5) for curve in dat.reflectivity
+        ],
+        "sld": [
+            [(curve[:, 1] - curve[:, 1] * 0.1, curve[:, 1] + curve[:, 1] * 0.1) for curve in sld]
+            for sld in dat.sldProfiles
+        ],
+        "reflectivity-x-data": [[curve[:, 0]] for curve in dat.reflectivity],
+        "sld-x-data": [[[profile[:, 0]] for profile in sld] for sld in dat.sldProfiles],
     }
     return RATplot.plot_ref_sld_helper(data=dat, fig=figure, confidence_intervals=confidence_intervals)
 
@@ -214,6 +220,14 @@ def test_plot_ref_sld(mock: MagicMock, input_project, reflectivity_calculation_r
     assert len(data.contrastNames) == 0
 
 
+def test_ref_sld_subplot_correction():
+    """Test that if an incorrect number of subplots is corrected in the figure helper."""
+    fig = plt.subplots(1, 3)[0]
+    ref_sld_fig = RATplot.plot_ref_sld_helper(data=data(), fig=fig)
+    assert ref_sld_fig.axes[0].get_subplotspec().get_gridspec().get_geometry() == (1, 2)
+    assert len(ref_sld_fig.axes) == 2
+
+
 @patch("RATapi.utils.plotting.plot_ref_sld_helper")
 def test_plot_ref_sld_bayes_validation(mock, input_project, reflectivity_calculation_results, dream_results):
     """Test that plot_ref_sld correctly throws errors for bad Bayesian input."""
@@ -306,7 +320,7 @@ def test_hist(dream_results, param, hist_settings, est_dens):
 
 
 @pytest.mark.parametrize(["x_param", "y_param"], [["CW Thickness", "D2O"], ["Bilayer Heads Thickness", 5], [2, 7]])
-@pytest.mark.parametrize("hist2d_settings", [{}, {"bins": 15}, {"range": [(0.0, 5.0), (1.0, 2.0)]}])
+@pytest.mark.parametrize("hist2d_settings", [{}, {"bins": 15}, {"range": [(-50.0, 50.0), (-50.0, 200.0)]}])
 def test_contour(dream_results, x_param, y_param, hist2d_settings):
     """Test the formatting of the contour plot."""
     fig: plt.Figure = RATplot.plot_contour(dream_results, x_param, y_param, return_fig=True, **hist2d_settings)
@@ -339,7 +353,7 @@ def test_contour(dream_results, x_param, y_param, hist2d_settings):
     assert ax.get_xbound() == y_expected_range
     assert ax.get_ybound() == x_expected_range
 
-    plt.close(fig)
+    # plt.close(fig)
 
 
 @pytest.mark.parametrize(
@@ -396,6 +410,45 @@ def test_hist_panel(mock_panel_helper: MagicMock, params, dream_results):
     assert len(passed_params) == len(params)
     for param in passed_params:
         assert param == (dream_results.fitNames.index(param) if isinstance(param, str) else param)
+
+
+@pytest.mark.parametrize(
+    ["input", "expected_dict"],
+    [
+        (None, "NONEDICT"),
+        ({"D2O": "kernel"}, "D2O_DICT"),
+        ({"default": "lognor"}, "DEFAULTDICT"),  # workaround as we need to access the fixture attrs
+        ("lognor", "DEFAULTDICT"),
+        ({"default": "normal", 1: "kernel"}, "DEFAULT_WITH_1CHANGE_DICT"),
+    ],
+)
+@patch("RATapi.plotting.plot_one_hist")
+def test_standardise_est_dens(mock_plot_hist: MagicMock, input, expected_dict, dream_results):
+    """Test estimated density is correctly standardised."""
+    _ = RATplot.plot_hists(dream_results, estimated_density=input, return_fig=True)
+
+    expected_dict = {
+        "NONEDICT": {i: None for i in range(0, len(dream_results.fitNames))},
+        "D2O_DICT": {**{i: None for i in range(0, len(dream_results.fitNames))}, **{16: "kernel"}},
+        "DEFAULTDICT": {i: "lognor" for i in range(0, len(dream_results.fitNames))},
+        "DEFAULT_WITH_1CHANGE_DICT": {**{i: "normal" for i in range(0, len(dream_results.fitNames))}, **{1: "kernel"}},
+    }[expected_dict]
+
+    call_args = mock_plot_hist.call_args_list
+    keys_called = [call[0][1] for call in call_args]
+    est_density = [call[1]["estimated_density"] for call in call_args]
+    est_dens_dict = {keys_called[i]: est_density[i] for i in range(0, len(keys_called))}
+
+    assert expected_dict == est_dens_dict
+
+
+@pytest.mark.parametrize("input", [{250: "lognor"}, {"Oxide Quickness": "normal"}, {"D2O": "Rattian"}, {-5: "lognor"}])
+def test_est_dens_error(dream_results, input):
+    """Ensure a bad estimated density input raises an error."""
+    # the error message contains the phrase "parameter {key}" in both cases, so use that
+    # to ensure we're not getting some random ValueError
+    with pytest.raises(ValueError, match=f"[P|p]arameter {(list(input.keys())[0])}"):
+        RATplot.plot_hists(dream_results, estimated_density=input)
 
 
 @pytest.mark.parametrize(
