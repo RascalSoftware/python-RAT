@@ -237,21 +237,21 @@ def r1_to_project_class(filename: str) -> Project:
     return project
 
 
-def project_class_to_r1(project: Project, save: str = "RAT_project") -> Union[dict, None]:
+def project_class_to_r1(project: Project, filename: str = "RAT_project") -> Union[dict, None]:
     """Convert a RAT Project to a RasCAL1 project struct.
 
     Parameters
     ----------
     project : Project
         The RAT Project to convert.
-    save : str, default "RAT_project"
+    filename : str, default "RAT_project"
         If given, saves as a .mat file with the given filename.
         If empty, return the R1 struct dict.
 
     Returns
     -------
     dict or None
-        If `save` is False, return the r1 struct. Else, return nothing.
+        If `filename` is False, return the r1 struct. Else, return nothing.
     """
 
     def convert_parameters(params: ClassList, name: str, value: str, constr: str, fit: str, number: str = ""):
@@ -453,9 +453,9 @@ def project_class_to_r1(project: Project, save: str = "RAT_project") -> Union[di
                 if not all(isinstance(x, type(r1[key][0])) for x in r1[key]):
                     r1[key] = array(value, dtype="object")
 
-    if save:
-        if save[-4:] != ".mat":
-            save += ".mat"
+    if filename:
+        if filename[-4:] != ".mat":
+            filename += ".mat"
 
         # scipy.io.savemat doesn't do cells properly:
         # https://github.com/scipy/scipy/issues/3756
@@ -468,7 +468,7 @@ def project_class_to_r1(project: Project, save: str = "RAT_project") -> Union[di
             ) from err
         eng = start_matlab()
         eng.workspace["problem"] = r1
-        eng.save(save, "problem", nargout=0)
+        eng.save(filename, "problem", nargout=0)
         eng.exit()
         return None
     return r1
