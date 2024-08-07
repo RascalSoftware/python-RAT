@@ -11,6 +11,8 @@ import pytest
 import RATapi
 import RATapi.outputs
 import RATapi.rat_core
+from RATapi.events import EventTypes, ProgressEventData, notify
+from RATapi.run import ProgressBar
 from RATapi.utils.enums import Calculations, Geometries, LayerModels, Procedures
 from tests.utils import check_results_equal
 
@@ -320,3 +322,20 @@ def test_run(test_procedure, test_output_problem, test_output_results, test_baye
         project, results = RATapi.run(input_project, RATapi.Controls(procedure=test_procedure))
 
     check_results_equal(test_results, results)
+
+
+def test_progress_bar() -> None:
+    event = ProgressEventData()
+    event.message = "TESTING"
+    event.percent = 0.2
+    with ProgressBar() as bar:
+        assert bar.n == 0
+        notify(EventTypes.Progress, event)
+        assert bar.desc == "TESTING"
+        assert bar.n == 20
+
+        event.message = "AGAIN"
+        event.percent = 0.6
+        notify(EventTypes.Progress, event)
+        assert bar.desc == "AGAIN"
+        assert bar.n == 60
