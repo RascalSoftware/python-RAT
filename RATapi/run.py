@@ -61,14 +61,14 @@ def run(project, controls):
     }
 
     horizontal_line = "\u2500" * 107 + "\n"
-    display = controls.display != Display.Off
+    display_on = controls.display != Display.Off
     problem_definition, cells, limits, priors, cpp_controls = make_input(project, controls)
 
-    if display:
+    if display_on:
         print("Starting RAT " + horizontal_line)
 
     start = time.time()
-    with ProgressBar(display=controls.display != Display.Off):
+    with ProgressBar(display=display_on):
         problem_definition, output_results, bayes_results = RATapi.rat_core.RATMain(
             problem_definition,
             cells,
@@ -78,7 +78,7 @@ def run(project, controls):
         )
     end = time.time()
 
-    if display:
+    if display_on:
         print(f"Elapsed time is {end-start:.3f} seconds\n")
 
     results = make_results(controls.procedure, output_results, bayes_results)
@@ -88,7 +88,7 @@ def run(project, controls):
         for index, value in enumerate(getattr(problem_definition, parameter_field[class_list])):
             getattr(project, class_list)[index].value = value
 
-    if display:
+    if display_on:
         print("Finished RAT " + horizontal_line)
 
     return project, results
