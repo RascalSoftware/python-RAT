@@ -6,9 +6,9 @@ from typing import Iterable, Union
 from numpy import array
 from scipy.io.matlab import MatlabOpaque, loadmat
 
-from RATapi import Project
+from RATapi import Project, wrappers
 from RATapi.classlist import ClassList
-from RATapi.models import Background, Contrast, CustomFile, Data, Layer, Parameter
+from RATapi.models import Background, Contrast, CustomFile, Data, Layer, Parameter, Resolution
 from RATapi.utils.enums import Geometries, Languages, LayerModels
 
 
@@ -17,7 +17,7 @@ def r1_to_project_class(filename: str) -> Project:
 
     Parameters
     ----------
-    input_file : str
+    filename : str
         The path to a .mat file containing project data.
 
     Returns
@@ -29,15 +29,15 @@ def r1_to_project_class(filename: str) -> Project:
     mat_project = loadmat(filename, simplify_cells=True)["problem"]
 
     mat_module = mat_project["module"]
-    layer_model = mat_module["type"]
     if mat_module["experiment_type"] == "Air / Liquid (or solid)":
         geom = Geometries.AirSubstrate
     else:
         geom = Geometries.SubstrateLiquid
 
     # R1 uses a different name for custom xy layer model
+    layer_model = mat_module["type"]
     if layer_model == "custom XY profile":
-        layer_model = "custom xy"
+        layer_model = LayerModels.CustomXY
     layer_model = LayerModels(layer_model)
 
     def zip_if_several(*params) -> Union[tuple, list[tuple]]:
@@ -96,6 +96,7 @@ def r1_to_project_class(filename: str) -> Project:
             ]
         )
 
+    # we add these as new attributes of the mat project dict so we can feed them into read_param better
     if mat_project["numberOfBacks"] == 1:
         mat_project["back_param_names"] = "Background parameter 1"
     else:
@@ -103,23 +104,42 @@ def r1_to_project_class(filename: str) -> Project:
             f"Background parameter {i}" for i in range(1, mat_project["numberOfBacks"] + 1)
         ]
 
+    if mat_project["numberOfResolutions"] == 1:
+        mat_project["res_param_names"] = "Resolution parameter 1"
+    else:
+        mat_project["res_param_names"] = [
+            f"Resolution parameter {i}" for i in range(1, mat_project["numberOfBacks"] + 1)
+        ]
+
     params = read_param("paramnames", "constr", "params", "fityesno")
     back_params = read_param("back_param_names", "backs_constr", "backs", "backgrounds_fityesno")
+    res_params = read_param("res_param_names", "resolution_constr", "resolution", "resolution_fityesno")
     bulk_ins = read_param("nbaNames", "nbairs_constr", "nba", "nbairs_fityesno")
     bulk_outs = read_param("nbsNames", "nbsubs_constr", "nbs", "nbsubs_fityesno")
     scale_facs = read_param("scalesNames", "scale_constr", "scalefac", "scalefac_fityesno")
 
     # if just one background, backsNames and back_param_names are strings; fix that here
+    # and mutatis mutandis for resolution
     if isinstance(mat_project["back_param_names"], str):
         mat_project["back_param_names"] = [mat_project["back_param_names"]]
     if isinstance(mat_project["backsNames"], str):
         mat_project["backsNames"] = [mat_project["backsNames"]]
+    if isinstance(mat_project["res_param_names"], str):
+        mat_project["res_param_names"] = [mat_project["res_param_names"]]
+    if isinstance(mat_project["resolNames"], str):
+        mat_project["resolNames"] = [mat_project["resolNames"]]
 
-    # create backgrounds from background parameters
+    # create backgrounds and resolutions from parameters
     backs = ClassList(
         [
             Background(name=back_name, value_1=mat_project["back_param_names"][i])
             for i, back_name in enumerate(mat_project["backsNames"])
+        ]
+    )
+    res = ClassList(
+        [
+            Resolution(name=res_name, value_1=mat_project["res_param_names"][i])
+            for i, res_name in enumerate(mat_project["resolNames"])
         ]
     )
 
@@ -141,7 +161,10 @@ def r1_to_project_class(filename: str) -> Project:
     )
 
     # contrast names may be java strings (unsure why, maybe GUI input?): convert to Python str
-    # indexing gets the byte data out of the MatlabOpaque object
+    # the java string is presented in Python as a MatlabOpaque object in a 1-item array (hence index [0])
+    # which are given as a 1-item array with 4 entries. the fourth is the actual data (index [3]),
+    # which is given as the byte data of a Java string; this consists of 7 metadata bytes (ignored)
+    # and then the actual string characters (index [7:]) in ascii format (.decode("ascii"))
     if len(mat_project["contrastNames"]) == 1 and isinstance(mat_project["contrastNames"], MatlabOpaque):
         mat_project["contrastNames"] = bytes(mat_project["contrastNames"][0][3][7:]).decode("ascii")
     else:
@@ -212,6 +235,8 @@ def r1_to_project_class(filename: str) -> Project:
 
     else:
         custom_filepath = mat_module["name"]
+        if Path(custom_filepath).suffix != ".m":
+            custom_filepath += ".m"
         model_name = Path(custom_filepath).stem
         custom_file = ClassList([CustomFile(name=model_name, filename=custom_filepath, language=Languages.Matlab)])
         layers = ClassList()
@@ -225,6 +250,8 @@ def r1_to_project_class(filename: str) -> Project:
         parameters=params,
         backgrounds=backs,
         background_parameters=back_params,
+        resolutions=res,
+        resolution_parameters=res_params,
         bulk_in=bulk_ins,
         bulk_out=bulk_outs,
         scalefactors=scale_facs,
@@ -237,7 +264,9 @@ def r1_to_project_class(filename: str) -> Project:
     return project
 
 
-def project_class_to_r1(project: Project, filename: str = "RAT_project") -> Union[dict, None]:
+def project_class_to_r1(
+    project: Project, filename: str = "RAT_project", return_struct: bool = False
+) -> Union[dict, None]:
     """Convert a RAT Project to a RasCAL1 project struct.
 
     Parameters
@@ -246,12 +275,13 @@ def project_class_to_r1(project: Project, filename: str = "RAT_project") -> Unio
         The RAT Project to convert.
     filename : str, default "RAT_project"
         If given, saves as a .mat file with the given filename.
-        If empty, return the R1 struct dict.
+    return_struct : bool, default False
+        If True, do not save and instead return the R1 struct.
 
     Returns
     -------
     dict or None
-        If `filename` is False, return the r1 struct. Else, return nothing.
+        If `return_struct` is True, return the r1 struct. Else, return nothing.
     """
 
     def convert_parameters(params: ClassList, name: str, value: str, constr: str, fit: str, number: str = ""):
@@ -453,22 +483,16 @@ def project_class_to_r1(project: Project, filename: str = "RAT_project") -> Unio
                 if not all(isinstance(x, type(r1[key][0])) for x in r1[key]):
                     r1[key] = array(value, dtype="object")
 
-    if filename:
-        if filename[-4:] != ".mat":
-            filename += ".mat"
+    if return_struct:
+        return r1
 
-        # scipy.io.savemat doesn't do cells properly:
-        # https://github.com/scipy/scipy/issues/3756
-        # rather than fiddling we just use matlab
-        try:
-            from matlab.engine import start_matlab
-        except ImportError as err:
-            raise ImportError(
-                "The matlabengine package must be installed to convert project classes to R1 structs."
-            ) from err
-        eng = start_matlab()
-        eng.workspace["problem"] = r1
-        eng.save(filename, "problem", nargout=0)
-        eng.exit()
-        return None
-    return r1
+    if Path(filename).suffix != ".mat":
+        filename += ".mat"
+    # scipy.io.savemat doesn't do cells properly:
+    # https://github.com/scipy/scipy/issues/3756
+    # rather than fiddling we just use matlab
+    eng = wrappers.start_matlab().result()
+    eng.workspace["problem"] = r1
+    eng.save(filename, "problem", nargout=0)
+    eng.exit()
+    return None

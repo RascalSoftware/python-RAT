@@ -5456,48 +5456,73 @@ def r1_default_project():
                 sigma=np.inf,
             )
         ),
+        bulk_in=RATapi.ClassList(
+            RATapi.models.Parameter(
+                name="Air",
+                min=0.0,
+                value=0.0,
+                max=0.0,
+                fit=False,
+                prior_type="uniform",
+                mu=0.0,
+                sigma=np.inf,
+            )
+        ),
+        bulk_out=RATapi.ClassList(
+            RATapi.models.Parameter(
+                name="D2O",
+                min=6.3e-06,
+                value=6.35e-06,
+                max=6.4e-06,
+                fit=False,
+                prior_type="uniform",
+                mu=0.0,
+                sigma=np.inf,
+            )
+        ),
+        scalefactors=RATapi.ClassList(
+            RATapi.models.Parameter(
+                name="Scalefactor 1",
+                min=0.009999999776482582,
+                value=0.10141560336360426,
+                max=0.3,
+                fit=True,
+                prior_type="uniform",
+                mu=0.0,
+                sigma=np.inf,
+            )
+        ),
+        backgrounds=RATapi.ClassList(
+            RATapi.models.Background(name="Background 1", type="constant", value_1="Background parameter 1")
+        ),
+        background_parameters=RATapi.ClassList(
+            RATapi.models.Parameter(
+                name="Background parameter 1",
+                min=5e-08,
+                value=3.069003361230152e-06,
+                max=7e-06,
+                fit=True,
+                prior_type="uniform",
+                mu=0.0,
+                sigma=np.inf,
+            )
+        ),
+        resolutions=RATapi.ClassList(
+            RATapi.models.Resolution(name="Resolution 1", type="constant", value_1="Resolution parameter 1")
+        ),
+        resolution_parameters=RATapi.ClassList(
+            RATapi.models.Parameter(
+                name="Resolution parameter 1",
+                min=0.01,
+                value=0.03,
+                max=0.05,
+                fit=False,
+                prior_type="uniform",
+                mu=0.0,
+                sigma=np.inf,
+            )
+        ),
     )
-
-    del project.bulk_in[0]
-    project.bulk_in.append(
-        name="Air", min=0.0, value=0.0, max=0.0, fit=False, prior_type="uniform", mu=0.0, sigma=np.inf
-    )
-    del project.bulk_out[0]
-    project.bulk_out.append(
-        name="D2O", min=6.3e-06, value=6.35e-06, max=6.4e-06, fit=False, prior_type="uniform", mu=0.0, sigma=np.inf
-    )
-    del project.scalefactors[0]
-    project.scalefactors.append(
-        name="Scalefactor 1",
-        min=0.009999999776482582,
-        value=0.10141560336360426,
-        max=0.3,
-        fit=True,
-        prior_type="uniform",
-        mu=0.0,
-        sigma=np.inf,
-    )
-    del project.backgrounds[0]
-    del project.background_parameters[0]
-    project.background_parameters.append(
-        name="Background parameter 1",
-        min=5e-08,
-        value=3.069003361230152e-06,
-        max=7e-06,
-        fit=True,
-        prior_type="uniform",
-        mu=0.0,
-        sigma=np.inf,
-    )
-    project.backgrounds.append(name="Background 1", type="constant", value_1="Background parameter 1")
-    del project.resolutions[0]
-    del project.resolution_parameters[0]
-    project.resolution_parameters.append(
-        name="Resolution Param 1", min=0.01, value=0.03, max=0.05, fit=False, prior_type="uniform", mu=0.0, sigma=np.inf
-    )
-    project.resolutions.append(name="Resolution 1", type="constant", value_1="Resolution Param 1")
-    del project.data[0]
-    project.data.append(name="Simulation", simulation_range=[0.005, 0.7])
     project.data.append(
         name="f82395c",
         data=np.array(
@@ -5595,97 +5620,141 @@ def r1_monolayer():
                     prior_type="uniform",
                     mu=0.0,
                     sigma=np.inf,
-                )
+                ),
+                RATapi.models.Parameter(
+                    name="Area per molecule",
+                    min=47.0,
+                    value=53.052680457664785,
+                    max=100.0,
+                    fit=True,
+                    prior_type="uniform",
+                    mu=0.0,
+                    sigma=np.inf,
+                ),
+                RATapi.models.Parameter(
+                    name="Head Thickness",
+                    min=7.0,
+                    value=12.276333836779942,
+                    max=20.0,
+                    fit=True,
+                    prior_type="uniform",
+                    mu=0.0,
+                    sigma=np.inf,
+                ),
+                RATapi.models.Parameter(
+                    name="Theta",
+                    min=0.0,
+                    value=28.870541049836262,
+                    max=50.0,
+                    fit=True,
+                    prior_type="uniform",
+                    mu=0.0,
+                    sigma=np.inf,
+                ),
             ]
+        ),
+        bulk_in=RATapi.ClassList(
+            RATapi.models.Parameter(
+                name="Air",
+                min=0.0,
+                value=0.0,
+                max=0.0,
+                fit=False,
+                prior_type="uniform",
+                mu=0.0,
+                sigma=np.inf,
+            )
+        ),
+        bulk_out=(
+            RATapi.ClassList(
+                [
+                    RATapi.models.Parameter(
+                        name="D2O",
+                        min=6.3e-06,
+                        value=6.35e-06,
+                        max=6.4e-06,
+                        fit=False,
+                        prior_type="uniform",
+                        mu=0.0,
+                        sigma=np.inf,
+                    ),
+                    RATapi.models.Parameter(
+                        name="ACMW",
+                        min=-5e-07,
+                        value=0.0,
+                        max=5e-07,
+                        fit=False,
+                        prior_type="uniform",
+                        mu=0.0,
+                        sigma=np.inf,
+                    ),
+                ]
+            )
+        ),
+        scalefactors=RATapi.ClassList(
+            RATapi.models.Parameter(
+                name="Scalefactor 1",
+                min=0.1,
+                value=0.2272676786810902,
+                max=0.4,
+                fit=False,
+                prior_type="uniform",
+                mu=0.0,
+                sigma=np.inf,
+            )
+        ),
+        backgrounds=RATapi.ClassList(
+            [
+                RATapi.models.Background(name="Background  D2O", type="constant", value_1="Background parameter 1"),
+                RATapi.models.Background(name="Background ACMW", type="constant", value_1="Background parameter 2"),
+            ]
+        ),
+        background_parameters=RATapi.ClassList(
+            [
+                RATapi.models.Parameter(
+                    name="Background parameter 1",
+                    min=1e-07,
+                    value=2.2653463958223856e-06,
+                    max=7e-06,
+                    fit=True,
+                    prior_type="uniform",
+                    mu=0.0,
+                    sigma=np.inf,
+                ),
+                RATapi.models.Parameter(
+                    name="Background parameter 2",
+                    min=1e-07,
+                    value=5.7431759430575025e-06,
+                    max=7e-06,
+                    fit=True,
+                    prior_type="uniform",
+                    mu=0.0,
+                    sigma=np.inf,
+                ),
+            ]
+        ),
+        resolutions=RATapi.ClassList(
+            RATapi.models.Resolution(name="Resolution 1", type="constant", value_1="Resolution parameter 1")
+        ),
+        resolution_parameters=RATapi.ClassList(
+            RATapi.models.Parameter(
+                name="Resolution parameter 1",
+                min=0.01,
+                value=0.03,
+                max=0.05,
+                fit=False,
+                prior_type="uniform",
+                mu=0.0,
+                sigma=np.inf,
+            )
+        ),
+        custom_files=RATapi.ClassList(
+            RATapi.models.CustomFile(
+                name="Model_IIb", filename="Model_IIb.m", function_name="Model_IIb", language="matlab", path=""
+            )
         ),
     )
 
-    project.parameters.append(
-        name="Area per molecule",
-        min=47.0,
-        value=53.052680457664785,
-        max=100.0,
-        fit=True,
-        prior_type="uniform",
-        mu=0.0,
-        sigma=np.inf,
-    )
-    project.parameters.append(
-        name="Head Thickness",
-        min=7.0,
-        value=12.276333836779942,
-        max=20.0,
-        fit=True,
-        prior_type="uniform",
-        mu=0.0,
-        sigma=np.inf,
-    )
-    project.parameters.append(
-        name="Theta", min=0.0, value=28.870541049836262, max=50.0, fit=True, prior_type="uniform", mu=0.0, sigma=np.inf
-    )
-
-    del project.bulk_in[0]
-    project.bulk_in.append(
-        name="Air", min=0.0, value=0.0, max=0.0, fit=False, prior_type="uniform", mu=0.0, sigma=np.inf
-    )
-    del project.bulk_out[0]
-    project.bulk_out.append(
-        name="D2O", min=6.3e-06, value=6.35e-06, max=6.4e-06, fit=False, prior_type="uniform", mu=0.0, sigma=np.inf
-    )
-    project.bulk_out.append(
-        name="ACMW", min=-5e-07, value=0.0, max=5e-07, fit=False, prior_type="uniform", mu=0.0, sigma=np.inf
-    )
-
-    del project.scalefactors[0]
-    project.scalefactors.append(
-        name="Scalefactor 1",
-        min=0.1,
-        value=0.2272676786810902,
-        max=0.4,
-        fit=False,
-        prior_type="uniform",
-        mu=0.0,
-        sigma=np.inf,
-    )
-
-    del project.backgrounds[0]
-    del project.background_parameters[0]
-    project.background_parameters.append(
-        name="Background parameter 1",
-        min=1e-07,
-        value=2.2653463958223856e-06,
-        max=7e-06,
-        fit=True,
-        prior_type="uniform",
-        mu=0.0,
-        sigma=np.inf,
-    )
-    project.background_parameters.append(
-        name="Background parameter 2",
-        min=1e-07,
-        value=5.7431759430575025e-06,
-        max=7e-06,
-        fit=True,
-        prior_type="uniform",
-        mu=0.0,
-        sigma=np.inf,
-    )
-    project.backgrounds.append(name="Background  D2O", type="constant", value_1="Background parameter 1")
-    project.backgrounds.append(name="Background ACMW", type="constant", value_1="Background parameter 2")
-
-    del project.resolutions[0]
-    del project.resolution_parameters[0]
-    project.resolution_parameters.append(
-        name="Resolution Param 1", min=0.01, value=0.03, max=0.05, fit=False, prior_type="uniform", mu=0.0, sigma=np.inf
-    )
-    project.resolutions.append(name="Resolution 1", type="constant", value_1="Resolution Param 1")
-
-    project.custom_files.append(
-        name="Model_IIb", filename="Model_IIb.m", function_name="Model_IIb", language="matlab", path=""
-    )
-
-    del project.data[0]
-    project.data.append(name="Simulation", simulation_range=[0.005, 0.7])
     project.data.append(
         name="d70acmw20",
         data=np.array(
@@ -6198,7 +6267,32 @@ def r1_monolayer():
 
 @pytest.fixture
 def dspc_bilayer():
-    """The Project from the MATLAB DSPC standard layers example."""
+    """The Project from the DSPC standard layers example,
+    with some changes to make it compatible with R1.
+
+    """
     project, _ = DSPC_standard_layers()
+
+    # change parameters to standardise arguments not in R1
+    for class_list in RATapi.project.parameter_class_lists:
+        params = getattr(project, class_list)
+        for param in params:
+            param.prior_type = "uniform"
+            param.mu = 0.0
+            param.sigma = np.inf
+
+    for i in range(0, len(project.background_parameters)):
+        param = project.background_parameters[i]
+        for background in project.backgrounds:
+            if background.value_1 == param.name:
+                background.value_1 = f"Background parameter {i+1}"
+        param.name = f"Background parameter {i+1}"
+
+    for i in range(0, len(project.resolution_parameters)):
+        param = project.resolution_parameters[i]
+        for resolution in project.resolutions:
+            if resolution.value_1 == param.name:
+                resolution.value_1 = f"Resolution parameter {i+1}"
+        param.name = f"Resolution parameter {i+1}"
 
     return project

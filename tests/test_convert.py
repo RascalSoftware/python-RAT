@@ -1,9 +1,11 @@
 """Test conversion to Project files."""
 
 import os
+import tempfile
 
 import pytest
 
+import RATapi
 from RATapi.utils.convert import project_class_to_r1, r1_to_project_class
 
 TEST_DIR_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_data")
@@ -24,28 +26,15 @@ def test_r1_to_project_class(file, expected, request):
 
     # assert statements have to be more careful due to R1 missing features
     # e.g. R1 doesn't support background parameter names, mu, sigma...
-    for attr in ["resolutions", "data", "layers", "contrasts"]:
-        assert getattr(output_project, attr) == getattr(expected_project, attr)
-    for param_type in ["parameters", "bulk_in", "bulk_out", "scalefactors", "resolution_parameters"]:
-        exp_params = getattr(expected_project, param_type)
-        act_params = getattr(output_project, param_type)
-        assert [p.name for p in exp_params] == [p.name for p in act_params]
-        for param in exp_params:
-            for attr in ["min", "value", "max", "fit"]:
-                assert getattr(param, attr) == getattr(act_params[param.name], attr)
-
-    for i in range(0, len(expected_project.background_parameters)):
-        expected_param = expected_project.background_parameters[i]
-        actual_param = output_project.background_parameters[i]
-        for attr in ["min", "value", "max", "fit"]:
-            assert getattr(expected_param, attr) == getattr(actual_param, attr)
+    for class_list in RATapi.project.class_lists:
+        assert getattr(output_project, class_list) == getattr(expected_project, class_list)
 
 
 @pytest.mark.parametrize("project", ["r1_default_project", "r1_monolayer", "dspc_bilayer"])
 def test_r1_involution(project, request, monkeypatch):
     """Test that converting a Project to an R1 struct and back returns the same project."""
     original_project = request.getfixturevalue(project)
-    r1_struct = project_class_to_r1(original_project, "")
+    r1_struct = project_class_to_r1(original_project, return_struct=True)
 
     # rather than writing the struct to a file and reading the file, just directly
     # hand the struct over
@@ -57,18 +46,16 @@ def test_r1_involution(project, request, monkeypatch):
 
     converted_project = r1_to_project_class(project)
 
-    for attr in ["resolutions", "data", "layers", "contrasts"]:
-        assert getattr(converted_project, attr) == getattr(original_project, attr)
-    for param_type in ["parameters", "bulk_in", "bulk_out", "scalefactors", "resolution_parameters"]:
-        exp_params = getattr(original_project, param_type)
-        act_params = getattr(converted_project, param_type)
-        assert [p.name for p in exp_params] == [p.name for p in act_params]
-        for param in exp_params:
-            for attr in ["min", "value", "max", "fit"]:
-                assert getattr(param, attr) == getattr(act_params[param.name], attr)
+    for class_list in RATapi.project.class_lists:
+        assert getattr(converted_project, class_list) == getattr(original_project, class_list)
 
-    for i in range(0, len(original_project.background_parameters)):
-        expected_param = original_project.background_parameters[i]
-        actual_param = converted_project.background_parameters[i]
-        for attr in ["min", "value", "max", "fit"]:
-            assert getattr(expected_param, attr) == getattr(actual_param, attr)
+
+def test_matlab_save(request):
+    """Test that MATLAB correctly saves the"""
+    project = request.getfixturevalue("r1_default_project")
+    with tempfile.TemporaryDirectory() as temp:
+        matfile = os.path.join(temp, "testfile.mat")
+        project_class_to_r1(project, filename=matfile)
+        converted_project = r1_to_project_class(matfile)
+
+    assert project == converted_project
