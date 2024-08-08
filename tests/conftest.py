@@ -5,7 +5,6 @@ import RATapi
 import RATapi.classlist
 import RATapi.outputs
 import RATapi.rat_core
-from RATapi.examples import DSPC_standard_layers
 
 
 @pytest.fixture
@@ -6261,38 +6260,5 @@ def r1_monolayer():
         resample=False,
         model=["Model_IIb"],
     )
-
-    return project
-
-
-@pytest.fixture
-def dspc_bilayer():
-    """The Project from the DSPC standard layers example,
-    with some changes to make it compatible with R1.
-
-    """
-    project, _ = DSPC_standard_layers()
-
-    # change parameters to standardise arguments not in R1
-    for class_list in RATapi.project.parameter_class_lists:
-        params = getattr(project, class_list)
-        for param in params:
-            param.prior_type = "uniform"
-            param.mu = 0.0
-            param.sigma = np.inf
-
-    for i in range(0, len(project.background_parameters)):
-        param = project.background_parameters[i]
-        for background in project.backgrounds:
-            if background.value_1 == param.name:
-                background.value_1 = f"Background parameter {i+1}"
-        param.name = f"Background parameter {i+1}"
-
-    for i in range(0, len(project.resolution_parameters)):
-        param = project.resolution_parameters[i]
-        for resolution in project.resolutions:
-            if resolution.value_1 == param.name:
-                resolution.value_1 = f"Resolution parameter {i+1}"
-        param.name = f"Resolution parameter {i+1}"
 
     return project

@@ -1,5 +1,6 @@
 """Test conversion to Project files."""
 
+import importlib
 import os
 import tempfile
 
@@ -9,6 +10,39 @@ import RATapi
 from RATapi.utils.convert import project_class_to_r1, r1_to_project_class
 
 TEST_DIR_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_data")
+
+
+@pytest.fixture
+def dspc_bilayer():
+    """The Project from the DSPC standard layers example,
+    with some changes to make it compatible with R1.
+
+    """
+    project, _ = RATapi.examples.DSPC_standard_layers()
+
+    # change parameters to standardise arguments not in R1
+    for class_list in RATapi.project.parameter_class_lists:
+        params = getattr(project, class_list)
+        for param in params:
+            param.prior_type = "uniform"
+            param.mu = 0.0
+            param.sigma = float("inf")
+
+    for i in range(0, len(project.background_parameters)):
+        param = project.background_parameters[i]
+        for background in project.backgrounds:
+            if background.value_1 == param.name:
+                background.value_1 = f"Background parameter {i+1}"
+        param.name = f"Background parameter {i+1}"
+
+    for i in range(0, len(project.resolution_parameters)):
+        param = project.resolution_parameters[i]
+        for resolution in project.resolutions:
+            if resolution.value_1 == param.name:
+                resolution.value_1 = f"Resolution parameter {i+1}"
+        param.name = f"Resolution parameter {i+1}"
+
+    return project
 
 
 @pytest.mark.parametrize(
@@ -50,9 +84,9 @@ def test_r1_involution(project, request, monkeypatch):
         assert getattr(converted_project, class_list) == getattr(original_project, class_list)
 
 
-@pytest.mark.skip("Requires matlabengine")
+@pytest.mark.skipif(importlib.util.find_spec("matlab") is None, reason="Matlab not installed")
 def test_matlab_save(request):
-    """Test that MATLAB correctly saves the"""
+    """Test that MATLAB correctly saves the .mat file."""
     project = request.getfixturevalue("r1_default_project")
     with tempfile.TemporaryDirectory() as temp:
         matfile = os.path.join(temp, "testfile.mat")
