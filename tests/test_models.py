@@ -66,6 +66,11 @@ def test_default_names(model: Callable, model_name: str, model_params: dict) -> 
     ],
 )
 class TestModels:
+    def test_initialise_with_args(self, model: Callable, model_params: dict) -> None:
+        """When initialising a model with args and kwargs, check the args are assigned correctly."""
+        test_model = model("Test Name", **model_params)
+        assert test_model.name == "Test Name"
+
     def test_initialise_with_wrong_type(self, model: Callable, model_params: dict) -> None:
         """When initialising a model with the wrong type for the "name" field, we should raise a ValidationError."""
         with pytest.raises(
