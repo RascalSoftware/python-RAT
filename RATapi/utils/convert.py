@@ -491,7 +491,10 @@ def project_class_to_r1(
     # scipy.io.savemat doesn't do cells properly:
     # https://github.com/scipy/scipy/issues/3756
     # rather than fiddling we just use matlab
-    eng = wrappers.start_matlab().result()
+    try:
+        eng = wrappers.start_matlab().result()
+    except AttributeError as err:
+        raise ImportError("matlabengine is not installed.") from err
     eng.workspace["problem"] = r1
     eng.save(filename, "problem", nargout=0)
     eng.exit()
