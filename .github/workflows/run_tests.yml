@@ -51,7 +51,9 @@ jobs:
           sudo apt install libomp-dev
       - name: Set up MATLAB
         uses: matlab-actions/setup-matlab@v2
+        with:
+          release: R2023b
       - name: Install and Test with pytest
         run: |
-          python -m pip install -e .[Dev,Matlab_latest]
+          python -m pip install -e .[Dev,Matlab_2023b]
           pytest tests/ --cov=RATapi --cov-report=term
