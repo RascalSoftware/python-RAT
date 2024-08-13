@@ -51,7 +51,7 @@ class Strategies(RATEnum):
 
     Random = "random"
     LocalToBest = "local to best"
-    BestWithJitter = "best w/ jitter"
+    BestWithJitter = "best jitter"
     RandomWithPerVectorDither = "vector dither"
     RandomWithPerGenerationDither = "generation dither"
     RandomEitherOrAlgorithm = "either or"
