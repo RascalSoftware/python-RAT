@@ -451,7 +451,7 @@ def make_controls(input_controls: RATapi.Controls, checks: Checks) -> Control:
     controls.populationSize = input_controls.populationSize
     controls.fWeight = input_controls.fWeight
     controls.crossoverProbability = input_controls.crossoverProbability
-    controls.strategy = input_controls.strategy.value  # Required for the IntEnum
+    controls.strategy = int(input_controls.strategy)  # RAT core expects strategy as an integer
     controls.targetValue = input_controls.targetValue
     controls.numGenerations = input_controls.numGenerations
     # NS

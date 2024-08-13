@@ -1,5 +1,3 @@
-from enum import Enum
-
 try:
     from enum import StrEnum
 except ImportError:
@@ -48,15 +46,19 @@ class Display(RATEnum):
     Final = "final"
 
 
-class Strategies(Enum):
-    """Defines the available options for strategies"""
+class Strategies(RATEnum):
+    """Defines the available options for differential evolution strategies"""
 
-    Random = 1
-    LocalToBest = 2
-    BestWithJitter = 3
-    RandomWithPerVectorDither = 4
-    RandomWithPerGenerationDither = 5
-    RandomEitherOrAlgorithm = 6
+    Random = "random"
+    LocalToBest = "local to best"
+    BestWithJitter = "best w/ jitter"
+    RandomWithPerVectorDither = "vector dither"
+    RandomWithPerGenerationDither = "generation dither"
+    RandomEitherOrAlgorithm = "either or"
+
+    def __int__(self):
+        # as RAT core expects strategy as an integer
+        return [s for s in Strategies].index(self) + 1
 
 
 class BoundHandling(RATEnum):
