@@ -51,5 +51,5 @@ jobs:
           sudo apt install libomp-dev
       - name: Install and Test with pytest
         run: |
-          python -m pip install -e .[Dev]
+          python -m pip install -e .[Dev,Matlab_latest]
           pytest tests/ --cov=RATapi --cov-report=term

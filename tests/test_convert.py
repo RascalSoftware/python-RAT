@@ -1,6 +1,6 @@
 """Test conversion to Project files."""
 
-import importlib
+# import importlib
 import os
 import tempfile
 
@@ -84,7 +84,7 @@ def test_r1_involution(project, request, monkeypatch):
         assert getattr(converted_project, class_list) == getattr(original_project, class_list)
 
 
-@pytest.mark.skipif(importlib.util.find_spec("matlab") is None, reason="Matlab not installed")
+# @pytest.mark.skipif(importlib.util.find_spec("matlab") is None, reason="Matlab not installed")
 def test_matlab_save(request):
     """Test that MATLAB correctly saves the .mat file."""
     project = request.getfixturevalue("r1_default_project")
