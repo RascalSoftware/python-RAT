@@ -1,6 +1,6 @@
 import time
 
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 import RATapi.rat_core
 from RATapi.inputs import make_input
@@ -16,18 +16,23 @@ class ProgressBar:
     ----------
     display : bool, default: True
             Indicates if displaying is allowed
-
     """
 
     def __init__(self, display=True):
+        self.pbar = None
         self.display = display
+        self.tqdm_kwargs = {"total": 100, "desc": "", "bar_format": "{l_bar}{bar}", "disable": not self.display}
+        # Determine if the auto tqdm is standard or notebook
+        from tqdm.asyncio import tqdm as asyncio_tqdm
+
+        if tqdm == asyncio_tqdm:
+            self.tqdm_kwargs.update({"ncols": 90})
 
     def __enter__(self):
         if self.display:
             RATapi.events.register(RATapi.events.EventTypes.Progress, self.updateProgress)
-        self.pbar = tqdm(total=100, desc="", delay=1, bar_format="{l_bar}{bar}", ncols=90, disable=not self.display)
-        self.pbar.delay = 0
-        return self.pbar
+
+        return self
 
     def updateProgress(self, event):
         """Callback for the progress event.
@@ -37,13 +42,15 @@ class ProgressBar:
         event: ProgressEventData
             The progress event data.
         """
-
+        if self.pbar is None:
+            self.pbar = tqdm(**self.tqdm_kwargs)
         value = event.percent * 100
         self.pbar.desc = event.message
         self.pbar.update(value - self.pbar.n)
 
     def __exit__(self, _exc_type, _exc_val, _traceback):
-        self.pbar.leave = False
+        if self.pbar is not None:
+            self.pbar.close()
         if self.display:
             RATapi.events.clear(RATapi.events.EventTypes.Progress, self.updateProgress)
 

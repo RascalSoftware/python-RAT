@@ -329,13 +329,13 @@ def test_progress_bar() -> None:
     event.message = "TESTING"
     event.percent = 0.2
     with ProgressBar() as bar:
-        assert bar.n == 0
+        assert bar.pbar is None
         notify(EventTypes.Progress, event)
-        assert bar.desc == "TESTING"
-        assert bar.n == 20
+        assert bar.pbar.desc == "TESTING"
+        assert bar.pbar.n == 20
 
         event.message = "AGAIN"
         event.percent = 0.6
         notify(EventTypes.Progress, event)
-        assert bar.desc == "AGAIN"
-        assert bar.n == 60
+        assert bar.pbar.desc == "AGAIN"
+        assert bar.pbar.n == 60
