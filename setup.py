@@ -177,7 +177,7 @@ setup(
         ':python_version < "3.11"': ["StrEnum >= 0.4.15"],
         "Dev": ["pytest>=7.4.0", "pytest-cov>=4.1.0", "ruff>=0.4.10"],
         "Matlab_latest": ["matlabengine"],
-        "Matlab_2023b": ["matlabengine == 23.2.1"],
+        "Matlab_2023b": ["matlabengine == 23.2.3"],
         "Matlab_2023a": ["matlabengine == 9.14.3"],
         "Matlab_2022b": ["matlabengine == 9.13.9"],
         "Matlab_2022a": ["matlabengine == 9.12.19"],
