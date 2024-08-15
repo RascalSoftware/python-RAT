@@ -51,6 +51,8 @@ class ProgressBar:
     def __exit__(self, _exc_type, _exc_val, _traceback):
         if self.pbar is not None:
             self.pbar.close()
+            print("")  # Print new line after bar
+
         if self.display:
             RATapi.events.clear(RATapi.events.EventTypes.Progress, self.updateProgress)
 
