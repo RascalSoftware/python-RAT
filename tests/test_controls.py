@@ -553,7 +553,7 @@ class TestNS:
             "|  resampleParams  | [0.9, 50] |\n"
             "|     display      |    iter   |\n"
             "|      nLive       |    150    |\n"
-            "|      nMCMC       |    0.0    |\n"
+            "|      nMCMC       |     0     |\n"
             "|    propScale     |    0.1    |\n"
             "|   nsTolerance    |    0.1    |\n"
             "+------------------+-----------+"
@@ -670,7 +670,7 @@ class TestNS:
     @pytest.mark.parametrize(
         "control_property, value, bound",
         [
-            ("nMCMC", -0.6, 0),
+            ("nMCMC", -1, 0),
             ("nsTolerance", -500, 0),
             ("nLive", -500, 1),
         ],

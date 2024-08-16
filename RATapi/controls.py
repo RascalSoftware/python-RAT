@@ -60,7 +60,7 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid"):
     numGenerations: int = Field(500, ge=1)
     # NS
     nLive: int = Field(150, ge=1)
-    nMCMC: float = Field(0.0, ge=0.0)
+    nMCMC: int = Field(0, ge=0)
     propScale: float = Field(0.1, gt=0.0, lt=1.0)
     nsTolerance: float = Field(0.1, ge=0.0)
     # Dream
