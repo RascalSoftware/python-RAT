@@ -8,6 +8,7 @@ build-backend = 'setuptools.build_meta'
 
 [tool.ruff]
 line-length = 120
+extend-exclude = ["*.ipynb"]
 
 [tool.ruff.lint]
 select = ["E", "F", "UP", "B", "SIM", "I"]
