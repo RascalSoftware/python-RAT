@@ -62,12 +62,14 @@ class Strategies(RATEnum):
     def _missing_(cls, value: Union[int, str]):
         # legacy compatibility with strategies being 1-indexed ints under the hood
         if isinstance(value, int):
+            if value < 1 or value > 6:
+                raise IndexError("Strategy indices must be between 1 and 6.")
             return list(cls)[value - 1]
         return super()._missing_(value)
 
     def __int__(self):
         # as RAT core expects strategy as an integer
-        return [s for s in Strategies].index(self) + 1
+        return list(Strategies).index(self) + 1
 
 
 class BoundHandling(RATEnum):
