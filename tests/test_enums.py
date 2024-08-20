@@ -17,6 +17,7 @@ from RATapi.utils.enums import (
     Priors,
     Procedures,
     RATEnum,
+    Strategies,
     TypeOptions,
 )
 
@@ -98,3 +99,8 @@ def test_alternative_spellings(test_enum: Callable, test_str: str, expected_valu
     assert test_enum(test_str) == expected_value
     assert test_enum(test_str.upper()) == expected_value
     assert test_enum(test_str.title()) == expected_value
+
+
+def test_integer_strategies():
+    """Test that strategies can be input as integers."""
+    assert [Strategies(i) for i in range(1, len(Strategies) + 1)] == list(Strategies)

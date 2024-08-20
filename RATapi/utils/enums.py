@@ -1,4 +1,4 @@
-from enum import Enum
+from typing import Union
 
 try:
     from enum import StrEnum
@@ -48,15 +48,28 @@ class Display(RATEnum):
     Final = "final"
 
 
-class Strategies(Enum):
-    """Defines the available options for strategies"""
+class Strategies(RATEnum):
+    """Defines the available options for differential evolution strategies"""
 
-    Random = 1
-    LocalToBest = 2
-    BestWithJitter = 3
-    RandomWithPerVectorDither = 4
-    RandomWithPerGenerationDither = 5
-    RandomEitherOrAlgorithm = 6
+    Random = "random"
+    LocalToBest = "local to best"
+    BestWithJitter = "best jitter"
+    RandomWithPerVectorDither = "vector dither"
+    RandomWithPerGenerationDither = "generation dither"
+    RandomEitherOrAlgorithm = "either or"
+
+    @classmethod
+    def _missing_(cls, value: Union[int, str]):
+        # legacy compatibility with strategies being 1-indexed ints under the hood
+        if isinstance(value, int):
+            if value < 1 or value > 6:
+                raise IndexError("Strategy indices must be between 1 and 6.")
+            return list(cls)[value - 1]
+        return super()._missing_(value)
+
+    def __int__(self):
+        # as RAT core expects strategy as an integer
+        return list(Strategies).index(self) + 1
 
 
 class BoundHandling(RATEnum):
