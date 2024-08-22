@@ -174,7 +174,7 @@ def make_problem(project: RATapi.Project) -> ProblemDefinition:
     problem.contrastCustomFiles = contrast_custom_files
     problem.resample = make_resample(project)
     problem.dataPresent = make_data_present(project)
-    problem.oilChiDataPresent = [0] * len(project.contrasts)
+    problem.oilChiDataPresent = [1] * len(project.contrasts)
     problem.numberOfContrasts = len(project.contrasts)
     problem.numberOfLayers = len(project.layers)
     problem.numberOfDomainContrasts = len(project.domain_contrasts)
