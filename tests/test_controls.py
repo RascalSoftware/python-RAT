@@ -1,5 +1,8 @@
 """Test the controls module."""
 
+import contextlib
+import os
+import tempfile
 from typing import Any, Union
 
 import pydantic
@@ -7,6 +10,17 @@ import pytest
 
 from RATapi.controls import Controls, fields
 from RATapi.utils.enums import BoundHandling, Display, Parallel, Procedures, Strategies
+
+
+@pytest.fixture
+def IPC_controls():
+    """A controls object with a temporary file set as the IPC file."""
+    IPC_controls = Controls()
+    IPC_obj, IPC_controls._IPCFilePath = tempfile.mkstemp()
+    os.close(IPC_obj)
+    yield IPC_controls
+    with contextlib.suppress(FileNotFoundError):
+        os.remove(IPC_controls._IPCFilePath)
 
 
 def test_initialise_procedure_error() -> None:
@@ -851,3 +865,35 @@ class TestDream:
     def test_control_class_dream_str(self, table_str) -> None:
         """Tests the Dream model __str__."""
         assert self.dream.__str__() == table_str
+
+
+def test_initialise_IPC() -> None:
+    """Tests that an Inter-Process Communication File can be set up."""
+    test_controls = Controls()
+    test_controls.initialise_IPC()
+    assert test_controls._IPCFilePath != ""
+    with open(test_controls._IPCFilePath, "rb") as f:
+        file_content = f.read()
+    assert file_content == b"0"
+    os.remove(test_controls._IPCFilePath)
+
+
+def test_sendStopEvent(IPC_controls) -> None:
+    """Tests that an Inter-Process Communication File can be modified."""
+    IPC_controls.sendStopEvent()
+    with open(IPC_controls._IPCFilePath, "rb") as f:
+        file_content = f.read()
+    assert file_content == b"1"
+
+
+def test_sendStopEvent_empty_file() -> None:
+    """Tests that we do not write to a non-existent Inter-Process Communication File."""
+    test_controls = Controls()
+    with pytest.warns(UserWarning, match="An IPC file was not initialised."):
+        test_controls.sendStopEvent()
+
+
+def test_delete_IPC(IPC_controls) -> None:
+    """Tests that an Inter-Process Communication File can be safely removed."""
+    IPC_controls.delete_IPC()
+    assert not os.path.isfile(IPC_controls._IPCFilePath)

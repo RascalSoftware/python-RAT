@@ -470,4 +470,6 @@ def make_controls(input_controls: RATapi.Controls, checks: Checks) -> Control:
     # IPC
     controls.IPCFilePath = ""
 
+    controls.IPCFilePath = input_controls._IPCFilePath
+
     return controls
