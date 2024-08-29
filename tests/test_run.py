@@ -3,6 +3,8 @@
 We use the example for both a reflectivity calculation, and Bayesian analysis using the Dream algorithm.
 """
 
+import io
+from contextlib import redirect_stdout
 from unittest import mock
 
 import numpy as np
@@ -12,7 +14,7 @@ import RATapi
 import RATapi.outputs
 import RATapi.rat_core
 from RATapi.events import EventTypes, ProgressEventData, notify
-from RATapi.run import ProgressBar
+from RATapi.run import ProgressBar, TextOuput
 from RATapi.utils.enums import Calculations, Geometries, LayerModels, Procedures
 from tests.utils import check_results_equal
 
@@ -339,3 +341,15 @@ def test_progress_bar() -> None:
         notify(EventTypes.Progress, event)
         assert bar.pbar.desc == "AGAIN"
         assert bar.pbar.n == 60
+
+
+def test_text_output() -> None:
+    with io.StringIO() as buf, redirect_stdout(buf), TextOuput():
+        assert buf.getvalue() == ""
+        notify(EventTypes.Message, "Hello World")
+        assert buf.getvalue() == "Hello World"
+
+    with io.StringIO() as buf, redirect_stdout(buf), TextOuput(display=False):
+        assert buf.getvalue() == ""
+        notify(EventTypes.Message, "Hello World")
+        assert buf.getvalue() == ""

@@ -468,5 +468,7 @@ def make_controls(input_controls: RATapi.Controls, checks: Checks) -> Control:
     controls.adaptPCR = input_controls.adaptPCR
     # Checks
     controls.checks = checks
+    # IPC
+    controls.IPCFilePath = ""
 
     return controls
