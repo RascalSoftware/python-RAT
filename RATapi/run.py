@@ -57,7 +57,7 @@ class ProgressBar:
             RATapi.events.clear(RATapi.events.EventTypes.Progress, self.updateProgress)
 
 
-class TextOuput:
+class TextOutput:
     """Pipes the message event to stdout
 
     Parameters
@@ -110,7 +110,7 @@ def run(project, controls):
         print("Starting RAT " + horizontal_line)
 
     start = time.time()
-    with ProgressBar(display=display_on), TextOuput(display=display_on):
+    with ProgressBar(display=display_on), TextOutput(display=display_on):
         problem_definition, output_results, bayes_results = RATapi.rat_core.RATMain(
             problem_definition,
             cells,

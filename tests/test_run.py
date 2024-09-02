@@ -14,7 +14,7 @@ import RATapi
 import RATapi.outputs
 import RATapi.rat_core
 from RATapi.events import EventTypes, ProgressEventData, notify
-from RATapi.run import ProgressBar, TextOuput
+from RATapi.run import ProgressBar, TextOutput
 from RATapi.utils.enums import Calculations, Geometries, LayerModels, Procedures
 from tests.utils import check_results_equal
 
@@ -344,12 +344,12 @@ def test_progress_bar() -> None:
 
 
 def test_text_output() -> None:
-    with io.StringIO() as buf, redirect_stdout(buf), TextOuput():
+    with io.StringIO() as buf, redirect_stdout(buf), TextOutput():
         assert buf.getvalue() == ""
         notify(EventTypes.Message, "Hello World")
         assert buf.getvalue() == "Hello World"
 
-    with io.StringIO() as buf, redirect_stdout(buf), TextOuput(display=False):
+    with io.StringIO() as buf, redirect_stdout(buf), TextOutput(display=False):
         assert buf.getvalue() == ""
         notify(EventTypes.Message, "Hello World")
         assert buf.getvalue() == ""
