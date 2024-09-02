@@ -509,7 +509,8 @@ struct Control {
     real_T propScale {};
     real_T nsTolerance {};
     boolean_T calcSldDuringFit {};
-    py::array_t<real_T> resampleParams;
+    real_T resampleMinAngle {};
+    real_T resampleNPoints {};
     real_T updateFreq {};
     real_T updatePlotFreq {};
     real_T nSamples {};
@@ -914,8 +915,8 @@ RAT::struct2_T createStruct2T(const Control& control)
     stringToRatArray(control.procedure, control_struct.procedure.data, control_struct.procedure.size);
     stringToRatArray(control.display, control_struct.display.data, control_struct.display.size);
     control_struct.xTolerance = control.xTolerance;
-    control_struct.resampleParams[0] = control.resampleParams.at(0);
-    control_struct.resampleParams[1] = control.resampleParams.at(1);
+    control_struct.resampleMinAngle = control.resampleMinAngle;
+    control_struct.resampleNPoints = control.resampleNPoints;
     stringToRatArray(control.boundHandling, control_struct.boundHandling.data, control_struct.boundHandling.size);
     control_struct.adaptPCR = control.adaptPCR;
     control_struct.checks = createStruct3(control.checks);
@@ -1616,7 +1617,8 @@ PYBIND11_MODULE(rat_core, m) {
         .def_readwrite("propScale", &Control::propScale)
         .def_readwrite("nsTolerance", &Control::nsTolerance)
         .def_readwrite("calcSldDuringFit", &Control::calcSldDuringFit)
-        .def_readwrite("resampleParams", &Control::resampleParams)
+        .def_readwrite("resampleMinAngle", &Control::resampleMinAngle)
+        .def_readwrite("resampleNPoints", &Control::resampleNPoints)
         .def_readwrite("updateFreq", &Control::updateFreq)
         .def_readwrite("updatePlotFreq", &Control::updatePlotFreq)
         .def_readwrite("nSamples", &Control::nSamples)
