@@ -6,7 +6,6 @@ from pydantic import (
     Field,
     ValidationError,
     ValidatorFunctionWrapHandler,
-    field_validator,
     model_serializer,
     model_validator,
 )
@@ -14,7 +13,7 @@ from pydantic import (
 from RATapi.utils.custom_errors import custom_pydantic_validation_error
 from RATapi.utils.enums import BoundHandling, Display, Parallel, Procedures, Strategies
 
-common_fields = ["procedure", "parallel", "calcSldDuringFit", "resampleParams", "display"]
+common_fields = ["procedure", "parallel", "calcSldDuringFit", "resampleMinAngle", "resampleNPoints", "display"]
 update_fields = ["updateFreq", "updatePlotFreq"]
 fields = {
     "calculate": common_fields,
@@ -41,7 +40,8 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid"):
     procedure: Procedures = Procedures.Calculate
     parallel: Parallel = Parallel.Single
     calcSldDuringFit: bool = False
-    resampleParams: list[float] = Field([0.9, 50], min_length=2, max_length=2)
+    resampleMinAngle: float = Field(0.9, lt=1, gt=0)
+    resampleNPoints: int = Field(50, ge=0)
     display: Display = Display.Iter
     # Simplex
     xTolerance: float = Field(1.0e-6, gt=0.0)
@@ -116,16 +116,6 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid"):
                 )
 
         return validated_self
-
-    @field_validator("resampleParams")
-    @classmethod
-    def check_resample_params(cls, values: list[float]) -> list[float]:
-        """Make sure each of the two values of resampleParams satisfy their conditions."""
-        if not 0 < values[0] < 1:
-            raise ValueError("resampleParams[0] must be between 0 and 1")
-        if values[1] < 0:
-            raise ValueError("resampleParams[1] must be greater than or equal to 0")
-        return values
 
     @model_serializer
     def serialize(self):
