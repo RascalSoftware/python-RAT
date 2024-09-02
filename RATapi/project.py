@@ -285,7 +285,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
             )
         elif "Substrate Roughness" not in [name.title() for name in self.get_all_protected_parameters()["parameters"]]:
             # If substrate roughness is included as a standard parameter replace it with a protected parameter
-            substrate_roughness_values = self.parameters[self.parameters.index("Substrate Roughness")].model_dump()
+            substrate_roughness_values = self.parameters["Substrate Roughness"].model_dump()
             self.parameters.remove("Substrate Roughness")
             self.parameters.insert(0, RATapi.models.ProtectedParameter(**substrate_roughness_values))
 
