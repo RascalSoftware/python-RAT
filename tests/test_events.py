@@ -1,5 +1,7 @@
+import pickle
 from unittest import mock
 
+import numpy as np
 import pytest
 
 import RATapi.events
@@ -64,3 +66,36 @@ def test_event_notify() -> None:
     assert first_callback.call_count == 1
     assert second_callback.call_count == 1
     assert third_callback.call_count == 1
+
+
+def test_event_data_pickle():
+    data = RATapi.events.ProgressEventData()
+    data.message = "Hello"
+    data.percent = 0.5
+    pickled_data = pickle.loads(pickle.dumps(data))
+    assert pickled_data.message == data.message
+    assert pickled_data.percent == data.percent
+
+    data = RATapi.events.PlotEventData()
+    data.modelType = "custom layers"
+    data.dataPresent = np.ones(2)
+    data.subRoughs = np.ones((20, 2))
+    data.resample = np.ones(2)
+    data.resampledLayers = [np.ones((20, 2)), np.ones((20, 2))]
+    data.reflectivity = [np.ones((20, 2)), np.ones((20, 2))]
+    data.shiftedData = [np.ones((20, 2)), np.ones((20, 2))]
+    data.sldProfiles = [np.ones((20, 2)), np.ones((20, 2))]
+    data.contrastNames = ["D2O", "SMW"]
+
+    pickled_data = pickle.loads(pickle.dumps(data))
+
+    assert pickled_data.modelType == data.modelType
+    assert (pickled_data.dataPresent == data.dataPresent).all()
+    assert (pickled_data.subRoughs == data.subRoughs).all()
+    assert (pickled_data.resample == data.resample).all()
+    for i in range(2):
+        assert (pickled_data.resampledLayers[i] == data.resampledLayers[i]).all()
+        assert (pickled_data.reflectivity[i] == data.reflectivity[i]).all()
+        assert (pickled_data.shiftedData[i] == data.shiftedData[i]).all()
+        assert (pickled_data.sldProfiles[i] == data.sldProfiles[i]).all()
+    assert pickled_data.contrastNames == data.contrastNames
