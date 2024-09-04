@@ -1,6 +1,7 @@
 """Test the inputs module."""
 
 import pathlib
+import pickle
 from itertools import chain
 from unittest import mock
 
@@ -640,18 +641,23 @@ def test_make_input(test_project, test_problem, test_cells, test_limits, test_pr
     ), mock.patch.object(RATapi.wrappers.DylibWrapper, "getHandle", mock.MagicMock(return_value=dummy_function)):
         problem, cells, limits, priors, controls = make_input(test_project, RATapi.Controls())
 
+    problem = pickle.loads(pickle.dumps(problem))
     check_problem_equal(problem, test_problem)
+    cells = pickle.loads(pickle.dumps(cells))
     check_cells_equal(cells, test_cells)
 
+    limits = pickle.loads(pickle.dumps(limits))
     for limit_field in parameter_fields:
         assert (getattr(limits, limit_field) == getattr(test_limits, limit_field)).all()
 
+    priors = pickle.loads(pickle.dumps(priors))
     for prior_field in parameter_fields:
         assert getattr(priors, prior_field) == getattr(test_priors, prior_field)
 
     assert priors.priorNames == test_priors.priorNames
     assert (priors.priorValues == test_priors.priorValues).all()
 
+    controls = pickle.loads(pickle.dumps(controls))
     check_controls_equal(controls, test_controls)
 
 
