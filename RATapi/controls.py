@@ -40,7 +40,7 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid"):
     procedure: Procedures = Procedures.Calculate
     parallel: Parallel = Parallel.Single
     calcSldDuringFit: bool = False
-    resampleMinAngle: float = Field(0.9, lt=1, gt=0)
+    resampleMinAngle: float = Field(0.9, le=1, gt=0)
     resampleNPoints: int = Field(50, ge=0)
     display: Display = Display.Iter
     # Simplex
