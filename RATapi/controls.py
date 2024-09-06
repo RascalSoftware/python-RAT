@@ -41,7 +41,7 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid"):
     parallel: Parallel = Parallel.Single
     calcSldDuringFit: bool = False
     resampleMinAngle: float = Field(0.9, le=1, gt=0)
-    resampleNPoints: int = Field(50, ge=0)
+    resampleNPoints: int = Field(50, gt=0)
     display: Display = Display.Iter
     # Simplex
     xTolerance: float = Field(1.0e-6, gt=0.0)
