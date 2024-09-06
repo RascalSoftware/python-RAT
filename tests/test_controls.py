@@ -47,7 +47,8 @@ class TestCalculate:
             "|    procedure     | calculate |\n"
             "|     parallel     |   single  |\n"
             "| calcSldDuringFit |   False   |\n"
-            "|  resampleParams  | [0.9, 50] |\n"
+            "| resampleMinAngle |    0.9    |\n"
+            "| resampleNPoints  |     50    |\n"
             "|     display      |    iter   |\n"
             "+------------------+-----------+"
         )
@@ -59,7 +60,8 @@ class TestCalculate:
         [
             ("parallel", Parallel.Single),
             ("calcSldDuringFit", False),
-            ("resampleParams", [0.9, 50]),
+            ("resampleMinAngle", 0.9),
+            ("resampleNPoints", 50),
             ("display", Display.Iter),
             ("procedure", Procedures.Calculate),
         ],
@@ -73,7 +75,8 @@ class TestCalculate:
         [
             ("parallel", Parallel.Points),
             ("calcSldDuringFit", True),
-            ("resampleParams", [0.2, 1]),
+            ("resampleMinAngle", 0.2),
+            ("resampleNPoints", 1),
             ("display", Display.Notify),
         ],
     )
@@ -180,31 +183,6 @@ class TestCalculate:
         with pytest.raises(pydantic.ValidationError, match="Input should be 'off', 'iter', 'notify' or 'final'"):
             self.calculate.display = value
 
-    @pytest.mark.parametrize(
-        "value, msg",
-        [
-            ([5.0], "List should have at least 2 items after validation, not 1"),
-            ([12, 13, 14], "List should have at most 2 items after validation, not 3"),
-        ],
-    )
-    def test_calculate_resampleParams_length_validation(self, value: list, msg: str) -> None:
-        """Tests the resampleParams setter length validation in Calculate class."""
-        with pytest.raises(pydantic.ValidationError, match=msg):
-            self.calculate.resampleParams = value
-
-    @pytest.mark.parametrize(
-        "value, msg",
-        [
-            ([1.0, 2], "Value error, resampleParams[0] must be between 0 and 1"),
-            ([0.5, -0.1], "Value error, resampleParams[1] must be greater than or equal to 0"),
-        ],
-    )
-    def test_calculate_resampleParams_value_validation(self, value: list, msg: str) -> None:
-        """Tests the resampleParams setter value validation in Calculate class."""
-        with pytest.raises(pydantic.ValidationError) as exp:
-            self.calculate.resampleParams = value
-        assert exp.value.errors()[0]["msg"] == msg
-
     def test_str(self, table_str) -> None:
         """Tests the Calculate model __str__."""
         assert self.calculate.__str__() == table_str
@@ -220,21 +198,22 @@ class TestSimplex:
     @pytest.fixture
     def table_str(self):
         table_str = (
-            "+------------------+-----------+\n"
-            "|     Property     |   Value   |\n"
-            "+------------------+-----------+\n"
-            "|    procedure     |  simplex  |\n"
-            "|     parallel     |   single  |\n"
-            "| calcSldDuringFit |   False   |\n"
-            "|  resampleParams  | [0.9, 50] |\n"
-            "|     display      |    iter   |\n"
-            "|    xTolerance    |   1e-06   |\n"
-            "|  funcTolerance   |   1e-06   |\n"
-            "|   maxFuncEvals   |   10000   |\n"
-            "|  maxIterations   |    1000   |\n"
-            "|    updateFreq    |     1     |\n"
-            "|  updatePlotFreq  |     20    |\n"
-            "+------------------+-----------+"
+            "+------------------+---------+\n"
+            "|     Property     |  Value  |\n"
+            "+------------------+---------+\n"
+            "|    procedure     | simplex |\n"
+            "|     parallel     |  single |\n"
+            "| calcSldDuringFit |  False  |\n"
+            "| resampleMinAngle |   0.9   |\n"
+            "| resampleNPoints  |    50   |\n"
+            "|     display      |   iter  |\n"
+            "|    xTolerance    |  1e-06  |\n"
+            "|  funcTolerance   |  1e-06  |\n"
+            "|   maxFuncEvals   |  10000  |\n"
+            "|  maxIterations   |   1000  |\n"
+            "|    updateFreq    |    1    |\n"
+            "|  updatePlotFreq  |    20   |\n"
+            "+------------------+---------+"
         )
 
         return table_str
@@ -244,7 +223,8 @@ class TestSimplex:
         [
             ("parallel", Parallel.Single),
             ("calcSldDuringFit", False),
-            ("resampleParams", [0.9, 50]),
+            ("resampleMinAngle", 0.9),
+            ("resampleNPoints", 50),
             ("display", Display.Iter),
             ("procedure", Procedures.Simplex),
             ("xTolerance", 1e-6),
@@ -264,7 +244,8 @@ class TestSimplex:
         [
             ("parallel", Parallel.Points),
             ("calcSldDuringFit", True),
-            ("resampleParams", [0.2, 1]),
+            ("resampleMinAngle", 0.2),
+            ("resampleNPoints", 1),
             ("display", Display.Notify),
             ("xTolerance", 4e-6),
             ("funcTolerance", 3e-4),
@@ -380,7 +361,8 @@ class TestDE:
             "|      procedure       |       de      |\n"
             "|       parallel       |     single    |\n"
             "|   calcSldDuringFit   |     False     |\n"
-            "|    resampleParams    |   [0.9, 50]   |\n"
+            "|   resampleMinAngle   |      0.9      |\n"
+            "|   resampleNPoints    |       50      |\n"
             "|       display        |      iter     |\n"
             "|    populationSize    |       20      |\n"
             "|       fWeight        |      0.5      |\n"
@@ -400,7 +382,8 @@ class TestDE:
         [
             ("parallel", Parallel.Single),
             ("calcSldDuringFit", False),
-            ("resampleParams", [0.9, 50]),
+            ("resampleMinAngle", 0.9),
+            ("resampleNPoints", 50),
             ("display", Display.Iter),
             ("procedure", Procedures.DE),
             ("populationSize", 20),
@@ -420,7 +403,8 @@ class TestDE:
         [
             ("parallel", Parallel.Points),
             ("calcSldDuringFit", True),
-            ("resampleParams", [0.2, 1]),
+            ("resampleMinAngle", 0.2),
+            ("resampleNPoints", 1),
             ("display", Display.Notify),
             ("populationSize", 20),
             ("fWeight", 0.3),
@@ -544,19 +528,20 @@ class TestNS:
     @pytest.fixture
     def table_str(self):
         table_str = (
-            "+------------------+-----------+\n"
-            "|     Property     |   Value   |\n"
-            "+------------------+-----------+\n"
-            "|    procedure     |     ns    |\n"
-            "|     parallel     |   single  |\n"
-            "| calcSldDuringFit |   False   |\n"
-            "|  resampleParams  | [0.9, 50] |\n"
-            "|     display      |    iter   |\n"
-            "|      nLive       |    150    |\n"
-            "|      nMCMC       |     0     |\n"
-            "|    propScale     |    0.1    |\n"
-            "|   nsTolerance    |    0.1    |\n"
-            "+------------------+-----------+"
+            "+------------------+--------+\n"
+            "|     Property     | Value  |\n"
+            "+------------------+--------+\n"
+            "|    procedure     |   ns   |\n"
+            "|     parallel     | single |\n"
+            "| calcSldDuringFit | False  |\n"
+            "| resampleMinAngle |  0.9   |\n"
+            "| resampleNPoints  |   50   |\n"
+            "|     display      |  iter  |\n"
+            "|      nLive       |  150   |\n"
+            "|      nMCMC       |   0    |\n"
+            "|    propScale     |  0.1   |\n"
+            "|   nsTolerance    |  0.1   |\n"
+            "+------------------+--------+"
         )
 
         return table_str
@@ -566,7 +551,8 @@ class TestNS:
         [
             ("parallel", Parallel.Single),
             ("calcSldDuringFit", False),
-            ("resampleParams", [0.9, 50]),
+            ("resampleMinAngle", 0.9),
+            ("resampleNPoints", 50),
             ("display", Display.Iter),
             ("procedure", Procedures.NS),
             ("nLive", 150),
@@ -584,7 +570,8 @@ class TestNS:
         [
             ("parallel", Parallel.Points),
             ("calcSldDuringFit", True),
-            ("resampleParams", [0.2, 1]),
+            ("resampleMinAngle", 0.2),
+            ("resampleNPoints", 1),
             ("display", Display.Notify),
             ("nLive", 1500),
             ("nMCMC", 1),
@@ -707,21 +694,22 @@ class TestDream:
     @pytest.fixture
     def table_str(self):
         table_str = (
-            "+------------------+-----------+\n"
-            "|     Property     |   Value   |\n"
-            "+------------------+-----------+\n"
-            "|    procedure     |   dream   |\n"
-            "|     parallel     |   single  |\n"
-            "| calcSldDuringFit |   False   |\n"
-            "|  resampleParams  | [0.9, 50] |\n"
-            "|     display      |    iter   |\n"
-            "|     nSamples     |   20000   |\n"
-            "|     nChains      |     10    |\n"
-            "| jumpProbability  |    0.5    |\n"
-            "|    pUnitGamma    |    0.2    |\n"
-            "|  boundHandling   |  reflect  |\n"
-            "|     adaptPCR     |    True   |\n"
-            "+------------------+-----------+"
+            "+------------------+---------+\n"
+            "|     Property     |  Value  |\n"
+            "+------------------+---------+\n"
+            "|    procedure     |  dream  |\n"
+            "|     parallel     |  single |\n"
+            "| calcSldDuringFit |  False  |\n"
+            "| resampleMinAngle |   0.9   |\n"
+            "| resampleNPoints  |    50   |\n"
+            "|     display      |   iter  |\n"
+            "|     nSamples     |  20000  |\n"
+            "|     nChains      |    10   |\n"
+            "| jumpProbability  |   0.5   |\n"
+            "|    pUnitGamma    |   0.2   |\n"
+            "|  boundHandling   | reflect |\n"
+            "|     adaptPCR     |   True  |\n"
+            "+------------------+---------+"
         )
 
         return table_str
@@ -731,7 +719,8 @@ class TestDream:
         [
             ("parallel", Parallel.Single),
             ("calcSldDuringFit", False),
-            ("resampleParams", [0.9, 50]),
+            ("resampleMinAngle", 0.9),
+            ("resampleNPoints", 50),
             ("display", Display.Iter),
             ("procedure", Procedures.DREAM),
             ("nSamples", 20000),
@@ -751,7 +740,8 @@ class TestDream:
         [
             ("parallel", Parallel.Points),
             ("calcSldDuringFit", True),
-            ("resampleParams", [0.2, 1]),
+            ("resampleMinAngle", 0.2),
+            ("resampleNPoints", 1),
             ("display", Display.Notify),
             ("nSamples", 500),
             ("nChains", 1000),

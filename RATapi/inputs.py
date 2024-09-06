@@ -436,7 +436,8 @@ def make_controls(input_controls: RATapi.Controls, checks: Checks) -> Control:
     controls.procedure = input_controls.procedure
     controls.parallel = input_controls.parallel
     controls.calcSldDuringFit = input_controls.calcSldDuringFit
-    controls.resampleParams = input_controls.resampleParams
+    controls.resampleMinAngle = input_controls.resampleMinAngle
+    controls.resampleNPoints = input_controls.resampleNPoints
     controls.display = input_controls.display
     # Simplex
     controls.xTolerance = input_controls.xTolerance

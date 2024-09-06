@@ -150,7 +150,7 @@ def absorption():
     )
 
     # Now make a controls block and run the code
-    controls = RAT.Controls(parallel="contrasts", resampleParams=[0.9, 150.0])
+    controls = RAT.Controls(parallel="contrasts", resampleNPoints=150)
     problem, results = RAT.run(problem, controls)
 
     return problem, results

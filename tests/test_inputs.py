@@ -474,7 +474,8 @@ def standard_layers_controls():
     controls.procedure = Procedures.Calculate
     controls.parallel = Parallel.Single
     controls.calcSldDuringFit = False
-    controls.resampleParams = [0.9, 50.0]
+    controls.resampleMinAngle = 0.9
+    controls.resampleNPoints = 50.0
     controls.display = Display.Iter
     controls.xTolerance = 1.0e-6
     controls.funcTolerance = 1.0e-6
@@ -519,7 +520,8 @@ def custom_xy_controls():
     controls.procedure = Procedures.Calculate
     controls.parallel = Parallel.Single
     controls.calcSldDuringFit = True
-    controls.resampleParams = [0.9, 50.0]
+    controls.resampleMinAngle = 0.9
+    controls.resampleNPoints = 50.0
     controls.display = Display.Iter
     controls.xTolerance = 1.0e-6
     controls.funcTolerance = 1.0e-6
@@ -874,6 +876,8 @@ def check_controls_equal(actual_controls, expected_controls) -> None:
         "procedure",
         "parallel",
         "calcSldDuringFit",
+        "resampleMinAngle",
+        "resampleNPoints",
         "display",
         "xTolerance",
         "funcTolerance",
@@ -909,8 +913,6 @@ def check_controls_equal(actual_controls, expected_controls) -> None:
         "fitDomainRatio",
     ]
 
-    # Check "resampleParams" separately as it is an array
-    assert (actual_controls.resampleParams == expected_controls.resampleParams).all()
     for field in controls_fields:
         assert getattr(actual_controls, field) == getattr(expected_controls, field)
     for field in checks_fields:
