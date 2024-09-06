@@ -1635,14 +1635,14 @@ PYBIND11_MODULE(rat_core, m) {
                 return py::make_tuple(ctrl.parallel, ctrl.procedure, ctrl.display, ctrl.xTolerance, ctrl.funcTolerance, 
                                       ctrl.maxFuncEvals, ctrl.maxIterations, ctrl.populationSize, ctrl.fWeight, ctrl.crossoverProbability, 
                                       ctrl.targetValue, ctrl.numGenerations, ctrl.strategy, ctrl.nLive, ctrl.nMCMC, ctrl.propScale, 
-                                      ctrl.nsTolerance, ctrl.calcSldDuringFit, ctrl.resampleParams, ctrl.updateFreq, ctrl.updatePlotFreq, 
-                                      ctrl.nSamples, ctrl.nChains, ctrl.jumpProbability, ctrl.pUnitGamma, ctrl.boundHandling, ctrl.adaptPCR, 
-                                      ctrl.IPCFilePath, ctrl.checks.fitParam, ctrl.checks.fitBackgroundParam, ctrl.checks.fitQzshift, 
-                                      ctrl.checks.fitScalefactor, ctrl.checks.fitBulkIn, ctrl.checks.fitBulkOut, 
+                                      ctrl.nsTolerance, ctrl.calcSldDuringFit, ctrl.resampleMinAngle, ctrl.resampleNPoints,
+                                      ctrl.updateFreq, ctrl.updatePlotFreq, ctrl.nSamples, ctrl.nChains, ctrl.jumpProbability, ctrl.pUnitGamma, 
+                                      ctrl.boundHandling, ctrl.adaptPCR, ctrl.IPCFilePath, ctrl.checks.fitParam, ctrl.checks.fitBackgroundParam, 
+                                      ctrl.checks.fitQzshift, ctrl.checks.fitScalefactor, ctrl.checks.fitBulkIn, ctrl.checks.fitBulkOut, 
                                       ctrl.checks.fitResolutionParam, ctrl.checks.fitDomainRatio);
             },
             [](py::tuple t) { // __setstate__
-                if (t.size() != 36)
+                if (t.size() != 37)
                     throw std::runtime_error("Encountered invalid state unpickling ProblemDefinition object!");
 
                 /* Create a new C++ instance */
@@ -1666,25 +1666,26 @@ PYBIND11_MODULE(rat_core, m) {
                 ctrl.propScale = t[15].cast<real_T>();
                 ctrl.nsTolerance = t[16].cast<real_T>();
                 ctrl.calcSldDuringFit = t[17].cast<boolean_T>();
-                ctrl.resampleParams = t[18].cast<py::array_t<real_T>>();
-                ctrl.updateFreq = t[19].cast<real_T>();
-                ctrl.updatePlotFreq = t[20].cast<real_T>();
-                ctrl.nSamples = t[21].cast<real_T>();
-                ctrl.nChains = t[22].cast<real_T>();
-                ctrl.jumpProbability = t[23].cast<real_T>();
-                ctrl.pUnitGamma = t[24].cast<real_T>();
-                ctrl.boundHandling = t[25].cast<std::string>();
-                ctrl.adaptPCR = t[26].cast<boolean_T>();
-                ctrl.IPCFilePath = t[27].cast<std::string>();
+                ctrl.resampleMinAngle = t[18].cast<real_T>();
+                ctrl.resampleNPoints = t[19].cast<real_T>();
+                ctrl.updateFreq = t[20].cast<real_T>();
+                ctrl.updatePlotFreq = t[21].cast<real_T>();
+                ctrl.nSamples = t[22].cast<real_T>();
+                ctrl.nChains = t[23].cast<real_T>();
+                ctrl.jumpProbability = t[24].cast<real_T>();
+                ctrl.pUnitGamma = t[25].cast<real_T>();
+                ctrl.boundHandling = t[26].cast<std::string>();
+                ctrl.adaptPCR = t[27].cast<boolean_T>();
+                ctrl.IPCFilePath = t[28].cast<std::string>();
                 
-                ctrl.checks.fitParam = t[28].cast<py::array_t<real_T>>(); 
-                ctrl.checks.fitBackgroundParam = t[29].cast<py::array_t<real_T>>(); 
-                ctrl.checks.fitQzshift = t[30].cast<py::array_t<real_T>>(); 
-                ctrl.checks.fitScalefactor = t[31].cast<py::array_t<real_T>>(); 
-                ctrl.checks.fitBulkIn = t[32].cast<py::array_t<real_T>>(); 
-                ctrl.checks.fitBulkOut = t[33].cast<py::array_t<real_T>>(); 
-                ctrl.checks.fitResolutionParam = t[34].cast<py::array_t<real_T>>(); 
-                ctrl.checks.fitDomainRatio = t[35].cast<py::array_t<real_T>>();
+                ctrl.checks.fitParam = t[29].cast<py::array_t<real_T>>(); 
+                ctrl.checks.fitBackgroundParam = t[30].cast<py::array_t<real_T>>(); 
+                ctrl.checks.fitQzshift = t[31].cast<py::array_t<real_T>>(); 
+                ctrl.checks.fitScalefactor = t[32].cast<py::array_t<real_T>>(); 
+                ctrl.checks.fitBulkIn = t[33].cast<py::array_t<real_T>>(); 
+                ctrl.checks.fitBulkOut = t[34].cast<py::array_t<real_T>>(); 
+                ctrl.checks.fitResolutionParam = t[35].cast<py::array_t<real_T>>(); 
+                ctrl.checks.fitDomainRatio = t[36].cast<py::array_t<real_T>>();
 
                 return ctrl;
             }));
