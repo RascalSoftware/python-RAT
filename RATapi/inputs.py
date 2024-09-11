@@ -360,8 +360,8 @@ def make_cells(project: RATapi.Project) -> Cells:
     cells.f2 = all_data
     cells.f3 = data_limits
     cells.f4 = simulation_limits
-    cells.f5 = [contrast_model if contrast_model else [0] for contrast_model in contrast_models]
-    cells.f6 = layer_details if project.model == LayerModels.StandardLayers else [[0]]
+    cells.f5 = [contrast_model if contrast_model else [] for contrast_model in contrast_models]
+    cells.f6 = layer_details if project.model == LayerModels.StandardLayers else []
     cells.f7 = [param.name for param in project.parameters]
     cells.f8 = [param.name for param in project.background_parameters]
     cells.f9 = [param.name for param in project.scalefactors]
@@ -381,7 +381,7 @@ def make_cells(project: RATapi.Project) -> Cells:
         for domain_contrast in project.domain_contrasts
     ]
     cells.f19 = [
-        domain_contrast_model if domain_contrast_model else 0 for domain_contrast_model in domain_contrast_models
+        domain_contrast_model if domain_contrast_model else [] for domain_contrast_model in domain_contrast_models
     ]
 
     cells.f20 = [param.name for param in project.domain_ratios]
