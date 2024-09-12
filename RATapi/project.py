@@ -4,33 +4,44 @@ import collections
 import copy
 import functools
 import os
-from typing import Any, Callable
+from typing import Annotated, Any, Callable, Union
 
 import numpy as np
-from pydantic import BaseModel, ValidationError, ValidationInfo, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    Discriminator,
+    Field,
+    Tag,
+    ValidationError,
+    ValidationInfo,
+    field_validator,
+    model_validator,
+)
+from typing_extensions import get_args, get_origin
 
 import RATapi.models
 from RATapi.classlist import ClassList
 from RATapi.utils.custom_errors import custom_pydantic_validation_error
 from RATapi.utils.enums import Calculations, Geometries, LayerModels, Priors, TypeOptions
 
-# Map project fields to pydantic models
-model_in_classlist = {
-    "parameters": "Parameter",
-    "bulk_in": "Parameter",
-    "bulk_out": "Parameter",
-    "scalefactors": "Parameter",
-    "domain_ratios": "Parameter",
-    "background_parameters": "Parameter",
-    "resolution_parameters": "Parameter",
-    "backgrounds": "Background",
-    "resolutions": "Resolution",
-    "custom_files": "CustomFile",
-    "data": "Data",
-    "layers": "Layer",
-    "domain_contrasts": "DomainContrast",
-    "contrasts": "Contrast",
-}
+
+def discriminate_layers(layer_input):
+    """Union discriminator for layers."""
+    if isinstance(layer_input, RATapi.ClassList):
+        # if classlist is empty, just label it as no absorption and it'll get fixed in post_init
+        if len(layer_input) > 0 and isinstance(layer_input[0], RATapi.models.AbsorptionLayer):
+            return "abs"
+        return "no_abs"
+
+
+def discriminate_contrasts(contrast_input):
+    """Union discriminator for contrasts."""
+    if isinstance(contrast_input, RATapi.ClassList):
+        # if classlist is empty, just label it as no ratio and it'll get fixed in post_init
+        if len(contrast_input) > 0 and isinstance(contrast_input[0], RATapi.models.ContrastWithRatio):
+            return "ratio"
+        return "no_ratio"
+
 
 values_defined_in = {
     "backgrounds.constant.value_1": "background_parameters",
@@ -103,7 +114,7 @@ class_lists = [
 ]
 
 
-class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_types_allowed=True):
+class Project(BaseModel, validate_assignment=True, extra="forbid"):
     """Defines the input data for a reflectivity calculation in RAT.
 
     This class combines the data defined in each of the pydantic models included in "models.py" into the full set of
@@ -116,9 +127,9 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
     geometry: Geometries = Geometries.AirSubstrate
     absorption: bool = False
 
-    parameters: ClassList = ClassList()
+    parameters: ClassList[RATapi.models.Parameter] = ClassList()
 
-    bulk_in: ClassList = ClassList(
+    bulk_in: ClassList[RATapi.models.Parameter] = ClassList(
         RATapi.models.Parameter(
             name="SLD Air",
             min=0.0,
@@ -131,7 +142,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
         ),
     )
 
-    bulk_out: ClassList = ClassList(
+    bulk_out: ClassList[RATapi.models.Parameter] = ClassList(
         RATapi.models.Parameter(
             name="SLD D2O",
             min=6.2e-6,
@@ -144,7 +155,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
         ),
     )
 
-    scalefactors: ClassList = ClassList(
+    scalefactors: ClassList[RATapi.models.Parameter] = ClassList(
         RATapi.models.Parameter(
             name="Scalefactor 1",
             min=0.02,
@@ -157,7 +168,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
         ),
     )
 
-    domain_ratios: ClassList = ClassList(
+    domain_ratios: ClassList[RATapi.models.Parameter] = ClassList(
         RATapi.models.Parameter(
             name="Domain Ratio 1",
             min=0.4,
@@ -170,7 +181,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
         ),
     )
 
-    background_parameters: ClassList = ClassList(
+    background_parameters: ClassList[RATapi.models.Parameter] = ClassList(
         RATapi.models.Parameter(
             name="Background Param 1",
             min=1e-7,
@@ -183,11 +194,11 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
         ),
     )
 
-    backgrounds: ClassList = ClassList(
+    backgrounds: ClassList[RATapi.models.Background] = ClassList(
         RATapi.models.Background(name="Background 1", type=TypeOptions.Constant, value_1="Background Param 1"),
     )
 
-    resolution_parameters: ClassList = ClassList(
+    resolution_parameters: ClassList[RATapi.models.Parameter] = ClassList(
         RATapi.models.Parameter(
             name="Resolution Param 1",
             min=0.01,
@@ -200,48 +211,75 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
         ),
     )
 
-    resolutions: ClassList = ClassList(
+    resolutions: ClassList[RATapi.models.Resolution] = ClassList(
         RATapi.models.Resolution(name="Resolution 1", type=TypeOptions.Constant, value_1="Resolution Param 1"),
     )
 
-    custom_files: ClassList = ClassList()
-    data: ClassList = ClassList()
-    layers: ClassList = ClassList()
-    domain_contrasts: ClassList = ClassList()
-    contrasts: ClassList = ClassList()
+    custom_files: ClassList[RATapi.models.CustomFile] = ClassList()
+    data: ClassList[RATapi.models.Data] = ClassList()
+    layers: Union[
+        Annotated[ClassList[RATapi.models.Layer], Tag("no_abs")],
+        Annotated[ClassList[RATapi.models.AbsorptionLayer], Tag("abs")],
+    ] = Field(
+        default=ClassList(),
+        discriminator=Discriminator(
+            discriminate_layers,
+            custom_error_type="invalid_union_member",
+            custom_error_message="Input should be an instance of ClassList",
+            custom_error_context={"discriminator": "absorption_or_no"},
+        ),
+    )
+    domain_contrasts: ClassList[RATapi.models.DomainContrast] = ClassList()
+    contrasts: Union[
+        Annotated[ClassList[RATapi.models.Contrast], Tag("no_ratio")],
+        Annotated[ClassList[RATapi.models.ContrastWithRatio], Tag("ratio")],
+    ] = Field(
+        default=ClassList(),
+        discriminator=Discriminator(
+            discriminate_contrasts,
+            custom_error_type="invalid_union_member",
+            custom_error_message="Input should be an instance of ClassList.",
+            custom_error_context={"discriminator": "ratio_or_no_ratio"},
+        ),
+    )
 
     _all_names: dict
     _contrast_model_field: str
     _protected_parameters: dict
 
-    @field_validator(
-        "parameters",
-        "bulk_in",
-        "bulk_out",
-        "scalefactors",
-        "background_parameters",
-        "backgrounds",
-        "resolution_parameters",
-        "resolutions",
-        "custom_files",
-        "data",
-        "layers",
-        "domain_contrasts",
-        "contrasts",
-    )
+    @field_validator("layers")
     @classmethod
-    def check_class(cls, value: ClassList, info: ValidationInfo) -> ClassList:
-        """Each of the data fields should be a ClassList of the appropriate model."""
-        model_name = model_in_classlist[info.field_name]
-        # Correct model name if necessary
-        if info.field_name == "layers" and info.data["absorption"]:
+    def check_layers(cls, value: ClassList, info: ValidationInfo):
+        """Check that layers are AbsorptionLayers if doing absorption, and Layers otherwise."""
+        if info.data["absorption"]:
             model_name = "AbsorptionLayer"
-        if info.field_name == "contrasts" and info.data["calculation"] == Calculations.Domains:
-            model_name = "ContrastWithRatio"
-
+        else:
+            model_name = "Layer"
         model = getattr(RATapi.models, model_name)
         if not all(isinstance(element, model) for element in value):
-            raise ValueError(f'"{info.field_name}" ClassList contains objects other than "{model_name}"')
+            raise ValueError(
+                f'"The layers attribute contains {model_name}s, '
+                f'but the absorption parameter is {info.data["absorption"]}"'
+            )
+
+        return value
+
+    @field_validator("contrasts")
+    @classmethod
+    def check_contrasts(cls, value: ClassList, info: ValidationInfo):
+        if info.data["calculation"] == Calculations.Domains:
+            model_name = "ContrastWithRatio"
+            error_word = "without"
+        else:
+            model_name = "Contrast"
+            error_word = "with"
+        model = getattr(RATapi.models, model_name)
+        if not all(isinstance(element, model) for element in value):
+            raise ValueError(
+                f'"The layers attribute contains contrasts {error_word} ratio, '
+                f'but the calculation is {str(info.data["calculation"])}"'
+            )
+
         return value
 
     def model_post_init(self, __context: Any) -> None:
@@ -250,12 +288,19 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
         control revalidation.
         """
         # Ensure all ClassLists have the correct _class_handle defined
-        layer_field = self.layers
-        if not hasattr(layer_field, "_class_handle"):
+        for field in (fields := self.model_fields):
+            type = fields[field].annotation
+            if get_origin(type) == ClassList:
+                classlist = getattr(self, field)
+                if not hasattr(field, "_class_handle"):
+                    classlist._class_handle = get_args(type)[0]
+
+        layers_field = self.layers
+        if not hasattr(layers_field, "_class_handle"):
             if self.absorption:
-                layer_field._class_handle = RATapi.models.AbsorptionLayer
+                layers_field._class_handle = RATapi.models.AbsorptionLayer
             else:
-                layer_field._class_handle = RATapi.models.Layer
+                layers_field._class_handle = RATapi.models.Layer
 
         contrast_field = self.contrasts
         if not hasattr(contrast_field, "_class_handle"):
@@ -263,11 +308,6 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", arbitrary_typ
                 contrast_field._class_handle = RATapi.models.ContrastWithRatio
             else:
                 contrast_field._class_handle = RATapi.models.Contrast
-
-        for field_name, model in model_in_classlist.items():
-            field = getattr(self, field_name)
-            if not hasattr(field, "_class_handle"):
-                field._class_handle = getattr(RATapi.models, model)
 
         if "Substrate Roughness" not in [name.title() for name in self.parameters.get_names()]:
             self.parameters.insert(

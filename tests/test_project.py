@@ -9,6 +9,7 @@ from typing import Callable
 import numpy as np
 import pydantic
 import pytest
+from typing_extensions import get_args, get_origin
 
 import RATapi
 from RATapi.utils.enums import Calculations, LayerModels, TypeOptions
@@ -19,6 +20,23 @@ absorption_layer_params = {
     "SLD_real": "Test SLD",
     "SLD_imaginary": "Test SLD",
     "roughness": "Test Roughness",
+}
+
+model_classes = {
+    "parameters": RATapi.models.Parameter,
+    "bulk_in": RATapi.models.Parameter,
+    "bulk_out": RATapi.models.Parameter,
+    "scalefactors": RATapi.models.Parameter,
+    "domain_ratios": RATapi.models.Parameter,
+    "background_parameters": RATapi.models.Parameter,
+    "resolution_parameters": RATapi.models.Parameter,
+    "backgrounds": RATapi.models.Background,
+    "resolutions": RATapi.models.Resolution,
+    "custom_files": RATapi.models.CustomFile,
+    "data": RATapi.models.Data,
+    "layers": RATapi.models.Layer,
+    "domain_contrasts": RATapi.models.DomainContrast,
+    "contrasts": RATapi.models.Contrast,
 }
 
 
@@ -173,9 +191,10 @@ def test_classlists(test_project) -> None:
     """The ClassLists in the "Project" model should contain instances of the models given by the dictionary
     "model_in_classlist".
     """
-    for key, value in RATapi.project.model_in_classlist.items():
-        class_list = getattr(test_project, key)
-        assert class_list._class_handle.__name__ == value
+    for model in (fields := RATapi.Project.model_fields):
+        if get_origin(fields[model].annotation) == RATapi.ClassList:
+            class_list = getattr(test_project, model)
+            assert class_list._class_handle == get_args(fields[model].annotation)[0]
 
 
 def test_classlists_specific_cases() -> None:
@@ -205,9 +224,11 @@ def test_initialise_wrong_classes(input_model: Callable, model_params: dict) -> 
     """If the "Project" model is initialised with incorrect classes, we should raise a ValidationError."""
     with pytest.raises(
         pydantic.ValidationError,
-        match="1 validation error for Project\nparameters\n  Value error, "
-        '"parameters" ClassList contains objects other than '
-        '"Parameter"',
+        match=(
+            "1 validation error for Project\n"
+            "parameters.0\n"
+            "  Input should be a valid dictionary or instance of Parameter"
+        ),
     ):
         RATapi.Project(parameters=RATapi.ClassList(input_model(**model_params)))
 
@@ -231,8 +252,7 @@ def test_initialise_wrong_layers(
     with pytest.raises(
         pydantic.ValidationError,
         match=f"1 validation error for Project\nlayers\n  Value error, "
-        f'"layers" ClassList contains objects other than '
-        f'"{actual_model_name}"',
+        f'"The layers attribute contains AbsorptionLayers, but the absorption parameter is {absorption}"',
     ):
         RATapi.Project(absorption=absorption, layers=RATapi.ClassList(input_model(**model_params)))
 
@@ -250,11 +270,11 @@ def test_initialise_wrong_contrasts(
     """If the "Project" model is initialised with the incorrect contrast model given the value of calculation, we should
     raise a ValidationError.
     """
+    word = "without" if calculation == Calculations.Domains else "with"
     with pytest.raises(
         pydantic.ValidationError,
-        match=f"1 validation error for Project\ncontrasts\n  Value error, "
-        f'"contrasts" ClassList contains objects other than '
-        f'"{actual_model_name}"',
+        match=f"1 validation error for Project\ncontrasts\n"
+        f'  Value error, "The layers attribute contains contrasts {word} ratio, but the calculation is {calculation}"',
     ):
         RATapi.Project(calculation=calculation, contrasts=RATapi.ClassList(input_model()))
 
@@ -301,25 +321,29 @@ def test_initialise_without_simulation() -> None:
 
 
 @pytest.mark.parametrize(
-    ["field", "wrong_input_model", "model_params"],
+    ["field", "model_type", "wrong_input_model", "model_params"],
     [
-        ("backgrounds", RATapi.models.Resolution, {}),
-        ("contrasts", RATapi.models.Layer, layer_params),
-        ("domain_contrasts", RATapi.models.Parameter, {}),
-        ("custom_files", RATapi.models.Data, {}),
-        ("data", RATapi.models.Contrast, {}),
-        ("layers", RATapi.models.DomainContrast, {}),
-        ("parameters", RATapi.models.CustomFile, {}),
-        ("resolutions", RATapi.models.Background, {}),
+        ("backgrounds", "Background", RATapi.models.Resolution, {}),
+        ("contrasts", "Contrast", RATapi.models.Layer, layer_params),
+        ("domain_contrasts", "DomainContrast", RATapi.models.Parameter, {}),
+        ("custom_files", "CustomFile", RATapi.models.Data, {}),
+        ("data", "Data", RATapi.models.Contrast, {}),
+        ("layers", "Layer", RATapi.models.DomainContrast, {}),
+        ("parameters", "Parameter", RATapi.models.CustomFile, {}),
+        ("resolutions", "Resolution", RATapi.models.Background, {}),
     ],
 )
-def test_assign_wrong_classes(test_project, field: str, wrong_input_model: Callable, model_params: dict) -> None:
+def test_assign_wrong_classes(
+    test_project, field: str, model_type: str, wrong_input_model: Callable, model_params: dict
+) -> None:
     """If we assign incorrect classes to the "Project" model, we should raise a ValidationError."""
     with pytest.raises(
         pydantic.ValidationError,
-        match=f"1 validation error for Project\n{field}\n  Value error, "
-        f'"{field}" ClassList contains objects other than '
-        f'"{RATapi.project.model_in_classlist[field]}"',
+        match=(
+            "1 validation error for Project\n"
+            f"{field}.+\n"
+            f"  Input should be a valid dictionary or instance of {model_type}"
+        ),
     ):
         setattr(test_project, field, RATapi.ClassList(wrong_input_model(**model_params)))
 
@@ -342,8 +366,7 @@ def test_assign_wrong_layers(
     with pytest.raises(
         pydantic.ValidationError,
         match=f"1 validation error for Project\nlayers\n  Value error, "
-        f'"layers" ClassList contains objects other than '
-        f'"{actual_model_name}"',
+        f'"The layers attribute contains AbsorptionLayers, but the absorption parameter is {absorption}"',
     ):
         project.layers = RATapi.ClassList(wrong_input_model(**model_params))
 
@@ -358,11 +381,11 @@ def test_assign_wrong_layers(
 def test_assign_wrong_contrasts(wrong_input_model: Callable, calculation: Calculations, actual_model_name: str) -> None:
     """If we assign incorrect classes to the "Project" model, we should raise a ValidationError."""
     project = RATapi.Project(calculation=calculation)
+    word = "without" if calculation == Calculations.Domains else "with"
     with pytest.raises(
         pydantic.ValidationError,
-        match=f"1 validation error for Project\ncontrasts\n  Value error, "
-        f'"contrasts" ClassList contains objects other than '
-        f'"{actual_model_name}"',
+        match=f"1 validation error for Project\ncontrasts\n"
+        f'  Value error, "The layers attribute contains contrasts {word} ratio, but the calculation is {calculation}"',
     ):
         project.contrasts = RATapi.ClassList(wrong_input_model())
 
@@ -381,7 +404,7 @@ def test_assign_wrong_contrasts(wrong_input_model: Callable, calculation: Calcul
 )
 def test_assign_models(test_project, field: str, model_params: dict) -> None:
     """If the "Project" model is initialised with models rather than ClassLists, we should raise a ValidationError."""
-    input_model = getattr(RATapi.models, RATapi.project.model_in_classlist[field])
+    input_model = model_classes[field]
     with pytest.raises(
         pydantic.ValidationError,
         match=f"1 validation error for Project\n{field}\n  Input should be " f"an instance of ClassList",
@@ -1230,7 +1253,7 @@ def test_wrap_iadd(test_project, class_list: str, model_type: str, field: str, m
     """If we add a model containing undefined values to a ClassList, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
-    input_model = getattr(RATapi.models, RATapi.project.model_in_classlist[class_list])
+    input_model = model_classes[class_list]
     class_list_str = f"{class_list}{f'.{model_type}' if model_type else ''}.{field}"
 
     with pytest.raises(
@@ -1274,7 +1297,8 @@ def test_wrap_append(test_project, class_list: str, model_type: str, field: str,
     """If we append a model containing undefined values to a ClassList, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
-    input_model = getattr(RATapi.models, RATapi.project.model_in_classlist[class_list])
+
+    input_model = model_classes[class_list]
     class_list_str = f"{class_list}{f'.{model_type}' if model_type else ''}.{field}"
 
     with pytest.raises(
@@ -1318,7 +1342,7 @@ def test_wrap_insert(test_project, class_list: str, model_type: str, field: str,
     """If we insert a model containing undefined values into a ClassList, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
-    input_model = getattr(RATapi.models, RATapi.project.model_in_classlist[class_list])
+    input_model = model_classes[class_list]
     class_list_str = f"{class_list}{f'.{model_type}' if model_type else ''}.{field}"
 
     with pytest.raises(
@@ -1359,7 +1383,7 @@ def test_wrap_insert_type_error(test_project, class_list: str, field: str) -> No
     """If we raise a TypeError using the wrapped insert routine, we should re-raise the error."""
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
-    input_model = getattr(RATapi.models, RATapi.project.model_in_classlist[class_list])
+    input_model = model_classes[class_list]
 
     with pytest.raises(TypeError):
         test_attribute.insert(input_model)
@@ -1493,7 +1517,7 @@ def test_wrap_extend(test_project, class_list: str, model_type: str, field: str,
     """If we extend a ClassList with model containing undefined values, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
-    input_model = getattr(RATapi.models, RATapi.project.model_in_classlist[class_list])
+    input_model = model_classes[class_list]
     class_list_str = f"{class_list}{f'.{model_type}' if model_type else ''}.{field}"
 
     with pytest.raises(
