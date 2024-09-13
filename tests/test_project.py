@@ -252,7 +252,8 @@ def test_initialise_wrong_layers(
     with pytest.raises(
         pydantic.ValidationError,
         match=f"1 validation error for Project\nlayers\n  Value error, "
-        f'"The layers attribute contains AbsorptionLayers, but the absorption parameter is {absorption}"',
+        f'"The layers attribute contains {input_model.__name__}s, but the absorption parameter is {absorption}. '
+        f'The attribute should be a ClassList of {actual_model_name} instead."',
     ):
         RATapi.Project(absorption=absorption, layers=RATapi.ClassList(input_model(**model_params)))
 
@@ -366,7 +367,8 @@ def test_assign_wrong_layers(
     with pytest.raises(
         pydantic.ValidationError,
         match=f"1 validation error for Project\nlayers\n  Value error, "
-        f'"The layers attribute contains AbsorptionLayers, but the absorption parameter is {absorption}"',
+        f'"The layers attribute contains {wrong_input_model.__name__}s, but the absorption parameter is {absorption}. '
+        f'The attribute should be a ClassList of {actual_model_name} instead."',
     ):
         project.layers = RATapi.ClassList(wrong_input_model(**model_params))
 
@@ -410,6 +412,35 @@ def test_assign_models(test_project, field: str, model_params: dict) -> None:
         match=f"1 validation error for Project\n{field}\n  Input should be " f"an instance of ClassList",
     ):
         setattr(test_project, field, input_model(**model_params))
+
+
+@pytest.mark.parametrize(
+    ["field", "model_params"],
+    [
+        ("backgrounds", {}),
+        ("contrasts", {}),
+        ("custom_files", {}),
+        ("data", {}),
+        ("layers", layer_params),
+        ("parameters", {}),
+        ("resolutions", {}),
+    ],
+)
+def test_coerce_lists(field: str, model_params: dict):
+    """If the Project model is a list rather than a ClassList, it should be coerced to a ClassList."""
+    input_model = model_classes[field]
+    proj = RATapi.Project()
+    if field == "layers":  # set parameters for layers
+        proj.parameters.extend(
+            RATapi.ClassList([RATapi.models.Parameter(name=param_name) for param_name in model_params.values()])
+        )
+    if field == "parameters":  # preserve protected parameter
+        setattr(proj, field, [proj.parameters[0], input_model(**model_params)])
+    else:
+        setattr(proj, field, [input_model(**model_params)])
+    attr = getattr(proj, field)
+    assert isinstance(attr, RATapi.ClassList)
+    assert attr._class_handle == input_model
 
 
 def test_wrapped_routines(test_project) -> None:

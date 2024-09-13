@@ -11,7 +11,7 @@ from typing import Any, Generic, TypeVar, Union
 import numpy as np
 import prettytable
 from pydantic import GetCoreSchemaHandler, ValidatorFunctionWrapHandler
-from pydantic_core import core_schema
+from pydantic.types import core_schema  # import core_schema through here rather than making pydantic_core a dependency
 from typing_extensions import get_args, get_origin
 
 T = TypeVar("T")
@@ -35,7 +35,7 @@ class ClassList(collections.UserList, Generic[T]):
 
     Parameters
     ----------
-    init_list : Sequence [object] or object, optional
+    init_list : Sequence [T] or T, optional
         An instance, or list of instance(s), of the class to be used in this ClassList.
     name_field : str, optional
         The field used to define unique objects in the ClassList (default is "name").
@@ -467,15 +467,38 @@ class ClassList(collections.UserList, Generic[T]):
             item_tp = Any
         else:
             item_tp = get_args(source)[0]
+
         item_schema = handler.generate_schema(list[item_tp])
+
+        def coerce(v: Any, handler: ValidatorFunctionWrapHandler) -> ClassList[T]:
+            """If a list is given, try to coerce it to a ClassList."""
+            if isinstance(v, list):
+                v = handler(v)
+                v = ClassList(v)
+            return v
 
         def validate_items(v: ClassList[T], handler: ValidatorFunctionWrapHandler) -> ClassList[T]:
             v.data = handler(v.data)
             return v
 
-        return core_schema.chain_schema(
+        validation_schema = core_schema.chain_schema(
             [
+                core_schema.no_info_wrap_validator_function(coerce, item_schema),
                 core_schema.is_instance_schema(cls),
                 core_schema.no_info_wrap_validator_function(validate_items, item_schema),
-            ]
+            ],
         )
+
+        json_serialization_schema = core_schema.plain_serializer_function_ser_schema(
+            list, return_schema=validation_schema, when_used="json"
+        )
+        json_schema = core_schema.any_schema(
+            serialization=json_serialization_schema,
+        )
+
+        schema = core_schema.json_or_python_schema(
+            json_schema=json_schema,
+            python_schema=validation_schema,
+        )
+
+        return schema

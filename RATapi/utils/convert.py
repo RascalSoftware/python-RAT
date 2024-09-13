@@ -284,7 +284,9 @@ def project_class_to_r1(
         If `return_struct` is True, return the r1 struct. Else, return nothing.
     """
 
-    def convert_parameters(params: ClassList, name: str, value: str, constr: str, fit: str, number: str = ""):
+    def convert_parameters(
+        params: ClassList[Parameter], name: str, value: str, constr: str, fit: str, number: str = ""
+    ):
         """Convert a list of parameters to r1 data fields.
 
         Parameters
