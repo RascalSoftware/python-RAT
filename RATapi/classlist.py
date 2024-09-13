@@ -10,9 +10,6 @@ from typing import Any, Generic, TypeVar, Union
 
 import numpy as np
 import prettytable
-from pydantic import GetCoreSchemaHandler, ValidatorFunctionWrapHandler
-from pydantic.types import core_schema  # import core_schema through here rather than making pydantic_core a dependency
-from typing_extensions import get_args, get_origin
 
 T = TypeVar("T")
 
@@ -459,7 +456,14 @@ class ClassList(collections.UserList, Generic[T]):
     # and then validates ClassList.data as though it were a typed list
     # e.g. ClassList[str] data is validated like list[str]
     @classmethod
-    def __get_pydantic_core_schema__(cls, source: Any, handler: GetCoreSchemaHandler) -> core_schema.CoreSchema:
+    def __get_pydantic_core_schema__(cls, source: Any, handler):
+        # import here so that the ClassList can be instantiated and used without Pydantic installed
+        from pydantic import ValidatorFunctionWrapHandler
+        from pydantic.types import (
+            core_schema,  # import core_schema through here rather than making pydantic_core a dependency
+        )
+        from typing_extensions import get_args, get_origin
+
         # if annotated with a class, get the item type of that class
         origin = get_origin(source)
         if origin is None:
