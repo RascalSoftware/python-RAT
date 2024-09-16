@@ -1,3 +1,6 @@
+import contextlib
+import os
+import tempfile
 import warnings
 
 import prettytable
@@ -70,6 +73,8 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid"):
     pUnitGamma: float = Field(0.2, gt=0.0, lt=1.0)
     boundHandling: BoundHandling = BoundHandling.Reflect
     adaptPCR: bool = True
+    # Private field for IPC file
+    _IPCFilePath: str = ""
 
     @model_validator(mode="wrap")
     def warn_setting_incorrect_properties(self, handler: ValidatorFunctionWrapHandler) -> "Controls":
@@ -131,3 +136,31 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid"):
         table.field_names = ["Property", "Value"]
         table.add_rows([[k, v] for k, v in self.model_dump().items()])
         return table.get_string()
+
+    def initialise_IPC(self):
+        """Setup the inter-process communication file."""
+        IPC_obj, self._IPCFilePath = tempfile.mkstemp()
+        os.write(IPC_obj, b"0")
+        os.close(IPC_obj)
+        return None
+
+    def sendStopEvent(self):
+        """Sends the stop event via the inter-process communication file.
+
+        Warnings
+        --------
+        UserWarning
+            Raised if we try to delete an IPC file that was not initialised.
+        """
+        if os.path.isfile(self._IPCFilePath):
+            with open(self._IPCFilePath, "wb") as f:
+                f.write(b"1")
+        else:
+            warnings.warn("An IPC file was not initialised.", UserWarning, stacklevel=2)
+        return None
+
+    def delete_IPC(self):
+        """Delete the inter-process communication file."""
+        with contextlib.suppress(FileNotFoundError):
+            os.remove(self._IPCFilePath)
+        return None

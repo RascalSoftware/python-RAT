@@ -130,6 +130,8 @@ def run(project, controls):
         for index, value in enumerate(getattr(problem_definition, parameter_field[class_list])):
             getattr(project, class_list)[index].value = value
 
+    controls.delete_IPC()
+
     if display_on:
         print("Finished RAT " + horizontal_line)
 
