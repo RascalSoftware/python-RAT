@@ -1,9 +1,9 @@
 """Test the project module."""
 
 import copy
-import os
 import shutil
 import tempfile
+from pathlib import Path
 from typing import Callable
 
 import numpy as np
@@ -133,50 +133,6 @@ def default_project_str():
         "+-------+------------+------+------------+------------------+\n"
         "|   0   | Simulation |  []  |     []     |   [0.005, 0.7]   |\n"
         "+-------+------------+------+------------+------------------+\n\n"
-    )
-
-
-@pytest.fixture
-def test_project_script():
-    return (
-        '# THIS FILE IS GENERATED FROM RAT VIA THE "WRITE_SCRIPT" ROUTINE. IT IS NOT PART OF THE RAT CODE.\n\n'
-        "import RATapi\nfrom RATapi.models import *\nfrom numpy import array, inf\n\n"
-        "problem = RATapi.Project(\n"
-        "    name='', calculation='non polarised', model='standard layers', geometry='air/substrate',"
-        " absorption=False,\n"
-        "    parameters=RATapi.ClassList("
-        "[ProtectedParameter(name='Substrate Roughness', min=1.0, value=3.0, max=5.0, fit=True, prior_type='uniform',"
-        " mu=0.0, sigma=inf),"
-        " Parameter(name='Test Thickness', min=0.0, value=0.0, max=0.0, fit=False, prior_type='uniform', mu=0.0,"
-        " sigma=inf),"
-        " Parameter(name='Test SLD', min=0.0, value=0.0, max=0.0, fit=False, prior_type='uniform', mu=0.0, sigma=inf),"
-        " Parameter(name='Test Roughness', min=0.0, value=0.0, max=0.0, fit=False, prior_type='uniform', mu=0.0,"
-        " sigma=inf)"
-        "]),\n"
-        "    background_parameters=RATapi.ClassList([Parameter(name='Background Param 1', min=1e-07, value=1e-06,"
-        " max=1e-05, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
-        "    scalefactors=RATapi.ClassList([Parameter(name='Scalefactor 1', min=0.02, value=0.23, max=0.25, fit=False,"
-        " prior_type='uniform', mu=0.0, sigma=inf)]),\n"
-        "    bulk_in=RATapi.ClassList([Parameter(name='SLD Air', min=0.0, value=0.0, max=0.0, fit=False,"
-        " prior_type='uniform', mu=0.0, sigma=inf)]),\n"
-        "    bulk_out=RATapi.ClassList([Parameter(name='SLD D2O', min=6.2e-06, value=6.35e-06, max=6.35e-06, fit=False,"
-        " prior_type='uniform', mu=0.0, sigma=inf)]),\n"
-        "    resolution_parameters=RATapi.ClassList([Parameter(name='Resolution Param 1', min=0.01, value=0.03,"
-        " max=0.05, fit=False, prior_type='uniform', mu=0.0, sigma=inf)]),\n"
-        "    backgrounds=RATapi.ClassList([Background(name='Background 1', type='constant',"
-        " value_1='Background Param 1', value_2='', value_3='', value_4='', value_5='')]),\n"
-        "    resolutions=RATapi.ClassList([Resolution(name='Resolution 1', type='constant',"
-        " value_1='Resolution Param 1', value_2='', value_3='', value_4='', value_5='')]),\n"
-        "    custom_files=RATapi.ClassList([CustomFile(name='Test Custom File', filename='', function_name='',"
-        " language='python', path='')]),\n"
-        "    data=RATapi.ClassList([Data(name='Simulation', data=array([[1., 1., 1.]]), data_range=[1.0, 1.0],"
-        " simulation_range=[1.0, 1.0])]),\n"
-        "    layers=RATapi.ClassList([Layer(name='Test Layer', thickness='Test Thickness', SLD='Test SLD',"
-        " roughness='Test Roughness', hydration='', hydrate_with='bulk out')]),\n"
-        "    contrasts=RATapi.ClassList([Contrast(name='Test Contrast', data='Simulation', background='Background 1',"
-        " background_action='add', bulk_in='SLD Air', bulk_out='SLD D2O', scalefactor='Scalefactor 1',"
-        " resolution='Resolution 1', resample=False, model=['Test Layer'])]),\n"
-        "    )\n"
     )
 
 
@@ -1137,28 +1093,27 @@ def test_get_contrast_model_field(input_calc: Calculations, input_model: LayerMo
 
 
 @pytest.mark.parametrize(
+    "project",
+    ["r1_default_project", "r1_monolayer", "input_project"],
+)
+@pytest.mark.parametrize(
     "input_filename",
     [
         "test_script.py",
         "test_script",
     ],
 )
-def test_write_script(test_project, temp_dir, test_project_script, input_filename: str) -> None:
+def test_write_script(project, request, temp_dir, input_filename: str) -> None:
     """Test the script we write to regenerate the project is created and runs as expected."""
-    test_project.write_script("problem", os.path.join(temp_dir, input_filename))
+    test_project = request.getfixturevalue(project)
+    test_project.write_script("problem", Path(temp_dir, input_filename))
 
     # Test the file is written in the correct place
-    script_path = os.path.join(temp_dir, "test_script.py")
-    assert os.path.isfile(script_path)
-
-    # Test the contents of the file are as expected
-    with open(script_path) as f:
-        script = f.read()
-
-    assert script == test_project_script
+    script_path = Path(temp_dir, "test_script.py")
+    assert script_path.exists()
 
     # Test we get the project object we expect when running the script
-    exec(script)
+    exec(script_path.read_text())
     new_project = locals()["problem"]
 
     for class_list in RATapi.project.class_lists:

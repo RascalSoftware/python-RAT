@@ -3,7 +3,9 @@
 import collections
 import copy
 import functools
-import os
+from enum import Enum
+from pathlib import Path
+from textwrap import indent
 from typing import Annotated, Any, Callable, Union
 
 import numpy as np
@@ -690,34 +692,52 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
 
         """
         # Need to ensure correct format for script name
-        file_parts = os.path.splitext(script)
-
-        if not file_parts[1]:
-            script += ".py"
-        elif file_parts[1] != ".py":
+        script_path = Path(script)
+        if script_path.suffix == "":
+            script_path = script_path.with_suffix(".py")
+        elif script_path.suffix != ".py":
             raise ValueError('The script name provided to "write_script" must use the ".py" format')
 
-        indent = 4 * " "
+        def write_item(item):
+            """Write a model item as a string of a dictionary."""
+            if isinstance(item, RATapi.models.Data):
+                item_str = "{" + f"'name': '{item.name}',"
+                if not np.any(item.data):  # if array is empty, e.g. in simulation data
+                    item_str += "'data': empty([0, 3]), "
+                else:
+                    item_str += f"'data': {repr(item.data)}, "
+                if len(item.data_range) != 0:
+                    item_str += f"'data_range': {item.data_range}, "
+                if len(item.simulation_range) != 0:
+                    item_str += f"'simulation_range': {item.simulation_range}"
+                item_str += "}"
+                return item_str
+            # converting a dict to a string doesn't automatically convert StrEnums to str :(
+            return str({key: str(value) if isinstance(value, Enum) else value for key, value in dict(item).items()})
 
-        with open(script, "w") as f:
-            f.write(
-                '# THIS FILE IS GENERATED FROM RAT VIA THE "WRITE_SCRIPT" ROUTINE. IT IS NOT PART OF THE RAT CODE.'
-                "\n\n",
+        def classlist_script(name, classlist):
+            """Write a classlist as a script."""
+            return f"{name}=[\n    " + "\n    ".join([write_item(item) + "," for item in classlist.data]) + "],"
+
+        script_path.write_text(
+            f"""# THIS FILE IS GENERATED FROM RAT VIA THE "WRITE_SCRIPT" ROUTINE. IT IS NOT PART OF THE RAT CODE.
+
+import RATapi
+from numpy import array, empty, inf
+
+{obj_name} = RATapi.Project(
+    name="{self.name}",
+    calculation="{self.calculation}",
+    model="{self.model}",
+    geometry="{self.geometry}",
+    absorption="{self.absorption}",
+"""
+            + indent(
+                "\n".join([classlist_script(class_list, getattr(self, class_list)) for class_list in class_lists]),
+                " " * 4,
             )
-
-            # Need imports
-            f.write("import RATapi\nfrom RATapi.models import *\nfrom numpy import array, inf\n\n")
-
-            f.write(
-                f"{obj_name} = RATapi.Project(\n{indent}name='{self.name}', calculation='{self.calculation}',"
-                f" model='{self.model}', geometry='{self.geometry}', absorption={self.absorption},\n",
-            )
-
-            for class_list in class_lists:
-                contents = getattr(self, class_list).data
-                if contents:
-                    f.write(f"{indent}{class_list}=RATapi.ClassList({contents}),\n")
-            f.write(f"{indent})\n")
+            + "\n)"
+        )
 
     def _classlist_wrapper(self, class_list: ClassList, func: Callable):
         """Defines the function used to wrap around ClassList routines to force revalidation.
