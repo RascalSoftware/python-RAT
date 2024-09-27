@@ -5,7 +5,7 @@ class.
 import collections
 import contextlib
 import warnings
-from collections.abc import Iterable, Sequence
+from collections.abc import Sequence
 from typing import Any, Union
 
 import numpy as np
@@ -96,8 +96,8 @@ class ClassList(collections.UserList):
 
     def _setitem(self, index: int, item: object) -> None:
         """Auxiliary routine of "__setitem__" used to enable wrapping."""
-        self._check_classes(self + [item])
-        self._check_unique_name_fields(self + [item])
+        self._check_classes([item])
+        self._check_unique_name_fields([item])
         self.data[index] = item
 
     def __delitem__(self, index: int) -> None:
@@ -118,8 +118,8 @@ class ClassList(collections.UserList):
             other = [other]
         if not hasattr(self, "_class_handle"):
             self._class_handle = self._determine_class_handle(self + other)
-        self._check_classes(self + other)
-        self._check_unique_name_fields(self + other)
+        self._check_classes(other)
+        self._check_unique_name_fields(other)
         super().__iadd__(other)
         return self
 
@@ -168,8 +168,8 @@ class ClassList(collections.UserList):
         if obj:
             if not hasattr(self, "_class_handle"):
                 self._class_handle = type(obj)
-            self._check_classes(self + [obj])
-            self._check_unique_name_fields(self + [obj])
+            self._check_classes([obj])
+            self._check_unique_name_fields([obj])
             self.data.append(obj)
         else:
             if not hasattr(self, "_class_handle"):
@@ -215,8 +215,8 @@ class ClassList(collections.UserList):
         if obj:
             if not hasattr(self, "_class_handle"):
                 self._class_handle = type(obj)
-            self._check_classes(self + [obj])
-            self._check_unique_name_fields(self + [obj])
+            self._check_classes([obj])
+            self._check_unique_name_fields([obj])
             self.data.insert(index, obj)
         else:
             if not hasattr(self, "_class_handle"):
@@ -252,8 +252,8 @@ class ClassList(collections.UserList):
             other = [other]
         if not hasattr(self, "_class_handle"):
             self._class_handle = self._determine_class_handle(self + other)
-        self._check_classes(self + other)
-        self._check_unique_name_fields(self + other)
+        self._check_classes(other)
+        self._check_unique_name_fields(other)
         self.data.extend(other)
 
     def set_fields(self, index: int, **kwargs) -> None:
@@ -318,7 +318,7 @@ class ClassList(collections.UserList):
                     f"which is already specified in the ClassList",
                 )
 
-    def _check_unique_name_fields(self, input_list: Iterable[object]) -> None:
+    def _check_unique_name_fields(self, input_list: Sequence[object]) -> None:
         """Raise a ValueError if any value of the name_field attribute is used more than once in a list of class
         objects.
 
@@ -333,11 +333,22 @@ class ClassList(collections.UserList):
             Raised if the input list defines more than one object with the same value of name_field.
 
         """
-        names = [getattr(model, self.name_field).lower() for model in input_list if hasattr(model, self.name_field)]
-        if len(set(names)) != len(names):
-            raise ValueError(f"Input list contains objects with the same value of the {self.name_field} attribute")
+        error_list = []
+        new_names = [getattr(model, self.name_field) for model in input_list if hasattr(model, self.name_field)]
+        full_names = [name.lower() for name in new_names]
+        with contextlib.suppress(AttributeError):
+            full_names += [name.lower() for name in self.get_names()]
+        for i, name in enumerate(new_names):
+            if full_names.count(name.lower()) > 1:
+                error_list.append(f"    index {i} has the {self.name_field} '{name}', which is already specified")
+        if error_list:
+            newline = "\n"
+            raise ValueError(
+                f"The value of the {self.name_field} attribute must be unique for each element in the "
+                f"ClassList. In the input list:\n{newline.join(error for error in error_list)}\n"
+            )
 
-    def _check_classes(self, input_list: Iterable[object]) -> None:
+    def _check_classes(self, input_list: Sequence[object]) -> None:
         """Raise a ValueError if any object in a list of objects is not of the type specified by self._class_handle.
 
         Parameters
@@ -348,11 +359,19 @@ class ClassList(collections.UserList):
         Raises
         ------
         ValueError
-            Raised if the input list defines objects of different types.
+            Raised if the input list contains objects of any type other than that given in self._class_handle.
 
         """
-        if not (all(isinstance(element, self._class_handle) for element in input_list)):
-            raise ValueError(f"Input list contains elements of type other than '{self._class_handle.__name__}'")
+        error_list = []
+        for i, element in enumerate(input_list):
+            if not isinstance(element, self._class_handle):
+                error_list.append(f"    index {i} is of type {type(element).__name__}")
+        if error_list:
+            newline = "\n"
+            raise ValueError(
+                f"This ClassList only supports elements of type {self._class_handle.__name__}. "
+                f"In the input list:\n{newline.join(error for error in error_list)}\n"
+            )
 
     def _get_item_from_name_field(self, value: Union[object, str]) -> Union[object, str]:
         """Return the object with the given value of the name_field attribute in the ClassList.
@@ -379,7 +398,7 @@ class ClassList(collections.UserList):
     @staticmethod
     def _determine_class_handle(input_list: Sequence[object]):
         """When inputting a sequence of object to a ClassList, the _class_handle should be set as the type of the
-        element which satisfies "issubclass" for all of the other elements.
+        element which satisfies "issubclass" for all the other elements.
 
         Parameters
         ----------
