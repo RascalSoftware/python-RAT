@@ -48,6 +48,11 @@ def plot_ref_sld_helper(
     fig: Optional[matplotlib.pyplot.figure] = None,
     delay: bool = True,
     confidence_intervals: Union[dict, None] = None,
+    linear_x: bool = False,
+    q4: bool = False,
+    show_error_bar: bool = True,
+    show_grid: bool = True,
+    show_legend: bool = True,
 ):
     """Clears the previous plots and updates the ref and SLD plots.
 
@@ -63,7 +68,16 @@ def plot_ref_sld_helper(
     confidence_intervals : dict or None, default None
         The Bayesian confidence intervals for reflectivity and SLD.
         Only relevant if the procedure used is Bayesian (NS or DREAM)
-
+    linear_x : bool, default: False
+            Controls whether the x-axis on reflectivity plot uses the linear scale
+    q4 : bool, default: False
+            Controls whether Q^4 is plotted on the reflectivity plot
+    show_error_bar : bool, default: True
+            Controls whether the error bars are shown
+    show_grid : bool, default: True
+            Controls whether the grid is shown
+    show_legend : bool, default: True
+            Controls whether the lengend is shown
     Returns
     -------
     fig : matplotlib.pyplot.figure
@@ -93,10 +107,12 @@ def plot_ref_sld_helper(
         zip(data.reflectivity, data.shiftedData, data.sldProfiles, data.contrastNames),
     ):
         # Calculate the divisor
-        div = 1 if i == 0 else 2 ** (4 * (i + 1))
+        div = 1 if i == 0 and not q4 else 2 ** (4 * (i + 1))
+        q4_data = 1 if not q4 or not data.dataPresent[i] else sd[:, 0] ** 4
+        mult = q4_data / div
 
         # Plot the reflectivity on plot (1,1)
-        ref_plot.plot(r[:, 0], r[:, 1] / div, label=name, linewidth=2)
+        ref_plot.plot(r[:, 0], r[:, 1] * mult, label=name, linewidth=2)
         color = ref_plot.get_lines()[-1].get_color()
 
         # Plot confidence intervals if required
@@ -104,21 +120,23 @@ def plot_ref_sld_helper(
             ref_min, ref_max = confidence_intervals["reflectivity"][i]
             # FIXME: remove x-data once rascalsoftware/RAT#249 is merged
             ref_x_data = confidence_intervals["reflectivity-x-data"][i][0]
-            ref_plot.fill_between(ref_x_data, ref_min / div, ref_max / div, alpha=0.6, color="grey")
+            mult = (1 if not q4 else ref_x_data**4) / div
+            ref_plot.fill_between(ref_x_data, ref_min * mult, ref_max * mult, alpha=0.6, color="grey")
 
         if data.dataPresent[i]:
             sd_x = sd[:, 0]
-            sd_y, sd_e = map(lambda x: x / div, (sd[:, 1], sd[:, 2]))
+            sd_y, sd_e = map(lambda x: x * mult, (sd[:, 1], sd[:, 2]))
 
-            # Plot the errorbars
-            indices_removed = np.flip(np.nonzero(sd_y - sd_e < 0)[0])
-            sd_x_r, sd_y_r, sd_e_r = map(lambda x: np.delete(x, indices_removed), (sd_x, sd_y, sd_e))
-            plot_errorbars(ref_plot, sd_x_r, sd_y_r, sd_e_r, False, color)
+            if show_error_bar:
+                # Plot the errorbars
+                indices_removed = np.flip(np.nonzero(sd_y - sd_e < 0)[0])
+                sd_x_r, sd_y_r, sd_e_r = map(lambda x: np.delete(x, indices_removed), (sd_x, sd_y, sd_e))
+                plot_errorbars(ref_plot, sd_x_r, sd_y_r, sd_e_r, False, color)
 
-            # Plot one sided errorbars
-            indices_selected = [x for x in indices_removed if x not in np.nonzero(sd_y < 0)[0]]
-            sd_x_s, sd_y_s, sd_e_s = map(lambda x: [x[i] for i in indices_selected], (sd_x, sd_y, sd_e))
-            plot_errorbars(ref_plot, sd_x_s, sd_y_s, sd_e_s, True, color)
+                # Plot one sided errorbars
+                indices_selected = [x for x in indices_removed if x not in np.nonzero(sd_y < 0)[0]]
+                sd_x_s, sd_y_s, sd_e_s = map(lambda x: [x[i] for i in indices_selected], (sd_x, sd_y, sd_e))
+                plot_errorbars(ref_plot, sd_x_s, sd_y_s, sd_e_s, True, color)
 
         # Plot the slds on plot (1,2)
         for j in range(len(sld)):
@@ -156,16 +174,21 @@ def plot_ref_sld_helper(
 
     # Format the axis
     ref_plot.set_yscale("log")
-    ref_plot.set_xscale("log")
+    if not linear_x:
+        ref_plot.set_xscale("log")
     ref_plot.set_xlabel("$Q_{z} (\u00c5^{-1})$")
     ref_plot.set_ylabel("Reflectivity")
-    ref_plot.legend()
-    ref_plot.grid()
 
     sld_plot.set_xlabel("$Z (\u00c5)$")
     sld_plot.set_ylabel("$SLD (\u00c5^{-2})$")
-    sld_plot.legend()
-    sld_plot.grid()
+
+    if show_legend:
+        ref_plot.legend()
+        sld_plot.legend()
+
+    if show_grid:
+        ref_plot.grid()
+        sld_plot.grid()
 
     if preserve_zoom:
         fig.canvas.toolbar.back()
@@ -181,6 +204,11 @@ def plot_ref_sld(
     block: bool = False,
     return_fig: bool = False,
     bayes: Literal[65, 95, None] = None,
+    linear_x: bool = False,
+    q4: bool = False,
+    show_error_bar: bool = True,
+    show_grid: bool = True,
+    show_legend: bool = True,
 ) -> Union[plt.Figure, None]:
     """Plots the reflectivity and SLD profiles.
 
@@ -198,6 +226,16 @@ def plot_ref_sld(
             Whether to shade Bayesian confidence intervals. Can be `None`
             (if no intervals), `65` to show 65% confidence intervals,
             and `95` to show 95% confidence intervals.
+    linear_x : bool, default: False
+            Controls whether the x-axis on reflectivity plot uses the linear scale
+    q4 : bool, default: False
+            Controls whether Q^4 is plotted on the reflectivity plot
+    show_error_bar : bool, default: True
+            Controls whether the error bars are shown
+    show_grid : bool, default: True
+            Controls whether the grid is shown
+    show_legend : bool, default: True
+            Controls whether the lengend is shown
 
     Returns
     -------
@@ -253,7 +291,16 @@ def plot_ref_sld(
 
     figure = plt.subplots(1, 2)[0]
 
-    plot_ref_sld_helper(data, figure, confidence_intervals=confidence_intervals)
+    plot_ref_sld_helper(
+        data,
+        figure,
+        confidence_intervals=confidence_intervals,
+        linear_x=linear_x,
+        q4=q4,
+        show_error_bar=show_error_bar,
+        show_grid=show_grid,
+        show_legend=show_legend,
+    )
 
     if return_fig:
         return figure
