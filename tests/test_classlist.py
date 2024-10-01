@@ -135,11 +135,9 @@ class TestInitialisation:
         """
         with pytest.raises(
             ValueError,
-            match=f"The value of the {name_field} attribute must be unique for each element in the "
-            f"ClassList. In the input list:\n    index 0 has the {name_field} "
-            f"'{getattr(input_list[0], name_field)}', which is already specified\n"
-            f"    index 1 has the {name_field} '{getattr(input_list[1], name_field)}',"
-            f" which is already specified",
+            match=f"The value of the '{name_field}' attribute must be unique for each item in the "
+            f"ClassList:\n    '{getattr(input_list[0], name_field).lower()}'"
+            f" is shared between items 0 and 1 of the input list",
         ):
             ClassList(input_list, name_field=name_field)
 
@@ -201,9 +199,9 @@ def test_setitem_same_name_field(two_name_class_list: ClassList, new_item: Input
     """If we set the name_field of an object in the ClassList to one already defined, we should raise a ValueError."""
     with pytest.raises(
         ValueError,
-        match=f"The value of the {two_name_class_list.name_field} attribute must be unique for each element in the "
-        f"ClassList. In the input list:\n    index 0 has the name '{new_item.name}',"
-        f" which is already specified\n",
+        match=f"The value of the '{two_name_class_list.name_field}' attribute must be unique for each item in the "
+        f"ClassList:\n    '{new_item.name.lower()}' is shared between item 1 of the existing ClassList,"
+        f" and item 0 of the input list",
     ):
         two_name_class_list[0] = new_item
 
@@ -417,9 +415,9 @@ def test_append_object_same_name_field(two_name_class_list: ClassList, new_objec
     """If we append an object with an already-specified name_field value to a ClassList we should raise a ValueError."""
     with pytest.raises(
         ValueError,
-        match=f"The value of the {two_name_class_list.name_field} attribute must be unique for each element in the "
-        f"ClassList. In the input list:\n    index 0 has the {two_name_class_list.name_field} "
-        f"'{new_object.name}', which is already specified",
+        match=f"The value of the '{two_name_class_list.name_field}' attribute must be unique for each item in the "
+        f"ClassList:\n    '{new_object.name.lower()}' is shared between item 0 of the existing ClassList, and "
+        f"item 0 of the input list",
     ):
         two_name_class_list.append(new_object)
 
@@ -436,7 +434,7 @@ def test_append_kwargs_same_name_field(two_name_class_list: ClassList, new_value
         ValueError,
         match=f"Input arguments contain the {two_name_class_list.name_field} "
         f"'{new_values[two_name_class_list.name_field]}', "
-        f"which is already specified in the ClassList",
+        f"which is already specified at index 0 of the ClassList",
     ):
         two_name_class_list.append(**new_values)
 
@@ -542,9 +540,9 @@ def test_insert_object_same_name(two_name_class_list: ClassList, new_object: obj
     """If we insert an object with an already-specified name_field value to a ClassList we should raise a ValueError."""
     with pytest.raises(
         ValueError,
-        match=f"The value of the {two_name_class_list.name_field} attribute must be unique for each element in the "
-        f"ClassList. In the input list:\n    index 0 has the {two_name_class_list.name_field}"
-        f" '{new_object.name}', which is already specified\n",
+        match=f"The value of the '{two_name_class_list.name_field}' attribute must be unique for each item in the "
+        f"ClassList:\n    '{new_object.name.lower()}' is shared between item 0 of the existing "
+        f"ClassList, and item 0 of the input list",
     ):
         two_name_class_list.insert(1, new_object)
 
@@ -561,7 +559,7 @@ def test_insert_kwargs_same_name(two_name_class_list: ClassList, new_values: dic
         ValueError,
         match=f"Input arguments contain the {two_name_class_list.name_field} "
         f"'{new_values[two_name_class_list.name_field]}', "
-        f"which is already specified in the ClassList",
+        f"which is already specified at index 0 of the ClassList",
     ):
         two_name_class_list.insert(1, **new_values)
 
@@ -720,7 +718,7 @@ def test_set_fields_same_name_field(two_name_class_list: ClassList, new_values: 
         ValueError,
         match=f"Input arguments contain the {two_name_class_list.name_field} "
         f"'{new_values[two_name_class_list.name_field]}', "
-        f"which is already specified in the ClassList",
+        f"which is already specified at index 1 of the ClassList",
     ):
         two_name_class_list.set_fields(0, **new_values)
 
@@ -785,7 +783,7 @@ def test__validate_name_field(two_name_class_list: ClassList, input_dict: dict[s
     "input_dict",
     [
         ({"name": "Alice"}),
-        ({"name": "ALICE"}),
+        ({"name": "BOB"}),
         ({"name": "alice"}),
     ],
 )
@@ -795,8 +793,8 @@ def test__validate_name_field_not_unique(two_name_class_list: ClassList, input_d
     with pytest.raises(
         ValueError,
         match=f"Input arguments contain the {two_name_class_list.name_field} "
-        f"'{input_dict[two_name_class_list.name_field]}', "
-        f"which is already specified in the ClassList",
+        f"'{input_dict[two_name_class_list.name_field]}', which is already specified at index "
+        f"{two_name_class_list.index(input_dict['name'].lower())} of the ClassList",
     ):
         two_name_class_list._validate_name_field(input_dict)
 
@@ -819,24 +817,59 @@ def test__check_unique_name_fields(two_name_class_list: ClassList, input_list: I
 
 
 @pytest.mark.parametrize(
-    "input_list",
+    ["input_list", "error_message"],
     [
-        ([InputAttributes(name="Alice"), InputAttributes(name="Bob")]),
-        ([InputAttributes(name="Alice"), InputAttributes(name="Alice")]),
-        ([InputAttributes(name="Alice"), InputAttributes(name="ALICE")]),
-        ([InputAttributes(name="Alice"), InputAttributes(name="alice")]),
+        (
+            [InputAttributes(name="Alice"), InputAttributes(name="Bob")],
+            (
+                "    'alice' is shared between item 0 of the existing ClassList, and item 0 of the input list\n"
+                "    'bob' is shared between item 1 of the existing ClassList, and item 1 of the input list"
+            ),
+        ),
+        (
+            [InputAttributes(name="Alice"), InputAttributes(name="Alice")],
+            "    'alice' is shared between item 0 of the existing ClassList, and items 0 and 1 of the input list",
+        ),
+        (
+            [InputAttributes(name="Alice"), InputAttributes(name="ALICE")],
+            "    'alice' is shared between item 0 of the existing ClassList, and items 0 and 1 of the input list",
+        ),
+        (
+            [InputAttributes(name="Alice"), InputAttributes(name="alice")],
+            "    'alice' is shared between item 0 of the existing ClassList, and items 0 and 1 of the input list",
+        ),
+        (
+            [InputAttributes(name="Eve"), InputAttributes(name="Eve")],
+            "    'eve' is shared between items 0 and 1 of the input list",
+        ),
+        (
+            [
+                InputAttributes(name="Bob"),
+                InputAttributes(name="Alice"),
+                InputAttributes(name="Eve"),
+                InputAttributes(name="Alice"),
+                InputAttributes(name="Eve"),
+                InputAttributes(name="Alice"),
+            ],
+            (
+                "    'bob' is shared between item 1 of the existing ClassList, and item 0 of the input list\n"
+                "    'alice' is shared between item 0 of the existing ClassList,"
+                " and items 1, 3 and 5 of the input list\n"
+                "    'eve' is shared between items 2 and 4 of the input list"
+            ),
+        ),
     ],
 )
-def test__check_unique_name_fields_not_unique(two_name_class_list: ClassList, input_list: Sequence) -> None:
+def test__check_unique_name_fields_not_unique(
+    two_name_class_list: ClassList, input_list: Sequence, error_message: str
+) -> None:
     """We should raise a ValueError if an input list contains multiple objects with (case-insensitive) matching
     name_field values defined.
     """
     with pytest.raises(
         ValueError,
-        match=f"The value of the {two_name_class_list.name_field} attribute must be unique for each element in the "
-        f"ClassList. In the input list:\n    index 0 has the {two_name_class_list.name_field}"
-        f" '{input_list[0].name}', which is already specified\n    index 1 has the"
-        f" {two_name_class_list.name_field} '{input_list[1].name}', which is already specified",
+        match=f"The value of the '{two_name_class_list.name_field}' attribute must be unique for each item in the "
+        f"ClassList:\n{error_message}",
     ):
         two_name_class_list._check_unique_name_fields(input_list)
 

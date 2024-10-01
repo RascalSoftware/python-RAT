@@ -312,10 +312,11 @@ class ClassList(collections.UserList):
         """
         names = [name.lower() for name in self.get_names()]
         with contextlib.suppress(KeyError):
-            if input_args[self.name_field].lower() in names:
+            name = input_args[self.name_field].lower()
+            if name in names:
                 raise ValueError(
                     f"Input arguments contain the {self.name_field} '{input_args[self.name_field]}', "
-                    f"which is already specified in the ClassList",
+                    f"which is already specified at index {names.index(name)} of the ClassList",
                 )
 
     def _check_unique_name_fields(self, input_list: Sequence[object]) -> None:
@@ -334,19 +335,46 @@ class ClassList(collections.UserList):
 
         """
         error_list = []
-        new_names = [getattr(model, self.name_field) for model in input_list if hasattr(model, self.name_field)]
-        full_names = [name.lower() for name in new_names]
-        with contextlib.suppress(AttributeError):
-            full_names += [name.lower() for name in self.get_names()]
-        for i, name in enumerate(new_names):
-            if full_names.count(name.lower()) > 1:
-                error_list.append(f"    index {i} has the {self.name_field} '{name}', which is already specified")
-        if error_list:
-            newline = "\n"
-            raise ValueError(
-                f"The value of the {self.name_field} attribute must be unique for each element in the "
-                f"ClassList. In the input list:\n{newline.join(error for error in error_list)}\n"
-            )
+        try:
+            existing_names = [name.lower() for name in self.get_names()]
+        except AttributeError:
+            existing_names = []
+
+        new_names = [getattr(model, self.name_field).lower() for model in input_list if hasattr(model, self.name_field)]
+        full_names = existing_names + new_names
+
+        # There are duplicate names if this test fails
+        if len(set(full_names)) != len(full_names):
+            unique_names = [*dict.fromkeys(new_names)]
+
+            for name in unique_names:
+                existing_indices = [i for i, other_name in enumerate(existing_names) if other_name == name]
+                new_indices = [i for i, other_name in enumerate(new_names) if other_name == name]
+                if (len(existing_indices) + len(new_indices)) > 1:
+                    existing_string = ""
+                    new_string = ""
+                    if existing_indices:
+                        existing_list = ", ".join(str(i) for i in existing_indices[:-1])
+                        existing_string = (
+                            f" item{f's {existing_list} and ' if existing_list else ' '}"
+                            f"{existing_indices[-1]} of the existing ClassList"
+                        )
+                    if new_indices:
+                        new_list = ", ".join(str(i) for i in new_indices[:-1])
+                        new_string = (
+                            f" item{f's {new_list} and ' if new_list else ' '}" f"{new_indices[-1]} of the input list"
+                        )
+                    error_list.append(
+                        f"    '{name}' is shared between{existing_string}"
+                        f"{', and' if existing_string and new_string else ''}{new_string}"
+                    )
+
+            if error_list:
+                newline = "\n"
+                raise ValueError(
+                    f"The value of the '{self.name_field}' attribute must be unique for each item in the ClassList:\n"
+                    f"{newline.join(error for error in error_list)}"
+                )
 
     def _check_classes(self, input_list: Sequence[object]) -> None:
         """Raise a ValueError if any object in a list of objects is not of the type specified by self._class_handle.
