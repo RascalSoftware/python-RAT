@@ -143,7 +143,7 @@ class ClassList(collections.UserList, Generic[T]):
 
         Parameters
         ----------
-        obj : object, optional
+        obj : T, optional
             An instance of the class specified by self._class_handle.
         **kwargs : dict[str, Any], optional
             The input keyword arguments for a new object in the ClassList.
@@ -190,7 +190,7 @@ class ClassList(collections.UserList, Generic[T]):
         ----------
         index: int
             The index at which to insert a new object in the ClassList.
-        obj : object, optional
+        obj : T, optional
             An instance of the class specified by self._class_handle.
         **kwargs : dict[str, Any], optional
             The input keyword arguments for a new object in the ClassList.
@@ -408,12 +408,12 @@ class ClassList(collections.UserList, Generic[T]):
 
         Parameters
         ----------
-        value : object or str
+        value : T or str
             Either an object in the ClassList, or the value of the name_field attribute of an object in the ClassList.
 
         Returns
         -------
-        instance : object or str
+        instance : T or str
             Either the object with the value of the name_field attribute given by value, or the input value if an
             object with that value of the name_field attribute cannot be found.
 
@@ -466,43 +466,34 @@ class ClassList(collections.UserList, Generic[T]):
 
         # if annotated with a class, get the item type of that class
         origin = get_origin(source)
-        if origin is None:
-            origin = source
-            item_tp = Any
-        else:
-            item_tp = get_args(source)[0]
+        item_tp = Any if origin is None else get_args(source)[0]
 
-        item_schema = handler.generate_schema(list[item_tp])
+        list_schema = handler.generate_schema(list[item_tp])
 
         def coerce(v: Any, handler: ValidatorFunctionWrapHandler) -> ClassList[T]:
-            """If a list is given, try to coerce it to a ClassList."""
-            if isinstance(v, list):
-                v = handler(v)
-                v = ClassList(v)
+            """If a sequence is given, try to coerce it to a ClassList."""
+            if isinstance(v, Sequence):
+                classlist = ClassList()
+                if len(v) > 0 and isinstance(v[0], dict):
+                    # we want to be OK if the type is a model and is passed as a dict;
+                    # pydantic will coerce it or fall over later
+                    classlist._class_handle = dict
+                elif item_tp is not Any:
+                    classlist._class_handle = item_tp
+                classlist.extend(v)
+                v = classlist
             return v
 
         def validate_items(v: ClassList[T], handler: ValidatorFunctionWrapHandler) -> ClassList[T]:
             v.data = handler(v.data)
             return v
 
-        validation_schema = core_schema.chain_schema(
+        schema = core_schema.chain_schema(
             [
-                core_schema.no_info_wrap_validator_function(coerce, item_schema),
+                core_schema.no_info_wrap_validator_function(coerce, list_schema),
                 core_schema.is_instance_schema(cls),
-                core_schema.no_info_wrap_validator_function(validate_items, item_schema),
+                core_schema.no_info_wrap_validator_function(validate_items, list_schema),
             ],
-        )
-
-        json_serialization_schema = core_schema.plain_serializer_function_ser_schema(
-            list, return_schema=validation_schema, when_used="json"
-        )
-        json_schema = core_schema.any_schema(
-            serialization=json_serialization_schema,
-        )
-
-        schema = core_schema.json_or_python_schema(
-            json_schema=json_schema,
-            python_schema=validation_schema,
         )
 
         return schema

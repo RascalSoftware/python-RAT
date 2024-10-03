@@ -97,6 +97,13 @@ def test_r1_involution(project, request, monkeypatch):
         "r1_default_project",
         "r1_monolayer",
         "dspc_bilayer",
+        "dspc_standard_layers",
+        "dspc_custom_layers",
+        "dspc_custom_xy",
+        "domains_standard_layers",
+        "domains_custom_layers",
+        "domains_custom_xy",
+        "absorption",
     ],
 )
 def test_json_involution(project, request):

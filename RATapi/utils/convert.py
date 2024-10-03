@@ -531,6 +531,14 @@ def project_to_json(project: Project) -> str:
                 }
 
             json_dict["data"] = [make_data_dict(data) for data in attr]
+
+        elif field == "custom_files":
+
+            def make_custom_file_dict(item):
+                return {"name": item.name, "filename": item.filename, "language": item.language, "path": str(item.path)}
+
+            json_dict["custom_files"] = [make_custom_file_dict(file) for file in attr]
+
         elif isinstance(attr, ClassList):
             json_dict[field] = [dict(item) for item in attr]
         else:

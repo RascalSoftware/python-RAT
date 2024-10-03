@@ -181,9 +181,9 @@ def test_initialise_wrong_classes(input_model: Callable, model_params: dict) -> 
     with pytest.raises(
         pydantic.ValidationError,
         match=(
-            "1 validation error for Project\n"
-            "parameters.0\n"
-            "  Input should be a valid dictionary or instance of Parameter"
+            "1 validation error for Project\nparameters\n"
+            "  Value error, This ClassList only supports elements of type Parameter. In the input list:\n"
+            f"    index 0 is of type {input_model.__name__}"
         ),
     ):
         RATapi.Project(parameters=RATapi.ClassList(input_model(**model_params)))
@@ -214,6 +214,25 @@ def test_initialise_wrong_layers(
         RATapi.Project(absorption=absorption, layers=RATapi.ClassList(input_model(**model_params)))
 
 
+@pytest.mark.parametrize("absorption, model", [(False, RATapi.models.Layer), (True, RATapi.models.AbsorptionLayer)])
+def test_initialise_ambiguous_layers(absorption: bool, model: RATapi.models.RATModel):
+    """If a sequence of dictionaries is passed to 'contrasts', convert them to the correct model for the calculation."""
+    proj = RATapi.Project(
+        absorption=absorption,
+        parameters=RATapi.ClassList(
+            [
+                RATapi.models.Parameter(name="Test Thickness"),
+                RATapi.models.Parameter(name="Test SLD"),
+                RATapi.models.Parameter(name="Test Roughness"),
+            ]
+        ),
+        layers=RATapi.ClassList(
+            [{"name": "Contrast 1", "thickness": "Test Thickness", "SLD": "Test SLD", "roughness": "Test Roughness"}]
+        ),
+    )
+    assert proj.layers._class_handle == model
+
+
 @pytest.mark.parametrize(
     ["input_model", "calculation", "actual_model_name"],
     [
@@ -222,7 +241,7 @@ def test_initialise_wrong_layers(
     ],
 )
 def test_initialise_wrong_contrasts(
-    input_model: RATapi.models, calculation: Calculations, actual_model_name: str
+    input_model: RATapi.models.RATModel, calculation: Calculations, actual_model_name: str
 ) -> None:
     """If the "Project" model is initialised with the incorrect contrast model given the value of calculation, we should
     raise a ValidationError.
@@ -234,6 +253,16 @@ def test_initialise_wrong_contrasts(
         f'  Value error, "The layers attribute contains contrasts {word} ratio, but the calculation is {calculation}"',
     ):
         RATapi.Project(calculation=calculation, contrasts=RATapi.ClassList(input_model()))
+
+
+@pytest.mark.parametrize(
+    "calculation, model",
+    [(Calculations.Domains, RATapi.models.ContrastWithRatio), (Calculations.NonPolarised, RATapi.models.Contrast)],
+)
+def test_initialise_ambiguous_contrasts(calculation: Calculations, model: RATapi.models.RATModel):
+    """If a sequence of dictionaries is passed to 'contrasts', convert them to the correct model for the calculation."""
+    proj = RATapi.Project(calculation=calculation, contrasts=RATapi.ClassList([{"name": "Contrast 1"}]))
+    assert proj.contrasts._class_handle == model
 
 
 def test_initialise_without_substrate_roughness() -> None:
@@ -294,12 +323,19 @@ def test_assign_wrong_classes(
     test_project, field: str, model_type: str, wrong_input_model: Callable, model_params: dict
 ) -> None:
     """If we assign incorrect classes to the "Project" model, we should raise a ValidationError."""
+    if field == "contrasts":
+        field_name = "contrasts.no_ratio"
+    elif field == "layers":
+        field_name = "layers.no_abs"
+    else:
+        field_name = field
+
     with pytest.raises(
         pydantic.ValidationError,
         match=(
-            "1 validation error for Project\n"
-            f"{field}.+\n"
-            f"  Input should be a valid dictionary or instance of {model_type}"
+            f"1 validation error for Project\n{field_name}\n"
+            f"  Value error, This ClassList only supports elements of type {model_type}. In the input list:\n"
+            f"    index 0 is of type {wrong_input_model.__name__}"
         ),
     ):
         setattr(test_project, field, RATapi.ClassList(wrong_input_model(**model_params)))
@@ -368,35 +404,6 @@ def test_assign_models(test_project, field: str, model_params: dict) -> None:
         match=f"1 validation error for Project\n{field}\n  Input should be " f"an instance of ClassList",
     ):
         setattr(test_project, field, input_model(**model_params))
-
-
-@pytest.mark.parametrize(
-    ["field", "model_params"],
-    [
-        ("backgrounds", {}),
-        ("contrasts", {}),
-        ("custom_files", {}),
-        ("data", {}),
-        ("layers", layer_params),
-        ("parameters", {}),
-        ("resolutions", {}),
-    ],
-)
-def test_coerce_lists(field: str, model_params: dict):
-    """If the Project model is a list rather than a ClassList, it should be coerced to a ClassList."""
-    input_model = model_classes[field]
-    proj = RATapi.Project()
-    if field == "layers":  # set parameters for layers
-        proj.parameters.extend(
-            RATapi.ClassList([RATapi.models.Parameter(name=param_name) for param_name in model_params.values()])
-        )
-    if field == "parameters":  # preserve protected parameter
-        setattr(proj, field, [proj.parameters[0], input_model(**model_params)])
-    else:
-        setattr(proj, field, [input_model(**model_params)])
-    attr = getattr(proj, field)
-    assert isinstance(attr, RATapi.ClassList)
-    assert attr._class_handle == input_model
 
 
 def test_wrapped_routines(test_project) -> None:

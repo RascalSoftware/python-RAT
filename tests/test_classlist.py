@@ -2,6 +2,7 @@
 
 import re
 import warnings
+from collections import deque
 from collections.abc import Iterable, Sequence
 from typing import Any, Union
 
@@ -957,3 +958,48 @@ def test_get_item(two_name_class_list):
     alice = InputAttributes(name="Alice")
     assert two_name_class_list[alice] == two_name_class_list["Alice"]
     assert two_name_class_list[alice] == two_name_class_list[0]
+
+
+class TestPydantic:
+    """Tests for the Pydantic integration for ClassLists."""
+
+    import pydantic
+
+    class Model(pydantic.BaseModel):
+        classlist: ClassList[str]
+
+    model_class = Model
+
+    @pytest.mark.parametrize(
+        "sequence", [["a", "b", "c"], ("a", "b", "c", "d"), deque(["a", "b", "c"]), ClassList(["a", "b"])]
+    )
+    def test_sequence_coercion(self, sequence):
+        """Test that sequences are coerced to ClassLists."""
+        model = self.model_class(classlist=sequence)
+        assert model.classlist.data == list(sequence)
+        assert model.classlist._class_handle is type(sequence[0])
+
+    @pytest.mark.parametrize("input", [[1, 2, "string"], deque(["a", "b", 5.3]), [3.0, 4]])
+    def test_coerce_bad_inputs(self, input):
+        """Test that Pydantic successfully checks the type for input sequences."""
+        with pytest.raises(self.pydantic.ValidationError, match="This ClassList only supports elements of type str."):
+            self.model_class(classlist=input)
+
+    def test_coerce_models(self):
+        """Test that a ClassList of pydantic Models is coerced from a list of dicts."""
+        import pydantic
+
+        class SubModel(pydantic.BaseModel):
+            i: int
+            s: str
+            f: float
+
+        class NestedModel(pydantic.BaseModel):
+            submodels: ClassList[SubModel]
+
+        submodels_list = [{"i": 3, "s": "hello", "f": 3.0}, {"i": 4, "s": "hi", "f": 3.14}]
+
+        model = NestedModel(submodels=submodels_list)
+        for submodel, exp_dict in zip(model.submodels, submodels_list):
+            for key, value in exp_dict.items():
+                assert getattr(submodel, key) == value

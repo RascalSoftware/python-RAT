@@ -27,9 +27,11 @@ from RATapi.utils.custom_errors import custom_pydantic_validation_error
 from RATapi.utils.enums import Calculations, Geometries, LayerModels, Priors, TypeOptions
 
 
+# note for these discriminators that the before-validator discriminate_ambiguous_dicts
+# guarantees we don't run into the ambiguous case of a sequence of dicts
 def discriminate_layers(layer_input):
     """Union discriminator for layers."""
-    if isinstance(layer_input, (RATapi.ClassList, list)):
+    if isinstance(layer_input, (RATapi.ClassList, collections.abc.Sequence)):
         # if classlist is empty, just label it as no absorption and it'll get fixed in post_init
         if len(layer_input) > 0 and isinstance(layer_input[0], RATapi.models.AbsorptionLayer):
             return "abs"
@@ -38,7 +40,7 @@ def discriminate_layers(layer_input):
 
 def discriminate_contrasts(contrast_input):
     """Union discriminator for contrasts."""
-    if isinstance(contrast_input, (RATapi.ClassList, list)):
+    if isinstance(contrast_input, (RATapi.ClassList, collections.abc.Sequence)):
         # if classlist is empty, just label it as no ratio and it'll get fixed in post_init
         if len(contrast_input) > 0 and isinstance(contrast_input[0], RATapi.models.ContrastWithRatio):
             return "ratio"
@@ -248,6 +250,40 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
     _all_names: dict
     _contrast_model_field: str
     _protected_parameters: dict
+
+    @model_validator(mode="before")
+    @classmethod
+    def discriminate_ambiguous_dicts(cls, data: Any) -> Any:
+        """If layers or contrasts contain a dict, convert it to the relevant model."""
+        # pydantic docs says data can be anything, but i can't see anywhere where it isn't a dict.
+        # if it's not a dict, just return and let the library handle it
+        if isinstance(data, dict):
+            layer_model = RATapi.models.AbsorptionLayer if data.get("absorption", False) else RATapi.models.Layer
+            if data.get("calculation", Calculations.NonPolarised) == Calculations.Domains:
+                contrast_model = RATapi.models.ContrastWithRatio
+            else:
+                contrast_model = RATapi.models.Contrast
+
+            # note we aren't modifying the layers and contrasts in-place:
+            # if a ClassList of dicts is passed, in-place conversion would make the ClassList heterogenous
+            # & it'd throw an error
+            if layers := data.get("layers", False):
+                new_layers = ClassList()
+                for layer in layers:
+                    if isinstance(layer, dict):
+                        layer = layer_model.model_validate(layer)
+                    new_layers.append(layer)
+                data["layers"] = new_layers
+
+            if contrasts := data.get("contrasts", False):
+                new_contrasts = ClassList()
+                for contrast in contrasts:
+                    if isinstance(contrast, dict):
+                        contrast = contrast_model.model_validate(contrast)
+                    new_contrasts.append(contrast)
+                data["contrasts"] = new_contrasts
+
+        return data
 
     @field_validator("layers")
     @classmethod
@@ -711,6 +747,19 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
                 if len(item.simulation_range) != 0:
                     item_str += f"'simulation_range': {item.simulation_range}"
                 item_str += "}"
+                return item_str
+
+            if isinstance(item, RATapi.models.CustomFile):
+                # convert file paths to strings because pathlib gets too specific
+                item_str = (
+                    "{"
+                    + f"'name': '{item.name}', "
+                    + f"'filename': '{item.filename}', "
+                    + f"'function_name': '{item.function_name}', "
+                    + f"'language': '{str(item.language)}', "
+                    + f"'path': '{str(item.path)}'"
+                    + "}"
+                )
                 return item_str
             # converting a dict to a string doesn't automatically convert StrEnums to str :(
             return str({key: str(value) if isinstance(value, Enum) else value for key, value in dict(item).items()})
