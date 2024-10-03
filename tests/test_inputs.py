@@ -624,25 +624,7 @@ def test_make_input(test_project, test_problem, test_cells, test_limits, test_pr
         "domainRatio",
     ]
 
-    mocked_matlab_future = mock.MagicMock()
-    mocked_engine = mock.MagicMock()
-    mocked_matlab_future.result.return_value = mocked_engine
-
-    with mock.patch.object(
-        RATapi.wrappers.MatlabWrapper,
-        "loader",
-        mocked_matlab_future,
-    ), mock.patch.object(RATapi.rat_core, "DylibEngine", mock.MagicMock()), mock.patch.object(
-        RATapi.inputs,
-        "get_python_handle",
-        mock.MagicMock(return_value=dummy_function),
-    ), mock.patch.object(
-        RATapi.wrappers.MatlabWrapper,
-        "getHandle",
-        mock.MagicMock(return_value=dummy_function),
-    ), mock.patch.object(RATapi.wrappers.DylibWrapper, "getHandle", mock.MagicMock(return_value=dummy_function)):
-        problem, cells, limits, priors, controls = make_input(test_project, RATapi.Controls())
-
+    problem, cells, limits, priors, controls = make_input(test_project, RATapi.Controls())
     problem = pickle.loads(pickle.dumps(problem))
     check_problem_equal(problem, test_problem)
     cells = pickle.loads(pickle.dumps(cells))
@@ -768,25 +750,7 @@ def test_make_cells(test_project, test_cells, request) -> None:
     """The cells object should be populated according to the input project object."""
     test_project = request.getfixturevalue(test_project)
     test_cells = request.getfixturevalue(test_cells)
-
-    mocked_matlab_future = mock.MagicMock()
-    mocked_engine = mock.MagicMock()
-    mocked_matlab_future.result.return_value = mocked_engine
-    with mock.patch.object(
-        RATapi.wrappers.MatlabWrapper,
-        "loader",
-        mocked_matlab_future,
-    ), mock.patch.object(RATapi.rat_core, "DylibEngine", mock.MagicMock()), mock.patch.object(
-        RATapi.inputs,
-        "get_python_handle",
-        mock.MagicMock(return_value=dummy_function),
-    ), mock.patch.object(
-        RATapi.wrappers.MatlabWrapper,
-        "getHandle",
-        mock.MagicMock(return_value=dummy_function),
-    ), mock.patch.object(RATapi.wrappers.DylibWrapper, "getHandle", mock.MagicMock(return_value=dummy_function)):
-        cells = make_cells(test_project)
-
+    cells = make_cells(test_project)
     check_cells_equal(cells, test_cells)
 
 
@@ -867,7 +831,28 @@ def check_cells_equal(actual_cells, expected_cells) -> None:
 
     for index in chain(range(3, 6), range(7, 21)):
         field = f"f{index}"
-        assert getattr(actual_cells, field) == getattr(expected_cells, field)
+        if index != 14:
+            assert getattr(actual_cells, field) == getattr(expected_cells, field)
+        else:
+            mocked_matlab_future = mock.MagicMock()
+            mocked_engine = mock.MagicMock()
+            mocked_matlab_future.result.return_value = mocked_engine
+            with mock.patch.object(
+                RATapi.wrappers.MatlabWrapper,
+                "loader",
+                mocked_matlab_future,
+            ), mock.patch.object(RATapi.rat_core, "DylibEngine", mock.MagicMock()), mock.patch.object(
+                RATapi.inputs,
+                "get_python_handle",
+                mock.MagicMock(return_value=dummy_function),
+            ), mock.patch.object(
+                RATapi.wrappers.MatlabWrapper,
+                "getHandle",
+                mock.MagicMock(return_value=dummy_function),
+            ), mock.patch.object(
+                RATapi.wrappers.DylibWrapper, "getHandle", mock.MagicMock(return_value=dummy_function)
+            ):
+                assert list(getattr(actual_cells, field)) == getattr(expected_cells, field)
 
 
 def check_controls_equal(actual_controls, expected_controls) -> None:

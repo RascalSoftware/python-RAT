@@ -279,6 +279,52 @@ def check_indices(problem: ProblemDefinition) -> None:
             )
 
 
+class FileHandles:
+    """Class to defer creation of custom file handles.
+
+    Parameters
+    ----------
+    files : ClassList[CustomFile]
+        A list of custom file models.
+    """
+
+    def __init__(self, files):
+        self.index = 0
+        self.files = [*files]
+
+    def __iter__(self):
+        self.index = 0
+        return self
+
+    def get_handle(self, index):
+        """Returns file handle for a given custom file.
+
+        Parameters
+        ----------
+        index : int
+            The index of the custom file.
+
+        """
+        custom_file = self.files[index]
+        full_path = os.path.join(custom_file.path, custom_file.filename)
+        if custom_file.language == Languages.Python:
+            file_handle = get_python_handle(custom_file.filename, custom_file.function_name, custom_file.path)
+        elif custom_file.language == Languages.Matlab:
+            file_handle = RATapi.wrappers.MatlabWrapper(full_path).getHandle()
+        elif custom_file.language == Languages.Cpp:
+            file_handle = RATapi.wrappers.DylibWrapper(full_path, custom_file.function_name).getHandle()
+
+        return file_handle
+
+    def __next__(self):
+        if self.index < len(self.files):
+            custom_file = self.get_handle(self.index)
+            self.index += 1
+            return custom_file
+        else:
+            raise StopIteration
+
+
 def make_cells(project: RATapi.Project) -> Cells:
     """Constructs the cells input required for the compiled RAT code.
 
@@ -344,16 +390,6 @@ def make_cells(project: RATapi.Project) -> Cells:
         else:
             simulation_limits.append([0.0, 0.0])
 
-    file_handles = []
-    for custom_file in project.custom_files:
-        full_path = os.path.join(custom_file.path, custom_file.filename)
-        if custom_file.language == Languages.Python:
-            file_handles.append(get_python_handle(custom_file.filename, custom_file.function_name, custom_file.path))
-        elif custom_file.language == Languages.Matlab:
-            file_handles.append(RATapi.wrappers.MatlabWrapper(full_path).getHandle())
-        elif custom_file.language == Languages.Cpp:
-            file_handles.append(RATapi.wrappers.DylibWrapper(full_path, custom_file.function_name).getHandle())
-
     # Populate the set of cells
     cells = Cells()
     cells.f1 = [[0, 1]] * len(project.contrasts)  # This is marked as "to do" in RAT
@@ -369,7 +405,7 @@ def make_cells(project: RATapi.Project) -> Cells:
     cells.f11 = [param.name for param in project.bulk_in]
     cells.f12 = [param.name for param in project.bulk_out]
     cells.f13 = [param.name for param in project.resolution_parameters]
-    cells.f14 = file_handles
+    cells.f14 = FileHandles(project.custom_files)
     cells.f15 = [param.type for param in project.backgrounds]
     cells.f16 = [param.type for param in project.resolutions]
 
