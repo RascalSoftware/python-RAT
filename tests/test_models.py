@@ -314,7 +314,7 @@ def test_layer_bad_imaginary_SLD():
         pydantic.ValidationError,
         match=(
             "1 validation error for Layer\n"
-            "  Value error, The standard Layer class does not support imaginary SLD."
+            "  Value error, The Layer class does not support imaginary SLD."
             " Use the AbsorptionLayer class instead."
         ),
     ):
@@ -327,7 +327,7 @@ def test_contrast_bad_ratio():
         pydantic.ValidationError,
         match=(
             "1 validation error for Contrast\n"
-            "  Value error, The standard Contrast class does not support domain ratios."
+            "  Value error, The Contrast class does not support domain ratios."
             " Use the ContrastWithRatio class instead."
         ),
     ):

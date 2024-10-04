@@ -31,7 +31,7 @@ from RATapi.utils.enums import Calculations, Geometries, LayerModels, Priors, Ty
 # guarantees we don't run into the ambiguous case of a sequence of dicts
 def discriminate_layers(layer_input):
     """Union discriminator for layers."""
-    if isinstance(layer_input, (RATapi.ClassList, collections.abc.Sequence)):
+    if isinstance(layer_input, collections.abc.Sequence):
         # if classlist is empty, just label it as no absorption and it'll get fixed in post_init
         if len(layer_input) > 0 and isinstance(layer_input[0], RATapi.models.AbsorptionLayer):
             return "abs"
@@ -40,7 +40,7 @@ def discriminate_layers(layer_input):
 
 def discriminate_contrasts(contrast_input):
     """Union discriminator for contrasts."""
-    if isinstance(contrast_input, (RATapi.ClassList, collections.abc.Sequence)):
+    if isinstance(contrast_input, collections.abc.Sequence):
         # if classlist is empty, just label it as no ratio and it'll get fixed in post_init
         if len(contrast_input) > 0 and isinstance(contrast_input[0], RATapi.models.ContrastWithRatio):
             return "ratio"
@@ -308,6 +308,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
     @field_validator("contrasts")
     @classmethod
     def check_contrasts(cls, value: ClassList, info: ValidationInfo):
+        """Check that contrasts are with ratio if calculating domains, and without otherwise."""
         if info.data["calculation"] == Calculations.Domains:
             model_name = "ContrastWithRatio"
             error_word = "without"
@@ -317,8 +318,9 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
         model = getattr(RATapi.models, model_name)
         if not all(isinstance(element, model) for element in value):
             raise ValueError(
-                f'"The layers attribute contains contrasts {error_word} ratio, '
-                f'but the calculation is {str(info.data["calculation"])}"'
+                f'"The contrasts attribute contains contrasts {error_word} ratio, '
+                f'but the calculation is {str(info.data["calculation"])}", '
+                f"The attribute should be a ClassList of {model_name} instead."
             )
 
         return value

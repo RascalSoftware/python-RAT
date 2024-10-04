@@ -482,6 +482,7 @@ class ClassList(collections.UserList, Generic[T]):
                     classlist._class_handle = item_tp
                 classlist.extend(v)
                 v = classlist
+            v = handler(v)
             return v
 
         def validate_items(v: ClassList[T], handler: ValidatorFunctionWrapHandler) -> ClassList[T]:
@@ -490,8 +491,7 @@ class ClassList(collections.UserList, Generic[T]):
 
         schema = core_schema.chain_schema(
             [
-                core_schema.no_info_wrap_validator_function(coerce, list_schema),
-                core_schema.is_instance_schema(cls),
+                core_schema.no_info_wrap_validator_function(coerce, core_schema.is_instance_schema(cls)),
                 core_schema.no_info_wrap_validator_function(validate_items, list_schema),
             ],
         )

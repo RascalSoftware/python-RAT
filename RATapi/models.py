@@ -98,8 +98,7 @@ class Contrast(RATModel):
 
         if isinstance(data, dict) and data.get("domain_ratio", False):
             raise ValueError(
-                "The standard Contrast class does not support domain ratios. "
-                "Use the ContrastWithRatio class instead."
+                "The Contrast class does not support domain ratios. Use the ContrastWithRatio class instead."
             )
 
         return data
@@ -310,9 +309,7 @@ class Layer(RATModel, populate_by_name=True):
         """If the extra input 'sld_imaginary' is given, give a more descriptive error."""
 
         if isinstance(data, dict) and data.get("SLD_imaginary", False):
-            raise ValueError(
-                "The standard Layer class does not support imaginary SLD. " "Use the AbsorptionLayer class instead."
-            )
+            raise ValueError("The Layer class does not support imaginary SLD. Use the AbsorptionLayer class instead.")
 
         return data
 

@@ -1,5 +1,6 @@
 """Test the ClassList."""
 
+import importlib
 import re
 import warnings
 from collections import deque
@@ -960,6 +961,7 @@ def test_get_item(two_name_class_list):
     assert two_name_class_list[alice] == two_name_class_list[0]
 
 
+@pytest.mark.skipif(importlib.util.find_spec("pydantic") is None, reason="Pydantic not installed")
 class TestPydantic:
     """Tests for the Pydantic integration for ClassLists."""
 

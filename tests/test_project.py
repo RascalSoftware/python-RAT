@@ -250,7 +250,8 @@ def test_initialise_wrong_contrasts(
     with pytest.raises(
         pydantic.ValidationError,
         match=f"1 validation error for Project\ncontrasts\n"
-        f'  Value error, "The layers attribute contains contrasts {word} ratio, but the calculation is {calculation}"',
+        f'  Value error, "The contrasts attribute contains contrasts {word} ratio, '
+        f'but the calculation is {calculation}"',
     ):
         RATapi.Project(calculation=calculation, contrasts=RATapi.ClassList(input_model()))
 
@@ -379,7 +380,8 @@ def test_assign_wrong_contrasts(wrong_input_model: Callable, calculation: Calcul
     with pytest.raises(
         pydantic.ValidationError,
         match=f"1 validation error for Project\ncontrasts\n"
-        f'  Value error, "The layers attribute contains contrasts {word} ratio, but the calculation is {calculation}"',
+        f'  Value error, "The contrasts attribute contains contrasts {word} ratio, '
+        f'but the calculation is {calculation}"',
     ):
         project.contrasts = RATapi.ClassList(wrong_input_model())
 
