@@ -446,7 +446,7 @@ struct Cells {
     py::list f11;
     py::list f12;
     py::list f13;
-    py::list f14;
+    py::object f14;
     py::list f15;
     py::list f16;
     py::list f17;
@@ -844,12 +844,13 @@ coder::array<RAT::cell_wrap_6, 2U> pyListToRatCellWrap6(py::list values)
     return result;
 }
 
-coder::array<RAT::cell_wrap_6, 2U> py_function_array_to_rat_cell_wrap_6(py::list values)
+coder::array<RAT::cell_wrap_6, 2U> py_function_array_to_rat_cell_wrap_6(py::object values)
 {
+    auto handles = py::cast<py::list>(values);
     coder::array<RAT::cell_wrap_6, 2U> result;
-    result.set_size(1, values.size());
+    result.set_size(1, handles.size());
     int32_T idx {0};
-    for (py::handle array: values)
+    for (py::handle array: handles)
     { 
         auto func = py::cast<py::function>(array);
         std::string func_ptr = convertPtr2String<CallbackInterface>(new Library(func));
@@ -1585,7 +1586,7 @@ PYBIND11_MODULE(rat_core, m) {
                 cell.f11 = t[10].cast<py::list>(); 
                 cell.f12 = t[11].cast<py::list>();
                 cell.f13 = t[12].cast<py::list>(); 
-                cell.f14 = t[13].cast<py::list>(); 
+                cell.f14 = t[13].cast<py::object>(); 
                 cell.f15 = t[14].cast<py::list>(); 
                 cell.f16 = t[15].cast<py::list>(); 
                 cell.f17 = t[16].cast<py::list>(); 
