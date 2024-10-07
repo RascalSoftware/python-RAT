@@ -6262,3 +6262,52 @@ def r1_monolayer():
     )
 
     return project
+
+
+@pytest.fixture
+def dspc_standard_layers():
+    """The project from the DSPC Standard Layers example."""
+    project, _ = RATapi.examples.DSPC_standard_layers()
+    return project
+
+
+@pytest.fixture
+def dspc_custom_layers():
+    """The project from the DSPC Custom Layers example."""
+    project, _ = RATapi.examples.DSPC_custom_layers()
+    return project
+
+
+@pytest.fixture
+def dspc_custom_xy():
+    """The project from the DSPC Custom XY example."""
+    project, _ = RATapi.examples.DSPC_custom_XY()
+    return project
+
+
+@pytest.fixture
+def domains_standard_layers():
+    """The project from the domains Standard Layers example."""
+    project, _ = RATapi.examples.domains_standard_layers()
+    return project
+
+
+@pytest.fixture
+def domains_custom_layers():
+    """The project from the domains Custom Layers example."""
+    project, _ = RATapi.examples.domains_custom_layers()
+    return project
+
+
+@pytest.fixture
+def domains_custom_xy():
+    """The project from the domains Custom XY example."""
+    project, _ = RATapi.examples.domains_custom_XY()
+    return project
+
+
+@pytest.fixture
+def absorption():
+    """The project from the absorption example."""
+    project, _ = RATapi.examples.absorption()
+    return project

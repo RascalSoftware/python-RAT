@@ -7,7 +7,7 @@ import tempfile
 import pytest
 
 import RATapi
-from RATapi.utils.convert import project_class_to_r1, r1_to_project_class
+from RATapi.utils.convert import project_class_to_r1, project_from_json, project_to_json, r1_to_project_class
 
 TEST_DIR_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_data")
 
@@ -46,17 +46,17 @@ def dspc_bilayer():
 
 
 @pytest.mark.parametrize(
-    ["file", "expected"],
+    ["file", "project"],
     [
         ["R1defaultProject.mat", "r1_default_project"],
         ["R1monolayerVolumeModel.mat", "r1_monolayer"],
         ["R1DSPCBilayer.mat", "dspc_bilayer"],
     ],
 )
-def test_r1_to_project_class(file, expected, request):
+def test_r1_to_project_class(file, project, request):
     """Test that R1 to Project class conversion returns the expected Project."""
     output_project = r1_to_project_class(os.path.join(TEST_DIR_PATH, file))
-    expected_project = request.getfixturevalue(expected)
+    expected_project = request.getfixturevalue(project)
 
     # assert statements have to be more careful due to R1 missing features
     # e.g. R1 doesn't support background parameter names, mu, sigma...
@@ -64,7 +64,14 @@ def test_r1_to_project_class(file, expected, request):
         assert getattr(output_project, class_list) == getattr(expected_project, class_list)
 
 
-@pytest.mark.parametrize("project", ["r1_default_project", "r1_monolayer", "dspc_bilayer"])
+@pytest.mark.parametrize(
+    "project",
+    [
+        "r1_default_project",
+        "r1_monolayer",
+        "dspc_bilayer",
+    ],
+)
 def test_r1_involution(project, request, monkeypatch):
     """Test that converting a Project to an R1 struct and back returns the same project."""
     original_project = request.getfixturevalue(project)
@@ -82,6 +89,32 @@ def test_r1_involution(project, request, monkeypatch):
 
     for class_list in RATapi.project.class_lists:
         assert getattr(converted_project, class_list) == getattr(original_project, class_list)
+
+
+@pytest.mark.parametrize(
+    "project",
+    [
+        "r1_default_project",
+        "r1_monolayer",
+        "dspc_bilayer",
+        "dspc_standard_layers",
+        "dspc_custom_layers",
+        "dspc_custom_xy",
+        "domains_standard_layers",
+        "domains_custom_layers",
+        "domains_custom_xy",
+        "absorption",
+    ],
+)
+def test_json_involution(project, request):
+    """Test that converting a Project to JSON and back returns the same project."""
+    original_project = request.getfixturevalue(project)
+    json_data = project_to_json(original_project)
+
+    converted_project = project_from_json(json_data)
+
+    for field in RATapi.Project.model_fields:
+        assert getattr(converted_project, field) == getattr(original_project, field)
 
 
 @pytest.mark.skipif(importlib.util.find_spec("matlab") is None, reason="Matlab not installed")

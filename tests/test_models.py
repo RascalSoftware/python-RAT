@@ -306,3 +306,29 @@ def test_parameter_range(minimum: float, value: float, maximum: float) -> None:
         f"{float(minimum)} <= value <= {float(maximum)}",
     ):
         RATapi.models.Parameter(min=minimum, value=value, max=maximum)
+
+
+def test_layer_bad_imaginary_SLD():
+    """If 'SLD_imaginary' is given to a Layer, it should raise a descriptive ValidationError."""
+    with pytest.raises(
+        pydantic.ValidationError,
+        match=(
+            "1 validation error for Layer\n"
+            "  Value error, The Layer class does not support imaginary SLD."
+            " Use the AbsorptionLayer class instead."
+        ),
+    ):
+        RATapi.models.Layer(name="My Layer", SLD_imaginary="bad sld")
+
+
+def test_contrast_bad_ratio():
+    """If 'domain_ratios' is given to a Contrast, it should raise a descriptive ValidationError."""
+    with pytest.raises(
+        pydantic.ValidationError,
+        match=(
+            "1 validation error for Contrast\n"
+            "  Value error, The Contrast class does not support domain ratios."
+            " Use the ContrastWithRatio class instead."
+        ),
+    ):
+        RATapi.models.Contrast(name="My Contrast", domain_ratio="bad ratio")

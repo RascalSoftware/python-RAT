@@ -6,13 +6,15 @@ import collections
 import contextlib
 import warnings
 from collections.abc import Sequence
-from typing import Any, Union
+from typing import Any, Generic, TypeVar, Union
 
 import numpy as np
 import prettytable
 
+T = TypeVar("T")
 
-class ClassList(collections.UserList):
+
+class ClassList(collections.UserList, Generic[T]):
     """List of instances of a particular class.
 
     This class subclasses collections.UserList to construct a list intended to store ONLY instances of a particular
@@ -30,14 +32,14 @@ class ClassList(collections.UserList):
 
     Parameters
     ----------
-    init_list : Sequence [object] or object, optional
+    init_list : Sequence [T] or T, optional
         An instance, or list of instance(s), of the class to be used in this ClassList.
     name_field : str, optional
         The field used to define unique objects in the ClassList (default is "name").
 
     """
 
-    def __init__(self, init_list: Union[Sequence[object], object] = None, name_field: str = "name") -> None:
+    def __init__(self, init_list: Union[Sequence[T], T] = None, name_field: str = "name") -> None:
         self.name_field = name_field
 
         # Set input as list if necessary
@@ -81,20 +83,20 @@ class ClassList(collections.UserList):
                 output = str(self.data)
         return output
 
-    def __getitem__(self, index: Union[int, slice, str, object]) -> object:
+    def __getitem__(self, index: Union[int, slice, str, T]) -> T:
         """Get an item by its index, name, a slice, or the object itself."""
         if isinstance(index, (int, slice)):
             return self.data[index]
-        elif isinstance(index, (str, object)):
+        elif isinstance(index, (str, self._class_handle)):
             return self.data[self.index(index)]
         else:
             raise IndexError("ClassLists can only be indexed by integers, slices, name strings, or objects.")
 
-    def __setitem__(self, index: int, item: object) -> None:
+    def __setitem__(self, index: int, item: T) -> None:
         """Replace the object at an existing index of the ClassList."""
         self._setitem(index, item)
 
-    def _setitem(self, index: int, item: object) -> None:
+    def _setitem(self, index: int, item: T) -> None:
         """Auxiliary routine of "__setitem__" used to enable wrapping."""
         self._check_classes([item])
         self._check_unique_name_fields([item])
@@ -108,11 +110,11 @@ class ClassList(collections.UserList):
         """Auxiliary routine of "__delitem__" used to enable wrapping."""
         del self.data[index]
 
-    def __iadd__(self, other: Sequence[object]) -> "ClassList":
+    def __iadd__(self, other: Sequence[T]) -> "ClassList":
         """Define in-place addition using the "+=" operator."""
         return self._iadd(other)
 
-    def _iadd(self, other: Sequence[object]) -> "ClassList":
+    def _iadd(self, other: Sequence[T]) -> "ClassList":
         """Auxiliary routine of "__iadd__" used to enable wrapping."""
         if other and not (isinstance(other, Sequence) and not isinstance(other, str)):
             other = [other]
@@ -135,13 +137,13 @@ class ClassList(collections.UserList):
         """Define in-place multiplication using the "*=" operator."""
         raise TypeError(f"unsupported operand type(s) for *=: '{self.__class__.__name__}' and '{n.__class__.__name__}'")
 
-    def append(self, obj: object = None, **kwargs) -> None:
+    def append(self, obj: T = None, **kwargs) -> None:
         """Append a new object to the ClassList using either the object itself, or keyword arguments to set attribute
         values.
 
         Parameters
         ----------
-        obj : object, optional
+        obj : T, optional
             An instance of the class specified by self._class_handle.
         **kwargs : dict[str, Any], optional
             The input keyword arguments for a new object in the ClassList.
@@ -180,7 +182,7 @@ class ClassList(collections.UserList):
             self._validate_name_field(kwargs)
             self.data.append(self._class_handle(**kwargs))
 
-    def insert(self, index: int, obj: object = None, **kwargs) -> None:
+    def insert(self, index: int, obj: T = None, **kwargs) -> None:
         """Insert a new object into the ClassList at a given index using either the object itself, or keyword arguments
         to set attribute values.
 
@@ -188,7 +190,7 @@ class ClassList(collections.UserList):
         ----------
         index: int
             The index at which to insert a new object in the ClassList.
-        obj : object, optional
+        obj : T, optional
             An instance of the class specified by self._class_handle.
         **kwargs : dict[str, Any], optional
             The input keyword arguments for a new object in the ClassList.
@@ -227,26 +229,26 @@ class ClassList(collections.UserList):
             self._validate_name_field(kwargs)
             self.data.insert(index, self._class_handle(**kwargs))
 
-    def remove(self, item: Union[object, str]) -> None:
+    def remove(self, item: Union[T, str]) -> None:
         """Remove an object from the ClassList using either the object itself or its name_field value."""
         item = self._get_item_from_name_field(item)
         self.data.remove(item)
 
-    def count(self, item: Union[object, str]) -> int:
+    def count(self, item: Union[T, str]) -> int:
         """Return the number of times an object appears in the ClassList using either the object itself or its
         name_field value.
         """
         item = self._get_item_from_name_field(item)
         return self.data.count(item)
 
-    def index(self, item: Union[object, str], offset: bool = False, *args) -> int:
+    def index(self, item: Union[T, str], offset: bool = False, *args) -> int:
         """Return the index of a particular object in the ClassList using either the object itself or its
         name_field value. If offset is specified, add one to the index. This is used to account for one-based indexing.
         """
         item = self._get_item_from_name_field(item)
         return self.data.index(item, *args) + int(offset)
 
-    def extend(self, other: Sequence[object]) -> None:
+    def extend(self, other: Sequence[T]) -> None:
         """Extend the ClassList by adding another sequence."""
         if other and not (isinstance(other, Sequence) and not isinstance(other, str)):
             other = [other]
@@ -319,7 +321,7 @@ class ClassList(collections.UserList):
                     f"which is already specified at index {names.index(name)} of the ClassList",
                 )
 
-    def _check_unique_name_fields(self, input_list: Sequence[object]) -> None:
+    def _check_unique_name_fields(self, input_list: Sequence[T]) -> None:
         """Raise a ValueError if any value of the name_field attribute is used more than once in a list of class
         objects.
 
@@ -376,7 +378,7 @@ class ClassList(collections.UserList):
                     f"{newline.join(error for error in error_list)}"
                 )
 
-    def _check_classes(self, input_list: Sequence[object]) -> None:
+    def _check_classes(self, input_list: Sequence[T]) -> None:
         """Raise a ValueError if any object in a list of objects is not of the type specified by self._class_handle.
 
         Parameters
@@ -401,17 +403,17 @@ class ClassList(collections.UserList):
                 f"In the input list:\n{newline.join(error for error in error_list)}\n"
             )
 
-    def _get_item_from_name_field(self, value: Union[object, str]) -> Union[object, str]:
+    def _get_item_from_name_field(self, value: Union[T, str]) -> Union[T, str]:
         """Return the object with the given value of the name_field attribute in the ClassList.
 
         Parameters
         ----------
-        value : object or str
+        value : T or str
             Either an object in the ClassList, or the value of the name_field attribute of an object in the ClassList.
 
         Returns
         -------
-        instance : object or str
+        instance : T or str
             Either the object with the value of the name_field attribute given by value, or the input value if an
             object with that value of the name_field attribute cannot be found.
 
@@ -424,7 +426,7 @@ class ClassList(collections.UserList):
         return next((model for model in self.data if getattr(model, self.name_field).lower() == lower_value), value)
 
     @staticmethod
-    def _determine_class_handle(input_list: Sequence[object]):
+    def _determine_class_handle(input_list: Sequence[T]):
         """When inputting a sequence of object to a ClassList, the _class_handle should be set as the type of the
         element which satisfies "issubclass" for all the other elements.
 
@@ -448,3 +450,50 @@ class ClassList(collections.UserList):
             class_handle = type(input_list[0])
 
         return class_handle
+
+    # Pydantic core schema which allows ClassLists to be validated
+    # in short: it validates that each ClassList is indeed a ClassList,
+    # and then validates ClassList.data as though it were a typed list
+    # e.g. ClassList[str] data is validated like list[str]
+    @classmethod
+    def __get_pydantic_core_schema__(cls, source: Any, handler):
+        # import here so that the ClassList can be instantiated and used without Pydantic installed
+        from pydantic import ValidatorFunctionWrapHandler
+        from pydantic.types import (
+            core_schema,  # import core_schema through here rather than making pydantic_core a dependency
+        )
+        from typing_extensions import get_args, get_origin
+
+        # if annotated with a class, get the item type of that class
+        origin = get_origin(source)
+        item_tp = Any if origin is None else get_args(source)[0]
+
+        list_schema = handler.generate_schema(list[item_tp])
+
+        def coerce(v: Any, handler: ValidatorFunctionWrapHandler) -> ClassList[T]:
+            """If a sequence is given, try to coerce it to a ClassList."""
+            if isinstance(v, Sequence):
+                classlist = ClassList()
+                if len(v) > 0 and isinstance(v[0], dict):
+                    # we want to be OK if the type is a model and is passed as a dict;
+                    # pydantic will coerce it or fall over later
+                    classlist._class_handle = dict
+                elif item_tp is not Any:
+                    classlist._class_handle = item_tp
+                classlist.extend(v)
+                v = classlist
+            v = handler(v)
+            return v
+
+        def validate_items(v: ClassList[T], handler: ValidatorFunctionWrapHandler) -> ClassList[T]:
+            v.data = handler(v.data)
+            return v
+
+        schema = core_schema.chain_schema(
+            [
+                core_schema.no_info_wrap_validator_function(coerce, core_schema.is_instance_schema(cls)),
+                core_schema.no_info_wrap_validator_function(validate_items, list_schema),
+            ],
+        )
+
+        return schema
