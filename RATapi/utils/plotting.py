@@ -51,7 +51,7 @@ def plot_ref_sld_helper(
     linear_x: bool = False,
     q4: bool = False,
     show_error_bar: bool = True,
-    show_grid: bool = True,
+    show_grid: bool = False,
     show_legend: bool = True,
 ):
     """Clears the previous plots and updates the ref and SLD plots.
@@ -74,7 +74,7 @@ def plot_ref_sld_helper(
             Controls whether Q^4 is plotted on the reflectivity plot
     show_error_bar : bool, default: True
             Controls whether the error bars are shown
-    show_grid : bool, default: True
+    show_grid : bool, default: False
             Controls whether the grid is shown
     show_legend : bool, default: True
             Controls whether the lengend is shown
@@ -207,7 +207,7 @@ def plot_ref_sld(
     linear_x: bool = False,
     q4: bool = False,
     show_error_bar: bool = True,
-    show_grid: bool = True,
+    show_grid: bool = False,
     show_legend: bool = True,
 ) -> Union[plt.Figure, None]:
     """Plots the reflectivity and SLD profiles.
@@ -232,7 +232,7 @@ def plot_ref_sld(
             Controls whether Q^4 is plotted on the reflectivity plot
     show_error_bar : bool, default: True
             Controls whether the error bars are shown
-    show_grid : bool, default: True
+    show_grid : bool, default: False
             Controls whether the grid is shown
     show_legend : bool, default: True
             Controls whether the lengend is shown
