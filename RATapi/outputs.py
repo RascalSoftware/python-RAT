@@ -101,8 +101,6 @@ class Results:
 class PredictionIntervals(RATResult):
     reflectivity: list
     sld: list
-    reflectivityXData: list
-    sldXData: list
     sampleChi: np.ndarray
 
 
@@ -189,8 +187,6 @@ def make_results(
         prediction_intervals = PredictionIntervals(
             reflectivity=bayes_results.predictionIntervals.reflectivity,
             sld=bayes_results.predictionIntervals.sld,
-            reflectivityXData=bayes_results.predictionIntervals.reflectivityXData,
-            sldXData=bayes_results.predictionIntervals.sldXData,
             sampleChi=bayes_results.predictionIntervals.sampleChi,
         )
 

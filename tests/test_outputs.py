@@ -86,8 +86,6 @@ def dream_str():
         "predictionIntervals = PredictionIntervals(\n"
         "\treflectivity = [Data array: [5 x 21], Data array: [5 x 21]],\n"
         "\tsld = [[Data array: [5 x 30], Data array: [5 x 30]]],\n"
-        "\treflectivityXData = [Data array: [1 x 21], Data array: [1 x 21]],\n"
-        "\tsldXData = [[Data array: [1 x 30], Data array: [1 x 30]]],\n"
         "\tsampleChi = Data array: [1000],\n"
         "),\n"
         "confidenceIntervals = ConfidenceIntervals(\n"
