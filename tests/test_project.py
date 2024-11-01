@@ -1122,8 +1122,9 @@ def test_write_script(project, request, temp_dir, input_filename: str) -> None:
     assert script_path.exists()
 
     # Test we get the project object we expect when running the script
-    exec(script_path.read_text())
-    new_project = locals()["problem"]
+    local_dict = {}
+    exec(script_path.read_text(), globals(), local_dict)
+    new_project = local_dict["problem"]
 
     for class_list in RATapi.project.class_lists:
         assert getattr(new_project, class_list) == getattr(test_project, class_list)
