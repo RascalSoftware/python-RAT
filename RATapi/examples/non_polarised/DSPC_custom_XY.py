@@ -32,7 +32,7 @@ def DSPC_custom_XY():
 
     where VFn is the Volume Fraction of the n'th layer.
     """
-    # Start by making the class and setting it to a custom layers type:
+    # Start by making the class and setting it to a custom XY type:
     problem = RAT.Project(name="Orso lipid example - custom XY", model="custom xy", geometry="substrate/liquid")
 
     # We need to add the relevant parameters we are going to need to define the model
