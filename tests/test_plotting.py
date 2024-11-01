@@ -68,8 +68,6 @@ def bayes_fig(request) -> plt.figure:
             [(curve[:, 1] - curve[:, 1] * 0.1, curve[:, 1] + curve[:, 1] * 0.1) for curve in sld]
             for sld in dat.sldProfiles
         ],
-        "reflectivity-x-data": [[curve[:, 0]] for curve in dat.reflectivity],
-        "sld-x-data": [[[profile[:, 0]] for profile in sld] for sld in dat.sldProfiles],
     }
     return RATplot.plot_ref_sld_helper(data=dat, fig=figure, confidence_intervals=confidence_intervals)
 

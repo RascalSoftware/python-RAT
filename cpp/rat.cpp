@@ -302,8 +302,6 @@ struct PredictionIntervals
 {
     py::list reflectivity;
     py::list sld;
-    py::list reflectivityXData;
-    py::list sldXData;
     py::array_t<real_T> sampleChi; 
 };
 
@@ -1160,8 +1158,6 @@ BayesResults bayesResultsFromStruct8T(const RAT::struct8_T results)
 
     bayesResults.predictionIntervals.reflectivity = pyList1DFromRatCellWrap<coder::array<RAT::cell_wrap_11, 1U>>(results.predictionIntervals.reflectivity);
     bayesResults.predictionIntervals.sld = pyList2dFromRatCellWrap<coder::array<RAT::cell_wrap_11, 2U>>(results.predictionIntervals.sld);
-    bayesResults.predictionIntervals.reflectivityXData = pyList1DFromRatCellWrap<coder::array<RAT::cell_wrap_12, 1U>>(results.predictionIntervals.reflectivityXData);
-    bayesResults.predictionIntervals.sldXData = pyList2dFromRatCellWrap<coder::array<RAT::cell_wrap_12, 2U>>(results.predictionIntervals.sldXData);
     bayesResults.predictionIntervals.sampleChi = pyArray1dFromBoundedArray<coder::bounded_array<real_T, 1000U, 1U>>(results.predictionIntervals.sampleChi);
 
     bayesResults.confidenceIntervals.percentile95 = pyArrayFromRatArray2d(results.confidenceIntervals.percentile95);
@@ -1283,8 +1279,6 @@ PYBIND11_MODULE(rat_core, m) {
         .def(py::init<>())
         .def_readwrite("reflectivity", &PredictionIntervals::reflectivity)
         .def_readwrite("sld", &PredictionIntervals::sld)
-        .def_readwrite("reflectivityXData", &PredictionIntervals::reflectivityXData)
-        .def_readwrite("sldXData", &PredictionIntervals::sldXData)
         .def_readwrite("sampleChi", &PredictionIntervals::sampleChi);
     
     py::class_<PlotEventData>(m, "PlotEventData")

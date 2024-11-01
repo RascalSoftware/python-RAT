@@ -116,7 +116,7 @@ def check_bayes_fields_equal(actual_results, expected_results) -> None:
     }
 
     list_fields = {
-        "predictionIntervals": ["reflectivity", "reflectivityXData"],
+        "predictionIntervals": ["reflectivity"],
         "confidenceIntervals": [],
         "dreamParams": [],
         "dreamOutput": [],
@@ -124,7 +124,7 @@ def check_bayes_fields_equal(actual_results, expected_results) -> None:
     }
 
     double_list_fields = {
-        "predictionIntervals": ["sld", "sldXData"],
+        "predictionIntervals": ["sld"],
         "confidenceIntervals": [],
         "dreamParams": [],
         "dreamOutput": [],
