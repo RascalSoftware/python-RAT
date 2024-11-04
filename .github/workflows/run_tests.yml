@@ -20,7 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-13]
-        version: ["3.9", "3.13"]
+        version: ["3.9", "3.x"]
     defaults:
       run:
         shell: bash -l {0}
