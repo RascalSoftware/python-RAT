@@ -31,3 +31,6 @@ dist/*
 
 # Local pre-commit hooks
 .pre-commit-config.yaml
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/*
