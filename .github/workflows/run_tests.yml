@@ -20,7 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-13]
-        version: ["3.9", "3.12"]
+        version: ["3.9", "3.13"]
     defaults:
       run:
         shell: bash -l {0}
@@ -52,5 +52,6 @@ jobs:
           sudo apt install libomp-dev
       - name: Install and Test with pytest
         run: |
+          export PATH="$pythonLocation:$PATH"
           python -m pip install -e .[Dev]
           pytest tests/ --cov=RATapi --cov-report=term
