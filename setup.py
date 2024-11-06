@@ -8,7 +8,7 @@ from setuptools import Extension, find_packages, setup
 from setuptools.command.build_clib import build_clib
 from setuptools.command.build_ext import build_ext
 
-__version__ = "0.0.0.dev2"
+__version__ = "0.0.0.dev3"
 PACKAGE_NAME = "RATapi"
 
 with open("README.md") as f:
@@ -177,6 +177,7 @@ setup(
         ':python_version < "3.11"': ["StrEnum >= 0.4.15"],
         "Dev": ["pytest>=7.4.0", "pytest-cov>=4.1.0", "ruff>=0.4.10"],
         "Matlab_latest": ["matlabengine"],
+        "Matlab_2024a": ["matlabengine == 24.1.*"],
         "Matlab_2023b": ["matlabengine == 23.2.3"],
         "Matlab_2023a": ["matlabengine == 9.14.3"],
         "Matlab_2022b": ["matlabengine == 9.13.9"],
