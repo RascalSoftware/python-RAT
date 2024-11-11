@@ -1,4 +1,3 @@
-import os
 import pathlib
 
 import numpy as np
@@ -310,12 +309,12 @@ def DSPC_standard_layers():
     problem.backgrounds.append(name="SMW Background", type="constant", value_1="Background parameter SMW")
 
     # Now add the data
-    data_path = os.path.join(pathlib.Path(__file__).parents[1].resolve(), "data")
+    data_path = pathlib.Path(__file__).parents[1] / "data"
 
-    d2o_dat = np.loadtxt(os.path.join(data_path, "DSPC_D2O.dat"), delimiter=",")
+    d2o_dat = np.loadtxt(data_path / "DSPC_D2O.dat", delimiter=",")
     problem.data.append(name="dspc_bil_D2O", data=d2o_dat)
 
-    smw_dat = np.loadtxt(os.path.join(data_path, "DSPC_SMW.dat"), delimiter=",")
+    smw_dat = np.loadtxt(data_path / "DSPC_SMW.dat", delimiter=",")
     problem.data.append(name="dspc_bil_smw", data=smw_dat)
 
     # Set the model
