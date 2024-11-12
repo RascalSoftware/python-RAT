@@ -1,4 +1,3 @@
-import os
 import pathlib
 
 import numpy as np
@@ -32,7 +31,7 @@ def DSPC_custom_XY():
 
     where VFn is the Volume Fraction of the n'th layer.
     """
-    # Start by making the class and setting it to a custom layers type:
+    # Start by making the class and setting it to a custom XY type:
     problem = RAT.Project(name="Orso lipid example - custom XY", model="custom xy", geometry="substrate/liquid")
 
     # We need to add the relevant parameters we are going to need to define the model
@@ -59,10 +58,10 @@ def DSPC_custom_XY():
     # Water and H2O. Load these datafiles in and put them in the data block
 
     # Read in the datafiles
-    data_path = os.path.join(pathlib.Path(__file__).parents[1].resolve(), "data")
-    D2O_data = np.loadtxt(os.path.join(data_path, "c_PLP0016596.dat"), delimiter=",")
-    SMW_data = np.loadtxt(os.path.join(data_path, "c_PLP0016601.dat"), delimiter=",")
-    H2O_data = np.loadtxt(os.path.join(data_path, "c_PLP0016607.dat"), delimiter=",")
+    data_path = pathlib.Path(__file__).parents[1] / "data"
+    D2O_data = np.loadtxt(data_path / "c_PLP0016596.dat", delimiter=",")
+    SMW_data = np.loadtxt(data_path / "c_PLP0016601.dat", delimiter=",")
+    H2O_data = np.loadtxt(data_path / "c_PLP0016607.dat", delimiter=",")
 
     # Add the data to the project - note this data has a resolution 4th column
     problem.data.append(name="Bilayer / D2O", data=D2O_data)

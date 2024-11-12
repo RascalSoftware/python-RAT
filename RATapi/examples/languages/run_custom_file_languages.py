@@ -11,6 +11,7 @@ path = pathlib.Path(__file__).parent.resolve()
 
 project = setup_problem.make_example_problem()
 controls = RAT.Controls()
+controls.calcSldDuringFit = True
 
 # Python
 start = time.time()
