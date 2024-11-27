@@ -37,7 +37,7 @@ def r1_to_project_class(filename: str) -> Project:
 
     # R1 uses a different name for custom xy layer model
     layer_model = mat_module["type"]
-    if layer_model == "custom XY profile":
+    if layer_model.lower() == "custom xy profile":
         layer_model = LayerModels.CustomXY
     layer_model = LayerModels(layer_model)
 
@@ -105,7 +105,9 @@ def r1_to_project_class(filename: str) -> Project:
             f"Background parameter {i}" for i in range(1, mat_project["numberOfBacks"] + 1)
         ]
 
-    if mat_project["numberOfResolutions"] == 1:
+    # sometimes numberOfResolutions isn't defined: in all these cases there's only one resolution
+    # maybe from before multiple resolutions were possible?
+    if getattr(mat_project, "numberOfResolutions", 1) == 1:
         mat_project["res_param_names"] = "Resolution parameter 1"
     else:
         mat_project["res_param_names"] = [
@@ -208,10 +210,11 @@ def r1_to_project_class(filename: str) -> Project:
             [
                 Layer(
                     name=name,
-                    thickness=params[thickness - 1].name,
-                    SLD=params[sld - 1].name,
-                    roughness=params[roughness - 1].name,
-                    hydration=params[hydration - 1].name,
+                    thickness=params[int(thickness) - 1].name,
+                    SLD=params[int(sld) - 1].name,
+                    roughness=params[int(roughness) - 1].name,
+                    # if hydration is not set, it is an empty numpy array, else it is a string representing a number
+                    hydration=params[int(hydration) - 1].name if getattr(hydration, "size", 1) > 0 else "",
                     hydrate_with=hydrate_with,
                 )
                 # R1 layers are 6-item arrays, unpack into a Layer object
@@ -224,7 +227,8 @@ def r1_to_project_class(filename: str) -> Project:
             if (
                 isinstance(mat_project["contrastsNumberOfLayers"], int)
                 and mat_project["contrastsNumberOfLayers"] == 0
-                or mat_project["contrastsNumberOfLayers"][i] == 0
+                or isinstance(mat_project["contrastsNumberOfLayers"], list)
+                and mat_project["contrastsNumberOfLayers"][i] == 0
             ):
                 continue
             # contrastLayers is not an array, but rather a string with commas between entries
@@ -412,7 +416,7 @@ def project_class_to_r1(
                     project.parameters.index(layer.thickness, True),
                     project.parameters.index(layer.SLD, True),
                     project.parameters.index(layer.roughness, True),
-                    project.parameters.index(layer.hydration, True),
+                    project.parameters.index(layer.hydration, True) if layer.hydration else empty(shape=(0, 0)),
                     layer.name,
                     str(layer.hydrate_with),
                 ]

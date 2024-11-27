@@ -51,6 +51,9 @@ def dspc_bilayer():
         ["R1defaultProject.mat", "r1_default_project"],
         ["R1monolayerVolumeModel.mat", "r1_monolayer"],
         ["R1DSPCBilayer.mat", "dspc_bilayer"],
+        ["R1Monolayer_8_contrasts.mat", "r1_monolayer_8_contrasts"],
+        ["R1orsoPolymerExample.mat", "r1_orso_polymer"],
+        ["R1motofitBenchMark.mat", "r1_motofit_bench_mark"],
     ],
 )
 def test_r1_to_project_class(file, project, request):
@@ -69,6 +72,9 @@ def test_r1_to_project_class(file, project, request):
     [
         "r1_default_project",
         "r1_monolayer",
+        "r1_monolayer_8_contrasts",
+        "r1_orso_polymer",
+        "r1_motofit_bench_mark",
         "dspc_bilayer",
     ],
 )
@@ -96,6 +102,9 @@ def test_r1_involution(project, request, monkeypatch):
     [
         "r1_default_project",
         "r1_monolayer",
+        "r1_monolayer_8_contrasts",
+        "r1_orso_polymer",
+        "r1_motofit_bench_mark",
         "dspc_bilayer",
         "dspc_standard_layers",
         "dspc_custom_layers",
