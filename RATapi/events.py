@@ -1,5 +1,5 @@
 import os
-from typing import Callable, List, Union
+from typing import Callable, Union
 
 from RATapi.rat_core import EventBridge, EventTypes, PlotEventData, ProgressEventData
 
@@ -21,7 +21,7 @@ def notify(event_type: EventTypes, data: Union[str, PlotEventData, ProgressEvent
         callback(data)
 
 
-def get_event_callback(event_type: EventTypes) -> List[Callable[[Union[str, PlotEventData, ProgressEventData]], None]]:
+def get_event_callback(event_type: EventTypes) -> list[Callable[[Union[str, PlotEventData, ProgressEventData]], None]]:
     """Returns all callbacks registered for the given event type.
 
     Parameters
