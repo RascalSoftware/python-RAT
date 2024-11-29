@@ -171,8 +171,6 @@ def two_contrast_example():
         ]
     )
 
-    # d13ACM = np.loadtxt(d13acmw20, delimiter=',')
-    # d70d2O = np.loadtxt(data_path / 'd70d2o20.dat', delimiter=',')
     problem.data.append(name="H-tail / D-head / ACMW", data=d13acmw20)
     problem.data.append(name="D-tail / H-head / D2O", data=d70d2o20)
 
