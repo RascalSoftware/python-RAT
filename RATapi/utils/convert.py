@@ -1,8 +1,9 @@
 """Utilities for converting input files to Python `Project`s."""
 
 import json
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable, Union
+from typing import Union
 
 from numpy import array, empty
 from scipy.io.matlab import MatlabOpaque, loadmat

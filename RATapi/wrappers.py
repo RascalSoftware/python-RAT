@@ -1,6 +1,6 @@
 import pathlib
 from contextlib import suppress
-from typing import Callable, Tuple
+from typing import Callable
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -47,12 +47,12 @@ class MatlabWrapper:
         self.engine.cd(str(path.parent), nargout=0)
         self.function_name = path.stem
 
-    def getHandle(self) -> Callable[[ArrayLike, ArrayLike, ArrayLike, int, int], Tuple[ArrayLike, float]]:
+    def getHandle(self) -> Callable[[ArrayLike, ArrayLike, ArrayLike, int, int], tuple[ArrayLike, float]]:
         """Returns a wrapper for the custom MATLAB function
 
         Returns
         -------
-        wrapper : Callable[[ArrayLike, ArrayLike, ArrayLike, int, int], Tuple[ArrayLike, float]]
+        wrapper : Callable[[ArrayLike, ArrayLike, ArrayLike, int, int], tuple[ArrayLike, float]]
             The wrapper function for the MATLAB callback
 
         """
@@ -95,12 +95,12 @@ class DylibWrapper:
     def __init__(self, filename, function_name) -> None:
         self.engine = RATapi.rat_core.DylibEngine(filename, function_name)
 
-    def getHandle(self) -> Callable[[ArrayLike, ArrayLike, ArrayLike, int, int], Tuple[ArrayLike, float]]:
+    def getHandle(self) -> Callable[[ArrayLike, ArrayLike, ArrayLike, int, int], tuple[ArrayLike, float]]:
         """Returns a wrapper for the custom dynamic library function
 
         Returns
         -------
-        wrapper : Callable[[ArrayLike, ArrayLike, ArrayLike, int, int], Tuple[ArrayLike, float]]
+        wrapper : Callable[[ArrayLike, ArrayLike, ArrayLike, int, int], tuple[ArrayLike, float]]
             The wrapper function for the dynamic library callback
 
         """
