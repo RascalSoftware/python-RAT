@@ -16,7 +16,7 @@ def input_project():
     """
     project = RATapi.Project(
         name="original_dspc_bilayer",
-        calculation="non polarised",
+        calculation="normal",
         model="standard layers",
         geometry="substrate/liquid",
         absorption=False,
@@ -514,7 +514,6 @@ def reflectivity_calculation_output_results():
     results.calculationResults.chiValues = np.array([202.83057377, 1641.4024969])
     results.calculationResults.sumChi = 1844.2330706690975
     results.contrastParams = RATapi.rat_core.ContrastParams()
-    results.contrastParams.backgroundParams = np.array([2.23e-06, 3.38e-06])
     results.contrastParams.scalefactors = np.array([0.1, 0.15])
     results.contrastParams.bulkIn = np.array([2.073e-06, 2.073e-06])
     results.contrastParams.bulkOut = np.array([5.98e-06, 2.21e-06])
@@ -825,7 +824,6 @@ def reflectivity_calculation_results():
             sumChi=1844.2330706690975,
         ),
         contrastParams=RATapi.outputs.ContrastParams(
-            backgroundParams=np.array([2.23e-06, 3.38e-06]),
             scalefactors=np.array([0.1, 0.15]),
             bulkIn=np.array([2.073e-06, 2.073e-06]),
             bulkOut=np.array([5.98e-06, 2.21e-06]),
@@ -1147,7 +1145,6 @@ def dream_output_results():
     results.calculationResults.chiValues = (np.array([4.6077885, 7.00028098]),)
     results.calculationResults.sumChi = 11.608069475997699
     results.contrastParams = RATapi.rat_core.ContrastParams()
-    results.contrastParams.backgroundParams = np.array([2.37113128e-06, 1.99006694e-06])
     results.contrastParams.scalefactors = np.array([0.1, 0.15])
     results.contrastParams.bulkIn = np.array([2.073e-06, 2.073e-06])
     results.contrastParams.bulkOut = np.array([6.01489149e-06, 1.59371685e-06])
@@ -3297,7 +3294,6 @@ def dream_results():
             sumChi=11.608069475997699,
         ),
         contrastParams=RATapi.outputs.ContrastParams(
-            backgroundParams=np.array([2.37113128e-06, 1.99006694e-06]),
             scalefactors=np.array([0.1, 0.15]),
             bulkIn=np.array([2.073e-06, 2.073e-06]),
             bulkOut=np.array([6.01489149e-06, 1.59371685e-06]),
@@ -5177,7 +5173,7 @@ def r1_default_project():
 
     project = RATapi.Project(
         name="defaultProject",
-        calculation="non polarised",
+        calculation="normal",
         model="standard layers",
         geometry="air/substrate",
         absorption=False,
@@ -5342,7 +5338,7 @@ def r1_monolayer():
     """The Project file corresponding to the data in R1monolayerVolumeModel.mat."""
     project = RATapi.Project(
         name="monolayerVolumeModel",
-        calculation="non polarised",
+        calculation="normal",
         model="custom layers",
         geometry="air/substrate",
         absorption=False,
@@ -6007,7 +6003,7 @@ def r1_monolayer_8_contrasts():
     """The Project equivalent of the R1 Monolayer_8_contrasts RasCAL-1 project."""
     return RATapi.Project(
         name="20nM_data",
-        calculation="non polarised",
+        calculation="normal",
         model="standard layers",
         geometry="air/substrate",
         absorption=False,
@@ -6780,7 +6776,7 @@ def r1_orso_polymer():
 
     return RATapi.Project(
         name="orsoPolymerExample",
-        calculation="non polarised",
+        calculation="normal",
         model="standard layers",
         geometry="air/substrate",
         absorption=False,
@@ -6914,7 +6910,7 @@ def r1_motofit_bench_mark():
 
     return RATapi.Project(
         name="motofitBenchMark",
-        calculation="non polarised",
+        calculation="normal",
         model="standard layers",
         geometry="air/substrate",
         absorption=False,

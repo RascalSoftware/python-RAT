@@ -54,7 +54,7 @@ from RATapi.utils.enums import (
         (Hydration, "bulk out", Hydration.BulkOut),
         (Priors, "uniform", Priors.Uniform),
         (Priors, "gaussian", Priors.Gaussian),
-        (Calculations, "non polarised", Calculations.NonPolarised),
+        (Calculations, "normal", Calculations.Normal),
         (Calculations, "domains", Calculations.Domains),
         (LayerModels, "custom layers", LayerModels.CustomLayers),
         (LayerModels, "custom xy", LayerModels.CustomXY),
@@ -75,7 +75,7 @@ def test_case_insensitivity(test_enum: Callable, test_str: str, expected_value: 
     [
         (Hydration, "bulk in", Hydration.BulkIn),
         (Hydration, "bulk out", Hydration.BulkOut),
-        (Calculations, "non polarised", Calculations.NonPolarised),
+        (Calculations, "normal", Calculations.Normal),
         (LayerModels, "custom layers", LayerModels.CustomLayers),
         (LayerModels, "custom xy", LayerModels.CustomXY),
         (LayerModels, "standard layers", LayerModels.StandardLayers),
@@ -91,7 +91,6 @@ def test_dash_underscore(test_enum: Callable, test_str: str, expected_value: RAT
     ["test_enum", "test_str", "expected_value"],
     [
         (Languages, "c++", Languages.Cpp),
-        (Calculations, "non polarized", Calculations.NonPolarised),
     ],
 )
 def test_alternative_spellings(test_enum: Callable, test_str: str, expected_value: RATEnum) -> None:

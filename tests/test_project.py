@@ -74,7 +74,7 @@ def default_project_str():
     """A string of the output of str() for a Project model with no parameters specified."""
     return (
         "Calculation: ---------------------------------------------------------------------------------------\n\n"
-        "non polarised\n\n"
+        "normal\n\n"
         "Model: ---------------------------------------------------------------------------------------------\n\n"
         "standard layers\n\n"
         "Geometry: ------------------------------------------------------------------------------------------\n\n"
@@ -237,7 +237,7 @@ def test_initialise_ambiguous_layers(absorption: bool, model: RATapi.models.RATM
     ["input_model", "calculation", "actual_model_name"],
     [
         (RATapi.models.Contrast, Calculations.Domains, "ContrastWithRatio"),
-        (RATapi.models.ContrastWithRatio, Calculations.NonPolarised, "Contrast"),
+        (RATapi.models.ContrastWithRatio, Calculations.Normal, "Contrast"),
     ],
 )
 def test_initialise_wrong_contrasts(
@@ -258,7 +258,7 @@ def test_initialise_wrong_contrasts(
 
 @pytest.mark.parametrize(
     "calculation, model",
-    [(Calculations.Domains, RATapi.models.ContrastWithRatio), (Calculations.NonPolarised, RATapi.models.Contrast)],
+    [(Calculations.Domains, RATapi.models.ContrastWithRatio), (Calculations.Normal, RATapi.models.Contrast)],
 )
 def test_initialise_ambiguous_contrasts(calculation: Calculations, model: RATapi.models.RATModel):
     """If a sequence of dictionaries is passed to 'contrasts', convert them to the correct model for the calculation."""
@@ -370,7 +370,7 @@ def test_assign_wrong_layers(
     ["wrong_input_model", "calculation", "actual_model_name"],
     [
         (RATapi.models.Contrast, Calculations.Domains, "ContrastWithRatio"),
-        (RATapi.models.ContrastWithRatio, Calculations.NonPolarised, "Contrast"),
+        (RATapi.models.ContrastWithRatio, Calculations.Normal, "Contrast"),
     ],
 )
 def test_assign_wrong_contrasts(wrong_input_model: Callable, calculation: Calculations, actual_model_name: str) -> None:
@@ -438,9 +438,9 @@ def test_set_domain_ratios(test_project) -> None:
 @pytest.mark.parametrize(
     "project_parameters",
     [
-        ({"calculation": Calculations.NonPolarised, "model": LayerModels.StandardLayers}),
-        ({"calculation": Calculations.NonPolarised, "model": LayerModels.CustomLayers}),
-        ({"calculation": Calculations.NonPolarised, "model": LayerModels.CustomXY}),
+        ({"calculation": Calculations.Normal, "model": LayerModels.StandardLayers}),
+        ({"calculation": Calculations.Normal, "model": LayerModels.CustomLayers}),
+        ({"calculation": Calculations.Normal, "model": LayerModels.CustomXY}),
         ({"calculation": Calculations.Domains, "model": LayerModels.CustomLayers}),
         ({"calculation": Calculations.Domains, "model": LayerModels.CustomXY}),
     ],
@@ -473,8 +473,8 @@ def test_set_layers(project_parameters: dict) -> None:
 @pytest.mark.parametrize(
     ["input_calculation", "input_contrast", "new_calculation", "new_contrast_model", "num_domain_ratios"],
     [
-        (Calculations.NonPolarised, RATapi.models.Contrast, Calculations.Domains, "ContrastWithRatio", 1),
-        (Calculations.Domains, RATapi.models.ContrastWithRatio, Calculations.NonPolarised, "Contrast", 0),
+        (Calculations.Normal, RATapi.models.Contrast, Calculations.Domains, "ContrastWithRatio", 1),
+        (Calculations.Domains, RATapi.models.ContrastWithRatio, Calculations.Normal, "Contrast", 0),
     ],
 )
 def test_set_calculation(
@@ -499,9 +499,9 @@ def test_set_calculation(
 @pytest.mark.parametrize(
     ["new_calc", "new_model", "expected_contrast_model"],
     [
-        (Calculations.NonPolarised, LayerModels.StandardLayers, ["Test Layer"]),
-        (Calculations.NonPolarised, LayerModels.CustomLayers, []),
-        (Calculations.NonPolarised, LayerModels.CustomXY, []),
+        (Calculations.Normal, LayerModels.StandardLayers, ["Test Layer"]),
+        (Calculations.Normal, LayerModels.CustomLayers, []),
+        (Calculations.Normal, LayerModels.CustomXY, []),
         (Calculations.Domains, LayerModels.StandardLayers, []),
         (Calculations.Domains, LayerModels.CustomLayers, []),
         (Calculations.Domains, LayerModels.CustomXY, []),
@@ -784,7 +784,7 @@ def test_allowed_contrasts(field: str, model_name: str) -> None:
         f'"undefined" in the "{field}" field of "contrasts" must be '
         f'defined in "{model_name}".',
     ):
-        RATapi.Project(calculation=Calculations.NonPolarised, contrasts=RATapi.ClassList(test_contrast))
+        RATapi.Project(calculation=Calculations.Normal, contrasts=RATapi.ClassList(test_contrast))
 
 
 @pytest.mark.parametrize(
@@ -835,19 +835,19 @@ def test_allowed_contrasts_with_ratio(field: str, model_name: str) -> None:
             "custom_files",
         ),
         (
-            Calculations.NonPolarised,
+            Calculations.Normal,
             LayerModels.StandardLayers,
             RATapi.models.Contrast(name="Test Contrast", model=["undefined", "undefined", "undefined"]),
             "layers",
         ),
         (
-            Calculations.NonPolarised,
+            Calculations.Normal,
             LayerModels.CustomLayers,
             RATapi.models.Contrast(name="Test Contrast", model=["undefined"]),
             "custom_files",
         ),
         (
-            Calculations.NonPolarised,
+            Calculations.Normal,
             LayerModels.CustomXY,
             RATapi.models.Contrast(name="Test Contrast", model=["undefined"]),
             "custom_files",
@@ -1086,11 +1086,11 @@ def test_check_allowed_contrast_model_not_on_list(test_values: list[str]) -> Non
     ["input_calc", "input_model", "expected_field_name"],
     [
         (Calculations.Domains, LayerModels.StandardLayers, "domain_contrasts"),
-        (Calculations.NonPolarised, LayerModels.StandardLayers, "layers"),
+        (Calculations.Normal, LayerModels.StandardLayers, "layers"),
         (Calculations.Domains, LayerModels.CustomLayers, "custom_files"),
-        (Calculations.NonPolarised, LayerModels.CustomLayers, "custom_files"),
+        (Calculations.Normal, LayerModels.CustomLayers, "custom_files"),
         (Calculations.Domains, LayerModels.CustomXY, "custom_files"),
-        (Calculations.NonPolarised, LayerModels.CustomXY, "custom_files"),
+        (Calculations.Normal, LayerModels.CustomXY, "custom_files"),
     ],
 )
 def test_get_contrast_model_field(input_calc: Calculations, input_model: LayerModels, expected_field_name: str) -> None:

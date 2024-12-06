@@ -68,7 +68,6 @@ class CalculationResults(RATResult):
 
 @dataclass
 class ContrastParams(RATResult):
-    backgroundParams: np.ndarray
     scalefactors: np.ndarray
     bulkIn: np.ndarray
     bulkOut: np.ndarray
@@ -174,7 +173,6 @@ def make_results(
         sumChi=output_results.calculationResults.sumChi,
     )
     contrast_params = ContrastParams(
-        backgroundParams=output_results.contrastParams.backgroundParams,
         scalefactors=output_results.contrastParams.scalefactors,
         bulkIn=output_results.contrastParams.bulkIn,
         bulkOut=output_results.contrastParams.bulkOut,

@@ -5,16 +5,93 @@ import os
 import pathlib
 from typing import Callable, Union
 
+import numpy as np
+
 import RATapi
 import RATapi.controls
 import RATapi.wrappers
-from RATapi.rat_core import Cells, Checks, Control, Limits, Priors, ProblemDefinition
+from RATapi.rat_core import Checks, Control, Limits, NameStore, Priors, ProblemDefinition
 from RATapi.utils.enums import Calculations, Languages, LayerModels, TypeOptions
 
 
-def make_input(
-    project: RATapi.Project, controls: RATapi.Controls
-) -> tuple[ProblemDefinition, Cells, Limits, Priors, Control]:
+def get_python_handle(file_name: str, function_name: str, path: Union[str, pathlib.Path] = "") -> Callable:
+    """Get the function handle from a function defined in a python module located anywhere within the filesystem.
+
+    Parameters
+    ----------
+    file_name : str
+        The name of the file containing the function of interest.
+    function_name : str
+        The name of the function we wish to obtain the handle for within the module.
+    path : str
+        The path to the file containing the function (default is "", which represent the working directory).
+
+    Returns
+    -------
+    handle : Callable
+        The handle of the function defined in the python module file.
+
+    """
+    spec = importlib.util.spec_from_file_location(pathlib.Path(file_name).stem, os.path.join(path, file_name))
+    custom_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(custom_module)
+    handle = getattr(custom_module, function_name)
+    return handle
+
+
+class FileHandles:
+    """Class to defer creation of custom file handles.
+
+    Parameters
+    ----------
+    files : ClassList[CustomFile]
+        A list of custom file models.
+    """
+
+    def __init__(self, files=None):
+        self.index = 0
+        self.files = [] if files is None else [file.dict() for file in files]
+
+    def __iter__(self):
+        self.index = 0
+        return self
+
+    def get_handle(self, index):
+        """Returns file handle for a given custom file.
+
+        Parameters
+        ----------
+        index : int
+            The index of the custom file.
+
+        """
+        custom_file = self.files[index]
+        full_path = os.path.join(custom_file["path"], custom_file["filename"])
+        if custom_file["language"] == Languages.Python:
+            file_handle = get_python_handle(custom_file["filename"], custom_file["function_name"], custom_file["path"])
+        elif custom_file["language"] == Languages.Matlab:
+            file_handle = RATapi.wrappers.MatlabWrapper(full_path).getHandle()
+        elif custom_file["language"] == Languages.Cpp:
+            file_handle = RATapi.wrappers.DylibWrapper(full_path, custom_file["function_name"]).getHandle()
+
+        return file_handle
+
+    def copy(self):
+        handles = FileHandles()
+        handles.files = [file.copy() for file in self.files]
+
+        return handles
+
+    def __next__(self):
+        if self.index < len(self.files):
+            custom_file = self.get_handle(self.index)
+            self.index += 1
+            return custom_file
+        else:
+            raise StopIteration
+
+
+def make_input(project: RATapi.Project, controls: RATapi.Controls) -> tuple[ProblemDefinition, Limits, Priors, Control]:
     """Constructs the inputs required for the compiled RAT code using the data defined in the input project and
     controls.
 
@@ -40,28 +117,25 @@ def make_input(
 
     """
     parameter_field = {
-        "parameters": "param",
-        "bulk_in": "bulkIn",
-        "bulk_out": "bulkOut",
-        "scalefactors": "scalefactor",
-        "domain_ratios": "domainRatio",
-        "background_parameters": "backgroundParam",
-        "resolution_parameters": "resolutionParam",
+        "parameters": "params",
+        "bulk_in": "bulkIns",
+        "bulk_out": "bulkOuts",
+        "scalefactors": "scalefactors",
+        "domain_ratios": "domainRatios",
+        "background_parameters": "backgroundParams",
+        "resolution_parameters": "resolutionParams",
     }
     checks_field = {
-        "parameters": "fitParam",
-        "bulk_in": "fitBulkIn",
-        "bulk_out": "fitBulkOut",
-        "scalefactors": "fitScalefactor",
-        "domain_ratios": "fitDomainRatio",
-        "background_parameters": "fitBackgroundParam",
-        "resolution_parameters": "fitResolutionParam",
+        "parameters": "params",
+        "bulk_in": "bulkIns",
+        "bulk_out": "bulkOuts",
+        "scalefactors": "scalefactors",
+        "domain_ratios": "domainRatios",
+        "background_parameters": "backgroundParams",
+        "resolution_parameters": "resolutionParams",
     }
 
     prior_id = {"uniform": 1, "gaussian": 2, "jeffreys": 3}
-
-    problem = make_problem(project)
-    cells = make_cells(project)
 
     checks = Checks()
     limits = Limits()
@@ -81,9 +155,9 @@ def make_input(
         )
 
     # Use dummy values for qzshifts
-    checks.fitQzshift = []
-    limits.qzshift = []
-    priors.qzshift = []
+    checks.qzshifts = []
+    limits.qzshifts = []
+    priors.qzshifts = []
 
     priors.priorNames = [
         param.name for class_list in RATapi.project.parameter_class_lists for param in getattr(project, class_list)
@@ -97,12 +171,13 @@ def make_input(
     if project.model == LayerModels.CustomXY:
         controls.calcSldDuringFit = True
 
-    cpp_controls = make_controls(controls, checks)
+    problem = make_problem(project, checks)
+    cpp_controls = make_controls(controls)
 
-    return problem, cells, limits, priors, cpp_controls
+    return problem, limits, priors, cpp_controls
 
 
-def make_problem(project: RATapi.Project) -> ProblemDefinition:
+def make_problem(project: RATapi.Project, checks: Checks) -> ProblemDefinition:
     """Constructs the problem input required for the compiled RAT code.
 
     Parameters
@@ -116,7 +191,21 @@ def make_problem(project: RATapi.Project) -> ProblemDefinition:
         The problem input used in the compiled RAT code.
 
     """
-    action_id = {"add": 1, "subtract": 2}
+    hydrate_id = {"bulk in": 1, "bulk out": 2}
+
+    # Set contrast parameters according to model type
+    if project.model == LayerModels.StandardLayers:
+        if project.calculation == Calculations.Domains:
+            contrast_models = [
+                [project.domain_contrasts.index(domain_contrast, True) for domain_contrast in contrast.model]
+                for contrast in project.contrasts
+            ]
+        else:
+            contrast_models = [
+                [project.layers.index(layer, True) for layer in contrast.model] for contrast in project.contrasts
+            ]
+    else:
+        contrast_models = [[]] * len(project.contrasts)
 
     # Set contrast parameters according to model type
     if project.model == LayerModels.StandardLayers:
@@ -126,15 +215,32 @@ def make_problem(project: RATapi.Project) -> ProblemDefinition:
 
     # Set background parameters, with -1 used to indicate a data background
     contrast_background_params = []
+    contrast_background_types = []
+
+    # Get details of defined layers
+    layer_details = []
+    for layer in project.layers:
+        layer_params = [
+            project.parameters.index(getattr(layer, attribute), True)
+            for attribute in list(layer.model_fields.keys())[1:-2]
+        ]
+        layer_params.append(project.parameters.index(layer.hydration, True) if layer.hydration else float("NaN"))
+        layer_params.append(hydrate_id[layer.hydrate_with])
+
+        layer_details.append(layer_params)
 
     for contrast in project.contrasts:
         background = project.backgrounds[contrast.background]
+        contrast_background_types.append(background.type)
         if background.type == TypeOptions.Data:
-            contrast_background_params.append(-1)
+            contrast_background_params.append([-1])
         else:
-            contrast_background_params.append(project.background_parameters.index(background.value_1, True))
+            contrast_background_params.append([project.background_parameters.index(background.value_1, True)])
 
     # Set resolution parameters, with -1 used to indicate a data resolution
+    all_data = []
+    data_limits = []
+    simulation_limits = []
     contrast_resolution_params = []
 
     for contrast in project.contrasts:
@@ -144,40 +250,75 @@ def make_problem(project: RATapi.Project) -> ProblemDefinition:
         else:
             contrast_resolution_params.append(project.resolution_parameters.index(resolution.value_1, True))
 
+        data_index = project.data.index(contrast.data)
+        data = project.data[data_index].data
+        all_data.append(np.column_stack((data, np.zeros((data.shape[0], 6 - data.shape[1])))))
+        data_range = project.data[data_index].data_range
+        simulation_range = project.data[data_index].simulation_range
+
+        if data_range:
+            data_limits.append(data_range)
+        else:
+            data_limits.append([0.0, 0.0])
+
+        if simulation_range:
+            simulation_limits.append(simulation_range)
+        else:
+            simulation_limits.append([0.0, 0.0])
+
     problem = ProblemDefinition()
 
     problem.TF = project.calculation
-    problem.modelType = project.model
+    problem.resample = make_resample(project)
+    problem.data = all_data
+    problem.dataPresent = make_data_present(project)
+    problem.dataLimits = data_limits
+    problem.simulationLimits = simulation_limits
+    problem.oilChiDataPresent = [0] * len(project.contrasts)
+    problem.numberOfContrasts = len(project.contrasts)
     problem.geometry = project.geometry
     problem.useImaginary = project.absorption
-    problem.params = [param.value for param in project.parameters]
-    problem.bulkIn = [param.value for param in project.bulk_in]
-    problem.bulkOut = [param.value for param in project.bulk_out]
-    problem.qzshifts = [0.0]
-    problem.scalefactors = [param.value for param in project.scalefactors]
-    problem.domainRatio = [param.value for param in project.domain_ratios]
-    problem.backgroundParams = [param.value for param in project.background_parameters]
-    problem.resolutionParams = [param.value for param in project.resolution_parameters]
-    problem.contrastBulkIns = [project.bulk_in.index(contrast.bulk_in, True) for contrast in project.contrasts]
-    problem.contrastBulkOuts = [project.bulk_out.index(contrast.bulk_out, True) for contrast in project.contrasts]
+    problem.repeatLayers = [[0, 1]] * len(project.contrasts)  # This is marked as "to do" in RAT
+    problem.contrastBackgroundParams = contrast_background_params
+    problem.contrastBackgroundTypes = contrast_background_types
+    problem.contrastBackgroundActions = [contrast.background_action for contrast in project.contrasts]
     problem.contrastQzshifts = [1] * len(project.contrasts)  # This is marked as "to do" in RAT
     problem.contrastScalefactors = [
         project.scalefactors.index(contrast.scalefactor, True) for contrast in project.contrasts
     ]
+    problem.contrastBulkIns = [project.bulk_in.index(contrast.bulk_in, True) for contrast in project.contrasts]
+    problem.contrastBulkOuts = [project.bulk_out.index(contrast.bulk_out, True) for contrast in project.contrasts]
+    problem.contrastResolutionParams = contrast_resolution_params
+    problem.backgroundParams = [param.value for param in project.background_parameters]
+    problem.qzshifts = [0.0]
+    problem.scalefactors = [param.value for param in project.scalefactors]
+    problem.bulkIns = [param.value for param in project.bulk_in]
+    problem.bulkOuts = [param.value for param in project.bulk_out]
+    problem.resolutionParams = [param.value for param in project.resolution_parameters]
+    problem.params = [param.value for param in project.parameters]
+    problem.numberOfLayers = len(project.layers)
+    problem.contrastLayers = [contrast_model if contrast_model else [] for contrast_model in contrast_models]
+    problem.layersDetails = layer_details if project.model == LayerModels.StandardLayers else []
+    problem.customFiles = FileHandles(project.custom_files)
+    problem.modelType = project.model
+    problem.contrastCustomFiles = contrast_custom_files
+
     problem.contrastDomainRatios = [
         project.domain_ratios.index(contrast.domain_ratio, True) if hasattr(contrast, "domain_ratio") else 0
         for contrast in project.contrasts
     ]
-    problem.contrastBackgroundParams = contrast_background_params
-    problem.contrastBackgroundActions = [action_id[contrast.background_action] for contrast in project.contrasts]
-    problem.contrastResolutionParams = contrast_resolution_params
-    problem.contrastCustomFiles = contrast_custom_files
-    problem.resample = make_resample(project)
-    problem.dataPresent = make_data_present(project)
-    problem.oilChiDataPresent = [0] * len(project.contrasts)
-    problem.numberOfContrasts = len(project.contrasts)
-    problem.numberOfLayers = len(project.layers)
+
+    problem.domainRatios = [param.value for param in project.domain_ratios]
     problem.numberOfDomainContrasts = len(project.domain_contrasts)
+
+    domain_contrast_models = [
+        [project.layers.index(layer, True) for layer in domain_contrast.model]
+        for domain_contrast in project.domain_contrasts
+    ]
+
+    problem.domainContrastLayers = [
+        domain_contrast_model if domain_contrast_model else [] for domain_contrast_model in domain_contrast_models
+    ]
     problem.fitParams = [
         param.value
         for class_list in RATapi.project.parameter_class_lists
@@ -203,6 +344,20 @@ def make_problem(project: RATapi.Project) -> ProblemDefinition:
         if not param.fit
     ]
 
+    # Names
+    problem.names = NameStore()
+    problem.names.params = [param.name for param in project.parameters]
+    problem.names.backgroundParams = [param.name for param in project.background_parameters]
+    problem.names.scalefactors = [param.name for param in project.scalefactors]
+    problem.names.qzshifts = []  # Placeholder for qzshifts
+    problem.names.bulkIns = [param.name for param in project.bulk_in]
+    problem.names.bulkOuts = [param.name for param in project.bulk_out]
+    problem.names.resolutionParams = [param.name for param in project.resolution_parameters]
+    problem.names.domainRatios = [param.name for param in project.domain_ratios]
+    problem.names.contrasts = [contrast.name for contrast in project.contrasts]
+
+    # Checks
+    problem.checks = checks
     check_indices(problem)
 
     return problem
@@ -253,11 +408,11 @@ def check_indices(problem: ProblemDefinition) -> None:
 
     """
     index_list = {
-        "bulkIn": "contrastBulkIns",
-        "bulkOut": "contrastBulkOuts",
+        "bulkIns": "contrastBulkIns",
+        "bulkOuts": "contrastBulkOuts",
         "scalefactors": "contrastScalefactors",
-        "domainRatio": "contrastDomainRatios",
-        "backgroundParams": "contrastBackgroundParams",
+        "domainRatios": "contrastDomainRatios",
+        # "backgroundParams": "contrastBackgroundParams",
         "resolutionParams": "contrastResolutionParams",
     }
 
@@ -279,179 +434,7 @@ def check_indices(problem: ProblemDefinition) -> None:
             )
 
 
-class FileHandles:
-    """Class to defer creation of custom file handles.
-
-    Parameters
-    ----------
-    files : ClassList[CustomFile]
-        A list of custom file models.
-    """
-
-    def __init__(self, files):
-        self.index = 0
-        self.files = [*files]
-
-    def __iter__(self):
-        self.index = 0
-        return self
-
-    def get_handle(self, index):
-        """Returns file handle for a given custom file.
-
-        Parameters
-        ----------
-        index : int
-            The index of the custom file.
-
-        """
-        custom_file = self.files[index]
-        full_path = os.path.join(custom_file.path, custom_file.filename)
-        if custom_file.language == Languages.Python:
-            file_handle = get_python_handle(custom_file.filename, custom_file.function_name, custom_file.path)
-        elif custom_file.language == Languages.Matlab:
-            file_handle = RATapi.wrappers.MatlabWrapper(full_path).getHandle()
-        elif custom_file.language == Languages.Cpp:
-            file_handle = RATapi.wrappers.DylibWrapper(full_path, custom_file.function_name).getHandle()
-
-        return file_handle
-
-    def __next__(self):
-        if self.index < len(self.files):
-            custom_file = self.get_handle(self.index)
-            self.index += 1
-            return custom_file
-        else:
-            raise StopIteration
-
-
-def make_cells(project: RATapi.Project) -> Cells:
-    """Constructs the cells input required for the compiled RAT code.
-
-    Note that the order of the inputs (i.e, f1 to f20) has been hard--coded into the compiled RAT code.
-
-    Parameters
-    ----------
-    project : RAT.Project
-        The project model, which defines the physical system under study.
-
-    Returns
-    -------
-    cells : RAT.rat_core.Cells
-        The set of inputs that are defined in MATLAB as cell arrays.
-
-    """
-    hydrate_id = {"bulk in": 1, "bulk out": 2}
-
-    # Set contrast parameters according to model type
-    if project.model == LayerModels.StandardLayers:
-        if project.calculation == Calculations.Domains:
-            contrast_models = [
-                [project.domain_contrasts.index(domain_contrast, True) for domain_contrast in contrast.model]
-                for contrast in project.contrasts
-            ]
-        else:
-            contrast_models = [
-                [project.layers.index(layer, True) for layer in contrast.model] for contrast in project.contrasts
-            ]
-    else:
-        contrast_models = [[]] * len(project.contrasts)
-
-    # Get details of defined layers
-    layer_details = []
-    for layer in project.layers:
-        layer_params = [
-            project.parameters.index(getattr(layer, attribute), True)
-            for attribute in list(layer.model_fields.keys())[1:-2]
-        ]
-        layer_params.append(project.parameters.index(layer.hydration, True) if layer.hydration else float("NaN"))
-        layer_params.append(hydrate_id[layer.hydrate_with])
-
-        layer_details.append(layer_params)
-
-    # Find contrast data in project.data classlist
-    all_data = []
-    data_limits = []
-    simulation_limits = []
-
-    for contrast in project.contrasts:
-        data_index = project.data.index(contrast.data)
-        all_data.append(project.data[data_index].data)
-        data_range = project.data[data_index].data_range
-        simulation_range = project.data[data_index].simulation_range
-
-        if data_range:
-            data_limits.append(data_range)
-        else:
-            data_limits.append([0.0, 0.0])
-
-        if simulation_range:
-            simulation_limits.append(simulation_range)
-        else:
-            simulation_limits.append([0.0, 0.0])
-
-    # Populate the set of cells
-    cells = Cells()
-    cells.f1 = [[0, 1]] * len(project.contrasts)  # This is marked as "to do" in RAT
-    cells.f2 = all_data
-    cells.f3 = data_limits
-    cells.f4 = simulation_limits
-    cells.f5 = [contrast_model if contrast_model else [] for contrast_model in contrast_models]
-    cells.f6 = layer_details if project.model == LayerModels.StandardLayers else []
-    cells.f7 = [param.name for param in project.parameters]
-    cells.f8 = [param.name for param in project.background_parameters]
-    cells.f9 = [param.name for param in project.scalefactors]
-    cells.f10 = []  # Placeholder for qzshifts
-    cells.f11 = [param.name for param in project.bulk_in]
-    cells.f12 = [param.name for param in project.bulk_out]
-    cells.f13 = [param.name for param in project.resolution_parameters]
-    cells.f14 = FileHandles(project.custom_files)
-    cells.f15 = [param.type for param in project.backgrounds]
-    cells.f16 = [param.type for param in project.resolutions]
-
-    cells.f17 = [[[]]] * len(project.contrasts)  # Placeholder for oil chi data
-    cells.f18 = [[0, 1]] * len(project.domain_contrasts)  # This is marked as "to do" in RAT
-
-    domain_contrast_models = [
-        [project.layers.index(layer, True) for layer in domain_contrast.model]
-        for domain_contrast in project.domain_contrasts
-    ]
-    cells.f19 = [
-        domain_contrast_model if domain_contrast_model else [] for domain_contrast_model in domain_contrast_models
-    ]
-
-    cells.f20 = [param.name for param in project.domain_ratios]
-    cells.f21 = [contrast.name for contrast in project.contrasts]
-
-    return cells
-
-
-def get_python_handle(file_name: str, function_name: str, path: Union[str, pathlib.Path] = "") -> Callable:
-    """Get the function handle from a function defined in a python module located anywhere within the filesystem.
-
-    Parameters
-    ----------
-    file_name : str
-        The name of the file containing the function of interest.
-    function_name : str
-        The name of the function we wish to obtain the handle for within the module.
-    path : str
-        The path to the file containing the function (default is "", which represent the working directory).
-
-    Returns
-    -------
-    handle : Callable
-        The handle of the function defined in the python module file.
-
-    """
-    spec = importlib.util.spec_from_file_location(pathlib.Path(file_name).stem, os.path.join(path, file_name))
-    custom_module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(custom_module)
-    handle = getattr(custom_module, function_name)
-    return handle
-
-
-def make_controls(input_controls: RATapi.Controls, checks: Checks) -> Control:
+def make_controls(input_controls: RATapi.Controls) -> Control:
     """Converts the controls object to the format required by the compiled RAT code.
 
     Parameters
@@ -501,8 +484,6 @@ def make_controls(input_controls: RATapi.Controls, checks: Checks) -> Control:
     controls.pUnitGamma = input_controls.pUnitGamma
     controls.boundHandling = input_controls.boundHandling
     controls.adaptPCR = input_controls.adaptPCR
-    # Checks
-    controls.checks = checks
     # IPC
     controls.IPCFilePath = ""
 
