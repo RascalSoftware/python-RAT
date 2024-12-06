@@ -126,7 +126,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
     """
 
     name: str = ""
-    calculation: Calculations = Calculations.NonPolarised
+    calculation: Calculations = Calculations.Normal
     model: LayerModels = LayerModels.StandardLayers
     geometry: Geometries = Geometries.AirSubstrate
     absorption: bool = False
@@ -259,7 +259,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
         # if it's not a dict, just return and let the library handle it
         if isinstance(data, dict):
             layer_model = RATapi.models.AbsorptionLayer if data.get("absorption", False) else RATapi.models.Layer
-            if data.get("calculation", Calculations.NonPolarised) == Calculations.Domains:
+            if data.get("calculation", Calculations.Normal) == Calculations.Domains:
                 contrast_model = RATapi.models.ContrastWithRatio
             else:
                 contrast_model = RATapi.models.Contrast

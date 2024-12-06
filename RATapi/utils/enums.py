@@ -112,7 +112,7 @@ class Priors(RATEnum):
 
 # Project
 class Calculations(RATEnum):
-    NonPolarised = "non polarised"
+    Normal = "normal"
     Domains = "domains"
 
 

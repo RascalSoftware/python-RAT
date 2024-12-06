@@ -33,7 +33,6 @@ def check_results_equal(actual_results, expected_results) -> None:
     list_fields = ["reflectivity", "simulation", "shiftedData"]
     double_list_fields = ["layerSlds", "sldProfiles", "resampledLayers"]
     contrast_param_fields = [
-        "backgroundParams",
         "scalefactors",
         "bulkIn",
         "bulkOut",

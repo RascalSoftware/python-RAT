@@ -25,7 +25,7 @@ def reflectivity_calculation_problem():
     "DSPC_standard_layers.py".
     """
     problem = RATapi.rat_core.ProblemDefinition()
-    problem.TF = Calculations.NonPolarised
+    problem.TF = Calculations.Normal
     problem.modelType = LayerModels.StandardLayers
     problem.geometry = Geometries.SubstrateLiquid
     problem.useImaginary = False
@@ -54,19 +54,19 @@ def reflectivity_calculation_problem():
             2.361e01,
         ],
     )
-    problem.bulkIn = np.array([2.073e-06])
-    problem.bulkOut = np.array([5.98e-06, 2.21e-06])
+    problem.bulkIns = np.array([2.073e-06])
+    problem.bulkOuts = np.array([5.98e-06, 2.21e-06])
     problem.qzshifts = np.array([0.0])
     problem.scalefactors = np.array([0.1, 0.15])
-    problem.domainRatio = np.array([])
+    problem.domainRatios = np.array([])
     problem.backgroundParams = np.array([2.23e-06, 3.38e-06])
     problem.resolutionParams = np.array([0.03])
     problem.contrastBulkIns = np.array([1.0, 1.0])
     problem.contrastBulkOuts = np.array([1.0, 2.0])
     problem.contrastQzshifts = np.array([0.0, 0.0])
     problem.contrastScalefactors = np.array([1.0, 2.0])
-    problem.contrastBackgroundParams = np.array([1.0, 2.0])
-    problem.contrastBackgroundActions = np.array([1.0, 1.0])
+    problem.contrastBackgroundParams = [[1.0], [2.0]]
+    problem.contrastBackgroundActions = [1.0, 1.0]
     problem.contrastResolutionParams = np.array([1.0, 1.0])
     problem.contrastCustomFiles = np.array([np.nan, np.nan])
     problem.contrastDomainRatios = np.array([0.0, 0.0])
@@ -162,7 +162,7 @@ def dream_problem():
     This optimisation used the parameters: nSamples=50000, nChains=10.
     """
     problem = RATapi.rat_core.ProblemDefinition()
-    problem.TF = Calculations.NonPolarised
+    problem.TF = Calculations.Normal
     problem.modelType = LayerModels.StandardLayers
     problem.geometry = Geometries.SubstrateLiquid
     problem.useImaginary = False
@@ -191,19 +191,19 @@ def dream_problem():
             2.94448999e01,
         ],
     )
-    problem.bulkIn = np.array([2.073e-06])
-    problem.bulkOut = np.array([6.01489149e-06, 1.59371685e-06])
+    problem.bulkIns = np.array([2.073e-06])
+    problem.bulkOuts = np.array([6.01489149e-06, 1.59371685e-06])
     problem.qzshifts = np.array([0.0])
     problem.scalefactors = np.array([0.1, 0.15])
-    problem.domainRatio = np.array([])
+    problem.domainRatios = np.array([])
     problem.backgroundParams = np.array([2.37113128e-06, 1.99006694e-06])
     problem.resolutionParams = np.array([0.03])
     problem.contrastBulkIns = np.array([1.0, 1.0])
     problem.contrastBulkOuts = np.array([1.0, 2.0])
     problem.contrastQzshifts = np.array([0.0, 0.0])
     problem.contrastScalefactors = np.array([1.0, 2.0])
-    problem.contrastBackgroundParams = np.array([1.0, 2.0])
-    problem.contrastBackgroundActions = np.array([1.0, 1.0])
+    problem.contrastBackgroundParams = [[1.0], [2.0]]
+    problem.contrastBackgroundActions = [1.0, 1.0]
     problem.contrastResolutionParams = np.array([1.0, 1.0])
     problem.contrastCustomFiles = np.array([np.nan, np.nan])
     problem.contrastDomainRatios = np.array([0.0, 0.0])

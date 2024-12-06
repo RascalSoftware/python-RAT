@@ -9,7 +9,7 @@ def absorption():
     """Custom layers model including absorption"""
     problem = RAT.Project(
         name="Absorption example",
-        calculation="non polarised",
+        calculation="normal",
         model="custom layers",
         geometry="substrate/liquid",
         absorption=True,
