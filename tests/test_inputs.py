@@ -2,8 +2,6 @@
 
 import pathlib
 import pickle
-from itertools import chain
-from unittest import mock
 
 import numpy as np
 import pytest
@@ -13,6 +11,7 @@ import RATapi.wrappers
 from RATapi.inputs import check_indices, make_controls, make_input, make_problem
 from RATapi.rat_core import Checks, Control, Limits, Priors, ProblemDefinition
 from RATapi.utils.enums import (
+    BackgroundActions,
     BoundHandling,
     Calculations,
     Display,
@@ -20,7 +19,6 @@ from RATapi.utils.enums import (
     LayerModels,
     Parallel,
     Procedures,
-    BackgroundActions,
 )
 from tests.utils import dummy_function
 
@@ -785,4 +783,3 @@ def check_controls_equal(actual_controls, expected_controls) -> None:
 
     for field in controls_fields:
         assert getattr(actual_controls, field) == getattr(expected_controls, field)
-    

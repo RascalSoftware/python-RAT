@@ -4,11 +4,13 @@ import importlib
 import os
 import pathlib
 from typing import Callable, Union
+
 import numpy as np
+
 import RATapi
 import RATapi.controls
 import RATapi.wrappers
-from RATapi.rat_core import NameStore, Checks, Control, Limits, Priors, ProblemDefinition
+from RATapi.rat_core import Checks, Control, Limits, NameStore, Priors, ProblemDefinition
 from RATapi.utils.enums import Calculations, Languages, LayerModels, TypeOptions
 
 
@@ -49,7 +51,7 @@ class FileHandles:
     def __init__(self, files=None):
         self.index = 0
         self.files = [] if files is None else [file.dict() for file in files]
-        
+
     def __iter__(self):
         self.index = 0
         return self
@@ -89,9 +91,7 @@ class FileHandles:
             raise StopIteration
 
 
-def make_input(
-    project: RATapi.Project, controls: RATapi.Controls
-) -> tuple[ProblemDefinition, Limits, Priors, Control]:
+def make_input(project: RATapi.Project, controls: RATapi.Controls) -> tuple[ProblemDefinition, Limits, Priors, Control]:
     """Constructs the inputs required for the compiled RAT code using the data defined in the input project and
     controls.
 
@@ -192,8 +192,6 @@ def make_problem(project: RATapi.Project, checks: Checks) -> ProblemDefinition:
 
     """
     hydrate_id = {"bulk in": 1, "bulk out": 2}
-    action_id = {"add": 1, "subtract": 2}
-
 
     # Set contrast parameters according to model type
     if project.model == LayerModels.StandardLayers:
@@ -208,7 +206,7 @@ def make_problem(project: RATapi.Project, checks: Checks) -> ProblemDefinition:
             ]
     else:
         contrast_models = [[]] * len(project.contrasts)
-    
+
     # Set contrast parameters according to model type
     if project.model == LayerModels.StandardLayers:
         contrast_custom_files = [float("NaN")] * len(project.contrasts)
@@ -230,7 +228,7 @@ def make_problem(project: RATapi.Project, checks: Checks) -> ProblemDefinition:
         layer_params.append(hydrate_id[layer.hydrate_with])
 
         layer_details.append(layer_params)
-    
+
     for contrast in project.contrasts:
         background = project.backgrounds[contrast.background]
         contrast_background_types.append(background.type)
@@ -251,10 +249,10 @@ def make_problem(project: RATapi.Project, checks: Checks) -> ProblemDefinition:
             contrast_resolution_params.append(-1)
         else:
             contrast_resolution_params.append(project.resolution_parameters.index(resolution.value_1, True))
-        
+
         data_index = project.data.index(contrast.data)
         data = project.data[data_index].data
-        all_data.append(np.column_stack((data, np.zeros((data.shape[0], 6-data.shape[1])))))
+        all_data.append(np.column_stack((data, np.zeros((data.shape[0], 6 - data.shape[1])))))
         data_range = project.data[data_index].data_range
         simulation_range = project.data[data_index].simulation_range
 
@@ -267,7 +265,7 @@ def make_problem(project: RATapi.Project, checks: Checks) -> ProblemDefinition:
             simulation_limits.append(simulation_range)
         else:
             simulation_limits.append([0.0, 0.0])
-    
+
     problem = ProblemDefinition()
 
     problem.TF = project.calculation
@@ -283,7 +281,7 @@ def make_problem(project: RATapi.Project, checks: Checks) -> ProblemDefinition:
     problem.repeatLayers = [[0, 1]] * len(project.contrasts)  # This is marked as "to do" in RAT
     problem.contrastBackgroundParams = contrast_background_params
     problem.contrastBackgroundTypes = contrast_background_types
-    problem.contrastBackgroundActions = [contrast.background_action for contrast in project.contrasts]   
+    problem.contrastBackgroundActions = [contrast.background_action for contrast in project.contrasts]
     problem.contrastQzshifts = [1] * len(project.contrasts)  # This is marked as "to do" in RAT
     problem.contrastScalefactors = [
         project.scalefactors.index(contrast.scalefactor, True) for contrast in project.contrasts
@@ -304,7 +302,7 @@ def make_problem(project: RATapi.Project, checks: Checks) -> ProblemDefinition:
     problem.customFiles = FileHandles(project.custom_files)
     problem.modelType = project.model
     problem.contrastCustomFiles = contrast_custom_files
-    
+
     problem.contrastDomainRatios = [
         project.domain_ratios.index(contrast.domain_ratio, True) if hasattr(contrast, "domain_ratio") else 0
         for contrast in project.contrasts
@@ -312,7 +310,7 @@ def make_problem(project: RATapi.Project, checks: Checks) -> ProblemDefinition:
 
     problem.domainRatios = [param.value for param in project.domain_ratios]
     problem.numberOfDomainContrasts = len(project.domain_contrasts)
-    
+
     domain_contrast_models = [
         [project.layers.index(layer, True) for layer in domain_contrast.model]
         for domain_contrast in project.domain_contrasts
@@ -345,7 +343,7 @@ def make_problem(project: RATapi.Project, checks: Checks) -> ProblemDefinition:
         for param in getattr(project, class_list)
         if not param.fit
     ]
-    
+
     # Names
     problem.names = NameStore()
     problem.names.params = [param.name for param in project.parameters]
@@ -357,7 +355,7 @@ def make_problem(project: RATapi.Project, checks: Checks) -> ProblemDefinition:
     problem.names.resolutionParams = [param.name for param in project.resolution_parameters]
     problem.names.domainRatios = [param.name for param in project.domain_ratios]
     problem.names.contrasts = [contrast.name for contrast in project.contrasts]
-    
+
     # Checks
     problem.checks = checks
     check_indices(problem)
