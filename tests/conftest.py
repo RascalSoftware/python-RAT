@@ -5226,7 +5226,7 @@ def r1_default_project():
             )
         ),
         backgrounds=RATapi.ClassList(
-            RATapi.models.Background(name="Background 1", type="constant", value_1="Background parameter 1")
+            RATapi.models.Background(name="Background 1", type="constant", source="Background parameter 1")
         ),
         background_parameters=RATapi.ClassList(
             RATapi.models.Parameter(
@@ -5241,7 +5241,7 @@ def r1_default_project():
             )
         ),
         resolutions=RATapi.ClassList(
-            RATapi.models.Resolution(name="Resolution 1", type="constant", value_1="Resolution parameter 1")
+            RATapi.models.Resolution(name="Resolution 1", type="constant", source="Resolution parameter 1")
         ),
         resolution_parameters=RATapi.ClassList(
             RATapi.models.Parameter(
@@ -5438,8 +5438,8 @@ def r1_monolayer():
         ),
         backgrounds=RATapi.ClassList(
             [
-                RATapi.models.Background(name="Background  D2O", type="constant", value_1="Background parameter 1"),
-                RATapi.models.Background(name="Background ACMW", type="constant", value_1="Background parameter 2"),
+                RATapi.models.Background(name="Background  D2O", type="constant", source="Background parameter 1"),
+                RATapi.models.Background(name="Background ACMW", type="constant", source="Background parameter 2"),
             ]
         ),
         background_parameters=RATapi.ClassList(
@@ -5467,7 +5467,7 @@ def r1_monolayer():
             ]
         ),
         resolutions=RATapi.ClassList(
-            RATapi.models.Resolution(name="Resolution 1", type="constant", value_1="Resolution parameter 1")
+            RATapi.models.Resolution(name="Resolution 1", type="constant", source="Resolution parameter 1")
         ),
         resolution_parameters=RATapi.ClassList(
             RATapi.models.Parameter(
@@ -6182,20 +6182,12 @@ def r1_monolayer_8_contrasts():
             RATapi.models.Background(
                 name="Background  D2O",
                 type="constant",
-                value_1="Background parameter 1",
-                value_2="",
-                value_3="",
-                value_4="",
-                value_5="",
+                source="Background parameter 1",
             ),
             RATapi.models.Background(
                 name="Background ACMW",
                 type="constant",
-                value_1="Background parameter 2",
-                value_2="",
-                value_3="",
-                value_4="",
-                value_5="",
+                source="Background parameter 2",
             ),
         ],
         resolution_parameters=[
@@ -6214,11 +6206,7 @@ def r1_monolayer_8_contrasts():
             RATapi.models.Resolution(
                 name="Resolution 1",
                 type="constant",
-                value_1="Resolution parameter 1",
-                value_2="",
-                value_3="",
-                value_4="",
-                value_5="",
+                source="Resolution parameter 1",
             )
         ],
         custom_files=[],
@@ -6845,11 +6833,7 @@ def r1_orso_polymer():
             RATapi.models.Background(
                 name="Background 1",
                 type="constant",
-                value_1="Background parameter 1",
-                value_2="",
-                value_3="",
-                value_4="",
-                value_5="",
+                source="Background parameter 1",
             )
         ],
         resolution_parameters=[
@@ -6868,11 +6852,7 @@ def r1_orso_polymer():
             RATapi.models.Resolution(
                 name="Resolution 1",
                 type="constant",
-                value_1="Resolution parameter 1",
-                value_2="",
-                value_3="",
-                value_4="",
-                value_5="",
+                source="Resolution parameter 1",
             )
         ],
         custom_files=[],
@@ -7049,11 +7029,7 @@ def r1_motofit_bench_mark():
             RATapi.models.Background(
                 name="Background 1",
                 type="constant",
-                value_1="Background parameter 1",
-                value_2="",
-                value_3="",
-                value_4="",
-                value_5="",
+                source="Background parameter 1",
             )
         ],
         resolution_parameters=[
@@ -7072,11 +7048,7 @@ def r1_motofit_bench_mark():
             RATapi.models.Resolution(
                 name="Resolution 1",
                 type="constant",
-                value_1="Resolution parameter 1",
-                value_2="",
-                value_3="",
-                value_4="",
-                value_5="",
+                source="Resolution parameter 1",
             )
         ],
         custom_files=[],

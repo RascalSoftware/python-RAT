@@ -48,26 +48,22 @@ def discriminate_contrasts(contrast_input):
 
 
 values_defined_in = {
-    "backgrounds.constant.value_1": "background_parameters",
-    "backgrounds.constant.value_2": "background_parameters",
-    "backgrounds.constant.value_3": "background_parameters",
-    "backgrounds.constant.value_4": "background_parameters",
-    "backgrounds.constant.value_5": "background_parameters",
-    "backgrounds.data.value_1": "data",
-    "backgrounds.data.value_2": "data",
-    "backgrounds.data.value_3": "data",
-    "backgrounds.data.value_4": "data",
-    "backgrounds.data.value_5": "data",
-    "resolutions.constant.value_1": "resolution_parameters",
-    "resolutions.constant.value_2": "resolution_parameters",
-    "resolutions.constant.value_3": "resolution_parameters",
-    "resolutions.constant.value_4": "resolution_parameters",
-    "resolutions.constant.value_5": "resolution_parameters",
-    "resolutions.data.value_1": "data",
-    "resolutions.data.value_2": "data",
-    "resolutions.data.value_3": "data",
-    "resolutions.data.value_4": "data",
-    "resolutions.data.value_5": "data",
+    "backgrounds.value_1": "background_parameters",
+    "backgrounds.value_2": "background_parameters",
+    "backgrounds.value_3": "background_parameters",
+    "backgrounds.value_4": "background_parameters",
+    "backgrounds.value_5": "background_parameters",
+    "backgrounds.constant.source": "background_parameters",
+    "backgrounds.data.source": "data",
+    "backgrounds.function.source": "custom_files",
+    "resolutions.value_1": "resolution_parameters",
+    "resolutions.value_2": "resolution_parameters",
+    "resolutions.value_3": "resolution_parameters",
+    "resolutions.value_4": "resolution_parameters",
+    "resolutions.value_5": "resolution_parameters",
+    "resolutions.constant.source": "resolution_parameters",
+    "resolutions.data.source": "data",
+    "resolutions.function.source": "custom_files",
     "layers.thickness": "parameters",
     "layers.SLD": "parameters",
     "layers.SLD_real": "parameters",
@@ -84,8 +80,12 @@ values_defined_in = {
 
 AllFields = collections.namedtuple("AllFields", ["attribute", "fields"])
 model_names_used_in = {
-    "background_parameters": AllFields("backgrounds", ["value_1", "value_2", "value_3", "value_4", "value_5"]),
-    "resolution_parameters": AllFields("resolutions", ["value_1", "value_2", "value_3", "value_4", "value_5"]),
+    "background_parameters": AllFields(
+        "backgrounds", ["source", "value_1", "value_2", "value_3", "value_4", "value_5"]
+    ),
+    "resolution_parameters": AllFields(
+        "resolutions", ["source", "value_1", "value_2", "value_3", "value_4", "value_5"]
+    ),
     "parameters": AllFields("layers", ["thickness", "SLD", "SLD_real", "SLD_imaginary", "roughness", "hydration"]),
     "data": AllFields("contrasts", ["data"]),
     "backgrounds": AllFields("contrasts", ["background"]),
@@ -199,7 +199,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
     )
 
     backgrounds: ClassList[RATapi.models.Background] = ClassList(
-        RATapi.models.Background(name="Background 1", type=TypeOptions.Constant, value_1="Background Param 1"),
+        RATapi.models.Background(name="Background 1", type=TypeOptions.Constant, source="Background Param 1"),
     )
 
     resolution_parameters: ClassList[RATapi.models.Parameter] = ClassList(
@@ -216,7 +216,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
     )
 
     resolutions: ClassList[RATapi.models.Resolution] = ClassList(
-        RATapi.models.Resolution(name="Resolution 1", type=TypeOptions.Constant, value_1="Resolution Param 1"),
+        RATapi.models.Resolution(name="Resolution 1", type=TypeOptions.Constant, source="Resolution Param 1"),
     )
 
     custom_files: ClassList[RATapi.models.CustomFile] = ClassList()
@@ -526,13 +526,10 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
     @model_validator(mode="after")
     def cross_check_model_values(self) -> "Project":
         """Certain model fields should contain values defined elsewhere in the project."""
-        value_fields = ["value_1", "value_2", "value_3", "value_4", "value_5"]
-        self.check_allowed_background_resolution_values(
-            "backgrounds", value_fields, self.background_parameters.get_names(), self.data.get_names()
-        )
-        self.check_allowed_background_resolution_values(
-            "resolutions", value_fields, self.resolution_parameters.get_names(), self.data.get_names()
-        )
+        values = ["value_1", "value_2", "value_3", "value_4", "value_5"]
+        for field in ["backgrounds", "resolutions"]:
+            self.check_allowed_source(field)
+            self.check_allowed_values(field, values, getattr(self, f"{field[:-1]}_parameters").get_names())
 
         self.check_allowed_values(
             "layers",
@@ -624,24 +621,18 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
                         f'"{values_defined_in[f"{attribute}.{field}"]}".',
                     )
 
-    def check_allowed_background_resolution_values(
-        self, attribute: str, field_list: list[str], allowed_constants: list[str], allowed_data: list[str]
-    ) -> None:
-        """Check the values of the given fields in the given model are in the supplied list of allowed values.
+    def check_allowed_source(self, attribute: str) -> None:
+        """Check that the source of a background or resolution is defined in the relevant field for its type.
 
-        For backgrounds and resolutions, the list of allowed values depends on whether the type of the
-        background/resolution is "constant" or "data".
+        - A constant background or resolution source should be defined in
+          `background_parameters` or `resolution_parameters` respectively;
+        - A data background source should be defined in `data`
+        - A function background source should be defined in `custom_files`
 
         Parameters
         ----------
         attribute : str
             The attribute of Project being validated.
-        field_list : list [str]
-            The fields of the attribute to be checked for valid values.
-        allowed_constants : list [str]
-            The list of allowed values for the fields given in field_list if the type is "constant".
-        allowed_data : list [str]
-            The list of allowed values for the fields given in field_list if the type is "data".
 
         Raises
         ------
@@ -653,19 +644,17 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
         class_list = getattr(self, attribute)
         for model in class_list:
             if model.type == TypeOptions.Constant:
-                allowed_values = allowed_constants
+                allowed_values = getattr(self, f"{attribute[:-1]}_parameters").get_names()
             elif model.type == TypeOptions.Data:
-                allowed_values = allowed_data
+                allowed_values = self.data.get_names()
             else:
-                raise ValueError('"Function" type backgrounds and resolutions are not yet supported.')
+                allowed_values = self.custom_files.get_names()
 
-            for field in field_list:
-                value = getattr(model, field, "")
-                if value and value not in allowed_values:
-                    raise ValueError(
-                        f'The value "{value}" in the "{field}" field of "{attribute}" must be defined in '
-                        f'"{values_defined_in[f"{attribute}.{model.type}.{field}"]}".',
-                    )
+            if (value := model.source) != "" and value not in allowed_values:
+                raise ValueError(
+                    f'The value "{value}" in the "source" field of "{attribute}" must be defined in '
+                    f'"{values_defined_in[f"{attribute}.{model.type}.source"]}".',
+                )
 
     def check_contrast_model_allowed_values(
         self,

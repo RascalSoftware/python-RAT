@@ -82,11 +82,11 @@ def make_example_problem():
     )
 
     # And add the two new constant backgrounds
-    problem.backgrounds.append(name="Background SMW", type="constant", value_1="Background parameter SMW")
-    problem.backgrounds.append(name="Background H2O", type="constant", value_1="Background parameter H2O")
+    problem.backgrounds.append(name="Background SMW", type="constant", source="Background parameter SMW")
+    problem.backgrounds.append(name="Background H2O", type="constant", source="Background parameter H2O")
 
     # And edit the other one
-    problem.backgrounds.set_fields(0, name="Background D2O", value_1="Background parameter D2O")
+    problem.backgrounds.set_fields(0, name="Background D2O", source="Background parameter D2O")
 
     # Finally modify some of the other parameters to be more suitable values for a solid / liquid experiment
     problem.scalefactors.set_fields(0, value=1.0, min=0.5, max=2.0, fit=True)
