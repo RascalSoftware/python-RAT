@@ -147,8 +147,8 @@ def DSPC_standard_layers():
         fit=True,
     )
 
-    problem.backgrounds.append(name="D2O Background", type="constant", value_1="Background parameter D2O")
-    problem.backgrounds.append(name="SMW Background", type="constant", value_1="Background parameter SMW")
+    problem.backgrounds.append(name="D2O Background", type="constant", source="Background parameter D2O")
+    problem.backgrounds.append(name="SMW Background", type="constant", source="Background parameter SMW")
 
     # Now add the data
     data_path = pathlib.Path(__file__).parents[1] / "data"

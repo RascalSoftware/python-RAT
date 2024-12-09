@@ -1,6 +1,7 @@
 """The models module. Contains the pydantic models used by RAT to store project parameters."""
 
 import pathlib
+from itertools import count
 from typing import Any
 
 import numpy as np
@@ -15,23 +16,15 @@ except ImportError:
     from strenum import StrEnum
 
 
-def int_sequence():
-    """Iterate through integers for use as model counters."""
-    num = 1
-    while True:
-        yield str(num)
-        num += 1
-
-
 # Create a counter for each model
-background_number = int_sequence()
-contrast_number = int_sequence()
-custom_file_number = int_sequence()
-data_number = int_sequence()
-domain_contrast_number = int_sequence()
-layer_number = int_sequence()
-parameter_number = int_sequence()
-resolution_number = int_sequence()
+background_number = count(1)
+contrast_number = count(1)
+custom_file_number = count(1)
+data_number = count(1)
+domain_contrast_number = count(1)
+layer_number = count(1)
+parameter_number = count(1)
+resolution_number = count(1)
 
 
 class RATModel(BaseModel, validate_assignment=True, extra="forbid"):
@@ -52,35 +45,70 @@ class RATModel(BaseModel, validate_assignment=True, extra="forbid"):
 
 
 class Background(RATModel):
-    """Defines the Backgrounds in RAT."""
+    """A background signal.
 
-    name: str = Field(default_factory=lambda: "New Background " + next(background_number), min_length=1)
+    Parameters
+    ----------
+    name : str
+        The name of the background.
+    type : TypeOptions
+        The type of background (constant, function or data)
+    source : str
+        The source data for the background;
+        - if type is 'constant', this should be the name of a background parameter.
+        - if type is 'data', this should be the name of a dataset defined in `Project.data`.
+        - if type is 'function', this should be the name of a custom function defined in `Project.custom_files`.
+    value_1, value_2, ..., value_5 : str
+        Values required by the background.
+        - if type is 'constant', this should be blank.
+        - if type is 'data', value_1 may be the parameter name for an optional offset. Other values are ignored.
+        - if type is 'function', these values may be the names of up to 5 parameters which are passed to the function.
+
+    """
+
+    name: str = Field(default_factory=lambda: f"New Background {next(background_number)}", min_length=1)
     type: TypeOptions = TypeOptions.Constant
+    source: str = ""
     value_1: str = ""
     value_2: str = ""
     value_3: str = ""
     value_4: str = ""
     value_5: str = ""
 
-    @field_validator("type")
-    @classmethod
-    def validate_unimplemented_backgrounds(cls, type: TypeOptions):
-        """Raise an error if currently unsupported Data or Function backgrounds are used."""
-        # FIXME: once data/function backgrounds have been implemented,
-        # please remember to remove the @pytest.mark.skip decorators used to skip the tests:
-        # - tests/test_project.py::test_check_allowed_background_resolution_values_data
-        # - tests/test_project.py::test_check_allowed_background_resolution_values_on_data_list
-        if type == TypeOptions.Data:
-            raise NotImplementedError("Data backgrounds are not yet supported.")
-        if type == TypeOptions.Function:
-            raise NotImplementedError("Function backgrounds are not yet supported.")
-        return type
-
 
 class Contrast(RATModel):
-    """Groups together all of the components of the model."""
+    """A group of all of the components of a model.
 
-    name: str = Field(default_factory=lambda: "New Contrast " + next(contrast_number), min_length=1)
+    Parameters
+    ----------
+    name : str
+        The name of the contrast.
+    data : str
+        The name of the dataset used by the contrast.
+    background : str
+        The name of the background for the contrast.
+    background_action : BackgroundActions
+        Whether the background should be added ('add') or subtracted ('subtract') from the data.
+    bulk_in : str
+        The name of the bulk-in parameter which defines the SLD of the interface between the
+        first layer and the environment.
+    bulk_out : str
+        The name of the bulk-out parameter which defines the SLD of the interface between the last
+        layer and the environment.
+    scalefactor : str
+    resolution : str
+        The name of the instrument resolution for this contrast.
+    resample : bool
+        Whether adaptive resampling should be used for interface microslicing.
+    model : list[str]
+        If this is a standard layers model, this should be a list of layer names
+        that make up the slab model for this contrast.
+        For custom models, this should be a list of custom file names of the custom
+        model functions.
+
+    """
+
+    name: str = Field(default_factory=lambda: f"New Contrast {next(contrast_number)}", min_length=1)
     data: str = ""
     background: str = ""
     background_action: BackgroundActions = BackgroundActions.Add
@@ -125,9 +153,39 @@ class Contrast(RATModel):
 
 
 class ContrastWithRatio(RATModel):
-    """Groups together all of the components of the model including domain terms."""
+    """A group of all of the components of a model, including domain terms.
 
-    name: str = Field(default_factory=lambda: "New Contrast " + next(contrast_number), min_length=1)
+    Parameters
+    ----------
+    name : str
+        The name of the contrast.
+    data : str
+        The name of the dataset used by the contrast.
+    background : str
+        The name of the background for the contrast.
+    background_action : BackgroundActions
+        Whether the background should be added ('add') or subtracted ('subtract') from the data.
+    bulk_in : str
+        The name of the bulk-in parameter which defines the SLD of the interface between the
+        first layer and the environment.
+    bulk_out : str
+        The name of the bulk-out parameter which defines the SLD of the interface between the last
+        layer and the environment.
+    scalefactor : str
+    resolution : str
+        The name of the instrument resolution for this contrast.
+    resample : bool
+        Whether adaptive resampling should be used for interface microslicing.
+    domain_ratio : str
+    model : list[str]
+        If this is a standard layers model, this should be a list of layer names
+        that make up the slab model for this contrast.
+        For custom models, this should be a list of custom file names of the custom
+        model functions.
+
+    """
+
+    name: str = Field(default_factory=lambda: f"New Contrast {next(contrast_number)}", min_length=1)
     data: str = ""
     background: str = ""
     background_action: BackgroundActions = BackgroundActions.Add
@@ -161,9 +219,24 @@ class ContrastWithRatio(RATModel):
 
 
 class CustomFile(RATModel):
-    """Defines the files containing functions to run when using custom models."""
+    """A file containing functions to use for a custom model, function background or function resolution.
 
-    name: str = Field(default_factory=lambda: "New Custom File " + next(custom_file_number), min_length=1)
+    Parameters
+    ----------
+    name : str
+        The name of this custom file object.
+    filename : str
+        The name of the file containing the custom function.
+    function_name : str
+        The name of the custom function within the file.
+    language : Languages
+        What language the custom function is written in: 'matlab', 'python', or 'cpp' (C++)
+    path : pathlib.Path
+        The path to the custom file.
+
+    """
+
+    name: str = Field(default_factory=lambda: f"New Custom File {next(custom_file_number)}", min_length=1)
     filename: str = ""
     function_name: str = ""
     language: Languages = Languages.Python
@@ -188,9 +261,18 @@ class CustomFile(RATModel):
 
 
 class Data(RATModel, arbitrary_types_allowed=True):
-    """Defines the dataset required for each contrast."""
+    """A dataset required for a contrast.
 
-    name: str = Field(default_factory=lambda: "New Data " + next(data_number), min_length=1)
+    name : str
+        The name of this dataset.
+    data : np.ndarray[np.float64]
+        The (x,y,z) data for this dataset, given as a Numpy array of three columns.
+    data_range : list[float]
+    simulation_range : list[float]
+
+    """
+
+    name: str = Field(default_factory=lambda: f"New Data {next(data_number)}", min_length=1)
     data: np.ndarray[np.float64] = np.empty([0, 3])
     data_range: list[float] = Field(default=[], min_length=2, max_length=2)
     simulation_range: list[float] = Field(default=[], min_length=2, max_length=2)
@@ -280,9 +362,21 @@ class Data(RATModel, arbitrary_types_allowed=True):
 
 
 class DomainContrast(RATModel):
-    """Groups together the layers required for each domain."""
+    """A group of layers required for a domain.
 
-    name: str = Field(default_factory=lambda: "New Domain Contrast " + next(domain_contrast_number), min_length=1)
+    Parameters
+    ----------
+    name : str
+        The name of this domain contrast.
+    model : list[str]
+        If this is a standard layers model, this should be a list of layer names
+        that make up the slab model for this contrast.
+        For custom models, this should be a list of custom file names of the custom
+        model functions.
+
+    """
+
+    name: str = Field(default_factory=lambda: f"New Domain Contrast {next(domain_contrast_number)}", min_length=1)
     model: list[str] = []
 
     def __str__(self):
@@ -294,9 +388,25 @@ class DomainContrast(RATModel):
 
 
 class Layer(RATModel, populate_by_name=True):
-    """Combines parameters into defined layers."""
+    """A slab model layer with given physical properties.
 
-    name: str = Field(default_factory=lambda: "New Layer " + next(layer_number), min_length=1)
+    Parameters
+    ----------
+    name : str
+        The name of this layer.
+    thickness : str
+        The name of the parameter describing the thickness of this layer.
+    SLD : str
+        The name of the parameter describing the scattering length density
+        of this layer.
+    roughness : str
+        The name of the parameter describing the roughness of this layer.
+    hydration : str
+    hydrate_with : str
+
+    """
+
+    name: str = Field(default_factory=lambda: f"New Layer {next(layer_number)}", min_length=1)
     thickness: str
     SLD: str = Field(validation_alias="SLD_real")
     roughness: str
@@ -315,9 +425,28 @@ class Layer(RATModel, populate_by_name=True):
 
 
 class AbsorptionLayer(RATModel, populate_by_name=True):
-    """Combines parameters into defined layers including absorption terms."""
+    """A slab model layer with a non-negligible absorption term.
 
-    name: str = Field(default_factory=lambda: "New Layer " + next(layer_number), min_length=1)
+    Parameters
+    ----------
+    name : str
+        The name of this layer.
+    thickness : str
+        The name of the parameter describing the thickness of this layer.
+    SLD_real : str
+        The name of the parameter describing the real (scattering) term
+        for the scattering length density of this layer.
+    SLD_imaginary : str
+        The name of the parameter describing the imaginary (absorption) term
+        for the scattering length density of this layer.
+    roughness : str
+        The name of the parameter describing the roughness of this layer.
+    hydration : str
+    hydrate_with : str
+
+    """
+
+    name: str = Field(default_factory=lambda: f"New Layer {next(layer_number)}", min_length=1)
     thickness: str
     SLD_real: str = Field(validation_alias="SLD")
     SLD_imaginary: str = ""
@@ -327,9 +456,30 @@ class AbsorptionLayer(RATModel, populate_by_name=True):
 
 
 class Parameter(RATModel):
-    """Defines parameters needed to specify the model."""
+    """A parameter needed to specify the model.
 
-    name: str = Field(default_factory=lambda: "New Parameter " + next(parameter_number), min_length=1)
+    Parameters
+    ----------
+    name : str
+        The name of this parameter.
+    min : float
+        The minimum value that this parameter could take when fitted.
+    value : float
+        The value of this parameter.
+    max : float
+        The maximum value that this parameter could take when fitted.
+    fit : bool
+        Whether this parameter should be fitted in a calculation.
+    prior_type : Priors
+        For Bayesian calculations, whether the prior likelihood
+        is assumed to be 'uniform' or 'gaussian'.
+    mu, sigma : float
+        If the prior type is Gaussian, the mu and sigma values describing
+        the Gaussian function for the prior likelihood.
+
+    """
+
+    name: str = Field(default_factory=lambda: f"New Parameter {next(parameter_number)}", min_length=1)
     min: float = 0.0
     value: float = 0.0
     max: float = 0.0
@@ -360,10 +510,30 @@ class ProtectedParameter(Parameter):
 
 
 class Resolution(RATModel):
-    """Defines Resolutions in RAT."""
+    """An instrument resolution.
 
-    name: str = Field(default_factory=lambda: "New Resolution " + next(resolution_number), min_length=1)
+    Parameters
+    ----------
+    name : str
+        The name of the background.
+    type : TypeOptions
+        The type of background (constant, function or data)
+    source : str
+        The source data for the background;
+        - if type is 'constant', this should be the name of a background parameter.
+        - if type is 'data', this should be the name of a dataset defined in `Project.data`.
+        - if type is 'function', this should be the name of a custom function defined in `Project.custom_files`.
+    value_1, value_2, ..., value_5 : str
+        Values required by the background.
+        - if type is 'constant', this should be blank.
+        - if type is 'data', value_1 may be the parameter name for an optional offset. Other values are ignored.
+        - if type is 'function', these values may be the names of up to 5 parameters which are passed to the function.
+
+    """
+
+    name: str = Field(default_factory=lambda: f"New Resolution {next(resolution_number)}", min_length=1)
     type: TypeOptions = TypeOptions.Constant
+    source: str = ""
     value_1: str = ""
     value_2: str = ""
     value_3: str = ""
