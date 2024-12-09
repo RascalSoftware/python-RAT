@@ -235,7 +235,7 @@ def make_problem(project: RATapi.Project, checks: Checks) -> ProblemDefinition:
         if background.type == TypeOptions.Data:
             contrast_background_params.append([-1])
         else:
-            contrast_background_params.append([project.background_parameters.index(background.value_1, True)])
+            contrast_background_params.append([project.background_parameters.index(background.source, True)])
 
     # Set resolution parameters, with -1 used to indicate a data resolution
     all_data = []
@@ -248,7 +248,7 @@ def make_problem(project: RATapi.Project, checks: Checks) -> ProblemDefinition:
         if resolution.type == TypeOptions.Data:
             contrast_resolution_params.append(-1)
         else:
-            contrast_resolution_params.append(project.resolution_parameters.index(resolution.value_1, True))
+            contrast_resolution_params.append(project.resolution_parameters.index(resolution.source, True))
 
         data_index = project.data.index(contrast.data)
         data = project.data[data_index].data

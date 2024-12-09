@@ -68,10 +68,10 @@ def absorption():
         name="Background parameter 4", min=1.0e-06, value=5.61e-06, max=9.0e-05, fit=True
     )
 
-    problem.backgrounds.append(name="Background 1", type="constant", value_1="Background parameter 1")
-    problem.backgrounds.append(name="Background 2", type="constant", value_1="Background parameter 2")
-    problem.backgrounds.append(name="Background 3", type="constant", value_1="Background parameter 3")
-    problem.backgrounds.append(name="Background 4", type="constant", value_1="Background parameter 4")
+    problem.backgrounds.append(name="Background 1", type="constant", source="Background parameter 1")
+    problem.backgrounds.append(name="Background 2", type="constant", source="Background parameter 2")
+    problem.backgrounds.append(name="Background 3", type="constant", source="Background parameter 3")
+    problem.backgrounds.append(name="Background 4", type="constant", source="Background parameter 4")
 
     # Make the resolution fittable
     problem.resolution_parameters.set_fields(0, fit=True)

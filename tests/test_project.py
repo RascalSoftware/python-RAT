@@ -110,11 +110,11 @@ def default_project_str():
         "|   0   | Background Param 1 | 1e-07 | 1e-06 | 1e-05 | False |  uniform   | 0.0 |  inf  |\n"
         "+-------+--------------------+-------+-------+-------+-------+------------+-----+-------+\n\n"
         "Backgrounds: ---------------------------------------------------------------------------------------\n\n"
-        "+-------+--------------+----------+--------------------+---------+---------+---------+---------+\n"
-        "| index |     name     |   type   |      value 1       | value 2 | value 3 | value 4 | value 5 |\n"
-        "+-------+--------------+----------+--------------------+---------+---------+---------+---------+\n"
-        "|   0   | Background 1 | constant | Background Param 1 |         |         |         |         |\n"
-        "+-------+--------------+----------+--------------------+---------+---------+---------+---------+\n\n"
+        "+-------+--------------+----------+--------------------+---------+---------+---------+---------+---------+\n"
+        "| index |     name     |   type   |       source       | value 1 | value 2 | value 3 | value 4 | value 5 |\n"
+        "+-------+--------------+----------+--------------------+---------+---------+---------+---------+---------+\n"
+        "|   0   | Background 1 | constant | Background Param 1 |         |         |         |         |         |\n"
+        "+-------+--------------+----------+--------------------+---------+---------+---------+---------+---------+\n\n"
         "Resolution Parameters: -----------------------------------------------------------------------------\n\n"
         "+-------+--------------------+------+-------+------+-------+------------+-----+-------+\n"
         "| index |        name        | min  | value | max  |  fit  | prior type |  mu | sigma |\n"
@@ -122,11 +122,11 @@ def default_project_str():
         "|   0   | Resolution Param 1 | 0.01 |  0.03 | 0.05 | False |  uniform   | 0.0 |  inf  |\n"
         "+-------+--------------------+------+-------+------+-------+------------+-----+-------+\n\n"
         "Resolutions: ---------------------------------------------------------------------------------------\n\n"
-        "+-------+--------------+----------+--------------------+---------+---------+---------+---------+\n"
-        "| index |     name     |   type   |      value 1       | value 2 | value 3 | value 4 | value 5 |\n"
-        "+-------+--------------+----------+--------------------+---------+---------+---------+---------+\n"
-        "|   0   | Resolution 1 | constant | Resolution Param 1 |         |         |         |         |\n"
-        "+-------+--------------+----------+--------------------+---------+---------+---------+---------+\n\n"
+        "+-------+--------------+----------+--------------------+---------+---------+---------+---------+---------+\n"
+        "| index |     name     |   type   |       source       | value 1 | value 2 | value 3 | value 4 | value 5 |\n"
+        "+-------+--------------+----------+--------------------+---------+---------+---------+---------+---------+\n"
+        "|   0   | Resolution 1 | constant | Resolution Param 1 |         |         |         |         |         |\n"
+        "+-------+--------------+----------+--------------------+---------+---------+---------+---------+---------+\n\n"
         "Data: ----------------------------------------------------------------------------------------------\n\n"
         "+-------+------------+------+------------+------------------+\n"
         "| index |    name    | data | data range | simulation range |\n"
@@ -627,8 +627,8 @@ def test_check_protected_parameters(delete_operation) -> None:
 @pytest.mark.parametrize(
     ["model", "field"],
     [
-        ("background_parameters", "value_1"),
-        ("resolution_parameters", "value_1"),
+        ("background_parameters", "source"),
+        ("resolution_parameters", "source"),
         ("parameters", "roughness"),
         ("data", "data"),
         ("backgrounds", "background"),
@@ -648,25 +648,23 @@ def test_rename_models(test_project, model: str, field: str) -> None:
 
 
 @pytest.mark.parametrize(
-    "field",
+    "background_type, expected_field",
     [
-        "value_1",
-        "value_2",
-        "value_3",
-        "value_4",
-        "value_5",
+        [TypeOptions.Constant, "background_parameters"],
+        [TypeOptions.Data, "data"],
+        [TypeOptions.Function, "custom_files"],
     ],
 )
-def test_allowed_backgrounds(field: str) -> None:
-    """If the "value" fields of the Background model are set to values that are not specified in the background
+def test_allowed_backgrounds(background_type, expected_field) -> None:
+    """If the source field of the Background model are set to values that are not specified in the background
     parameters, we should raise a ValidationError.
     """
-    test_background = RATapi.models.Background(**{field: "undefined"})
+    test_background = RATapi.models.Background(type=background_type, source="undefined")
     with pytest.raises(
         pydantic.ValidationError,
-        match=f"1 validation error for Project\n  Value error, The value "
-        f'"undefined" in the "{field}" field of "backgrounds" must be '
-        f'defined in "background_parameters".',
+        match="1 validation error for Project\n  Value error, The value "
+        '"undefined" in the "source" field of "backgrounds" must be '
+        f'defined in "{expected_field}".',
     ):
         RATapi.Project(backgrounds=RATapi.ClassList(test_background))
 
@@ -739,25 +737,23 @@ def test_allowed_absorption_layers(field: str) -> None:
 
 
 @pytest.mark.parametrize(
-    "field",
+    "resolution_type, expected_field",
     [
-        "value_1",
-        "value_2",
-        "value_3",
-        "value_4",
-        "value_5",
+        [TypeOptions.Constant, "resolution_parameters"],
+        [TypeOptions.Data, "data"],
+        [TypeOptions.Function, "custom_files"],
     ],
 )
-def test_allowed_resolutions(field: str) -> None:
-    """If the "value" fields of the Resolution model are set to values that are not specified in the background
+def test_allowed_resolutions(resolution_type, expected_field) -> None:
+    """If the "value" fields of the Resolution model are set to values that are not specified in the resolution
     parameters, we should raise a ValidationError.
     """
-    test_resolution = RATapi.models.Resolution(**{field: "undefined"})
+    test_resolution = RATapi.models.Resolution(type=resolution_type, source="undefined")
     with pytest.raises(
         pydantic.ValidationError,
-        match=f"1 validation error for Project\n  Value error, The value "
-        f'"undefined" in the "{field}" field of "resolutions" must be '
-        f'defined in "resolution_parameters".',
+        match="1 validation error for Project\n  Value error, The value "
+        '"undefined" in the "source" field of "resolutions" must be '
+        f'defined in "{expected_field}".',
     ):
         RATapi.Project(resolutions=RATapi.ClassList(test_resolution))
 
@@ -967,17 +963,12 @@ def test_check_allowed_values_not_on_list(test_value: str) -> None:
 def test_check_allowed_background_resolution_values_constant(test_value: str) -> None:
     """We should not raise an error if string values are defined and on the appropriate list of allowed values."""
     project = RATapi.Project.model_construct(
-        backgrounds=RATapi.ClassList(RATapi.models.Background(type=TypeOptions.Constant, value_1=test_value))
+        background_parameters=RATapi.ClassList(RATapi.models.Parameter(name="Background Param 1")),
+        backgrounds=RATapi.ClassList(RATapi.models.Background(type=TypeOptions.Constant, source=test_value)),
     )
-    assert (
-        project.check_allowed_background_resolution_values(
-            "backgrounds", ["value_1"], ["Background Param 1"], ["Simulation"]
-        )
-        is None
-    )
+    assert project.check_allowed_source("backgrounds") is None
 
 
-@pytest.mark.skip("Data backgrounds not currently supported.")
 @pytest.mark.parametrize(
     "test_value",
     [
@@ -988,14 +979,9 @@ def test_check_allowed_background_resolution_values_constant(test_value: str) ->
 def test_check_allowed_background_resolution_values_data(test_value: str) -> None:
     """We should not raise an error if string values are defined and on the appropriate list of allowed values."""
     project = RATapi.Project.model_construct(
-        backgrounds=RATapi.ClassList(RATapi.models.Background(type=TypeOptions.Data, value_1=test_value))
+        backgrounds=RATapi.ClassList(RATapi.models.Background(type=TypeOptions.Data, source=test_value))
     )
-    assert (
-        project.check_allowed_background_resolution_values(
-            "backgrounds", ["value_1"], ["Background Param 1"], ["Simulation"]
-        )
-        is None
-    )
+    assert project.check_allowed_source("backgrounds") is None
 
 
 @pytest.mark.parametrize(
@@ -1007,19 +993,18 @@ def test_check_allowed_background_resolution_values_not_on_constant_list(test_va
     ValueError.
     """
     project = RATapi.Project.model_construct(
-        backgrounds=RATapi.ClassList(RATapi.models.Background(type=TypeOptions.Constant, value_1=test_value))
+        backgrounds=RATapi.ClassList(RATapi.models.Background(type=TypeOptions.Constant, source=test_value))
     )
     with pytest.raises(
         ValueError,
-        match=f'The value "{test_value}" in the "value_1" field of "backgrounds" must be '
+        match=f'The value "{test_value}" in the "source" field of "backgrounds" must be '
         f'defined in "background_parameters".',
     ):
-        project.check_allowed_background_resolution_values(
-            "backgrounds", ["value_1"], ["Background Param 1"], ["Simulation"]
+        project.check_allowed_source(
+            "backgrounds",
         )
 
 
-@pytest.mark.skip("Data backgrounds not currently supported.")
 @pytest.mark.parametrize(
     "test_value",
     [
@@ -1032,15 +1017,13 @@ def test_check_allowed_background_resolution_values_on_data_list(test_value: str
     ValueError.
     """
     project = RATapi.Project.model_construct(
-        backgrounds=RATapi.ClassList(RATapi.models.Background(type=TypeOptions.Data, value_1=test_value))
+        backgrounds=RATapi.ClassList(RATapi.models.Background(type=TypeOptions.Data, source=test_value))
     )
     with pytest.raises(
         ValueError,
-        match=f'The value "{test_value}" in the "value_1" field of "backgrounds" must be defined in "data".',
+        match=f'The value "{test_value}" in the "source" field of "backgrounds" must be defined in "data".',
     ):
-        project.check_allowed_background_resolution_values(
-            "backgrounds", ["value_1"], ["Background Param 1"], ["Simulation"]
-        )
+        project.check_allowed_source("backgrounds")
 
 
 @pytest.mark.parametrize(
@@ -1148,16 +1131,18 @@ def test_write_script_wrong_extension(test_project, extension: str) -> None:
 @pytest.mark.parametrize(
     ["class_list", "model_type", "field"],
     [
-        ("backgrounds", "constant", "value_1"),
-        ("backgrounds", "constant", "value_2"),
-        ("backgrounds", "constant", "value_3"),
-        ("backgrounds", "constant", "value_4"),
-        ("backgrounds", "constant", "value_5"),
-        ("resolutions", "constant", "value_1"),
-        ("resolutions", "constant", "value_2"),
-        ("resolutions", "constant", "value_3"),
-        ("resolutions", "constant", "value_4"),
-        ("resolutions", "constant", "value_5"),
+        ("backgrounds", "constant", "source"),
+        ("backgrounds", "", "value_1"),
+        ("backgrounds", "", "value_2"),
+        ("backgrounds", "", "value_3"),
+        ("backgrounds", "", "value_4"),
+        ("backgrounds", "", "value_5"),
+        ("resolutions", "constant", "source"),
+        ("resolutions", "", "value_1"),
+        ("resolutions", "", "value_2"),
+        ("resolutions", "", "value_3"),
+        ("resolutions", "", "value_4"),
+        ("resolutions", "", "value_5"),
         ("layers", "", "thickness"),
         ("layers", "", "SLD"),
         ("layers", "", "roughness"),
@@ -1191,8 +1176,8 @@ def test_wrap_set(test_project, class_list: str, model_type: str, field: str) ->
 @pytest.mark.parametrize(
     ["class_list", "parameter", "field"],
     [
-        ("background_parameters", "Background Param 1", "value_1"),
-        ("resolution_parameters", "Resolution Param 1", "value_1"),
+        ("background_parameters", "Background Param 1", "source"),
+        ("resolution_parameters", "Resolution Param 1", "source"),
         ("parameters", "Test SLD", "SLD"),
         ("data", "Simulation", "data"),
         ("backgrounds", "Background 1", "background"),
@@ -1224,16 +1209,18 @@ def test_wrap_del(test_project, class_list: str, parameter: str, field: str) -> 
 @pytest.mark.parametrize(
     ["class_list", "model_type", "field", "model_params"],
     [
-        ("backgrounds", "constant", "value_1", {}),
-        ("backgrounds", "constant", "value_2", {}),
-        ("backgrounds", "constant", "value_3", {}),
-        ("backgrounds", "constant", "value_4", {}),
-        ("backgrounds", "constant", "value_5", {}),
-        ("resolutions", "constant", "value_1", {}),
-        ("resolutions", "constant", "value_2", {}),
-        ("resolutions", "constant", "value_3", {}),
-        ("resolutions", "constant", "value_4", {}),
-        ("resolutions", "constant", "value_5", {}),
+        ("backgrounds", "constant", "source", {}),
+        ("backgrounds", "", "value_1", {}),
+        ("backgrounds", "", "value_2", {}),
+        ("backgrounds", "", "value_3", {}),
+        ("backgrounds", "", "value_4", {}),
+        ("backgrounds", "", "value_5", {}),
+        ("resolutions", "constant", "source", {}),
+        ("resolutions", "", "value_1", {}),
+        ("resolutions", "", "value_2", {}),
+        ("resolutions", "", "value_3", {}),
+        ("resolutions", "", "value_4", {}),
+        ("resolutions", "", "value_5", {}),
         ("layers", "", "thickness", layer_params),
         ("layers", "", "SLD", layer_params),
         ("layers", "", "roughness", layer_params),
@@ -1268,16 +1255,18 @@ def test_wrap_iadd(test_project, class_list: str, model_type: str, field: str, m
 @pytest.mark.parametrize(
     ["class_list", "model_type", "field", "model_params"],
     [
-        ("backgrounds", "constant", "value_1", {}),
-        ("backgrounds", "constant", "value_2", {}),
-        ("backgrounds", "constant", "value_3", {}),
-        ("backgrounds", "constant", "value_4", {}),
-        ("backgrounds", "constant", "value_5", {}),
-        ("resolutions", "constant", "value_1", {}),
-        ("resolutions", "constant", "value_2", {}),
-        ("resolutions", "constant", "value_3", {}),
-        ("resolutions", "constant", "value_4", {}),
-        ("resolutions", "constant", "value_5", {}),
+        ("backgrounds", "constant", "source", {}),
+        ("backgrounds", "", "value_1", {}),
+        ("backgrounds", "", "value_2", {}),
+        ("backgrounds", "", "value_3", {}),
+        ("backgrounds", "", "value_4", {}),
+        ("backgrounds", "", "value_5", {}),
+        ("resolutions", "constant", "source", {}),
+        ("resolutions", "", "value_1", {}),
+        ("resolutions", "", "value_2", {}),
+        ("resolutions", "", "value_3", {}),
+        ("resolutions", "", "value_4", {}),
+        ("resolutions", "", "value_5", {}),
         ("layers", "", "thickness", layer_params),
         ("layers", "", "SLD", layer_params),
         ("layers", "", "roughness", layer_params),
@@ -1313,16 +1302,18 @@ def test_wrap_append(test_project, class_list: str, model_type: str, field: str,
 @pytest.mark.parametrize(
     ["class_list", "model_type", "field", "model_params"],
     [
-        ("backgrounds", "constant", "value_1", {}),
-        ("backgrounds", "constant", "value_2", {}),
-        ("backgrounds", "constant", "value_3", {}),
-        ("backgrounds", "constant", "value_4", {}),
-        ("backgrounds", "constant", "value_5", {}),
-        ("resolutions", "constant", "value_1", {}),
-        ("resolutions", "constant", "value_2", {}),
-        ("resolutions", "constant", "value_3", {}),
-        ("resolutions", "constant", "value_4", {}),
-        ("resolutions", "constant", "value_5", {}),
+        ("backgrounds", "constant", "source", {}),
+        ("backgrounds", "", "value_1", {}),
+        ("backgrounds", "", "value_2", {}),
+        ("backgrounds", "", "value_3", {}),
+        ("backgrounds", "", "value_4", {}),
+        ("backgrounds", "", "value_5", {}),
+        ("resolutions", "constant", "source", {}),
+        ("resolutions", "", "value_1", {}),
+        ("resolutions", "", "value_2", {}),
+        ("resolutions", "", "value_3", {}),
+        ("resolutions", "", "value_4", {}),
+        ("resolutions", "", "value_5", {}),
         ("layers", "", "thickness", layer_params),
         ("layers", "", "SLD", layer_params),
         ("layers", "", "roughness", layer_params),
@@ -1357,11 +1348,13 @@ def test_wrap_insert(test_project, class_list: str, model_type: str, field: str,
 @pytest.mark.parametrize(
     ["class_list", "field"],
     [
+        ("backgrounds", "source"),
         ("backgrounds", "value_1"),
         ("backgrounds", "value_2"),
         ("backgrounds", "value_3"),
         ("backgrounds", "value_4"),
         ("backgrounds", "value_5"),
+        ("resolutions", "source"),
         ("resolutions", "value_1"),
         ("resolutions", "value_2"),
         ("resolutions", "value_3"),
@@ -1391,8 +1384,8 @@ def test_wrap_insert_type_error(test_project, class_list: str, field: str) -> No
 @pytest.mark.parametrize(
     ["class_list", "parameter", "field"],
     [
-        ("background_parameters", "Background Param 1", "value_1"),
-        ("resolution_parameters", "Resolution Param 1", "value_1"),
+        ("background_parameters", "Background Param 1", "source"),
+        ("resolution_parameters", "Resolution Param 1", "source"),
         ("parameters", "Test SLD", "SLD"),
         ("data", "Simulation", "data"),
         ("backgrounds", "Background 1", "background"),
@@ -1424,8 +1417,8 @@ def test_wrap_pop(test_project, class_list: str, parameter: str, field: str) -> 
 @pytest.mark.parametrize(
     ["class_list", "parameter", "field"],
     [
-        ("background_parameters", "Background Param 1", "value_1"),
-        ("resolution_parameters", "Resolution Param 1", "value_1"),
+        ("background_parameters", "Background Param 1", "source"),
+        ("resolution_parameters", "Resolution Param 1", "source"),
         ("parameters", "Test SLD", "SLD"),
         ("data", "Simulation", "data"),
         ("backgrounds", "Background 1", "background"),
@@ -1456,8 +1449,8 @@ def test_wrap_remove(test_project, class_list: str, parameter: str, field: str) 
 @pytest.mark.parametrize(
     ["class_list", "parameter", "field"],
     [
-        ("background_parameters", "Background Param 1", "value_1"),
-        ("resolution_parameters", "Resolution Param 1", "value_1"),
+        ("background_parameters", "Background Param 1", "source"),
+        ("resolution_parameters", "Resolution Param 1", "source"),
         ("parameters", "Test Thickness", "thickness"),
         ("data", "Simulation", "data"),
         ("backgrounds", "Background 1", "background"),
@@ -1488,16 +1481,18 @@ def test_wrap_clear(test_project, class_list: str, parameter: str, field: str) -
 @pytest.mark.parametrize(
     ["class_list", "model_type", "field", "model_params"],
     [
-        ("backgrounds", "constant", "value_1", {}),
-        ("backgrounds", "constant", "value_2", {}),
-        ("backgrounds", "constant", "value_3", {}),
-        ("backgrounds", "constant", "value_4", {}),
-        ("backgrounds", "constant", "value_5", {}),
-        ("resolutions", "constant", "value_1", {}),
-        ("resolutions", "constant", "value_2", {}),
-        ("resolutions", "constant", "value_3", {}),
-        ("resolutions", "constant", "value_4", {}),
-        ("resolutions", "constant", "value_5", {}),
+        ("backgrounds", "constant", "source", {}),
+        ("backgrounds", "", "value_1", {}),
+        ("backgrounds", "", "value_2", {}),
+        ("backgrounds", "", "value_3", {}),
+        ("backgrounds", "", "value_4", {}),
+        ("backgrounds", "", "value_5", {}),
+        ("resolutions", "constant", "source", {}),
+        ("resolutions", "", "value_1", {}),
+        ("resolutions", "", "value_2", {}),
+        ("resolutions", "", "value_3", {}),
+        ("resolutions", "", "value_4", {}),
+        ("resolutions", "", "value_5", {}),
         ("layers", "", "thickness", layer_params),
         ("layers", "", "SLD", layer_params),
         ("layers", "", "roughness", layer_params),
