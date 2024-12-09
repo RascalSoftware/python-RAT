@@ -80,20 +80,25 @@ values_defined_in = {
 
 AllFields = collections.namedtuple("AllFields", ["attribute", "fields"])
 model_names_used_in = {
-    "background_parameters": AllFields(
-        "backgrounds", ["source", "value_1", "value_2", "value_3", "value_4", "value_5"]
-    ),
-    "resolution_parameters": AllFields(
-        "resolutions", ["source", "value_1", "value_2", "value_3", "value_4", "value_5"]
-    ),
-    "parameters": AllFields("layers", ["thickness", "SLD", "SLD_real", "SLD_imaginary", "roughness", "hydration"]),
-    "data": AllFields("contrasts", ["data"]),
-    "backgrounds": AllFields("contrasts", ["background"]),
-    "bulk_in": AllFields("contrasts", ["bulk_in"]),
-    "bulk_out": AllFields("contrasts", ["bulk_out"]),
-    "scalefactors": AllFields("contrasts", ["scalefactor"]),
-    "domain_ratios": AllFields("contrasts", ["domain_ratio"]),
-    "resolutions": AllFields("contrasts", ["resolution"]),
+    "background_parameters": [
+        AllFields("backgrounds", ["source", "value_1", "value_2", "value_3", "value_4", "value_5"])
+    ],
+    "resolution_parameters": [
+        AllFields("resolutions", ["source", "value_1", "value_2", "value_3", "value_4", "value_5"])
+    ],
+    "parameters": [AllFields("layers", ["thickness", "SLD", "SLD_real", "SLD_imaginary", "roughness", "hydration"])],
+    "data": [
+        AllFields("contrasts", ["data"]),
+        AllFields("backgrounds", ["source"]),
+        AllFields("resolutions", ["source"]),
+    ],
+    "custom_files": [AllFields("backgrounds", ["source"]), AllFields("resolutions", ["source"])],
+    "backgrounds": [AllFields("contrasts", ["background"])],
+    "bulk_in": [AllFields("contrasts", ["bulk_in"])],
+    "bulk_out": [AllFields("contrasts", ["bulk_out"])],
+    "scalefactors": [AllFields("contrasts", ["scalefactor"])],
+    "domain_ratios": [AllFields("contrasts", ["domain_ratio"])],
+    "resolutions": [AllFields("contrasts", ["resolution"])],
 }
 
 # Note that the order of these parameters is hard-coded into RAT
@@ -508,18 +513,19 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
     @model_validator(mode="after")
     def update_renamed_models(self) -> "Project":
         """When models defined in the ClassLists are renamed, we need to update that name elsewhere in the project."""
-        for class_list in model_names_used_in:
+        for class_list, fields_to_update in model_names_used_in.items():
             old_names = self._all_names[class_list]
             new_names = getattr(self, class_list).get_names()
             if len(old_names) == len(new_names):
                 name_diff = [(old, new) for (old, new) in zip(old_names, new_names) if old != new]
                 for old_name, new_name in name_diff:
-                    model_names_list = getattr(self, model_names_used_in[class_list].attribute)
-                    all_matches = model_names_list.get_all_matches(old_name)
-                    fields = model_names_used_in[class_list].fields
-                    for index, field in all_matches:
-                        if field in fields:
-                            setattr(model_names_list[index], field, new_name)
+                    for field in fields_to_update:
+                        project_field = getattr(self, field.attribute)
+                        all_matches = project_field.get_all_matches(old_name)
+                        params = field.fields
+                        for index, param in all_matches:
+                            if param in params:
+                                setattr(project_field[index], param, new_name)
         self._all_names = self.get_all_names()
         return self
 
