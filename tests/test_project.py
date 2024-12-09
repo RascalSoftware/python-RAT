@@ -625,26 +625,35 @@ def test_check_protected_parameters(delete_operation) -> None:
 
 
 @pytest.mark.parametrize(
-    ["model", "field"],
+    ["model", "fields"],
     [
-        ("background_parameters", "source"),
-        ("resolution_parameters", "source"),
-        ("parameters", "roughness"),
-        ("data", "data"),
-        ("backgrounds", "background"),
-        ("bulk_in", "bulk_in"),
-        ("bulk_out", "bulk_out"),
-        ("scalefactors", "scalefactor"),
-        ("resolutions", "resolution"),
+        ("background_parameters", ["source"]),
+        ("resolution_parameters", ["source"]),
+        ("parameters", ["roughness"]),
+        ("data", ["data", "source", "source"]),
+        ("custom_files", ["source", "source"]),
+        ("backgrounds", ["background"]),
+        ("bulk_in", ["bulk_in"]),
+        ("bulk_out", ["bulk_out"]),
+        ("scalefactors", ["scalefactor"]),
+        ("resolutions", ["resolution"]),
     ],
 )
-def test_rename_models(test_project, model: str, field: str) -> None:
+def test_rename_models(test_project, model: str, fields: list[str]) -> None:
     """When renaming a model in the project, the new name should be recorded when that model is referred to elsewhere
     in the project.
     """
+    if model == "data":
+        test_project.backgrounds[0] = RATapi.models.Background(type="data", source="Simulation")
+        test_project.resolutions[0] = RATapi.models.Resolution(type="data", source="Simulation")
+    if model == "custom_files":
+        test_project.backgrounds[0] = RATapi.models.Background(type="function", source="Test Custom File")
+        test_project.resolutions[0] = RATapi.models.Resolution(type="function", source="Test Custom File")
     getattr(test_project, model).set_fields(-1, name="New Name")
-    attribute = RATapi.project.model_names_used_in[model].attribute
-    assert getattr(getattr(test_project, attribute)[-1], field) == "New Name"
+    model_name_lists = RATapi.project.model_names_used_in[model]
+    for model_name_list, field in zip(model_name_lists, fields):
+        attribute = model_name_list.attribute
+        assert getattr(getattr(test_project, attribute)[-1], field) == "New Name"
 
 
 @pytest.mark.parametrize(
@@ -1197,7 +1206,7 @@ def test_wrap_del(test_project, class_list: str, parameter: str, field: str) -> 
         pydantic.ValidationError,
         match=f"1 validation error for Project\n  Value error, The value "
         f'"{parameter}" in the "{field}" field of '
-        f'"{RATapi.project.model_names_used_in[class_list].attribute}" '
+        f'"{RATapi.project.model_names_used_in[class_list][0].attribute}" '
         f'must be defined in "{class_list}".',
     ):
         del test_attribute[index]
@@ -1405,7 +1414,7 @@ def test_wrap_pop(test_project, class_list: str, parameter: str, field: str) -> 
         pydantic.ValidationError,
         match=f"1 validation error for Project\n  Value error, The value "
         f'"{parameter}" in the "{field}" field of '
-        f'"{RATapi.project.model_names_used_in[class_list].attribute}" '
+        f'"{RATapi.project.model_names_used_in[class_list][0].attribute}" '
         f'must be defined in "{class_list}".',
     ):
         test_attribute.pop(index)
@@ -1437,7 +1446,7 @@ def test_wrap_remove(test_project, class_list: str, parameter: str, field: str) 
         pydantic.ValidationError,
         match=f"1 validation error for Project\n  Value error, The value "
         f'"{parameter}" in the "{field}" field of '
-        f'"{RATapi.project.model_names_used_in[class_list].attribute}" '
+        f'"{RATapi.project.model_names_used_in[class_list][0].attribute}" '
         f'must be defined in "{class_list}".',
     ):
         test_attribute.remove(parameter)
@@ -1469,7 +1478,7 @@ def test_wrap_clear(test_project, class_list: str, parameter: str, field: str) -
         pydantic.ValidationError,
         match=f"1 validation error for Project\n  Value error, The value "
         f'"{parameter}" in the "{field}" field of '
-        f'"{RATapi.project.model_names_used_in[class_list].attribute}" '
+        f'"{RATapi.project.model_names_used_in[class_list][0].attribute}" '
         f'must be defined in "{class_list}".',
     ):
         test_attribute.clear()
