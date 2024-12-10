@@ -1,6 +1,7 @@
 """The models module. Contains the pydantic models used by RAT to store project parameters."""
 
 import pathlib
+import warnings
 from itertools import count
 from typing import Any
 
@@ -60,7 +61,7 @@ class Background(RATModel):
         - if type is 'function', this should be the name of a custom function defined in `Project.custom_files`.
     value_1, value_2, ..., value_5 : str
         Values required by the background.
-        - if type is 'constant', this should be blank.
+        - if type is 'constant', all values will be ignored.
         - if type is 'data', value_1 may be the parameter name for an optional offset. Other values are ignored.
         - if type is 'function', these values may be the names of up to 5 parameters which are passed to the function.
 
@@ -74,6 +75,26 @@ class Background(RATModel):
     value_3: str = ""
     value_4: str = ""
     value_5: str = ""
+
+    @model_validator(mode="after")
+    def warn_parameters(self):
+        """Raise a warning if the parameters given are not expected for the given type."""
+        if self.type == TypeOptions.Constant:
+            expected_empty_fields = ["value_1", "value_2", "value_3", "value_4", "value_5"]
+        elif self.type == TypeOptions.Data:
+            expected_empty_fields = ["value_2", "value_3", "value_4", "value_5"]
+        else:
+            return self
+
+        non_empty_fields = [v for v in expected_empty_fields if getattr(self, v) != ""]
+        if non_empty_fields:
+            warnings.warn(
+                "The following values are not recognised by this background type and will be ignored: "
+                f"{', '.join(non_empty_fields)}",
+                stacklevel=2,
+            )
+
+        return self
 
 
 class Contrast(RATModel):
@@ -515,19 +536,20 @@ class Resolution(RATModel):
     Parameters
     ----------
     name : str
-        The name of the background.
+        The name of the resolution.
     type : TypeOptions
-        The type of background (constant, function or data)
+        The type of resolution: 'constant', 'data', or (NOT YET IMPLEMENTED) 'function'.
     source : str
-        The source data for the background;
+        The source data for the resolution;
         - if type is 'constant', this should be the name of a background parameter.
-        - if type is 'data', this should be the name of a dataset defined in `Project.data`.
-        - if type is 'function', this should be the name of a custom function defined in `Project.custom_files`.
+        - if type is 'data', this should be empty (resolution data is in the contrast data).
+        - if type is 'function' (NOT YET IMPLEMENTED),
+          this should be the name of a custom function defined in `Project.custom_files`.
     value_1, value_2, ..., value_5 : str
         Values required by the background.
-        - if type is 'constant', this should be blank.
-        - if type is 'data', value_1 may be the parameter name for an optional offset. Other values are ignored.
-        - if type is 'function', these values may be the names of up to 5 parameters which are passed to the function.
+        - if type is 'constant' or 'data', all values will be ignored.
+        - if type is 'function' (NOT YET IMPLEMENTED),
+          these values may be the names of up to 5 parameters which are passed to the function.
 
     """
 
@@ -539,3 +561,34 @@ class Resolution(RATModel):
     value_3: str = ""
     value_4: str = ""
     value_5: str = ""
+
+    @field_validator("type")
+    @classmethod
+    def validate_unimplemented_resolutions(cls, type: TypeOptions):
+        """Raise an error if currently unsupported function resolutions are used."""
+        # when function resolutions are added, fix the commented-out parts of
+        # test_project.py::test_rename_models
+        # and test_project.py::test_allowed_resolutions
+        if type == TypeOptions.Function:
+            raise NotImplementedError("Function resolutions are not yet supported.")
+        return type
+
+    @model_validator(mode="after")
+    def warn_parameters(self):
+        """Raise a warning if the parameters given are not expected for the given type."""
+        if self.type == TypeOptions.Constant:
+            expected_empty_fields = ["value_1", "value_2", "value_3", "value_4", "value_5"]
+        elif self.type == TypeOptions.Data:
+            expected_empty_fields = ["source", "value_1", "value_2", "value_3", "value_4", "value_5"]
+        else:
+            return self
+
+        non_empty_fields = [v for v in expected_empty_fields if getattr(self, v) != ""]
+        if non_empty_fields:
+            warnings.warn(
+                "The following values are not recognised by this resolution type and will be ignored: "
+                f"{', '.join(non_empty_fields)}",
+                stacklevel=2,
+            )
+
+        return self
