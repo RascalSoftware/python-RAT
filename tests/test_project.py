@@ -648,7 +648,11 @@ def test_rename_models(test_project, model: str, fields: list[str]) -> None:
         test_project.resolutions[0] = RATapi.models.Resolution(type="data", source="Simulation")
     if model == "custom_files":
         test_project.backgrounds[0] = RATapi.models.Background(type="function", source="Test Custom File")
-        test_project.resolutions[0] = RATapi.models.Resolution(type="function", source="Test Custom File")
+        # workaround until function resolutions are added
+        # test_project.resolutions[0] = RATapi.models.Resolution(type="function", source="Test Custom File")
+        test_project.resolution_parameters.append(RATapi.models.Parameter(name="New Name"))
+        test_project.resolutions[0] = RATapi.models.Resolution(type="constant", source="New Name")
+
     getattr(test_project, model).set_fields(-1, name="New Name")
     model_name_lists = RATapi.project.model_names_used_in[model]
     for model_name_list, field in zip(model_name_lists, fields):
@@ -750,7 +754,8 @@ def test_allowed_absorption_layers(field: str) -> None:
     [
         [TypeOptions.Constant, "resolution_parameters"],
         [TypeOptions.Data, "data"],
-        [TypeOptions.Function, "custom_files"],
+        # uncomment when function resolutions are added!
+        # [TypeOptions.Function, "custom_files"],
     ],
 )
 def test_allowed_resolutions(resolution_type, expected_field) -> None:
