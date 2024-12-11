@@ -45,7 +45,29 @@ class RATModel(BaseModel, validate_assignment=True, extra="forbid"):
         return table.get_string()
 
 
-class Background(RATModel):
+class Signal(RATModel):
+    """Base model for background & resolution signals."""
+
+    name: str = Field(default="New Signal", min_length=1)
+    type: TypeOptions = TypeOptions.Constant
+    source: str = ""
+    value_1: str = ""
+    value_2: str = ""
+    value_3: str = ""
+    value_4: str = ""
+    value_5: str = ""
+
+    def __setattr__(self, name, value):
+        if name == "type":
+            for attr in ["source", "value_1", "value_2", "value_3", "value_4", "value_5"]:
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    super().__setattr__(attr, "")
+
+        super().__setattr__(name, value)
+
+
+class Background(Signal):
     """A background signal.
 
     Parameters
@@ -68,13 +90,6 @@ class Background(RATModel):
     """
 
     name: str = Field(default_factory=lambda: f"New Background {next(background_number)}", min_length=1)
-    type: TypeOptions = TypeOptions.Constant
-    source: str = ""
-    value_1: str = ""
-    value_2: str = ""
-    value_3: str = ""
-    value_4: str = ""
-    value_5: str = ""
 
     @model_validator(mode="after")
     def warn_parameters(self):
@@ -95,15 +110,6 @@ class Background(RATModel):
             )
 
         return self
-
-    def __setattr__(self, name, value):
-        if name == "type":
-            for attr in ["source", "value_1", "value_2", "value_3", "value_4", "value_5"]:
-                with warnings.catch_warnings():
-                    warnings.simplefilter("ignore")
-                    super().__setattr__(attr, "")
-
-        super().__setattr__(name, value)
 
 
 class Contrast(RATModel):
@@ -539,7 +545,7 @@ class ProtectedParameter(Parameter):
     name: str = Field(frozen=True, min_length=1)
 
 
-class Resolution(RATModel):
+class Resolution(Signal):
     """An instrument resolution.
 
     Parameters
@@ -563,13 +569,6 @@ class Resolution(RATModel):
     """
 
     name: str = Field(default_factory=lambda: f"New Resolution {next(resolution_number)}", min_length=1)
-    type: TypeOptions = TypeOptions.Constant
-    source: str = ""
-    value_1: str = ""
-    value_2: str = ""
-    value_3: str = ""
-    value_4: str = ""
-    value_5: str = ""
 
     @field_validator("type")
     @classmethod
@@ -601,12 +600,3 @@ class Resolution(RATModel):
             )
 
         return self
-
-    def __setattr__(self, name, value):
-        if name == "type":
-            for attr in ["source", "value_1", "value_2", "value_3", "value_4", "value_5"]:
-                with warnings.catch_warnings():
-                    warnings.simplefilter("ignore")
-                    super().__setattr__(attr, "")
-
-        super().__setattr__(name, value)
