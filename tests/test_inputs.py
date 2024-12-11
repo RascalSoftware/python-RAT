@@ -653,6 +653,24 @@ class TestCheckIndices:
             check_indices(test_problem)
 
 
+def test_append_data_background():
+    """Test that background data is correctly added to contrast data."""
+    data = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    background = np.array([[1, 10, 11], [4, 12, 13], [7, 14, 15]])
+
+    result = RATapi.inputs.append_data_background(data, background)
+    np.testing.assert_allclose(result, np.array([[1, 2, 3, 10, 11], [4, 5, 6, 12, 13], [7, 8, 9, 14, 15]]))
+
+
+def test_append_data_background_error():
+    """Test that append_data_background raises an error if the q-values are not equal."""
+    data = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    background = np.array([[56, 10, 11], [41, 12, 13], [7, 14, 15]])
+
+    with pytest.raises(ValueError, match=("The q-values of the data and background must be equal.")):
+        RATapi.inputs.append_data_background(data, background)
+
+
 def test_get_python_handle():
     path = pathlib.Path(__file__).parent.resolve()
     assert RATapi.inputs.get_python_handle("utils.py", "dummy_function", path).__code__ == dummy_function.__code__
