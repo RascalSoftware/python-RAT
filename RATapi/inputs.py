@@ -214,10 +214,6 @@ def make_problem(project: RATapi.Project, checks: Checks) -> ProblemDefinition:
     else:
         contrast_custom_files = [project.custom_files.index(contrast.model[0], True) for contrast in project.contrasts]
 
-    # Set background parameters, with -1 used to indicate a data background
-    contrast_background_params = []
-    contrast_background_types = []
-
     # Get details of defined layers
     layer_details = []
     for layer in project.layers:
@@ -230,7 +226,32 @@ def make_problem(project: RATapi.Project, checks: Checks) -> ProblemDefinition:
 
         layer_details.append(layer_params)
 
+    contrast_background_params = []
+    contrast_background_types = []
+    all_data = []
+    data_limits = []
+    simulation_limits = []
+    contrast_resolution_params = []
+
+    # set data, background and resolution for each contrast
     for contrast in project.contrasts:
+        # set data
+        data_index = project.data.index(contrast.data)
+        data = project.data[data_index].data
+        data_range = project.data[data_index].data_range
+        simulation_range = project.data[data_index].simulation_range
+
+        if data_range:
+            data_limits.append(data_range)
+        else:
+            data_limits.append([0.0, 0.0])
+
+        if simulation_range:
+            simulation_limits.append(simulation_range)
+        else:
+            simulation_limits.append([0.0, 0.0])
+
+        # set background parameters
         background = project.backgrounds[contrast.background]
         contrast_background_types.append(background.type)
         contrast_background_param = []
@@ -238,6 +259,9 @@ def make_problem(project: RATapi.Project, checks: Checks) -> ProblemDefinition:
             contrast_background_param.append(project.data.index(background.source, True))
             if background.value_1 != "":
                 contrast_background_param.append(project.background_parameters.index(background.value_1))
+            # if we are using a data background, we add the background data to the contrast data
+            data = append_data_background(data, project.data[background.source].data)
+
         elif background.type == TypeOptions.Function:
             contrast_background_param.append(project.custom_files.index(background.source, True))
             contrast_background_param.extend(
@@ -259,34 +283,15 @@ def make_problem(project: RATapi.Project, checks: Checks) -> ProblemDefinition:
 
         contrast_background_params.append(contrast_background_param)
 
-    # Set resolution parameters, with -1 used to indicate a data resolution
-    all_data = []
-    data_limits = []
-    simulation_limits = []
-    contrast_resolution_params = []
+        # contrast data has exactly six columns to include background data if relevant
+        all_data.append(np.column_stack((data, np.zeros((data.shape[0], 6 - data.shape[1])))))
 
-    for contrast in project.contrasts:
+        # Set resolution parameters, with -1 used to indicate a data resolution
         resolution = project.resolutions[contrast.resolution]
         if resolution.type == TypeOptions.Data:
             contrast_resolution_params.append(-1)
         else:
             contrast_resolution_params.append(project.resolution_parameters.index(resolution.source, True))
-
-        data_index = project.data.index(contrast.data)
-        data = project.data[data_index].data
-        all_data.append(np.column_stack((data, np.zeros((data.shape[0], 6 - data.shape[1])))))
-        data_range = project.data[data_index].data_range
-        simulation_range = project.data[data_index].simulation_range
-
-        if data_range:
-            data_limits.append(data_range)
-        else:
-            data_limits.append([0.0, 0.0])
-
-        if simulation_range:
-            simulation_limits.append(simulation_range)
-        else:
-            simulation_limits.append([0.0, 0.0])
 
     problem = ProblemDefinition()
 
@@ -485,6 +490,28 @@ def check_indices(problem: ProblemDefinition) -> None:
                     f'Entry {i} of contrastBackgroundParams contains: {", ".join(str(i) for i in elements)}'
                     f', which lie{"s"*(len(elements)==1)} outside of the range of "backgroundParams"',
                 )
+
+
+def append_data_background(data: np.array, background: np.array) -> np.array:
+    """Add background data to contrast data.
+
+    Parameters
+    ----------
+    data : np.array
+        The contrast data to which we are adding a background.
+    background : np.array
+        The background data to add to the contrast.
+
+    Returns
+    -------
+    np.array
+        The contrast data with background data added as two additional columns.
+
+    """
+    if not np.allclose(data[:, 0], background[:, 0]):
+        raise ValueError("The q-values of the data and background must be equal.")
+
+    return np.hstack((data, background[:, 1:]))
 
 
 def make_controls(input_controls: RATapi.Controls) -> Control:
