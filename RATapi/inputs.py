@@ -50,7 +50,7 @@ class FileHandles:
 
     def __init__(self, files=None):
         self.index = 0
-        self.files = [] if files is None else [file.dict() for file in files]
+        self.files = [] if files is None else [file.model_dump() for file in files]
 
     def __iter__(self):
         self.index = 0
@@ -90,6 +90,9 @@ class FileHandles:
         else:
             raise StopIteration
 
+    def __len__(self):
+        return len(self.files)
+
 
 def make_input(project: RATapi.Project, controls: RATapi.Controls) -> tuple[ProblemDefinition, Limits, Priors, Control]:
     """Constructs the inputs required for the compiled RAT code using the data defined in the input project and
@@ -106,8 +109,6 @@ def make_input(project: RATapi.Project, controls: RATapi.Controls) -> tuple[Prob
     -------
     problem : RAT.rat_core.ProblemDefinition
         The problem input used in the compiled RAT code.
-    cells : RAT.rat_core.Cells
-        The set of inputs that are defined in MATLAB as cell arrays.
     limits : RAT.rat_core.Limits
         A list of min/max values for each parameter defined in the project.
     priors : RAT.rat_core.Priors
@@ -232,10 +233,31 @@ def make_problem(project: RATapi.Project, checks: Checks) -> ProblemDefinition:
     for contrast in project.contrasts:
         background = project.backgrounds[contrast.background]
         contrast_background_types.append(background.type)
+        contrast_background_param = []
         if background.type == TypeOptions.Data:
-            contrast_background_params.append([-1])
+            contrast_background_param.append(project.data.index(background.source, True))
+            if background.value_1 != "":
+                contrast_background_param.append(project.background_parameters.index(background.value_1))
+        elif background.type == TypeOptions.Function:
+            contrast_background_param.append(project.custom_files.index(background.source, True))
+            contrast_background_param.extend(
+                [
+                    project.background_parameters.index(value, True)
+                    for value in [
+                        background.value_1,
+                        background.value_2,
+                        background.value_3,
+                        background.value_4,
+                        background.value_5,
+                    ]
+                    if value != ""
+                ]
+            )
+
         else:
-            contrast_background_params.append([project.background_parameters.index(background.source, True)])
+            contrast_background_param.append(project.background_parameters.index(background.source, True))
+
+        contrast_background_params.append(contrast_background_param)
 
     # Set resolution parameters, with -1 used to indicate a data resolution
     all_data = []
@@ -412,26 +434,57 @@ def check_indices(problem: ProblemDefinition) -> None:
         "bulkOuts": "contrastBulkOuts",
         "scalefactors": "contrastScalefactors",
         "domainRatios": "contrastDomainRatios",
-        # "backgroundParams": "contrastBackgroundParams",
         "resolutionParams": "contrastResolutionParams",
     }
 
     # Check the indices -- note we have switched to 1-based indexing at this point
     for params in index_list:
         param_list = getattr(problem, params)
-        if len(param_list) > 0 and not all(
-            (element > 0 or element == -1) and element <= len(param_list)
-            for element in getattr(problem, index_list[params])
-        ):
+        if len(param_list) > 0:
             elements = [
                 element
                 for element in getattr(problem, index_list[params])
-                if not ((element > 0 or element == -1) and element <= len(param_list))
+                if (element != -1) and not (0 < element <= len(param_list))
             ]
+            if elements:
+                raise IndexError(
+                    f'The problem field "{index_list[params]}" contains: {", ".join(str(i) for i in elements)}'
+                    f', which lie{"s"*(len(elements)==1)} outside of the range of "{params}"',
+                )
+
+    # backgroundParams has a different structure, so is handled separately:
+    # it is of type list[list[int]], where each list[int] is the indices for
+    # source, value_1, value_2, value_3, value_4, value_5 where they are defined
+    # e.g. for a data background with offset it is [source value_1], for a function
+    # with 3 values it is [source value_1 value_2 value_3], etc.
+
+    source_param_lists = {
+        "constant": "backgroundParams",
+        "data": "data",
+        "function": "customFiles",
+    }
+
+    for i, background_data in enumerate(problem.contrastBackgroundParams):
+        background_type = problem.contrastBackgroundTypes[i]
+
+        # check source param is in range of the relevant parameter list
+        param_list = getattr(problem, source_param_lists[background_type])
+        source_index = background_data[0]
+        if not 0 < source_index <= len(param_list):
             raise IndexError(
-                f'The problem field "{index_list[params]}" contains: {", ".join(str(i) for i in elements)}'
-                f', which lie outside of the range of "{params}"',
+                f'Entry {i} of contrastBackgroundParams has type "{background_type}" '
+                f"and source index {source_index}, "
+                f'which is outside the range of "{source_param_lists[background_type]}".'
             )
+
+        # check value params are in range for background params
+        if len(background_data) > 1:
+            elements = [element for element in background_data[1:] if not 0 < element <= len(problem.backgroundParams)]
+            if elements:
+                raise IndexError(
+                    f'Entry {i} of contrastBackgroundParams contains: {", ".join(str(i) for i in elements)}'
+                    f', which lie{"s"*(len(elements)==1)} outside of the range of "backgroundParams"',
+                )
 
 
 def make_controls(input_controls: RATapi.Controls) -> Control:
