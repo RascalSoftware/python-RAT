@@ -96,6 +96,15 @@ class Background(RATModel):
 
         return self
 
+    def __setattr__(self, name, value):
+        if name == "type":
+            for attr in ["source", "value_1", "value_2", "value_3", "value_4", "value_5"]:
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    super().__setattr__(attr, "")
+
+        super().__setattr__(name, value)
+
 
 class Contrast(RATModel):
     """A group of all of the components of a model.
@@ -592,3 +601,12 @@ class Resolution(RATModel):
             )
 
         return self
+
+    def __setattr__(self, name, value):
+        if name == "type":
+            for attr in ["source", "value_1", "value_2", "value_3", "value_4", "value_5"]:
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    super().__setattr__(attr, "")
+
+        super().__setattr__(name, value)
