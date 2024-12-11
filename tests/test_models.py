@@ -332,3 +332,23 @@ def test_contrast_bad_ratio():
         ),
     ):
         RATapi.models.Contrast(name="My Contrast", domain_ratio="bad ratio")
+
+
+@pytest.mark.parametrize("model", [RATapi.models.Background, RATapi.models.Resolution])
+def test_type_change_clear(model):
+    """If the type of a background or resolution is changed, it should wipe the other fields."""
+
+    model_instance = model(
+        name="Test",
+        type="constant",
+        source="src",
+        value_1="val1",
+        value_2="val2",
+        value_3="val3",
+        value_4="val4",
+        value_5="val5",
+    )
+
+    model_instance.type = "data"
+    for attr in ["source", "value_1", "value_2", "value_3", "value_4", "value_5"]:
+        assert getattr(model_instance, attr) == ""
