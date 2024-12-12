@@ -426,11 +426,11 @@ def check_indices(problem: ProblemDefinition) -> None:
 
     """
     index_list = {
+        "scalefactors": "contrastScalefactors",
         "bulkIns": "contrastBulkIns",
         "bulkOuts": "contrastBulkOuts",
-        "scalefactors": "contrastScalefactors",
-        "domainRatios": "contrastDomainRatios",
         "resolutionParams": "contrastResolutionParams",
+        "domainRatios": "contrastDomainRatios",
     }
 
     # Check the indices -- note we have switched to 1-based indexing at this point
