@@ -77,7 +77,7 @@ class Background(Signal):
     type : TypeOptions
         The type of background (constant, function or data)
     source : str
-        The source data for the background;
+        The source of the background;
         - if type is 'constant', this should be the name of a background parameter.
         - if type is 'data', this should be the name of a dataset defined in `Project.data`.
         - if type is 'function', this should be the name of a custom function defined in `Project.custom_files`.
@@ -132,6 +132,7 @@ class Contrast(RATModel):
         The name of the bulk-out parameter which defines the SLD of the interface between the last
         layer and the environment.
     scalefactor : str
+        The name of the scalefactor which defines how much the data for this contrast should be scaled.
     resolution : str
         The name of the instrument resolution for this contrast.
     resample : bool
@@ -139,8 +140,8 @@ class Contrast(RATModel):
     model : list[str]
         If this is a standard layers model, this should be a list of layer names
         that make up the slab model for this contrast.
-        For custom models, this should be a list of custom file names of the custom
-        model functions.
+        For custom models, this should be a list containing just the custom file name for the
+        custom model function.
 
     """
 
@@ -213,11 +214,13 @@ class ContrastWithRatio(RATModel):
     resample : bool
         Whether adaptive resampling should be used for interface microslicing.
     domain_ratio : str
+        The name of the domain ratio parameter describing how the first domain should be weighted
+        relative to the second.
     model : list[str]
-        If this is a standard layers model, this should be a list of layer names
-        that make up the slab model for this contrast.
-        For custom models, this should be a list of custom file names of the custom
-        model functions.
+        If this is a standard layers model, this should be a list of the names of the two domain contrasts
+        which make up the domain model for this contrast.
+        For custom models, this should be a list containing just the custom file name for the
+        custom model function.
 
     """
 
@@ -302,7 +305,7 @@ class Data(RATModel, arbitrary_types_allowed=True):
     name : str
         The name of this dataset.
     data : np.ndarray[np.float64]
-        The (x,y,z) data for this dataset, given as a Numpy array of three columns.
+        The (x, y, error) data for this dataset, given as a Numpy array of three columns.
     data_range : list[float]
     simulation_range : list[float]
 
@@ -405,10 +408,7 @@ class DomainContrast(RATModel):
     name : str
         The name of this domain contrast.
     model : list[str]
-        If this is a standard layers model, this should be a list of layer names
-        that make up the slab model for this contrast.
-        For custom models, this should be a list of custom file names of the custom
-        model functions.
+        A list of layer names that make up the slab model for this contrast.
 
     """
 
