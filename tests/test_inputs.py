@@ -659,7 +659,16 @@ def test_append_data_background():
     background = np.array([[1, 10, 11], [4, 12, 13], [7, 14, 15]])
 
     result = RATapi.inputs.append_data_background(data, background)
-    np.testing.assert_allclose(result, np.array([[1, 2, 3, 10, 11], [4, 5, 6, 12, 13], [7, 8, 9, 14, 15]]))
+    np.testing.assert_allclose(result, np.array([[1, 2, 3, 0, 10, 11], [4, 5, 6, 0, 12, 13], [7, 8, 9, 0, 14, 15]]))
+
+
+def test_append_data_background_res():
+    """Test that background data is correctly added to contrast data when a resolution is in the data."""
+    data = np.array([[1, 2, 3, 4], [4, 5, 6, 6], [7, 8, 9, 72]])
+    background = np.array([[1, 10, 11], [4, 12, 13], [7, 14, 15]])
+
+    result = RATapi.inputs.append_data_background(data, background)
+    np.testing.assert_allclose(result, np.array([[1, 2, 3, 4, 10, 11], [4, 5, 6, 6, 12, 13], [7, 8, 9, 72, 14, 15]]))
 
 
 def test_append_data_background_error():

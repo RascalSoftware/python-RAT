@@ -126,15 +126,6 @@ def make_input(project: RATapi.Project, controls: RATapi.Controls) -> tuple[Prob
         "background_parameters": "backgroundParams",
         "resolution_parameters": "resolutionParams",
     }
-    checks_field = {
-        "parameters": "params",
-        "bulk_in": "bulkIns",
-        "bulk_out": "bulkOuts",
-        "scalefactors": "scalefactors",
-        "domain_ratios": "domainRatios",
-        "background_parameters": "backgroundParams",
-        "resolution_parameters": "resolutionParams",
-    }
 
     prior_id = {"uniform": 1, "gaussian": 2, "jeffreys": 3}
 
@@ -143,7 +134,7 @@ def make_input(project: RATapi.Project, controls: RATapi.Controls) -> tuple[Prob
     priors = Priors()
 
     for class_list in RATapi.project.parameter_class_lists:
-        setattr(checks, checks_field[class_list], [int(element.fit) for element in getattr(project, class_list)])
+        setattr(checks, parameter_field[class_list], [int(element.fit) for element in getattr(project, class_list)])
         setattr(
             limits,
             parameter_field[class_list],
@@ -511,7 +502,7 @@ def append_data_background(data: np.array, background: np.array) -> np.array:
     if not np.allclose(data[:, 0], background[:, 0]):
         raise ValueError("The q-values of the data and background must be equal.")
 
-    return np.hstack((data, background[:, 1:]))
+    return np.hstack((data, np.zeros((data.shape[0], 4 - data.shape[1])), background[:, 1:]))
 
 
 def make_controls(input_controls: RATapi.Controls) -> Control:
