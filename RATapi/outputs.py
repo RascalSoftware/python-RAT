@@ -81,6 +81,7 @@ class Results:
     reflectivity: list
     simulation: list
     shiftedData: list
+    backgrounds: list
     layerSlds: list
     sldProfiles: list
     resampledLayers: list
