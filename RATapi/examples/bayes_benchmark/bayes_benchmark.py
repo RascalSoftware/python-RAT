@@ -237,6 +237,8 @@ def plot_posterior_comparison(
     for i in range(0, num_params):
         RATplot.plot_one_hist(ns_results, i, axes=axes[0][i])
         RATplot.plot_one_hist(dream_results, i, axes=axes[1][i])
+        # we want all 3 plots to have the same x-axis
+        axes[1][i].set_xlim(*axes[0][i].get_xlim())
         plot_marginalised_result(i, axes[2][i], limits=axes[0][i].get_xlim())
 
     axes[0][0].set_ylabel("nested sampler")
