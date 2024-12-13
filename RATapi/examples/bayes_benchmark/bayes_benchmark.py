@@ -188,7 +188,7 @@ def plot_posterior_comparison(ns_results: RAT.outputs.BayesResults, calc_results
     num_params = calc_results.distribution.ndim
     fig, axes = plt.subplots(2, num_params)
 
-    def plot_marginalised_result(dimension: int, axes: plt.Axes):
+    def plot_marginalised_result(dimension: int, axes: plt.Axes, limits: tuple[float]):
         """Plot a histogram of a marginalised posterior from the calculation results.
 
         Parameters
@@ -197,6 +197,8 @@ def plot_posterior_comparison(ns_results: RAT.outputs.BayesResults, calc_results
             The dimension of the array to marginalise over.
         axes : plt.Axes
             The Axes object to plot the histogram onto.
+        limits : tuple[float]
+            The x-axis limits for the histogram.
 
         """
         # marginalise to the dimension
@@ -207,9 +209,10 @@ def plot_posterior_comparison(ns_results: RAT.outputs.BayesResults, calc_results
         # create histogram
         axes.hist(
             calc_results.x_data[i],
+            bins=25,
+            range=limits,
             weights=distribution,
             density=True,
-            bins=25,
             edgecolor="black",
             linewidth=1.2,
             color="white",
@@ -219,8 +222,7 @@ def plot_posterior_comparison(ns_results: RAT.outputs.BayesResults, calc_results
     # row 1 contains direct calculation histograms for each parameter
     for i in range(0, num_params):
         RATplot.plot_one_hist(ns_results, i, smooth=False, axes=axes[0][i])
-        plot_marginalised_result(i, axes[1][i])
-        axes[1][i].set_xlim(*axes[0][i].get_xlim())
+        plot_marginalised_result(i, axes[1][i], limits=axes[0][i].get_xlim())
 
     axes[0][0].set_ylabel("nested sampler")
     axes[1][0].set_ylabel("direct calculation")
@@ -234,5 +236,5 @@ if __name__ == "__main__":
     ns_3d, calc_3d = bayes_benchmark_3d(40)
 
     plot_posterior_comparison(ns_2d, calc_2d)
-    
+
     plot_posterior_comparison(ns_3d, calc_3d)
