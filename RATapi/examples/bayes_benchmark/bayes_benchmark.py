@@ -59,9 +59,11 @@ def bayes_benchmark_2d(grid_size: int) -> (RAT.outputs.BayesResults, Calculation
     """
     problem = RAT.utils.convert.r1_to_project_class(str(PWD / "defaultR1ProjectTemplate.mat"))
 
-    ns_controls = RAT.Controls(procedure="ns", calcSldDuringFit=True, nsTolerance=1, nLive=500, display="final")
-
+    ns_controls = RAT.Controls(procedure="ns", nsTolerance=1, nLive=500, display="final")
     _, ns_results = RAT.run(problem, ns_controls)
+
+    dream_controls = RAT.Controls(procedure="dream", display="final")
+    _, dream_results = RAT.run(problem, dream_controls)
 
     # now we get the parameters and use them to do a direct calculation
     rough_param = problem.parameters[0]
@@ -70,7 +72,7 @@ def bayes_benchmark_2d(grid_size: int) -> (RAT.outputs.BayesResults, Calculation
     back_param = problem.background_parameters[0]
     background = np.linspace(back_param.min, back_param.max, grid_size)
 
-    controls = RAT.Controls(procedure="calculate", calcSldDuringFit=True, display="off")
+    controls = RAT.Controls(procedure="calculate", display="off")
 
     def calculate_posterior(roughness_index: int, background_index: int) -> float:
         """Calculate the posterior for an item in the roughness and background vectors.
@@ -100,7 +102,7 @@ def bayes_benchmark_2d(grid_size: int) -> (RAT.outputs.BayesResults, Calculation
     print("Calculating posterior directly...")
     probability_array = vectorized_calc_posterior(*np.indices((grid_size, grid_size), dtype=int))
 
-    return ns_results, CalculationResults(x_data=[roughness, background], distribution=probability_array)
+    return ns_results, dream_results, CalculationResults(x_data=[roughness, background], distribution=probability_array)
 
 
 def bayes_benchmark_3d(grid_size: int) -> (RAT.outputs.BayesResults, CalculationResults):
@@ -124,10 +126,14 @@ def bayes_benchmark_3d(grid_size: int) -> (RAT.outputs.BayesResults, Calculation
 
     """
     problem = RAT.utils.convert.r1_to_project_class(str(PWD / "defaultR1ProjectTemplate.mat"))
+    problem.scalefactors[0].min = 0.07
+    problem.scalefactors[0].max = 0.13
 
-    ns_controls = RAT.Controls(procedure="ns", calcSldDuringFit=True, nsTolerance=1, nLive=500, display="final")
-
+    ns_controls = RAT.Controls(procedure="ns", nsTolerance=1, nLive=500, display="final")
     _, ns_results = RAT.run(problem, ns_controls)
+
+    dream_controls = RAT.Controls(procedure="dream", display="final")
+    _, dream_results = RAT.run(problem, dream_controls)
 
     # now we get the parameters and use them to do a direct calculation
     rough_param = problem.parameters[0]
@@ -172,21 +178,29 @@ def bayes_benchmark_3d(grid_size: int) -> (RAT.outputs.BayesResults, Calculation
     print("Calculating posterior directly...")
     probability_array = vectorized_calc_posterior(*np.indices((grid_size, grid_size, grid_size), dtype=int))
 
-    return ns_results, CalculationResults(x_data=[roughness, background, scalefactor], distribution=probability_array)
+    return (
+        ns_results,
+        dream_results,
+        CalculationResults(x_data=[roughness, background, scalefactor], distribution=probability_array),
+    )
 
 
-def plot_posterior_comparison(ns_results: RAT.outputs.BayesResults, calc_results: CalculationResults):
+def plot_posterior_comparison(
+    ns_results: RAT.outputs.BayesResults, dream_results: RAT.outputs.BayesResults, calc_results: CalculationResults
+):
     """Create a grid of marginalised posteriors comparing different calculation methods.
 
     Parameters
     ----------
     ns_results : RAT.BayesResults
         The BayesResults object from a nested sampler calculation.
+    dream_results : RAT.BayesResults
+        The BayesResults object from a DREAM calculation.
     calc_results : CalculationResults
         The results from a direct calculation.
     """
     num_params = calc_results.distribution.ndim
-    fig, axes = plt.subplots(2, num_params)
+    fig, axes = plt.subplots(3, num_params, figsize=(3 * num_params, 9))
 
     def plot_marginalised_result(dimension: int, axes: plt.Axes, limits: tuple[float]):
         """Plot a histogram of a marginalised posterior from the calculation results.
@@ -221,20 +235,21 @@ def plot_posterior_comparison(ns_results: RAT.outputs.BayesResults, calc_results
     # row 0 contains NS histograms for each parameter
     # row 1 contains direct calculation histograms for each parameter
     for i in range(0, num_params):
-        RATplot.plot_one_hist(ns_results, i, smooth=False, axes=axes[0][i])
-        plot_marginalised_result(i, axes[1][i], limits=axes[0][i].get_xlim())
+        RATplot.plot_one_hist(ns_results, i, axes=axes[0][i])
+        RATplot.plot_one_hist(dream_results, i, axes=axes[1][i])
+        plot_marginalised_result(i, axes[2][i], limits=axes[0][i].get_xlim())
 
     axes[0][0].set_ylabel("nested sampler")
-    axes[1][0].set_ylabel("direct calculation")
+    axes[1][0].set_ylabel("DREAM")
+    axes[2][0].set_ylabel("direct calculation")
 
     fig.tight_layout()
     fig.show()
 
 
 if __name__ == "__main__":
-    ns_2d, calc_2d = bayes_benchmark_2d(30)
-    ns_3d, calc_3d = bayes_benchmark_3d(40)
+    ns_2d, dream_2d, calc_2d = bayes_benchmark_2d(30)
+    ns_3d, dream_3d, calc_3d = bayes_benchmark_3d(40)
 
-    plot_posterior_comparison(ns_2d, calc_2d)
-
-    plot_posterior_comparison(ns_3d, calc_3d)
+    plot_posterior_comparison(ns_2d, dream_2d, calc_2d)
+    plot_posterior_comparison(ns_3d, dream_3d, calc_3d)
