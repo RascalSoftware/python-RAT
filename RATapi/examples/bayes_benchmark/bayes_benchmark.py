@@ -25,7 +25,7 @@ import numpy as np
 
 import RATapi as RAT
 import RATapi.utils.plotting as RATplot
-from RATapi.models import Parameter, Background, Resolution, Data, Contrast
+from RATapi.models import Background, Contrast, Data, Parameter, Resolution
 
 PWD = Path(__file__).parents[0]
 
@@ -44,7 +44,7 @@ def get_project() -> RAT.Project:
         background_parameters=[
             Parameter(name="Background parameter 1", min=5e-08, value=3.069003361230152e-06, max=7e-06, fit=True)
         ],
-        scalefactors=[Parameter(name="Scalefactor 1", min=0.05, value=0.10141560336360426, max=0.3, fit=True)],
+        scalefactors=[Parameter(name="Scalefactor 1", min=0.07, value=0.10141560336360426, max=0.13, fit=False)],
         bulk_in=[Parameter(name="Air", min=0.0, value=0.0, max=0.0, fit=False)],
         bulk_out=[Parameter(name="D2O", min=6.3e-06, value=6.35e-06, max=6.4e-06, fit=False)],
         resolution_parameters=[Parameter(name="Resolution parameter 1", min=0.01, value=0.03, max=0.05, fit=False)],
@@ -229,6 +229,7 @@ def bayes_benchmark_3d(grid_size: int) -> (RAT.outputs.BayesResults, Calculation
 
     """
     problem = get_project()
+    problem.scalefactors[0].fit = True
 
     ns_controls = RAT.Controls(procedure="ns", nsTolerance=1, nLive=500, display="final")
     _, ns_results = RAT.run(problem, ns_controls)
@@ -320,6 +321,7 @@ def plot_posterior_comparison(
         # note we don't need to normalise here as np.histogram normalises for us
         sum_axes = tuple(i for i in range(0, num_params) if i != dimension)
         distribution = np.sum(calc_results.distribution, axis=sum_axes)
+        distribution /= np.sum(calc_results.distribution)
 
         # create histogram
         axes.hist(
