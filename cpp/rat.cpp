@@ -1145,7 +1145,7 @@ OutputResult OutputResultFromStruct6T(const RAT::struct6_T result)
         output_result.fitNames.append(str);
     }    
 
-    output_result.fitParams = py::array_t<real_T>(result.fitParams.size(0));
+    output_result.fitParams = py::array_t<real_T>(result.fitParams.size(1));
     auto buffer = output_result.fitParams.request();
     std::memcpy(buffer.ptr, result.fitParams.data(), output_result.fitParams.size()*sizeof(real_T));
 
