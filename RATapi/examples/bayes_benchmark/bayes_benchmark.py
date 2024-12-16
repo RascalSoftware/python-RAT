@@ -25,8 +25,111 @@ import numpy as np
 
 import RATapi as RAT
 import RATapi.utils.plotting as RATplot
+from RATapi.models import Parameter, Background, Resolution, Data, Contrast
 
 PWD = Path(__file__).parents[0]
+
+
+# function to get our starting project
+# this is the RasCAL-1 default project
+# it is a bare D2O substrate
+def get_project() -> RAT.Project:
+    return RAT.Project(
+        name="Bare D2O Substrate",
+        calculation="normal",
+        model="standard layers",
+        geometry="air/substrate",
+        absorption="False",
+        parameters=[Parameter(name="Substrate Roughness", min=3.0, value=4.844363132849221, max=8.0, fit=True)],
+        background_parameters=[
+            Parameter(name="Background parameter 1", min=5e-08, value=3.069003361230152e-06, max=7e-06, fit=True)
+        ],
+        scalefactors=[Parameter(name="Scalefactor 1", min=0.05, value=0.10141560336360426, max=0.3, fit=True)],
+        bulk_in=[Parameter(name="Air", min=0.0, value=0.0, max=0.0, fit=False)],
+        bulk_out=[Parameter(name="D2O", min=6.3e-06, value=6.35e-06, max=6.4e-06, fit=False)],
+        resolution_parameters=[Parameter(name="Resolution parameter 1", min=0.01, value=0.03, max=0.05, fit=False)],
+        backgrounds=[Background(name="Background 1", type="constant", value_1="Background parameter 1")],
+        resolutions=[Resolution(name="Resolution 1", type="constant", value_1="Resolution parameter 1")],
+        data=[
+            Data(name="Simulation", data=np.empty([0, 3]), simulation_range=[0.005, 0.7]),
+            Data(
+                name="f82395c",
+                data=np.array(
+                    [
+                        [4.8866e-02, 1.2343e-04, 1.3213e-06],
+                        [5.1309e-02, 1.0063e-04, 1.0803e-06],
+                        [5.3874e-02, 8.2165e-05, 8.8779e-07],
+                        [5.6568e-02, 6.4993e-05, 7.2018e-07],
+                        [5.9396e-02, 5.3958e-05, 6.0015e-07],
+                        [6.2366e-02, 4.3590e-05, 5.0129e-07],
+                        [6.5485e-02, 3.5780e-05, 4.1957e-07],
+                        [6.8759e-02, 2.9130e-05, 3.5171e-07],
+                        [7.2197e-02, 2.3481e-05, 3.0586e-07],
+                        [7.5807e-02, 1.8906e-05, 2.6344e-07],
+                        [7.9597e-02, 1.4642e-05, 2.2314e-07],
+                        [8.3577e-02, 1.1589e-05, 1.8938e-07],
+                        [8.7756e-02, 9.5418e-06, 1.6220e-07],
+                        [9.2143e-02, 7.5694e-06, 1.3809e-07],
+                        [9.6751e-02, 6.3831e-06, 1.2097e-07],
+                        [1.0159e-01, 5.0708e-06, 1.0333e-07],
+                        [1.0667e-01, 4.1041e-06, 8.9548e-08],
+                        [1.1200e-01, 3.4253e-06, 7.9830e-08],
+                        [1.1760e-01, 2.8116e-06, 7.1554e-08],
+                        [1.2348e-01, 2.3767e-06, 6.3738e-08],
+                        [1.2966e-01, 1.9241e-06, 5.6586e-08],
+                        [1.3614e-01, 1.5642e-06, 5.2778e-08],
+                        [1.4294e-01, 1.2922e-06, 4.9730e-08],
+                        [1.5009e-01, 1.1694e-06, 5.1175e-08],
+                        [1.5760e-01, 9.7837e-07, 5.0755e-08],
+                        [1.6548e-01, 8.9138e-07, 5.3542e-08],
+                        [1.7375e-01, 7.9420e-07, 5.4857e-08],
+                        [1.8244e-01, 7.9131e-07, 5.8067e-08],
+                        [1.9156e-01, 6.5358e-07, 5.7717e-08],
+                        [2.0114e-01, 6.2970e-07, 5.7951e-08],
+                        [2.1119e-01, 5.0130e-07, 5.5262e-08],
+                        [2.2175e-01, 5.0218e-07, 5.6461e-08],
+                        [2.3284e-01, 3.9299e-07, 5.0685e-08],
+                        [2.4448e-01, 3.5324e-07, 5.0194e-08],
+                        [2.5671e-01, 4.4475e-07, 5.6485e-08],
+                        [2.6954e-01, 5.1338e-07, 6.2247e-08],
+                        [2.8302e-01, 3.4918e-07, 4.9745e-08],
+                        [2.9717e-01, 4.3037e-07, 5.5488e-08],
+                        [3.1203e-01, 4.0099e-07, 5.3591e-08],
+                        [3.2763e-01, 3.8397e-07, 5.1303e-08],
+                        [3.4401e-01, 3.0995e-07, 4.5965e-08],
+                        [3.6121e-01, 3.9357e-07, 5.0135e-08],
+                        [3.7927e-01, 3.0997e-07, 4.3680e-08],
+                        [3.9824e-01, 2.9656e-07, 4.2432e-08],
+                        [4.1815e-01, 2.1909e-07, 3.6117e-08],
+                        [4.3906e-01, 2.3153e-07, 3.6307e-08],
+                        [4.6101e-01, 3.3428e-07, 4.3874e-08],
+                        [4.8406e-01, 2.3441e-07, 3.7488e-08],
+                        [5.0826e-01, 1.5496e-07, 3.0585e-08],
+                        [5.3368e-01, 2.4708e-07, 3.9376e-08],
+                        [5.6036e-01, 2.2157e-07, 3.8258e-08],
+                        [5.8838e-01, 2.2798e-07, 4.6976e-08],
+                        [6.1169e-01, 6.0272e-07, 2.3239e-07],
+                    ]
+                ),
+                data_range=[0.048866, 0.61169],
+                simulation_range=[0.048866, 0.61169],
+            ),
+        ],
+        contrasts=[
+            Contrast(
+                name="Chain-d, acmw",
+                data="f82395c",
+                background="Background 1",
+                background_action="add",
+                bulk_in="Air",
+                bulk_out="D2O",
+                scalefactor="Scalefactor 1",
+                resolution="Resolution 1",
+                resample=False,
+                model=[],
+            )
+        ],
+    )
 
 
 @dataclass
@@ -57,7 +160,7 @@ def bayes_benchmark_2d(grid_size: int) -> (RAT.outputs.BayesResults, Calculation
         Results from the direct calculation.
 
     """
-    problem = RAT.utils.convert.r1_to_project_class(str(PWD / "defaultR1ProjectTemplate.mat"))
+    problem = get_project()
 
     ns_controls = RAT.Controls(procedure="ns", nsTolerance=1, nLive=500, display="final")
     _, ns_results = RAT.run(problem, ns_controls)
@@ -89,7 +192,7 @@ def bayes_benchmark_2d(grid_size: int) -> (RAT.outputs.BayesResults, Calculation
         float
             The value of exp(-chi^2 / 2) for the given roughness and background values.
         """
-        problem.parameters[0].value = roughness[int(roughness_index)]
+        problem.parameters[0].value = roughness[roughness_index]
         problem.background_parameters[0].value = background[background_index]
 
         _, results = RAT.run(problem, controls)
@@ -125,9 +228,7 @@ def bayes_benchmark_3d(grid_size: int) -> (RAT.outputs.BayesResults, Calculation
         Results from the direct calculation.
 
     """
-    problem = RAT.utils.convert.r1_to_project_class(str(PWD / "defaultR1ProjectTemplate.mat"))
-    problem.scalefactors[0].min = 0.07
-    problem.scalefactors[0].max = 0.13
+    problem = get_project()
 
     ns_controls = RAT.Controls(procedure="ns", nsTolerance=1, nLive=500, display="final")
     _, ns_results = RAT.run(problem, ns_controls)
@@ -239,6 +340,7 @@ def plot_posterior_comparison(
         RATplot.plot_one_hist(dream_results, i, axes=axes[1][i])
         # we want all 3 plots to have the same x-axis
         axes[1][i].set_xlim(*axes[0][i].get_xlim())
+        axes[1][i].set_title("")
         plot_marginalised_result(i, axes[2][i], limits=axes[0][i].get_xlim())
 
     axes[0][0].set_ylabel("nested sampler")
