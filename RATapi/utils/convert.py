@@ -2,6 +2,7 @@
 
 import json
 from collections.abc import Iterable
+from os import PathLike
 from pathlib import Path
 from typing import Union
 
@@ -14,12 +15,12 @@ from RATapi.models import Background, Contrast, CustomFile, Data, Layer, Paramet
 from RATapi.utils.enums import Geometries, Languages, LayerModels
 
 
-def r1_to_project_class(filename: str) -> Project:
+def r1_to_project_class(filename: Union[str, PathLike]) -> Project:
     """Read a RasCAL1 project struct as a Python `Project`.
 
     Parameters
     ----------
-    filename : str
+    filename : str, PathLike
         The path to a .mat file containing project data.
 
     Returns
@@ -28,7 +29,7 @@ def r1_to_project_class(filename: str) -> Project:
         A RAT `Project` equivalent to the RasCAL1 project struct.
 
     """
-    mat_project = loadmat(filename, simplify_cells=True)["problem"]
+    mat_project = loadmat(str(filename), simplify_cells=True)["problem"]
 
     mat_module = mat_project["module"]
     if mat_module["experiment_type"] == "Air / Liquid (or solid)":
@@ -271,7 +272,7 @@ def r1_to_project_class(filename: str) -> Project:
 
 
 def project_class_to_r1(
-    project: Project, filename: str = "RAT_project", return_struct: bool = False
+    project: Project, filename: Union[str, PathLike] = "RAT_project", return_struct: bool = False
 ) -> Union[dict, None]:
     """Convert a RAT Project to a RasCAL1 project struct.
 
@@ -279,7 +280,7 @@ def project_class_to_r1(
     ----------
     project : Project
         The RAT Project to convert.
-    filename : str, default "RAT_project"
+    filename : str or PathLike, default "RAT_project"
         If given, saves as a .mat file with the given filename.
     return_struct : bool, default False
         If True, do not save and instead return the R1 struct.
@@ -503,7 +504,7 @@ def project_class_to_r1(
     if eng is None:
         raise ImportError("matlabengine is not installed.")
     eng.workspace["problem"] = r1
-    eng.save(filename, "problem", nargout=0)
+    eng.save(str(filename), "problem", nargout=0)
     eng.exit()
     return None
 
