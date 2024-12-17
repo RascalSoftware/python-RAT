@@ -1,3 +1,4 @@
+import pathlib
 from pprint import pp
 
 import RATapi as RAT
@@ -5,7 +6,8 @@ import RATapi as RAT
 
 # convert R1 project to Project class
 def convert_rascal():
-    project = RAT.utils.convert.r1_to_project_class("R1monolayerVolumeModel.mat")
+    project_path = pathlib.Path(__file__).parent / "R1monolayerVolumeModel.mat"
+    project = RAT.utils.convert.r1_to_project_class(project_path)
 
     # change values if you like, including ones not supported by R1
     project.parameters["Head Thickness"].prior_type = "gaussian"

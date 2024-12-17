@@ -2,6 +2,7 @@
 
 import importlib
 import os
+import pathlib
 import tempfile
 
 import pytest
@@ -56,9 +57,10 @@ def dspc_bilayer():
         ["R1motofitBenchMark.mat", "r1_motofit_bench_mark"],
     ],
 )
-def test_r1_to_project_class(file, project, request):
+@pytest.mark.parametrize("path_type", [os.path.join, pathlib.Path])
+def test_r1_to_project_class(file, project, path_type, request):
     """Test that R1 to Project class conversion returns the expected Project."""
-    output_project = r1_to_project_class(os.path.join(TEST_DIR_PATH, file))
+    output_project = r1_to_project_class(path_type(TEST_DIR_PATH, file))
     expected_project = request.getfixturevalue(project)
 
     # assert statements have to be more careful due to R1 missing features
@@ -127,11 +129,12 @@ def test_json_involution(project, request):
 
 
 @pytest.mark.skipif(importlib.util.find_spec("matlab") is None, reason="Matlab not installed")
-def test_matlab_save(request):
+@pytest.mark.parametrize("path_type", [os.path.join, pathlib.Path])
+def test_matlab_save(path_type, request):
     """Test that MATLAB correctly saves the .mat file."""
     project = request.getfixturevalue("r1_default_project")
     with tempfile.TemporaryDirectory() as temp:
-        matfile = os.path.join(temp, "testfile.mat")
+        matfile = path_type(temp, "testfile.mat")
         project_class_to_r1(project, filename=matfile)
         converted_project = r1_to_project_class(matfile)
 
