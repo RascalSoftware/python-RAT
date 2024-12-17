@@ -355,7 +355,7 @@ def plot_posterior_comparison(
 
 if __name__ == "__main__":
     ns_2d, dream_2d, calc_2d = bayes_benchmark_2d(30)
-    ns_3d, dream_3d, calc_3d = bayes_benchmark_3d(40)
+    ns_3d, dream_3d, calc_3d = bayes_benchmark_3d(30)
 
     plot_posterior_comparison(ns_2d, dream_2d, calc_2d)
     plot_posterior_comparison(ns_3d, dream_3d, calc_3d)
