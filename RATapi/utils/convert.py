@@ -137,13 +137,13 @@ def r1_to_project_class(filename: Union[str, PathLike]) -> Project:
     # create backgrounds and resolutions from parameters
     backs = ClassList(
         [
-            Background(name=back_name, value_1=mat_project["back_param_names"][i])
+            Background(name=back_name, type="constant", source=mat_project["back_param_names"][i])
             for i, back_name in enumerate(mat_project["backsNames"])
         ]
     )
     res = ClassList(
         [
-            Resolution(name=res_name, value_1=mat_project["res_param_names"][i])
+            Resolution(name=res_name, type="constant", source=mat_project["res_param_names"][i])
             for i, res_name in enumerate(mat_project["resolNames"])
         ]
     )
@@ -388,24 +388,24 @@ def project_class_to_r1(
 
     resolutions = {
         "resolNames": [r.name for r in project.resolutions],
-        "resolution": [project.resolution_parameters[r.value_1].value for r in project.resolutions],
+        "resolution": [project.resolution_parameters[r.source].value for r in project.resolutions],
         "resolution_constr": [
-            [project.resolution_parameters[r.value_1].min, project.resolution_parameters[r.value_1].max]
+            [project.resolution_parameters[r.source].min, project.resolution_parameters[r.source].max]
             for r in project.resolutions
         ],
-        "resolution_fityesno": [int(project.resolution_parameters[r.value_1].fit) for r in project.resolutions],
+        "resolution_fityesno": [int(project.resolution_parameters[r.source].fit) for r in project.resolutions],
         "numberOfResolutions": len(project.resolutions),
     }
     r1.update(resolutions)
 
     backgrounds = {
         "backsNames": [b.name for b in project.backgrounds],
-        "backs": [project.background_parameters[b.value_1].value for b in project.backgrounds],
+        "backs": [project.background_parameters[b.source].value for b in project.backgrounds],
         "backs_constr": [
-            [project.background_parameters[b.value_1].min, project.background_parameters[b.value_1].max]
+            [project.background_parameters[b.source].min, project.background_parameters[b.source].max]
             for b in project.backgrounds
         ],
-        "backgrounds_fityesno": [int(project.background_parameters[b.value_1].fit) for b in project.backgrounds],
+        "backgrounds_fityesno": [int(project.background_parameters[b.source].fit) for b in project.backgrounds],
         "numberOfBacks": len(project.backgrounds),
     }
     r1.update(backgrounds)
@@ -456,10 +456,10 @@ def project_class_to_r1(
     for contrast in project.contrasts:
         # R1 stores contrast resolutions and background by the index of the relevant parameter
         resolution = project.resolutions[contrast.resolution]
-        contrasts["contrastResolutions"].append(project.resolution_parameters.index(resolution.value_1, True))
+        contrasts["contrastResolutions"].append(project.resolution_parameters.index(resolution.source, True))
 
         background = project.backgrounds[contrast.background]
-        contrasts["contrastBacks"].append(project.background_parameters.index(background.value_1, True))
+        contrasts["contrastBacks"].append(project.background_parameters.index(background.source, True))
 
         data = project.data[contrast.data]
         if "simulation" in data.name:
