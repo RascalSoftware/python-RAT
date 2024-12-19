@@ -325,7 +325,7 @@ def plot_posterior_comparison(
 
         # create histogram
         axes.hist(
-            calc_results.x_data[i],
+            calc_results.x_data[dimension],
             bins=25,
             range=limits,
             weights=distribution,
