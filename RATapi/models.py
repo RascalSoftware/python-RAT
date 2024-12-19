@@ -40,9 +40,14 @@ class RATModel(BaseModel, validate_assignment=True, extra="forbid"):
 
     def __str__(self):
         table = prettytable.PrettyTable()
-        table.field_names = [key.replace("_", " ") for key in self.__dict__]
-        table.add_row(list(self.__dict__.values()))
+        table.field_names = [key.replace("_", " ") for key in self.display_fields]
+        table.add_row(list(self.display_fields.values()))
         return table.get_string()
+
+    @property
+    def display_fields(self) -> dict:
+        """A dictionary of which fields should be displayed by this model and their values."""
+        return self.__dict__
 
 
 class Signal(RATModel):
@@ -525,6 +530,8 @@ class Parameter(RATModel):
     mu: float = 0.0
     sigma: float = np.inf
 
+    show_priors: bool = False
+
     @model_validator(mode="after")
     def check_min_max(self) -> "Parameter":
         """The maximum value of a parameter must be greater than the minimum."""
@@ -538,6 +545,16 @@ class Parameter(RATModel):
         if self.value < self.min or self.value > self.max:
             raise ValueError(f"value {self.value} is not within the defined range: {self.min} <= value <= {self.max}")
         return self
+
+    @property
+    def display_fields(self) -> dict:
+        visible_fields = ["name", "min", "value", "max", "fit"]
+        if self.show_priors:
+            visible_fields.append("prior_type")
+            if self.prior_type == Priors.Gaussian:
+                visible_fields.extend(["mu", "sigma"])
+
+        return {f: getattr(self, f) for f in visible_fields}
 
 
 class ProtectedParameter(Parameter):

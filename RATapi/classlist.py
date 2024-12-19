@@ -57,10 +57,40 @@ class ClassList(collections.UserList, Generic[T]):
         super().__init__(init_list)
 
     def __str__(self):
+        # `display_fields` gives more control over the items displayed from the list if available
+        if not self.data:
+            return str([])
         try:
-            [model.__dict__ for model in self.data]
+            model_display_fields = [model.display_fields for model in self.data]
+            # get all items included in at least one list
+            # the list comprehension ensures they are in the order that they're in in the model
+            required_fields = list(set().union(*model_display_fields))
+            table_fields = ["index"] + [i for i in list(self.data[0].__dict__) if i in required_fields]
         except AttributeError:
-            output = str(self.data)
+            try:
+                model_display_fields = [model.__dict__ for model in self.data]
+                table_fields = ["index"] + list(self.data[0].__dict__)
+            except AttributeError:
+                return str(self.data)
+
+        if any(model_display_fields):
+            table = prettytable.PrettyTable()
+            table.field_names = [field.replace("_", " ") for field in table_fields]
+            rows = []
+            for index, model in enumerate(self.data):
+                row = [index]
+                for field in table_fields[1:]:
+                    value = getattr(model, field, "")
+                    if isinstance(value, np.ndarray):
+                        value = f"{'Data array: ['+' x '.join(str(i) for i in value.shape) if value.size > 0 else '['}]"
+                    elif field == "model":
+                        value = "\n".join(str(element) for element in value)
+                    else:
+                        value = str(value)
+                    row.append(value)
+                rows.append(row)
+            table.add_rows(rows)
+            output = table.get_string()
         else:
             if any(model.__dict__ for model in self.data):
                 table = prettytable.PrettyTable()

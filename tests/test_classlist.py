@@ -7,6 +7,7 @@ from collections import deque
 from collections.abc import Iterable, Sequence
 from typing import Any, Union
 
+import prettytable
 import pytest
 
 from RATapi.classlist import ClassList
@@ -42,6 +43,23 @@ def two_name_class_list_table():
 def three_name_class_list():
     """A ClassList of InputAttributes, containing three elements with names defined."""
     return ClassList([InputAttributes(name="Alice"), InputAttributes(name="Bob"), InputAttributes(name="Eve")])
+
+
+class DisplayFieldsClass:
+    """A classlist with four attributes and a display_fields property."""
+
+    def __init__(self, display_range):
+        self.a = 1
+        self.b = 2
+        self.c = 3
+        self.d = 4
+
+        self.display_range = display_range
+
+    @property
+    def display_fields(self):
+        fields = ["a", "b", "c", "d"][self.display_range[0] : self.display_range[1]]
+        return {f: getattr(self, f) for f in fields}
 
 
 class TestInitialisation:
@@ -172,6 +190,26 @@ def test_str_list(input_list: list[str]) -> None:
 def test_str_empty_classlist() -> None:
     """For empty ClassLists, we should be able to print the ClassList as an empty list."""
     assert str(ClassList()) == str([])
+
+
+@pytest.mark.parametrize(
+    "display_ranges, expected_header",
+    (
+        ([(1, 3), (1, 3), (1, 3)], ["b", "c"]),
+        ([(1, 2), (0, 4), (2, 3)], ["a", "b", "c", "d"]),
+        ([(0, 2), (0, 1), (2, 3)], ["a", "b", "c"]),
+    ),
+)
+def test_str_display_fields(display_ranges, expected_header):
+    """If a class has the `display_fields` property, the ClassList should print with the minimal required attributes."""
+    class_list = ClassList([DisplayFieldsClass(dr) for dr in display_ranges])
+    expected_table = prettytable.PrettyTable()
+    expected_table.field_names = ["index"] + expected_header
+    expected_vals = {"a": 1, "b": 2, "c": 3, "d": 4}
+    row = [expected_vals[v] for v in expected_header]
+    expected_table.add_rows([[0] + row, [1] + row, [2] + row])
+
+    assert str(class_list) == expected_table.get_string()
 
 
 @pytest.mark.parametrize(
