@@ -443,7 +443,7 @@ def plot_corner(
                 plot_one_hist(results, param=row_param, smooth=smooth, axes=current_axes, **hist_kwargs)
             elif i > j:  # lower triangle: 2d histograms
                 plot_contour(
-                    results, x_param=row_param, y_param=col_param, smooth=smooth, axes=current_axes, **hist2d_kwargs
+                    results, x_param=col_param, y_param=row_param, smooth=smooth, axes=current_axes, **hist2d_kwargs
                 )
             elif i < j:  # upper triangle: no plot
                 current_axes.set_visible(False)
@@ -629,8 +629,7 @@ def plot_contour(
     default_settings = {"bins": 25, "density": True}
     hist2d_settings = {**default_settings, **hist2d_settings}
 
-    counts, y_bins, x_bins = np.histogram2d(results.chain[:, x_param], results.chain[:, y_param], **hist2d_settings)
-    counts = counts.T  # for some reason the counts given by numpy are sideways
+    counts, x_bins, y_bins = np.histogram2d(results.chain[:, x_param], results.chain[:, y_param], **hist2d_settings)
     if smooth:
         if sigma is None:
             sigma_x = stdev(results.chain[:, x_param]) / 2
@@ -641,8 +640,8 @@ def plot_contour(
         counts = gaussian_filter1d(counts, axis=0, sigma=sigma_x)
         counts = gaussian_filter1d(counts, axis=1, sigma=sigma_y)
 
-    axes.pcolormesh(x_bins, y_bins, counts.max() - counts.T, cmap=matplotlib.colormaps["Greys"].reversed())
-    axes.contour(x_bins[:-1], y_bins[:-1], counts.max() - counts.T, colors="black")
+    axes.pcolormesh(x_bins, y_bins, counts.max() - counts, cmap=matplotlib.colormaps["Greys"].reversed())
+    axes.contour(x_bins[:-1], y_bins[:-1], counts.max() - counts, colors="black")
     axes.set_xlabel(results.fitNames[x_param])
     axes.set_ylabel(results.fitNames[y_param])
 

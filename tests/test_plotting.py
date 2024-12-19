@@ -348,8 +348,8 @@ def test_contour(dream_results, x_param, y_param, hist2d_settings):
         y_param_chain = dream_results.chain[:, y_param_index]
         x_expected_range = (x_param_chain.min(), x_param_chain.max())
         y_expected_range = (y_param_chain.min(), y_param_chain.max())
-    assert ax.get_xbound() == y_expected_range
-    assert ax.get_ybound() == x_expected_range
+    assert ax.get_xbound() == x_expected_range
+    assert ax.get_ybound() == y_expected_range
 
     # plt.close(fig)
 
