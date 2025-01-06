@@ -1221,8 +1221,8 @@ ProblemDefinition problemDefinitionFromStruct0T(const RAT::struct0_T problem)
     problem_def.domainRatios = pyArrayFromRatArray1d<coder::array<real_T, 2U>>(problem.domainRatios);
     problem_def.numberOfDomainContrasts = problem.numberOfDomainContrasts;
     problem_def.domainContrastLayers = pyList1DFromRatCellWrap2D<coder::array<RAT::cell_wrap_4, 2U>>(problem.domainContrastLayers);
-    problem_def.fitParams = pyArrayFromRatArray1d<coder::array<real_T, 1U>>(problem.fitParams, false);
-    problem_def.otherParams = pyArrayFromRatArray1d<coder::array<real_T, 1U>>(problem.otherParams, false);
+    problem_def.fitParams = pyArrayFromRatArray1d<coder::array<real_T, 2U>>(problem.fitParams);
+    problem_def.otherParams = pyArrayFromRatArray1d<coder::array<real_T, 2U>>(problem.otherParams);
     problem_def.fitLimits = pyArrayFromRatArray2d(problem.fitLimits);
     problem_def.otherLimits = pyArrayFromRatArray2d(problem.otherLimits);
     
