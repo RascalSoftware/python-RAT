@@ -713,6 +713,30 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
             model_field = "custom_files"
         return model_field
 
+    def set_prior_visibility(self, priors_visible: bool):
+        """Set whether priors are visible or invisible for all parameters.
+
+        Parameters
+        ----------
+        priors_visible : bool
+            Whether priors should be shown.
+
+        """
+        for classlist_name in parameter_class_lists:
+            classlist = getattr(self, classlist_name)
+            for i in range(0, len(classlist)):
+                classlist[i].show_priors = priors_visible
+
+    def show_priors(self):
+        """Show priors for all parameters in the model."""
+        # convenience function from set_prior_visibility
+        self.set_prior_visibility(True)
+
+    def hide_priors(self):
+        """Hide priors for all parameters in the model."""
+        # convenience function from set_prior_visibility
+        self.set_prior_visibility(False)
+
     def write_script(self, obj_name: str = "problem", script: str = "project_script.py"):
         """Write a python script that can be run to reproduce this project object.
 
