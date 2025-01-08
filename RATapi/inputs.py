@@ -484,19 +484,19 @@ def check_indices(problem: ProblemDefinition) -> None:
 
 
 def append_data_background(data: np.array, background: np.array) -> np.array:
-    """Add background data to contrast data.
+    """Append background data to contrast data.
 
     Parameters
     ----------
     data : np.array
-        The contrast data to which we are adding a background.
+        The contrast data to which we are appending a background.
     background : np.array
-        The background data to add to the contrast.
+        The background data to append to the contrast.
 
     Returns
     -------
     np.array
-        The contrast data with background data added as two additional columns.
+        The contrast data with background data appended as two additional columns.
 
     """
     if not np.allclose(data[:, 0], background[:, 0]):

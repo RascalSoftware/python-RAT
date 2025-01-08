@@ -258,7 +258,7 @@ class ContrastWithRatio(RATModel):
 
 
 class CustomFile(RATModel):
-    """A file containing functions to use for a custom model, function background or function resolution.
+    """A file containing functions to use for a custom model or function background.
 
     Parameters
     ----------
