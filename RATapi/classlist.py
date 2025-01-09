@@ -266,7 +266,7 @@ class ClassList(collections.UserList, Generic[T]):
 
         if importlib.util.find_spec("pydantic"):
             # Pydantic is installed, so set up a context manager that will
-            # suppress validation errors until all fields have been set.
+            # suppress custom validation errors until all fields have been set.
             from pydantic import BaseModel, ValidationError
 
             if isinstance(self.data[index], BaseModel):
@@ -318,6 +318,9 @@ class ClassList(collections.UserList, Generic[T]):
             with validation_context:
                 setattr(self.data[index], key, value)
 
+        # We have suppressed custom validation errors for pydantic objects.
+        # We now must revalidate the pydantic model outside the validation context
+        # to catch any errors that remain after setting all of the fields.
         if pydantic_object:
             self._class_handle.model_validate(self.data[index])
 
