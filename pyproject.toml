@@ -12,7 +12,7 @@ extend-exclude = ["*.ipynb"]
 
 [tool.ruff.lint]
 select = ["E", "F", "UP", "B", "SIM", "I"]
-ignore = ["SIM108"]
+ignore = ["SIM103", "SIM108"]
 
 [tool.ruff.lint.flake8-pytest-style]
 fixture-parentheses = false
