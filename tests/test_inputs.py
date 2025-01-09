@@ -647,7 +647,7 @@ class TestCheckIndices:
 
         with pytest.raises(
             IndexError,
-            match=f"Entry {len(bad_value)-1} of contrastBackgroundParams contains: {bad_value[-1][-1]}"
+            match=f"Entry {len(bad_value) - 1} of contrastBackgroundParams contains: {bad_value[-1][-1]}"
             f', which lies outside of the range of "backgroundParams"',
         ):
             check_indices(test_problem)

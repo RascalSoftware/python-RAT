@@ -445,7 +445,7 @@ def check_indices(problem: ProblemDefinition) -> None:
             if elements:
                 raise IndexError(
                     f'The problem field "{index_list[params]}" contains: {", ".join(str(i) for i in elements)}'
-                    f', which lie{"s"*(len(elements)==1)} outside of the range of "{params}"',
+                    f', which lie{"s" * (len(elements) == 1)} outside of the range of "{params}"',
                 )
 
     # backgroundParams has a different structure, so is handled separately:
@@ -478,8 +478,8 @@ def check_indices(problem: ProblemDefinition) -> None:
             elements = [element for element in background_data[1:] if not 0 < element <= len(problem.backgroundParams)]
             if elements:
                 raise IndexError(
-                    f'Entry {i} of contrastBackgroundParams contains: {", ".join(str(i) for i in elements)}'
-                    f', which lie{"s"*(len(elements)==1)} outside of the range of "backgroundParams"',
+                    f"Entry {i} of contrastBackgroundParams contains: {', '.join(str(i) for i in elements)}"
+                    f', which lie{"s" * (len(elements) == 1)} outside of the range of "backgroundParams"',
                 )
 
 
