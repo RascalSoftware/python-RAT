@@ -274,7 +274,7 @@ class Data(RATModel, arbitrary_types_allowed=True):
     def __str__(self):
         table = prettytable.PrettyTable()
         table.field_names = [key.replace("_", " ") for key in self.__dict__]
-        array_entry = f"{'Data array: ['+' x '.join(str(i) for i in self.data.shape) if self.data.size > 0 else '['}]"
+        array_entry = f"{'Data array: [' + ' x '.join(str(i) for i in self.data.shape) if self.data.size > 0 else '['}]"
         table.add_row([self.name, array_entry, self.data_range, self.simulation_range])
         return table.get_string()
 

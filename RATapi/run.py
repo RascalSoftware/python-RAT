@@ -120,7 +120,7 @@ def run(project, controls):
     end = time.time()
 
     if display_on:
-        print(f"Elapsed time is {end-start:.3f} seconds\n")
+        print(f"Elapsed time is {end - start:.3f} seconds\n")
 
     results = make_results(controls.procedure, output_results, bayes_results)
 

@@ -299,7 +299,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
         if not all(isinstance(element, model) for element in value):
             raise ValueError(
                 f'"The layers attribute contains {other_model}s, '
-                f'but the absorption parameter is {info.data["absorption"]}. '
+                f"but the absorption parameter is {info.data['absorption']}. "
                 f'The attribute should be a ClassList of {model_name} instead."'
             )
 
@@ -568,7 +568,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
                 removed_params = [
                     param for param in self._protected_parameters[class_list] if param not in protected_parameters
                 ]
-                raise ValueError(f'Can\'t delete the protected parameters: {", ".join(str(i) for i in removed_params)}')
+                raise ValueError(f"Can't delete the protected parameters: {', '.join(str(i) for i in removed_params)}")
         self._protected_parameters = self.get_all_protected_parameters()
         return self
 
@@ -576,7 +576,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
         output = ""
         for key, value in self.__dict__.items():
             if value:
-                output += f'{key.replace("_", " ").title() + ": " :-<100}\n\n'
+                output += f"{key.replace('_', ' ').title() + ': ':-<100}\n\n"
                 try:
                     output += value.value + "\n\n"  # For enums
                 except AttributeError:

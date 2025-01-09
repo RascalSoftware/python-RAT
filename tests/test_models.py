@@ -70,7 +70,7 @@ class TestModels:
         """When initialising a model with the wrong type for the "name" field, we should raise a ValidationError."""
         with pytest.raises(
             pydantic.ValidationError,
-            match=f"1 validation error for {model.__name__}\nname\n  " f"Input should be a valid string",
+            match=f"1 validation error for {model.__name__}\nname\n  Input should be a valid string",
         ):
             model(name=1, **model_params)
 
@@ -79,7 +79,7 @@ class TestModels:
         test_model = model(**model_params)
         with pytest.raises(
             pydantic.ValidationError,
-            match=f"1 validation error for {model.__name__}\nname\n  " f"Input should be a valid string",
+            match=f"1 validation error for {model.__name__}\nname\n  Input should be a valid string",
         ):
             test_model.name = 1
 
@@ -87,7 +87,7 @@ class TestModels:
         """When initialising a model with a zero length name, we should raise a ValidationError."""
         with pytest.raises(
             pydantic.ValidationError,
-            match=f"1 validation error for {model.__name__}\nname\n  " f"String should have at least 1 character",
+            match=f"1 validation error for {model.__name__}\nname\n  String should have at least 1 character",
         ):
             model(name="", **model_params)
 
@@ -95,7 +95,7 @@ class TestModels:
         """When initialising a model with unspecified fields, we should raise a ValidationError."""
         with pytest.raises(
             pydantic.ValidationError,
-            match=f"1 validation error for {model.__name__}\nnew_field\n  " f"Extra inputs are not permitted",
+            match=f"1 validation error for {model.__name__}\nnew_field\n  Extra inputs are not permitted",
         ):
             model(new_field=1, **model_params)
 
@@ -134,7 +134,7 @@ def test_data_too_few_dimensions(input_data: np.ndarray[float]) -> None:
     """
     with pytest.raises(
         pydantic.ValidationError,
-        match='1 validation error for Data\ndata\n  Value error, "data" must ' "have at least two dimensions",
+        match='1 validation error for Data\ndata\n  Value error, "data" must have at least two dimensions',
     ):
         RATapi.models.Data(data=input_data)
 
@@ -153,7 +153,7 @@ def test_data_too_few_values(input_data: np.ndarray[float]) -> None:
     """
     with pytest.raises(
         pydantic.ValidationError,
-        match='1 validation error for Data\ndata\n  Value error, "data" must ' "have at least three columns",
+        match='1 validation error for Data\ndata\n  Value error, "data" must have at least three columns',
     ):
         RATapi.models.Data(data=input_data)
 
@@ -184,9 +184,9 @@ def test_two_values_in_data_range(input_range: list[float]) -> None:
     """
     with pytest.raises(
         pydantic.ValidationError,
-        match=f'1 validation error for Data\ndata_range\n  List should have '
-        f'at {"least" if len(input_range) < 2 else "most"} 2 items '
-        f'after validation, not {len(input_range)}',
+        match=f"1 validation error for Data\ndata_range\n  List should have "
+        f"at {'least' if len(input_range) < 2 else 'most'} 2 items "
+        f"after validation, not {len(input_range)}",
     ):
         RATapi.models.Data(data_range=input_range)
 
@@ -205,9 +205,9 @@ def test_two_values_in_simulation_range(input_range: list[float]) -> None:
     """
     with pytest.raises(
         pydantic.ValidationError,
-        match=f'1 validation error for Data\nsimulation_range\n  List should '
-        f'have at {"least" if len(input_range) < 2 else "most"} 2 items '
-        f'after validation, not {len(input_range)}',
+        match=f"1 validation error for Data\nsimulation_range\n  List should "
+        f"have at {'least' if len(input_range) < 2 else 'most'} 2 items "
+        f"after validation, not {len(input_range)}",
     ):
         RATapi.models.Data(simulation_range=input_range)
 
