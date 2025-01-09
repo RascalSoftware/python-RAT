@@ -4,6 +4,7 @@ class.
 
 import collections
 import contextlib
+import importlib
 import warnings
 from collections.abc import Sequence
 from typing import Any, Generic, TypeVar, Union
@@ -261,9 +262,67 @@ class ClassList(collections.UserList, Generic[T]):
     def set_fields(self, index: int, **kwargs) -> None:
         """Assign the values of an existing object's attributes using keyword arguments."""
         self._validate_name_field(kwargs)
-        class_handle = self.data[index].__class__
-        new_fields = {**self.data[index].__dict__, **kwargs}
-        self.data[index] = class_handle(**new_fields)
+        pydantic_object = False
+
+        if importlib.util.find_spec("pydantic"):
+            # Pydantic is installed, so set up a context manager that will
+            # suppress custom validation errors until all fields have been set.
+            from pydantic import BaseModel, ValidationError
+
+            if isinstance(self.data[index], BaseModel):
+                pydantic_object = True
+
+            # Define a custom context manager
+            class SuppressCustomValidation(contextlib.AbstractContextManager):
+                """Context manager to suppress "value_error" based validation errors in pydantic.
+
+                This validation context is necessary because errors can occur whilst individual
+                model values are set, which are resolved when all of the input values are set.
+
+                After the exception is suppressed, execution proceeds with the next
+                statement following the with statement.
+
+                     with SuppressCustomValidation():
+                         setattr(self.data[index], key, value)
+                     # Execution still resumes here if the attribute cannot be set
+                """
+
+                def __init__(self):
+                    pass
+
+                def __enter__(self):
+                    pass
+
+                def __exit__(self, exctype, excinst, exctb):
+                    # If the return of __exit__ is True or truthy, the exception is suppressed.
+                    # Otherwise, the default behaviour of raising the exception applies.
+                    #
+                    # To suppress errors arising from field and model validators in pydantic,
+                    # we will examine the validation errors raised. If all of the errors
+                    # listed in the exception have the type "value_error", this indicates
+                    # they have arisen from field or model validators and will be suppressed.
+                    # Otherwise, they will be raised.
+                    if exctype is None:
+                        return
+                    if issubclass(exctype, ValidationError) and all(
+                        [error["type"] == "value_error" for error in excinst.errors()]
+                    ):
+                        return True
+                    return False
+
+            validation_context = SuppressCustomValidation()
+        else:
+            validation_context = contextlib.nullcontext()
+
+        for key, value in kwargs.items():
+            with validation_context:
+                setattr(self.data[index], key, value)
+
+        # We have suppressed custom validation errors for pydantic objects.
+        # We now must revalidate the pydantic model outside the validation context
+        # to catch any errors that remain after setting all of the fields.
+        if pydantic_object:
+            self._class_handle.model_validate(self.data[index])
 
     def get_names(self) -> list[str]:
         """Return a list of the values of the name_field attribute of each class object in the list.

@@ -1005,3 +1005,25 @@ class TestPydantic:
         for submodel, exp_dict in zip(model.submodels, submodels_list):
             for key, value in exp_dict.items():
                 assert getattr(submodel, key) == value
+
+    def test_set_pydantic_fields(self):
+        """Test that intermediate validation errors for pydantic models are suppressed when using "set_fields"."""
+        from pydantic import BaseModel, model_validator
+
+        class MinMaxModel(BaseModel):
+            min: float
+            value: float
+            max: float
+
+            @model_validator(mode="after")
+            def check_value_in_range(self) -> "MinMaxModel":
+                if self.value < self.min or self.value > self.max:
+                    raise ValueError(
+                        f"value {self.value} is not within the defined range: {self.min} <= value <= {self.max}"
+                    )
+                return self
+
+        model_list = ClassList([MinMaxModel(min=1, value=2, max=5)])
+        model_list.set_fields(0, min=3, value=4)
+
+        assert model_list == ClassList([MinMaxModel(min=3.0, value=4.0, max=5.0)])
