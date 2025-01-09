@@ -132,9 +132,9 @@ class TestCalculate:
             UserWarning,
             match=f'\nThe current controls procedure is "calculate", but the property'
             f' "{wrong_property}" applies instead to the'
-            f' {", ".join(incorrect_procedures)} procedure.\n\n'
+            f" {', '.join(incorrect_procedures)} procedure.\n\n"
             f' The fields for the "calculate" controls procedure are:\n'
-            f'    {", ".join(fields["calculate"])}\n',
+            f"    {', '.join(fields['calculate'])}\n",
         ):
             Controls(procedure=Procedures.Calculate, **{wrong_property: value})
 
@@ -171,9 +171,9 @@ class TestCalculate:
             UserWarning,
             match=f'\nThe current controls procedure is "calculate", but the property'
             f' "{wrong_property}" applies instead to the'
-            f' {", ".join(incorrect_procedures)} procedure.\n\n'
+            f" {', '.join(incorrect_procedures)} procedure.\n\n"
             f' The fields for the "calculate" controls procedure are:\n'
-            f'    {", ".join(fields["calculate"])}\n',
+            f"    {', '.join(fields['calculate'])}\n",
         ):
             setattr(self.calculate, wrong_property, value)
 
@@ -301,9 +301,9 @@ class TestSimplex:
             UserWarning,
             match=f'\nThe current controls procedure is "simplex", but the property'
             f' "{wrong_property}" applies instead to the'
-            f' {", ".join(incorrect_procedures)} procedure.\n\n'
+            f" {', '.join(incorrect_procedures)} procedure.\n\n"
             f' The fields for the "simplex" controls procedure are:\n'
-            f'    {", ".join(fields["simplex"])}\n',
+            f"    {', '.join(fields['simplex'])}\n",
         ):
             Controls(procedure=Procedures.Simplex, **{wrong_property: value})
 
@@ -334,9 +334,9 @@ class TestSimplex:
             UserWarning,
             match=f'\nThe current controls procedure is "simplex", but the property'
             f' "{wrong_property}" applies instead to the'
-            f' {", ".join(incorrect_procedures)} procedure.\n\n'
+            f" {', '.join(incorrect_procedures)} procedure.\n\n"
             f' The fields for the "simplex" controls procedure are:\n'
-            f'    {", ".join(fields["simplex"])}\n',
+            f"    {', '.join(fields['simplex'])}\n",
         ):
             setattr(self.simplex, wrong_property, value)
 
@@ -458,9 +458,9 @@ class TestDE:
             UserWarning,
             match=f'\nThe current controls procedure is "de", but the property'
             f' "{wrong_property}" applies instead to the'
-            f' {", ".join(incorrect_procedures)} procedure.\n\n'
+            f" {', '.join(incorrect_procedures)} procedure.\n\n"
             f' The fields for the "de" controls procedure are:\n'
-            f'    {", ".join(fields["de"])}\n',
+            f"    {', '.join(fields['de'])}\n",
         ):
             Controls(procedure=Procedures.DE, **{wrong_property: value})
 
@@ -489,9 +489,9 @@ class TestDE:
             UserWarning,
             match=f'\nThe current controls procedure is "de", but the property'
             f' "{wrong_property}" applies instead to the'
-            f' {", ".join(incorrect_procedures)} procedure.\n\n'
+            f" {', '.join(incorrect_procedures)} procedure.\n\n"
             f' The fields for the "de" controls procedure are:\n'
-            f'    {", ".join(fields["de"])}\n',
+            f"    {', '.join(fields['de'])}\n",
         ):
             setattr(self.de, wrong_property, value)
 
@@ -627,9 +627,9 @@ class TestNS:
             UserWarning,
             match=f'\nThe current controls procedure is "ns", but the property'
             f' "{wrong_property}" applies instead to the'
-            f' {", ".join(incorrect_procedures)} procedure.\n\n'
+            f" {', '.join(incorrect_procedures)} procedure.\n\n"
             f' The fields for the "ns" controls procedure are:\n'
-            f'    {", ".join(fields["ns"])}\n',
+            f"    {', '.join(fields['ns'])}\n",
         ):
             Controls(procedure=Procedures.NS, **{wrong_property: value})
 
@@ -662,9 +662,9 @@ class TestNS:
             UserWarning,
             match=f'\nThe current controls procedure is "ns", but the property'
             f' "{wrong_property}" applies instead to the'
-            f' {", ".join(incorrect_procedures)} procedure.\n\n'
+            f" {', '.join(incorrect_procedures)} procedure.\n\n"
             f' The fields for the "ns" controls procedure are:\n'
-            f'    {", ".join(fields["ns"])}\n',
+            f"    {', '.join(fields['ns'])}\n",
         ):
             setattr(self.ns, wrong_property, value)
 
@@ -797,9 +797,9 @@ class TestDream:
             UserWarning,
             match=f'\nThe current controls procedure is "dream", but the property'
             f' "{wrong_property}" applies instead to the'
-            f' {", ".join(incorrect_procedures)} procedure.\n\n'
+            f" {', '.join(incorrect_procedures)} procedure.\n\n"
             f' The fields for the "dream" controls procedure are:\n'
-            f'    {", ".join(fields["dream"])}\n',
+            f"    {', '.join(fields['dream'])}\n",
         ):
             Controls(procedure=Procedures.DREAM, **{wrong_property: value})
 
@@ -830,9 +830,9 @@ class TestDream:
             UserWarning,
             match=f'\nThe current controls procedure is "dream", but the property'
             f' "{wrong_property}" applies instead to the'
-            f' {", ".join(incorrect_procedures)} procedure.\n\n'
+            f" {', '.join(incorrect_procedures)} procedure.\n\n"
             f' The fields for the "dream" controls procedure are:\n'
-            f'    {", ".join(fields["dream"])}\n',
+            f"    {', '.join(fields['dream'])}\n",
         ):
             setattr(self.dream, wrong_property, value)
 

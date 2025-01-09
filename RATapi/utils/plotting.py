@@ -138,7 +138,7 @@ def plot_ref_sld_helper(
 
         # Plot the slds on plot (1,2)
         for j in range(len(sld)):
-            label = name if len(sld) == 1 else f"{name} Domain {j+1}"
+            label = name if len(sld) == 1 else f"{name} Domain {j + 1}"
             sld_plot.plot(sld[j][:, 0], sld[j][:, 1], label=label, linewidth=1)
 
         # Plot confidence intervals if required

@@ -92,8 +92,8 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid"):
             procedure = input_dict.get("procedure", Procedures.Calculate)
             custom_error_msgs = {
                 "extra_forbidden": f'Extra inputs are not permitted. The fields for the "{procedure}"'
-                f' controls procedure are:\n    '
-                f'{", ".join(fields.get("procedure", []))}\n',
+                f" controls procedure are:\n    "
+                f"{', '.join(fields.get('procedure', []))}\n",
             }
             custom_error_list = custom_pydantic_validation_error(exc.errors(), custom_error_msgs)
             raise ValidationError.from_exception_data(exc.title, custom_error_list, hide_input=True) from None
@@ -116,7 +116,7 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid"):
                     f'\nThe current controls procedure is "{new_procedure}", but the property'
                     f' "{field}" applies instead to the {", ".join(incorrect_procedures)} procedure.\n\n'
                     f' The fields for the "{new_procedure}" controls procedure are:\n'
-                    f'    {", ".join(fields[new_procedure])}\n',
+                    f"    {', '.join(fields[new_procedure])}\n",
                     stacklevel=2,
                 )
 

@@ -403,7 +403,7 @@ def test_assign_models(test_project, field: str, model_params: dict) -> None:
     input_model = model_classes[field]
     with pytest.raises(
         pydantic.ValidationError,
-        match=f"1 validation error for Project\n{field}\n  Input should be " f"an instance of ClassList",
+        match=f"1 validation error for Project\n{field}\n  Input should be an instance of ClassList",
     ):
         setattr(test_project, field, input_model(**model_params))
 
@@ -865,7 +865,7 @@ def test_allowed_contrast_models(
     """
     with pytest.raises(
         pydantic.ValidationError,
-        match=f'1 validation error for Project\n  Value error, The values: '
+        match=f"1 validation error for Project\n  Value error, The values: "
         f'"{", ".join(test_contrast.model)}" in the "model" field of '
         f'"contrasts" must be defined in "{field_name}".',
     ):
@@ -1036,7 +1036,7 @@ def test_check_allowed_background_resolution_values_on_data_list(test_value: str
     )
     with pytest.raises(
         ValueError,
-        match=f'The value "{test_value}" in the "value_1" field of "backgrounds" must be ' f'defined in "data".',
+        match=f'The value "{test_value}" in the "value_1" field of "backgrounds" must be defined in "data".',
     ):
         project.check_allowed_background_resolution_values(
             "backgrounds", ["value_1"], ["Background Param 1"], ["Simulation"]

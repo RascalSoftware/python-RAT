@@ -17,7 +17,7 @@ controls.calcSldDuringFit = True
 start = time.time()
 project, results = RAT.run(project, controls)
 end = time.time()
-print(f"Python time is: {end-start}s\n")
+print(f"Python time is: {end - start}s\n")
 
 RAT.plotting.plot_ref_sld(project, results)
 
@@ -27,7 +27,7 @@ project.custom_files.set_fields(0, filename="custom_bilayer.m", language="matlab
 start = time.time()
 project, results = RAT.run(project, controls)
 end = time.time()
-print(f"Matlab time is: {end-start}s\n")
+print(f"Matlab time is: {end - start}s\n")
 
 RAT.plotting.plot_ref_sld(project, results)
 
@@ -37,6 +37,6 @@ project.custom_files.set_fields(0, filename="custom_bilayer.dll", language="cpp"
 start = time.time()
 project, results = RAT.run(project, controls)
 end = time.time()
-print(f"C++ time is: {end-start}s\n")
+print(f"C++ time is: {end - start}s\n")
 
 RAT.plotting.plot_ref_sld(project, results)

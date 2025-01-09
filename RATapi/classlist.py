@@ -68,7 +68,7 @@ class ClassList(collections.UserList, Generic[T]):
                     [
                         [index]
                         + list(
-                            f"{'Data array: ['+' x '.join(str(i) for i in v.shape) if v.size > 0 else '['}]"
+                            f"{'Data array: [' + ' x '.join(str(i) for i in v.shape) if v.size > 0 else '['}]"
                             if isinstance(v, np.ndarray)
                             else "\n".join(element for element in v)
                             if k == "model"
@@ -364,7 +364,7 @@ class ClassList(collections.UserList, Generic[T]):
                     if new_indices:
                         new_list = ", ".join(str(i) for i in new_indices[:-1])
                         new_string = (
-                            f" item{f's {new_list} and ' if new_list else ' '}" f"{new_indices[-1]} of the input list"
+                            f" item{f's {new_list} and ' if new_list else ' '}{new_indices[-1]} of the input list"
                         )
                     error_list.append(
                         f"    '{name}' is shared between{existing_string}"
