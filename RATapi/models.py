@@ -59,6 +59,7 @@ class Signal(RATModel):
 
     def __setattr__(self, name, value):
         if name == "type":
+            warnings.warn(f"Changing the type of {self.name} clears its source and value fields.", stacklevel=2)
             for attr in ["source", "value_1", "value_2", "value_3", "value_4", "value_5"]:
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore")

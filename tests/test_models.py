@@ -336,7 +336,7 @@ def test_contrast_bad_ratio():
 
 @pytest.mark.parametrize("model", [RATapi.models.Background, RATapi.models.Resolution])
 def test_type_change_clear(model):
-    """If the type of a background or resolution is changed, it should wipe the other fields."""
+    """If the type of a background or resolution is changed, it should wipe the other fields and warn the user."""
 
     model_instance = model(
         name="Test",
@@ -349,6 +349,7 @@ def test_type_change_clear(model):
         value_5="val5",
     )
 
-    model_instance.type = "data"
+    with pytest.warns(UserWarning, match="Changing the type of Test clears its source and value fields."):
+        model_instance.type = "data"
     for attr in ["source", "value_1", "value_2", "value_3", "value_4", "value_5"]:
         assert getattr(model_instance, attr) == ""
