@@ -1,5 +1,6 @@
 """Plots using the matplotlib library"""
 
+import copy
 from functools import partial, wraps
 from math import ceil, floor, sqrt
 from statistics import stdev
@@ -241,10 +242,11 @@ def plot_ref_sld(
     """
     data = PlotEventData()
 
+    # We need to take a copy of results and SLD in case the data to plot is modified later
     data.modelType = project.model
-    data.reflectivity = results.reflectivity
+    data.reflectivity = copy.deepcopy(results.reflectivity)
     data.shiftedData = results.shiftedData
-    data.sldProfiles = results.sldProfiles
+    data.sldProfiles = copy.deepcopy(results.sldProfiles)
     data.resampledLayers = results.resampledLayers
     data.dataPresent = RATapi.inputs.make_data_present(project)
     data.subRoughs = results.contrastParams.subRoughs
@@ -275,6 +277,12 @@ def plot_ref_sld(
                     for sld in results.predictionIntervals.sld
                 ],
             }
+            # For a shaded plot, use the mean values from predictionIntervals
+            for reflectivity, mean_reflectivity in zip(data.reflectivity, results.predictionIntervals.reflectivity):
+                reflectivity[:, 1] = mean_reflectivity[2]
+            for sldProfile, mean_sld_profile in zip(data.sldProfiles, results.predictionIntervals.sld):
+                for sld, mean_sld in zip(sldProfile, mean_sld_profile):
+                    sld[:, 1] = mean_sld[2]
         else:
             raise ValueError(
                 "Shaded confidence intervals are only available for the results of Bayesian analysis (NS or DREAM)"
