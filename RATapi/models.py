@@ -72,6 +72,16 @@ class Signal(RATModel):
 
         super().__setattr__(name, value)
 
+    @property
+    def display_fields(self) -> dict:
+        visible_fields = ["name", "type", "source"]
+        if self.type != TypeOptions.Constant:
+            visible_fields.append("value_1")
+        if self.type == TypeOptions.Function:
+            visible_fields.extend(["value_2", "value_3", "value_4", "value_5"])
+
+        return {f: getattr(self, f) for f in visible_fields}
+
 
 class Background(Signal):
     """A background signal.

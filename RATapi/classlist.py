@@ -82,7 +82,9 @@ class ClassList(collections.UserList, Generic[T]):
                 for field in table_fields[1:]:
                     value = getattr(model, field, "")
                     if isinstance(value, np.ndarray):
-                        value = f"{'Data array: ['+' x '.join(str(i) for i in value.shape) if value.size > 0 else '['}]"
+                        value = (
+                            f"{'Data array: [' + ' x '.join(str(i) for i in value.shape) if value.size > 0 else '['}]"
+                        )
                     elif field == "model":
                         value = "\n".join(str(element) for element in value)
                     else:
