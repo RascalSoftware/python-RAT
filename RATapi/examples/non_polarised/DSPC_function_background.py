@@ -5,7 +5,7 @@ import numpy as np
 import RATapi as RAT
 
 
-def DSPC_standard_layers():
+def DSPC_function_background():
     """Standard Layers fit of a DSPC floating bilayer"""
     problem = RAT.Project(name="original_dspc_bilayer", model="standard layers", geometry="substrate/liquid")
 
@@ -130,15 +130,9 @@ def DSPC_standard_layers():
     problem.scalefactors.append(name="Scalefactor 2", min=0.05, value=0.15, max=0.2, fit=False)
 
     # Now deal with the backgrounds
+    # SMW has a constant background
     del problem.backgrounds[0]
     del problem.background_parameters[0]
-    problem.background_parameters.append(
-        name="Background parameter D2O",
-        min=5.0e-10,
-        value=2.23e-06,
-        max=7.0e-06,
-        fit=True,
-    )
     problem.background_parameters.append(
         name="Background parameter SMW",
         min=1.0e-10,
@@ -146,9 +140,28 @@ def DSPC_standard_layers():
         max=4.99e-06,
         fit=True,
     )
-
-    problem.backgrounds.append(name="D2O Background", type="constant", source="Background parameter D2O")
     problem.backgrounds.append(name="SMW Background", type="constant", source="Background parameter SMW")
+
+    # FIXME: replace this with a Python custom file when Python backgrounds are added!
+    problem.custom_files.append(
+        name="D2O Background Function",
+        filename="backgroundFunction.m",
+        language="matlab",
+        path=pathlib.Path(__file__).parent.resolve(),
+    )
+
+    problem.background_parameters.append(name="Fn Ao", min=5e-7, value=8e-6, max=5e-5)
+    problem.background_parameters.append(name="Fn k", min=40, value=70, max=90)
+    problem.background_parameters.append(name="Fn Const", min=1e-7, value=8e-6, max=1e-5)
+
+    problem.backgrounds.append(
+        name="D2O Function Background",
+        type="function",
+        source="D2O Background Function",
+        value_1="Fn Ao",
+        value_2="Fn k",
+        value_3="Fn Const",
+    )
 
     # Now add the data
     data_path = pathlib.Path(__file__).parents[1] / "data"
@@ -176,7 +189,7 @@ def DSPC_standard_layers():
         name="D2O",
         bulk_in="Silicon",
         bulk_out="D2O",
-        background="D2O Background",
+        background="D2O Function Background",
         resolution="Resolution 1",
         scalefactor="Scalefactor 1",
         data="dspc_bil_D2O",
@@ -201,5 +214,5 @@ def DSPC_standard_layers():
 
 
 if __name__ == "__main__":
-    problem, results = DSPC_standard_layers()
+    problem, results = DSPC_function_background()
     RAT.plotting.plot_ref_sld(problem, results, True)

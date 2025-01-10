@@ -8,7 +8,7 @@ import pytest
 
 import RATapi
 import RATapi.wrappers
-from RATapi.inputs import check_indices, make_controls, make_input, make_problem
+from RATapi.inputs import FileHandles, check_indices, make_controls, make_input, make_problem
 from RATapi.rat_core import Checks, Control, Limits, Priors, ProblemDefinition
 from RATapi.utils.enums import (
     BackgroundActions,
@@ -133,6 +133,7 @@ def standard_layers_problem():
     problem.contrastScalefactors = [1]
     problem.contrastBackgroundParams = [[1]]
     problem.contrastBackgroundActions = [BackgroundActions.Add]
+    problem.contrastBackgroundTypes = ["constant"]
     problem.contrastResolutionParams = [1]
     problem.contrastCustomFiles = [float("NaN")]
     problem.contrastDomainRatios = [0]
@@ -155,6 +156,7 @@ def standard_layers_problem():
         [6.2e-06, 6.35e-06],
         [0.01, 0.05],
     ]
+    problem.customFiles = FileHandles([])
 
     return problem
 
@@ -181,6 +183,7 @@ def domains_problem():
     problem.contrastScalefactors = [1]
     problem.contrastBackgroundParams = [[1]]
     problem.contrastBackgroundActions = [BackgroundActions.Add]
+    problem.contrastBackgroundTypes = ["constant"]
     problem.contrastResolutionParams = [1]
     problem.contrastCustomFiles = [float("NaN")]
     problem.contrastDomainRatios = [1]
@@ -204,6 +207,7 @@ def domains_problem():
         [0.01, 0.05],
         [0.4, 0.6],
     ]
+    problem.customFiles = FileHandles([])
 
     return problem
 
@@ -230,6 +234,7 @@ def custom_xy_problem():
     problem.contrastScalefactors = [1]
     problem.contrastBackgroundParams = [[1]]
     problem.contrastBackgroundActions = [BackgroundActions.Add]
+    problem.contrastBackgroundTypes = ["constant"]
     problem.contrastResolutionParams = [1]
     problem.contrastCustomFiles = [1]
     problem.contrastDomainRatios = [0]
@@ -252,6 +257,9 @@ def custom_xy_problem():
         [6.2e-06, 6.35e-06],
         [0.01, 0.05],
     ]
+    problem.customFiles = FileHandles(
+        [RATapi.models.CustomFile(name="Test Custom File", filename="cpp_test.dll", language="cpp")]
+    )
 
     return problem
 
@@ -552,80 +560,124 @@ def test_make_problem(test_project, test_problem, test_check, request) -> None:
     check_problem_equal(problem, test_problem)
 
 
-@pytest.mark.parametrize(
-    "test_problem",
-    [
-        "standard_layers_problem",
-        "custom_xy_problem",
-        "domains_problem",
-    ],
-)
-def test_check_indices(test_problem, request) -> None:
-    """The check_indices routine should not raise errors for a properly defined ProblemDefinition object."""
-    test_problem = request.getfixturevalue(test_problem)
+@pytest.mark.parametrize("test_problem", ["standard_layers_problem", "custom_xy_problem", "domains_problem"])
+class TestCheckIndices:
+    """Tests for check_indices over a set of three test problems."""
 
-    check_indices(test_problem)
+    def test_check_indices(self, test_problem, request) -> None:
+        """The check_indices routine should not raise errors for a properly defined ProblemDefinition object."""
+        test_problem = request.getfixturevalue(test_problem)
 
-
-@pytest.mark.parametrize(
-    ["test_problem", "index_list", "bad_value"],
-    [
-        ("standard_layers_problem", "contrastBulkIns", [0.0]),
-        ("standard_layers_problem", "contrastBulkIns", [2.0]),
-        ("standard_layers_problem", "contrastBulkOuts", [0.0]),
-        ("standard_layers_problem", "contrastBulkOuts", [2.0]),
-        ("standard_layers_problem", "contrastScalefactors", [0.0]),
-        ("standard_layers_problem", "contrastScalefactors", [2.0]),
-        # ("standard_layers_problem", "contrastBackgroundParams", [0.0]),
-        # ("standard_layers_problem", "contrastBackgroundParams", [2.0]),
-        ("standard_layers_problem", "contrastResolutionParams", [0.0]),
-        ("standard_layers_problem", "contrastResolutionParams", [2.0]),
-        ("custom_xy_problem", "contrastBulkIns", [0.0]),
-        ("custom_xy_problem", "contrastBulkIns", [2.0]),
-        ("custom_xy_problem", "contrastBulkOuts", [0.0]),
-        ("custom_xy_problem", "contrastBulkOuts", [2.0]),
-        ("custom_xy_problem", "contrastScalefactors", [0.0]),
-        ("custom_xy_problem", "contrastScalefactors", [2.0]),
-        # ("custom_xy_problem", "contrastBackgroundParams", [0.0]),
-        # ("custom_xy_problem", "contrastBackgroundParams", [2.0]),
-        ("custom_xy_problem", "contrastResolutionParams", [0.0]),
-        ("custom_xy_problem", "contrastResolutionParams", [2.0]),
-        ("domains_problem", "contrastBulkIns", [0.0]),
-        ("domains_problem", "contrastBulkIns", [2.0]),
-        ("domains_problem", "contrastBulkOuts", [0.0]),
-        ("domains_problem", "contrastBulkOuts", [2.0]),
-        ("domains_problem", "contrastScalefactors", [0.0]),
-        ("domains_problem", "contrastScalefactors", [2.0]),
-        ("domains_problem", "contrastDomainRatios", [0.0]),
-        ("domains_problem", "contrastDomainRatios", [2.0]),
-        # ("domains_problem", "contrastBackgroundParams", [0.0]),
-        # ("domains_problem", "contrastBackgroundParams", [2.0]),
-        ("domains_problem", "contrastResolutionParams", [0.0]),
-        ("domains_problem", "contrastResolutionParams", [2.0]),
-    ],
-)
-def test_check_indices_error(test_problem, index_list, bad_value, request) -> None:
-    """The check_indices routine should raise an IndexError if a contrast list contains an index that is out of the
-    range of the corresponding parameter list in a ProblemDefinition object.
-    """
-    param_list = {
-        "contrastBulkIns": "bulkIns",
-        "contrastBulkOuts": "bulkOuts",
-        "contrastScalefactors": "scalefactors",
-        "contrastDomainRatios": "domainRatios",
-        "contrastBackgroundParams": "backgroundParams",
-        "contrastResolutionParams": "resolutionParams",
-    }
-
-    test_problem = request.getfixturevalue(test_problem)
-    setattr(test_problem, index_list, bad_value)
-
-    with pytest.raises(
-        IndexError,
-        match=f'The problem field "{index_list}" contains: {bad_value[0]}, which lie '
-        f'outside of the range of "{param_list[index_list]}"',
-    ):
         check_indices(test_problem)
+
+    @pytest.mark.parametrize(
+        "index_list",
+        [
+            "contrastBulkIns",
+            "contrastBulkOuts",
+            "contrastScalefactors",
+            "contrastDomainRatios",
+            "contrastResolutionParams",
+        ],
+    )
+    @pytest.mark.parametrize("bad_value", ([0.0], [2.0]))
+    def test_check_indices_error(self, test_problem, index_list, bad_value, request) -> None:
+        """The check_indices routine should raise an IndexError if a contrast list contains an index that is out of the
+        range of the corresponding parameter list in a ProblemDefinition object.
+        """
+        param_list = {
+            "contrastBulkIns": "bulkIns",
+            "contrastBulkOuts": "bulkOuts",
+            "contrastScalefactors": "scalefactors",
+            "contrastDomainRatios": "domainRatios",
+            "contrastResolutionParams": "resolutionParams",
+        }
+        if (test_problem != "domains_problem") and (index_list == "contrastDomainRatios"):
+            # we expect this to not raise an error for non-domains problems as domainRatios is empty
+            pytest.xfail()
+
+        test_problem = request.getfixturevalue(test_problem)
+        setattr(test_problem, index_list, bad_value)
+
+        with pytest.raises(
+            IndexError,
+            match=f'The problem field "{index_list}" contains: {bad_value[0]}, which lies '
+            f'outside of the range of "{param_list[index_list]}"',
+        ):
+            check_indices(test_problem)
+
+    @pytest.mark.parametrize("background_type", ["constant", "data", "function"])
+    @pytest.mark.parametrize("bad_value", ([[0.0]], [[2.0]]))
+    def test_background_params_source_indices(self, test_problem, background_type, bad_value, request):
+        """check_indices should raise an IndexError for bad sources in the nested list contrastBackgroundParams."""
+        test_problem = request.getfixturevalue(test_problem)
+        test_problem.contrastBackgroundParams = bad_value
+        test_problem.contrastBackgroundTypes = [background_type]
+
+        source_param_lists = {
+            "constant": "backgroundParams",
+            "data": "data",
+            "function": "customFiles",
+        }
+
+        with pytest.raises(
+            IndexError,
+            match=f'Entry 0 of contrastBackgroundParams has type "{background_type}" '
+            f"and source index {bad_value[0][0]}, "
+            f'which is outside the range of "{source_param_lists[background_type]}".',
+        ):
+            check_indices(test_problem)
+
+    @pytest.mark.parametrize(
+        "bad_value",
+        (
+            [[1.0, 0.0]],
+            [[1.0, 2.0]],
+            [[1.0, 1.0, 2.0]],
+            [[1.0], [1.0, 0.0]],
+        ),
+    )
+    def test_background_params_value_indices(self, test_problem, bad_value, request):
+        """check_indices should raise an IndexError for bad values in the nested list contrastBackgroundParams."""
+        test_problem = request.getfixturevalue(test_problem)
+        test_problem.contrastBackgroundParams = bad_value
+
+        if len(bad_value) > 1:
+            test_problem.contrastBackgroundTypes.append("constant")
+
+        with pytest.raises(
+            IndexError,
+            match=f"Entry {len(bad_value) - 1} of contrastBackgroundParams contains: {bad_value[-1][-1]}"
+            f', which lies outside of the range of "backgroundParams"',
+        ):
+            check_indices(test_problem)
+
+
+def test_append_data_background():
+    """Test that background data is correctly added to contrast data."""
+    data = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    background = np.array([[1, 10, 11], [4, 12, 13], [7, 14, 15]])
+
+    result = RATapi.inputs.append_data_background(data, background)
+    np.testing.assert_allclose(result, np.array([[1, 2, 3, 0, 10, 11], [4, 5, 6, 0, 12, 13], [7, 8, 9, 0, 14, 15]]))
+
+
+def test_append_data_background_res():
+    """Test that background data is correctly added to contrast data when a resolution is in the data."""
+    data = np.array([[1, 2, 3, 4], [4, 5, 6, 6], [7, 8, 9, 72]])
+    background = np.array([[1, 10, 11], [4, 12, 13], [7, 14, 15]])
+
+    result = RATapi.inputs.append_data_background(data, background)
+    np.testing.assert_allclose(result, np.array([[1, 2, 3, 4, 10, 11], [4, 5, 6, 6, 12, 13], [7, 8, 9, 72, 14, 15]]))
+
+
+def test_append_data_background_error():
+    """Test that append_data_background raises an error if the q-values are not equal."""
+    data = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    background = np.array([[56, 10, 11], [41, 12, 13], [7, 14, 15]])
+
+    with pytest.raises(ValueError, match=("The q-values of the data and background must be equal.")):
+        RATapi.inputs.append_data_background(data, background)
 
 
 def test_get_python_handle():

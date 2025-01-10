@@ -32,15 +32,15 @@ def dspc_bilayer():
     for i in range(0, len(project.background_parameters)):
         param = project.background_parameters[i]
         for background in project.backgrounds:
-            if background.value_1 == param.name:
-                background.value_1 = f"Background parameter {i + 1}"
+            if background.source == param.name:
+                background.source = f"Background parameter {i + 1}"
         param.name = f"Background parameter {i + 1}"
 
     for i in range(0, len(project.resolution_parameters)):
         param = project.resolution_parameters[i]
         for resolution in project.resolutions:
-            if resolution.value_1 == param.name:
-                resolution.value_1 = f"Resolution parameter {i + 1}"
+            if resolution.source == param.name:
+                resolution.source = f"Resolution parameter {i + 1}"
         param.name = f"Resolution parameter {i + 1}"
 
     return project
