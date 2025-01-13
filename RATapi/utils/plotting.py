@@ -120,7 +120,7 @@ def plot_ref_sld_helper(
         if confidence_intervals is not None:
             ref_min, ref_max = confidence_intervals["reflectivity"][i]
             mult = (1 if not q4 else r[:, 0] ** 4) / div
-            ref_plot.fill_between(r[:, 0], ref_min / div, ref_max / div, alpha=0.6, color="grey")
+            ref_plot.fill_between(r[:, 0], ref_min * mult, ref_max * mult, alpha=0.6, color="grey")
 
         if data.dataPresent[i]:
             sd_x = sd[:, 0]
