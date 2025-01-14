@@ -315,6 +315,7 @@ struct ConfidenceIntervals
 struct NestedSamplerOutput
 {
     real_T logZ;
+    real_T logZErr;
     py::array_t<real_T> nestSamples;
     py::array_t<real_T> postSamples;
 };
@@ -1255,6 +1256,7 @@ BayesResults bayesResultsFromStruct9T(const RAT::struct9_T results)
     bayesResults.confidenceIntervals.mean = pyArrayFromRatArray2d(results.confidenceIntervals.mean);
 
     bayesResults.nestedSamplerOutput.logZ = results.nestedSamplerOutput.LogZ;
+    bayesResults.nestedSamplerOutput.logZErr = results.nestedSamplerOutput.LogZErr;
     bayesResults.nestedSamplerOutput.nestSamples = pyArrayFromRatArray2d(results.nestedSamplerOutput.nestSamples);
     bayesResults.nestedSamplerOutput.postSamples = pyArrayFromRatArray2d(results.nestedSamplerOutput.postSamples);
 
@@ -1457,6 +1459,7 @@ PYBIND11_MODULE(rat_core, m) {
     py::class_<NestedSamplerOutput>(m, "NestedSamplerOutput")
         .def(py::init<>())
         .def_readwrite("logZ", &NestedSamplerOutput::logZ)
+        .def_readwrite("logZErr", &NestedSamplerOutput::logZErr)
         .def_readwrite("nestSamples", &NestedSamplerOutput::nestSamples)
         .def_readwrite("postSamples", &NestedSamplerOutput::postSamples);
 

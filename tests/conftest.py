@@ -5619,6 +5619,7 @@ def dream_results():
         ),
         nestedSamplerOutput=RATapi.outputs.NestedSamplerOutput(
             logZ=0.0,
+            logZErr=0.0,
             nestSamples=np.array([[0.0, 0.0]]),
             postSamples=np.array([[0.0, 0.0]]),
         ),

@@ -149,6 +149,7 @@ class DreamOutput(RATResult):
 @dataclass
 class NestedSamplerOutput(RATResult):
     logZ: float
+    logZErr: float
     nestSamples: np.ndarray
     postSamples: np.ndarray
 
@@ -230,6 +231,7 @@ def make_results(
 
         nested_sampler_output = NestedSamplerOutput(
             logZ=bayes_results.nestedSamplerOutput.logZ,
+            logZErr=bayes_results.nestedSamplerOutput.logZErr,
             nestSamples=bayes_results.nestedSamplerOutput.nestSamples,
             postSamples=bayes_results.nestedSamplerOutput.postSamples,
         )

@@ -126,6 +126,7 @@ def dream_str():
         "),\n"
         "nestedSamplerOutput = NestedSamplerOutput(\n"
         "\tlogZ = 0.0,\n"
+        "\tlogZErr = 0.0,\n"
         "\tnestSamples = Data array: [1 x 2],\n"
         "\tpostSamples = Data array: [1 x 2],\n"
         "),\n"
