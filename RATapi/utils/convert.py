@@ -1,6 +1,7 @@
 """Utilities for converting input files to Python `Project`s."""
 
 import json
+import warnings
 from collections.abc import Iterable
 from os import PathLike
 from pathlib import Path
@@ -67,7 +68,7 @@ def r1_to_project_class(filename: Union[str, PathLike]) -> Project:
         return [params]
 
     def read_param(names, constrs, values, fits):
-        """Read in a parameter list from the relevant keys.
+        """Read in a parameter list from the relevant keys, and fix constraints for non-fit parameters.
 
         Parameters
         ----------
@@ -77,9 +78,54 @@ def r1_to_project_class(filename: Union[str, PathLike]) -> Project:
 
         Returns
         -------
-        list
+        ClassList
             A list of all relevant parameters.
         """
+
+        def fix_invalid_constraints(name: str, constrs: tuple[float, float], value: float) -> tuple[float, float]:
+            """Check that constraints are valid and fix them if they aren't.
+
+            RasCAL-1 allowed the constraints of non-fit parameters to be invalid, which means
+            we need to fix them here so that the project is valid.
+
+            Parameters
+            ----------
+            name: str
+                The name of the parameter.
+            constrs : tuple[float, float]
+                The constraints of the parameter (min and max, respectively)
+            value : float
+                The value of the parameter.
+
+            Returns
+            -------
+            tuple[float, float]
+                The adjusted constraints (identical to constrs if constraints were valid)
+
+            """
+            new_constrs = (min(constrs[0], value), max(constrs[1], value))
+            if new_constrs[0] != constrs[0] or new_constrs[1] != constrs[1]:
+                warnings.warn(
+                    f"The parameter {name} has invalid constraints,"
+                    " these have been adjusted to satisfy the current value of the parameter.",
+                    stacklevel=2,
+                )
+            return new_constrs
+
+        # adjust invalid constraints
+        # if just one item in the classlist, these objects won't be in lists
+        if not isinstance(fit := mat_project[fits], Iterable):
+            if not fit:
+                mat_project[constrs] = fix_invalid_constraints(
+                    mat_project[names], mat_project[constrs], mat_project[values]
+                )
+        # else they will be iterable
+        else:
+            for i, fit in enumerate(mat_project[fits]):
+                if not fit:
+                    mat_project[constrs][i] = fix_invalid_constraints(
+                        mat_project[names][i], mat_project[constrs][i], mat_project[values][i]
+                    )
 
         return ClassList(
             [
