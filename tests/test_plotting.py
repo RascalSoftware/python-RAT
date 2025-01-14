@@ -207,10 +207,14 @@ def test_plot_ref_sld(mock: MagicMock, input_project, reflectivity_calculation_r
     assert figure.axes[0].get_subplotspec().get_gridspec().get_geometry() == (1, 2)
     assert len(figure.axes) == 2
 
+    for reflectivity, reflectivity_results in zip(data.reflectivity, reflectivity_calculation_results.reflectivity):
+        assert (reflectivity == reflectivity_results).all()
+    for sldProfile, result_sld_profile in zip(data.sldProfiles, reflectivity_calculation_results.sldProfiles):
+        for sld, sld_results in zip(sldProfile, result_sld_profile):
+            assert (sld == sld_results).all()
+
     assert data.modelType == input_project.model
-    assert data.reflectivity == reflectivity_calculation_results.reflectivity
     assert data.shiftedData == reflectivity_calculation_results.shiftedData
-    assert data.sldProfiles == reflectivity_calculation_results.sldProfiles
     assert data.resampledLayers == reflectivity_calculation_results.resampledLayers
     assert data.dataPresent.size == 0
     assert (data.subRoughs == reflectivity_calculation_results.contrastParams.subRoughs).all()

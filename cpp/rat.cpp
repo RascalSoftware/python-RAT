@@ -995,6 +995,18 @@ py::list pyList1DFromRatCellWrap2D(const T& values)
     return result;
 }
 
+template <typename T>
+py::list pyList1DFromRatCellWrap1D(const T& values)
+{
+    py::list result;
+
+    for (int32_T idx0{0}; idx0 < values.size(0); idx0++) {
+        result.append(pyArrayFromRatArray2d(values[idx0].f1));
+    }
+
+    return result;
+}
+
 template <typename T> 
 py::list pyList2dFromRatCellWrap(const T& values)
 {
@@ -1234,7 +1246,7 @@ BayesResults bayesResultsFromStruct9T(const RAT::struct9_T results)
 
     bayesResults.chain = pyArrayFromRatArray2d(results.chain);
 
-    bayesResults.predictionIntervals.reflectivity = pyList1DFromRatCellWrap2D<coder::array<RAT::cell_wrap_11, 1U>>(results.predictionIntervals.reflectivity);
+    bayesResults.predictionIntervals.reflectivity = pyList1DFromRatCellWrap1D<coder::array<RAT::cell_wrap_11, 1U>>(results.predictionIntervals.reflectivity);
     bayesResults.predictionIntervals.sld = pyList2dFromRatCellWrap<coder::array<RAT::cell_wrap_11, 2U>>(results.predictionIntervals.sld);
     bayesResults.predictionIntervals.sampleChi = pyArray1dFromBoundedArray<coder::bounded_array<real_T, 1000U, 1U>>(results.predictionIntervals.sampleChi);
 

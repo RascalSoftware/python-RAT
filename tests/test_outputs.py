@@ -85,7 +85,7 @@ def dream_str():
         "'Background parameter D2O', 'Background parameter SMW', 'D2O', 'SMW'],\n"
         "predictionIntervals = PredictionIntervals(\n"
         "\treflectivity = [Data array: [5 x 21], Data array: [5 x 21]],\n"
-        "\tsld = [[Data array: [5 x 30], Data array: [5 x 30]]],\n"
+        "\tsld = [[Data array: [5 x 29], Data array: [5 x 29]]],\n"
         "\tsampleChi = Data array: [1000],\n"
         "),\n"
         "confidenceIntervals = ConfidenceIntervals(\n"
@@ -191,7 +191,7 @@ def test_make_results(test_procedure, test_output_results, test_bayes, test_resu
 @pytest.mark.parametrize(
     ["test_output_results", "test_str"],
     [
-        # ("reflectivity_calculation_results", "reflectivity_calculation_str"),
+        ("reflectivity_calculation_results", "reflectivity_calculation_str"),
         ("dream_results", "dream_str"),
     ],
 )
