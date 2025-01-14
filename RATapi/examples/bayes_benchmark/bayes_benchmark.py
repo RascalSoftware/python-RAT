@@ -48,8 +48,8 @@ def get_project() -> RAT.Project:
         bulk_in=[Parameter(name="Air", min=0.0, value=0.0, max=0.0, fit=False)],
         bulk_out=[Parameter(name="D2O", min=6.3e-06, value=6.35e-06, max=6.4e-06, fit=False)],
         resolution_parameters=[Parameter(name="Resolution parameter 1", min=0.01, value=0.03, max=0.05, fit=False)],
-        backgrounds=[Background(name="Background 1", type="constant", value_1="Background parameter 1")],
-        resolutions=[Resolution(name="Resolution 1", type="constant", value_1="Resolution parameter 1")],
+        backgrounds=[Background(name="Background 1", type="constant", source="Background parameter 1")],
+        resolutions=[Resolution(name="Resolution 1", type="constant", source="Resolution parameter 1")],
         data=[
             Data(name="Simulation", data=np.empty([0, 3]), simulation_range=[0.005, 0.7]),
             Data(
