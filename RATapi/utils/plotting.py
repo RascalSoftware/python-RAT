@@ -242,7 +242,9 @@ def plot_ref_sld(
     """
     data = PlotEventData()
 
-    # We need to take a copy of results and SLD in case the data to plot is modified later
+    # We need to take a copy of reflectivity and SLD in case we are plotting a
+    # shaded plot and will therefore change the plotted data to that from the
+    # centre of the Bayesian distribution
     data.modelType = project.model
     data.reflectivity = copy.deepcopy(results.reflectivity)
     data.shiftedData = results.shiftedData
