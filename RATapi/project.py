@@ -11,6 +11,7 @@ from typing import Annotated, Any, Callable, Union
 import numpy as np
 from pydantic import (
     BaseModel,
+    ConfigDict,
     Discriminator,
     Field,
     Tag,
@@ -130,13 +131,21 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
     inputs required for a reflectivity calculation.
     """
 
+    model_config = ConfigDict(use_attribute_docstrings=True)
+
     name: str = ""
+    """The name of the project."""
     calculation: Calculations = Calculations.Normal
+    """What calculation type should be used. Can be 'normal' or 'domains'."""
     model: LayerModels = LayerModels.StandardLayers
+    """What layer model should be used. Can be 'standard layers', 'custom layers', or 'custom xy'."""
     geometry: Geometries = Geometries.AirSubstrate
+    """What geometry should be used. Can be 'air/substrate' or 'substrate/liquid'"""
     absorption: bool = False
+    """Whether imaginary (absorption) SLD should be accounted for."""
 
     parameters: ClassList[RATapi.models.Parameter] = ClassList()
+    """The list of parameters used in the layers of a model."""
 
     bulk_in: ClassList[RATapi.models.Parameter] = ClassList(
         RATapi.models.Parameter(
@@ -150,6 +159,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
             sigma=np.inf,
         ),
     )
+    """The parameters for SLD of the entry interfaces of a model."""
 
     bulk_out: ClassList[RATapi.models.Parameter] = ClassList(
         RATapi.models.Parameter(
@@ -163,6 +173,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
             sigma=np.inf,
         ),
     )
+    """The parameters for SLD of the exit interfaces of a model."""
 
     scalefactors: ClassList[RATapi.models.Parameter] = ClassList(
         RATapi.models.Parameter(
@@ -176,6 +187,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
             sigma=np.inf,
         ),
     )
+    """The parameters for scale factors to handle systematic error in model data."""
 
     domain_ratios: ClassList[RATapi.models.Parameter] = ClassList(
         RATapi.models.Parameter(
@@ -189,6 +201,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
             sigma=np.inf,
         ),
     )
+    """The parameters for weighting between domains of a domains model."""
 
     background_parameters: ClassList[RATapi.models.Parameter] = ClassList(
         RATapi.models.Parameter(
@@ -202,10 +215,12 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
             sigma=np.inf,
         ),
     )
+    """The parameters for models of backgrounds."""
 
     backgrounds: ClassList[RATapi.models.Background] = ClassList(
         RATapi.models.Background(name="Background 1", type=TypeOptions.Constant, source="Background Param 1"),
     )
+    """The models for background noise in the project."""
 
     resolution_parameters: ClassList[RATapi.models.Parameter] = ClassList(
         RATapi.models.Parameter(
@@ -219,13 +234,17 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
             sigma=np.inf,
         ),
     )
+    """The parameters for models of resolutions."""
 
     resolutions: ClassList[RATapi.models.Resolution] = ClassList(
         RATapi.models.Resolution(name="Resolution 1", type=TypeOptions.Constant, source="Resolution Param 1"),
     )
+    """The models for instrument resolution in the project."""
 
     custom_files: ClassList[RATapi.models.CustomFile] = ClassList()
+    """Handles for custom files used by the project."""
     data: ClassList[RATapi.models.Data] = ClassList()
+    """Arrays of experimental data corresponding to a model."""
     layers: Union[
         Annotated[ClassList[RATapi.models.Layer], Tag("no_abs")],
         Annotated[ClassList[RATapi.models.AbsorptionLayer], Tag("abs")],
@@ -238,7 +257,9 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
             custom_error_context={"discriminator": "absorption_or_no"},
         ),
     )
+    """The layers of a standard layer model."""
     domain_contrasts: ClassList[RATapi.models.DomainContrast] = ClassList()
+    """The groups of layers required by each domain in a domains model."""
     contrasts: Union[
         Annotated[ClassList[RATapi.models.Contrast], Tag("no_ratio")],
         Annotated[ClassList[RATapi.models.ContrastWithRatio], Tag("ratio")],
@@ -251,6 +272,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
             custom_error_context={"discriminator": "ratio_or_no_ratio"},
         ),
     )
+    """All groups of components used to define each model in the project."""
 
     _all_names: dict
     _contrast_model_field: str
