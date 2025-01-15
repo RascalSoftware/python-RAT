@@ -232,7 +232,7 @@ def plot_ref_sld(
     show_grid : bool, default: False
             Controls whether the grid is shown
     show_legend : bool, default: True
-            Controls whether the lengend is shown
+            Controls whether the legend is shown
 
     Returns
     -------
