@@ -553,6 +553,7 @@ class ClassList(collections.UserList, Generic[T]):
                 core_schema.no_info_wrap_validator_function(coerce, core_schema.is_instance_schema(cls)),
                 core_schema.no_info_wrap_validator_function(validate_items, list_schema),
             ],
+            serialization=core_schema.plain_serializer_function_ser_schema(lambda x: x),
         )
 
         return schema
