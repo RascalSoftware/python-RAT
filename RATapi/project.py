@@ -135,12 +135,16 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
 
     name: str = ""
     """The name of the project."""
+
     calculation: Calculations = Calculations.Normal
     """What calculation type should be used. Can be 'normal' or 'domains'."""
+
     model: LayerModels = LayerModels.StandardLayers
     """What layer model should be used. Can be 'standard layers', 'custom layers', or 'custom xy'."""
+
     geometry: Geometries = Geometries.AirSubstrate
     """What geometry should be used. Can be 'air/substrate' or 'substrate/liquid'"""
+
     absorption: bool = False
     """Whether imaginary (absorption) SLD should be accounted for."""
 
@@ -243,8 +247,10 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
 
     custom_files: ClassList[RATapi.models.CustomFile] = ClassList()
     """Handles for custom files used by the project."""
+
     data: ClassList[RATapi.models.Data] = ClassList()
     """Arrays of experimental data corresponding to a model."""
+
     layers: Union[
         Annotated[ClassList[RATapi.models.Layer], Tag("no_abs")],
         Annotated[ClassList[RATapi.models.AbsorptionLayer], Tag("abs")],
@@ -258,8 +264,10 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
         ),
     )
     """The layers of a standard layer model."""
+
     domain_contrasts: ClassList[RATapi.models.DomainContrast] = ClassList()
     """The groups of layers required by each domain in a domains model."""
+
     contrasts: Union[
         Annotated[ClassList[RATapi.models.Contrast], Tag("no_ratio")],
         Annotated[ClassList[RATapi.models.ContrastWithRatio], Tag("ratio")],
