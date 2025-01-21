@@ -145,8 +145,8 @@ def DSPC_function_background():
     # FIXME: replace this with a Python custom file when Python backgrounds are added!
     problem.custom_files.append(
         name="D2O Background Function",
-        filename="backgroundFunction.m",
-        language="matlab",
+        filename="backgroundFunction.py",
+        language="python",
         path=pathlib.Path(__file__).parent.resolve(),
     )
 
