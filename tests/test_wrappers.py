@@ -27,7 +27,7 @@ def test_matlab_wrapper() -> None:
         mocked_engine.demo.return_value = ([2], 5)
         result = handle([1], [2], [3], 0)
         assert result == ([2], 5)
-        assert wrapper.engine.demo.call_args[0] == ([1], [2], [3], 1)
+        assert wrapper.engine.demo.call_args[0] == ([1], [2], [3], 1, -1)
         mocked_engine.demo.assert_called_once()
 
         mocked_engine.demo.return_value = ([3, 1], 7)
@@ -35,6 +35,12 @@ def test_matlab_wrapper() -> None:
         assert result == ([3, 1], 7)
         assert wrapper.engine.demo.call_args[0] == ([4], [5], [6], 2, 2)
         assert mocked_engine.demo.call_count == 2
+
+        mocked_engine.demo.return_value = [4, 7]
+        result = handle([3], [9])
+        assert result == [4, 7]
+        assert wrapper.engine.demo.call_args[0] == ([3], [9])
+        assert mocked_engine.demo.call_count == 3
 
 
 def test_dylib_wrapper() -> None:

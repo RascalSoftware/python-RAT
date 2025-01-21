@@ -36,7 +36,6 @@ def check_results_equal(actual_results, expected_results) -> None:
         "scalefactors",
         "bulkIn",
         "bulkOut",
-        "resolutionParams",
         "subRoughs",
         "resample",
     ]

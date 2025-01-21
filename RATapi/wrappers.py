@@ -57,25 +57,24 @@ class MatlabWrapper:
 
         """
 
-        def handle(params, bulk_in, bulk_out, contrast, domain=-1):
-            if domain == -1:
-                output, sub_rough = getattr(self.engine, self.function_name)(
-                    np.array(params, "float"),
-                    np.array(bulk_in, "float"),
-                    np.array(bulk_out, "float"),
-                    float(contrast + 1),
-                    nargout=2,
+        def handle(*args):
+            if len(args) == 2:
+                output = getattr(self.engine, self.function_name)(
+                    np.array(args[0], "float"),  # xdata
+                    np.array(args[1], "float"),  # params
+                    nargout=1,
                 )
+                return np.array(output, "float").tolist()
             else:
                 output, sub_rough = getattr(self.engine, self.function_name)(
-                    np.array(params, "float"),
-                    np.array(bulk_in, "float"),
-                    np.array(bulk_out, "float"),
-                    float(contrast + 1),
-                    float(domain + 1),
+                    np.array(args[0], "float"),  # params
+                    np.array(args[1], "float"),  # bulk in
+                    np.array(args[2], "float"),  # bulk out
+                    float(args[3] + 1),  # contrast
+                    float(-1 if len(args) < 5 else args[4] + 1),  # domain
                     nargout=2,
                 )
-            return output, sub_rough
+                return np.array(output, "float").tolist(), float(sub_rough)
 
         return handle
 
@@ -105,11 +104,7 @@ class DylibWrapper:
 
         """
 
-        def handle(params, bulk_in, bulk_out, contrast, domain=-1):
-            if domain == -1:
-                output, sub_rough = self.engine.invoke(params, bulk_in, bulk_out, contrast)
-            else:
-                output, sub_rough = self.engine.invoke(params, bulk_in, bulk_out, contrast, domain)
-            return output, sub_rough
+        def handle(*args):
+            return self.engine.invoke(*args)
 
         return handle

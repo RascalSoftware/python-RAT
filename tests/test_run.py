@@ -67,7 +67,7 @@ def reflectivity_calculation_problem():
     problem.contrastScalefactors = np.array([1.0, 2.0])
     problem.contrastBackgroundParams = [[1.0], [2.0]]
     problem.contrastBackgroundActions = [1.0, 1.0]
-    problem.contrastResolutionParams = np.array([1.0, 1.0])
+    problem.contrastResolutionParams = [[1.0], [1.0]]
     problem.contrastCustomFiles = np.array([np.nan, np.nan])
     problem.contrastDomainRatios = np.array([0.0, 0.0])
     problem.resample = np.array([0.0, 0.0])
@@ -204,7 +204,7 @@ def dream_problem():
     problem.contrastScalefactors = np.array([1.0, 2.0])
     problem.contrastBackgroundParams = [[1.0], [2.0]]
     problem.contrastBackgroundActions = [1.0, 1.0]
-    problem.contrastResolutionParams = np.array([1.0, 1.0])
+    problem.contrastResolutionParams = [[1.0], [1.0]]
     problem.contrastCustomFiles = np.array([np.nan, np.nan])
     problem.contrastDomainRatios = np.array([0.0, 0.0])
     problem.resample = np.array([0.0, 0.0])

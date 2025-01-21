@@ -691,7 +691,6 @@ def reflectivity_calculation_output_results():
     results.contrastParams.scalefactors = np.array([0.1, 0.15])
     results.contrastParams.bulkIn = np.array([2.073e-06, 2.073e-06])
     results.contrastParams.bulkOut = np.array([5.98e-06, 2.21e-06])
-    results.contrastParams.resolutionParams = np.array([0.03, 0.03])
     results.contrastParams.subRoughs = np.array([3.0, 3.0])
     results.contrastParams.resample = np.array([0.0, 0.0])
     results.fitParams = np.array(
@@ -1175,7 +1174,6 @@ def reflectivity_calculation_results():
             scalefactors=np.array([0.1, 0.15]),
             bulkIn=np.array([2.073e-06, 2.073e-06]),
             bulkOut=np.array([5.98e-06, 2.21e-06]),
-            resolutionParams=np.array([0.03, 0.03]),
             subRoughs=np.array([3.0, 3.0]),
             resample=np.array([0.0, 0.0]),
         ),
@@ -1496,7 +1494,6 @@ def dream_output_results():
     results.contrastParams.scalefactors = np.array([0.1, 0.15])
     results.contrastParams.bulkIn = np.array([2.073e-06, 2.073e-06])
     results.contrastParams.bulkOut = np.array([6.01489149e-06, 1.59371685e-06])
-    results.contrastParams.resolutionParams = np.array([0.03, 0.03])
     results.contrastParams.subRoughs = np.array([6.19503045, 6.19503045])
     results.contrastParams.resample = np.array([0.0, 0.0])
     results.fitParams = np.array(
@@ -3809,7 +3806,6 @@ def dream_results():
             scalefactors=np.array([0.1, 0.15]),
             bulkIn=np.array([2.073e-06, 2.073e-06]),
             bulkOut=np.array([6.01489149e-06, 1.59371685e-06]),
-            resolutionParams=np.array([0.03, 0.03]),
             subRoughs=np.array([6.19503045, 6.19503045]),
             resample=np.array([0.0, 0.0]),
         ),
