@@ -6,7 +6,6 @@ import warnings
 import prettytable
 from pydantic import (
     BaseModel,
-    ConfigDict,
     Field,
     ValidationError,
     ValidatorFunctionWrapHandler,
@@ -37,10 +36,8 @@ fields = {
 }
 
 
-class Controls(BaseModel, validate_assignment=True, extra="forbid"):
+class Controls(BaseModel, validate_assignment=True, extra="forbid", use_attribute_docstrings=True):
     """The full set of controls parameters for all five procedures that are required for the compiled RAT code."""
-
-    model_config = ConfigDict(use_attribute_docstrings=True)
 
     # All Procedures
     procedure: Procedures = Procedures.Calculate
@@ -53,7 +50,7 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid"):
     """Whether SLD will be calculated during fit (for live plotting etc.)"""
 
     resampleMinAngle: float = Field(0.9, le=1, gt=0)
-    """The upper threshold on the angle between three sampled points for resampling, in radians over pi."""
+    """The upper threshold on the angle between three sampled points for resampling, in units of radians over pi."""
 
     resampleNPoints: int = Field(50, gt=0)
     """The number of initial points to use for resampling."""
@@ -76,10 +73,10 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid"):
 
     # Simplex and DE
     updateFreq: int = 1
-    """[SIMPLEX, DE] How often to print out progress to the terminal, in iterations."""
+    """[SIMPLEX, DE] Number of iterations between printing progress updates to the terminal."""
 
     updatePlotFreq: int = 20
-    """[SIMPLEX, DE] How often the live plot should be updated if using."""
+    """[SIMPLEX, DE] Number of iterations between updates to live plots."""
 
     # DE
     populationSize: int = Field(20, ge=1)

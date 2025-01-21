@@ -11,7 +11,6 @@ from typing import Annotated, Any, Callable, Union
 import numpy as np
 from pydantic import (
     BaseModel,
-    ConfigDict,
     Discriminator,
     Field,
     Tag,
@@ -124,14 +123,12 @@ class_lists = [
 ]
 
 
-class Project(BaseModel, validate_assignment=True, extra="forbid"):
+class Project(BaseModel, validate_assignment=True, extra="forbid", use_attribute_docstrings=True):
     """Defines the input data for a reflectivity calculation in RAT.
 
     This class combines the data defined in each of the pydantic models included in "models.py" into the full set of
     inputs required for a reflectivity calculation.
     """
-
-    model_config = ConfigDict(use_attribute_docstrings=True)
 
     name: str = ""
     """The name of the project."""
@@ -146,7 +143,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
     """What geometry should be used. Can be 'air/substrate' or 'substrate/liquid'"""
 
     absorption: bool = False
-    """Whether imaginary (absorption) SLD should be accounted for."""
+    """Whether imaginary SLD (absorption) should be accounted for."""
 
     parameters: ClassList[RATapi.models.Parameter] = ClassList()
     """The list of parameters used in the layers of a model."""
@@ -163,7 +160,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
             sigma=np.inf,
         ),
     )
-    """The parameters for SLD of the entry interfaces of a model."""
+    """The list of parameters for SLD of the entry interfaces of a model."""
 
     bulk_out: ClassList[RATapi.models.Parameter] = ClassList(
         RATapi.models.Parameter(
@@ -177,7 +174,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
             sigma=np.inf,
         ),
     )
-    """The parameters for SLD of the exit interfaces of a model."""
+    """The list of parameters for SLD of the exit interfaces of a model."""
 
     scalefactors: ClassList[RATapi.models.Parameter] = ClassList(
         RATapi.models.Parameter(
@@ -191,7 +188,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
             sigma=np.inf,
         ),
     )
-    """The parameters for scale factors to handle systematic error in model data."""
+    """The list of parameters for scale factors to handle systematic error in model data."""
 
     domain_ratios: ClassList[RATapi.models.Parameter] = ClassList(
         RATapi.models.Parameter(
@@ -205,7 +202,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
             sigma=np.inf,
         ),
     )
-    """The parameters for weighting between domains of a domains model."""
+    """The list of parameters for weighting between domains of a domains model."""
 
     background_parameters: ClassList[RATapi.models.Parameter] = ClassList(
         RATapi.models.Parameter(
@@ -219,12 +216,12 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
             sigma=np.inf,
         ),
     )
-    """The parameters for models of backgrounds."""
+    """The list of parameters for models of backgrounds."""
 
     backgrounds: ClassList[RATapi.models.Background] = ClassList(
         RATapi.models.Background(name="Background 1", type=TypeOptions.Constant, source="Background Param 1"),
     )
-    """The models for background noise in the project."""
+    """The list of models for background noise in the project."""
 
     resolution_parameters: ClassList[RATapi.models.Parameter] = ClassList(
         RATapi.models.Parameter(
@@ -238,18 +235,18 @@ class Project(BaseModel, validate_assignment=True, extra="forbid"):
             sigma=np.inf,
         ),
     )
-    """The parameters for models of resolutions."""
+    """The list of parameters for models of resolutions."""
 
     resolutions: ClassList[RATapi.models.Resolution] = ClassList(
         RATapi.models.Resolution(name="Resolution 1", type=TypeOptions.Constant, source="Resolution Param 1"),
     )
-    """The models for instrument resolution in the project."""
+    """The list of models for instrument resolution in the project."""
 
     custom_files: ClassList[RATapi.models.CustomFile] = ClassList()
     """Handles for custom files used by the project."""
 
     data: ClassList[RATapi.models.Data] = ClassList()
-    """Arrays of experimental data corresponding to a model."""
+    """Experimental data for a model."""
 
     layers: Union[
         Annotated[ClassList[RATapi.models.Layer], Tag("no_abs")],
