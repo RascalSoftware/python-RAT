@@ -247,6 +247,7 @@ def make_problem(project: RATapi.Project, checks: Checks) -> ProblemDefinition:
         background = project.backgrounds[contrast.background]
         contrast_background_types.append(background.type)
         contrast_background_param = []
+
         if background.type == TypeOptions.Data:
             contrast_background_param.append(project.data.index(background.source, True))
             if background.value_1 != "":
@@ -275,16 +276,36 @@ def make_problem(project: RATapi.Project, checks: Checks) -> ProblemDefinition:
 
         contrast_background_params.append(contrast_background_param)
 
-        # contrast data has exactly six columns to include background data if relevant
-        all_data.append(np.column_stack((data, np.zeros((data.shape[0], 6 - data.shape[1])))))
-
-        # Set resolution parameters, with -1 used to indicate a data resolution
-        contrast_resolution_param = []
+        # set resolution parameters
         resolution = project.resolutions[contrast.resolution]
         contrast_resolution_types.append(resolution.type)
-        if resolution.source:
+        contrast_resolution_param = []
+        if resolution.type == TypeOptions.Data:
+            # The source field is empty for a data resolution
+            pass
+        elif resolution.type == TypeOptions.Function:
+            contrast_resolution_param.append(project.custom_files.index(resolution.source, True))
+            contrast_resolution_param.extend(
+                [
+                    project.resolution_parameters.index(value, True)
+                    for value in [
+                        resolution.value_1,
+                        resolution.value_2,
+                        resolution.value_3,
+                        resolution.value_4,
+                        resolution.value_5,
+                    ]
+                    if value != ""
+                ]
+            )
+
+        else:
             contrast_resolution_param.append(project.resolution_parameters.index(resolution.source, True))
+
         contrast_resolution_params.append(contrast_resolution_param)
+
+        # contrast data has exactly six columns to include background data if relevant
+        all_data.append(np.column_stack((data, np.zeros((data.shape[0], 6 - data.shape[1])))))
 
     problem = ProblemDefinition()
 
