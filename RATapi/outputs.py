@@ -71,7 +71,6 @@ class ContrastParams(RATResult):
     scalefactors: np.ndarray
     bulkIn: np.ndarray
     bulkOut: np.ndarray
-    resolutionParams: np.ndarray
     subRoughs: np.ndarray
     resample: np.ndarray
 
@@ -178,7 +177,6 @@ def make_results(
         scalefactors=output_results.contrastParams.scalefactors,
         bulkIn=output_results.contrastParams.bulkIn,
         bulkOut=output_results.contrastParams.bulkOut,
-        resolutionParams=output_results.contrastParams.resolutionParams,
         subRoughs=output_results.contrastParams.subRoughs,
         resample=output_results.contrastParams.resample,
     )

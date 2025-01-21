@@ -223,6 +223,7 @@ def make_problem(project: RATapi.Project, checks: Checks) -> ProblemDefinition:
     data_limits = []
     simulation_limits = []
     contrast_resolution_params = []
+    contrast_resolution_types = []
 
     # set data, background and resolution for each contrast
     for contrast in project.contrasts:
@@ -278,11 +279,12 @@ def make_problem(project: RATapi.Project, checks: Checks) -> ProblemDefinition:
         all_data.append(np.column_stack((data, np.zeros((data.shape[0], 6 - data.shape[1])))))
 
         # Set resolution parameters, with -1 used to indicate a data resolution
+        contrast_resolution_param = []
         resolution = project.resolutions[contrast.resolution]
-        if resolution.type == TypeOptions.Data:
-            contrast_resolution_params.append(-1)
-        else:
-            contrast_resolution_params.append(project.resolution_parameters.index(resolution.source, True))
+        contrast_resolution_types.append(resolution.type)
+        if resolution.source:
+            contrast_resolution_param.append(project.resolution_parameters.index(resolution.source, True))
+        contrast_resolution_params.append(contrast_resolution_param)
 
     problem = ProblemDefinition()
 
@@ -306,7 +308,10 @@ def make_problem(project: RATapi.Project, checks: Checks) -> ProblemDefinition:
     ]
     problem.contrastBulkIns = [project.bulk_in.index(contrast.bulk_in, True) for contrast in project.contrasts]
     problem.contrastBulkOuts = [project.bulk_out.index(contrast.bulk_out, True) for contrast in project.contrasts]
+
     problem.contrastResolutionParams = contrast_resolution_params
+    problem.contrastResolutionTypes = contrast_resolution_types
+
     problem.backgroundParams = [param.value for param in project.background_parameters]
     problem.qzshifts = [0.0]
     problem.scalefactors = [param.value for param in project.scalefactors]
@@ -429,7 +434,6 @@ def check_indices(problem: ProblemDefinition) -> None:
         "scalefactors": "contrastScalefactors",
         "bulkIns": "contrastBulkIns",
         "bulkOuts": "contrastBulkOuts",
-        "resolutionParams": "contrastResolutionParams",
         "domainRatios": "contrastDomainRatios",
     }
 

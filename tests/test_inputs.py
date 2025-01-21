@@ -134,7 +134,8 @@ def standard_layers_problem():
     problem.contrastBackgroundParams = [[1]]
     problem.contrastBackgroundActions = [BackgroundActions.Add]
     problem.contrastBackgroundTypes = ["constant"]
-    problem.contrastResolutionParams = [1]
+    problem.contrastResolutionParams = [[1]]
+    problem.contrastResolutionTypes = ["constant"]
     problem.contrastCustomFiles = [float("NaN")]
     problem.contrastDomainRatios = [0]
     problem.resample = [False]
@@ -184,7 +185,8 @@ def domains_problem():
     problem.contrastBackgroundParams = [[1]]
     problem.contrastBackgroundActions = [BackgroundActions.Add]
     problem.contrastBackgroundTypes = ["constant"]
-    problem.contrastResolutionParams = [1]
+    problem.contrastResolutionParams = [[1]]
+    problem.contrastResolutionTypes = ["constant"]
     problem.contrastCustomFiles = [float("NaN")]
     problem.contrastDomainRatios = [1]
     problem.resample = [False]
@@ -235,7 +237,8 @@ def custom_xy_problem():
     problem.contrastBackgroundParams = [[1]]
     problem.contrastBackgroundActions = [BackgroundActions.Add]
     problem.contrastBackgroundTypes = ["constant"]
-    problem.contrastResolutionParams = [1]
+    problem.contrastResolutionParams = [[1]]
+    problem.contrastResolutionTypes = ["constant"]
     problem.contrastCustomFiles = [1]
     problem.contrastDomainRatios = [0]
     problem.resample = [False]
@@ -577,7 +580,6 @@ class TestCheckIndices:
             "contrastBulkOuts",
             "contrastScalefactors",
             "contrastDomainRatios",
-            "contrastResolutionParams",
         ],
     )
     @pytest.mark.parametrize("bad_value", ([0.0], [2.0]))
@@ -590,7 +592,6 @@ class TestCheckIndices:
             "contrastBulkOuts": "bulkOuts",
             "contrastScalefactors": "scalefactors",
             "contrastDomainRatios": "domainRatios",
-            "contrastResolutionParams": "resolutionParams",
         }
         if (test_problem != "domains_problem") and (index_list == "contrastDomainRatios"):
             # we expect this to not raise an error for non-domains problems as domainRatios is empty
