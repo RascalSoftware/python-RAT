@@ -23,6 +23,7 @@ from typing_extensions import get_args, get_origin
 
 import RATapi.models
 from RATapi.classlist import ClassList
+from RATapi.utils.convert import project_from_json, project_to_json
 from RATapi.utils.custom_errors import custom_pydantic_validation_error
 from RATapi.utils.enums import Calculations, Geometries, LayerModels, Priors, TypeOptions
 
@@ -833,6 +834,31 @@ from numpy import array, empty, inf
             )
             + "\n)"
         )
+
+    def save(self, path: str | Path, filename: str = "project"):
+        """Save a project to a JSON file.
+
+        Parameters
+        ----------
+        path : str or Path
+            The directory in which the project will be written.
+
+        """
+        file = Path(path, f"{filename.removesuffix('.json')}.json")
+        file.write_text(project_to_json(self))
+
+    @classmethod
+    def load(cls, path: str | Path) -> "Project":
+        """Load a project from file.
+
+        Parameters
+        ----------
+        path : str or Path
+            The path to the project file.
+
+        """
+        file = Path(path)
+        return project_from_json(file.read_text())
 
     def _classlist_wrapper(self, class_list: ClassList, func: Callable):
         """Defines the function used to wrap around ClassList routines to force revalidation.
