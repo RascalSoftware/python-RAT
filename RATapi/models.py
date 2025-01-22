@@ -94,11 +94,14 @@ class Background(Signal):
         The type of background (constant, function or data)
     source : str
         The source of the background;
+
         - if type is 'constant', this should be the name of a background parameter.
         - if type is 'data', this should be the name of a dataset defined in `Project.data`.
         - if type is 'function', this should be the name of a custom function defined in `Project.custom_files`.
-    value_1, value_2, ..., value_5 : str
+
+    value_1, value_2, value_3, value_4, value_5 : str
         Values required by the background.
+
         - if type is 'constant', all values will be ignored.
         - if type is 'data', value_1 may be the parameter name for an optional offset. Other values are ignored.
         - if type is 'function', these values may be the names of up to 5 parameters which are passed to the function.
@@ -318,6 +321,8 @@ class CustomFile(RATModel):
 class Data(RATModel, arbitrary_types_allowed=True):
     """A dataset required for a contrast.
 
+    Parameters
+    ----------
     name : str
         The name of this dataset.
     data : np.ndarray[np.float64]
@@ -584,12 +589,15 @@ class Resolution(Signal):
         The type of resolution: 'constant', 'data', or (NOT YET IMPLEMENTED) 'function'.
     source : str
         The source data for the resolution;
+
         - if type is 'constant', this should be the name of a background parameter.
         - if type is 'data', this should be empty (resolution data is in the contrast data).
         - if type is 'function' (NOT YET IMPLEMENTED),
           this should be the name of a custom function defined in `Project.custom_files`.
-    value_1, value_2, ..., value_5 : str
+
+    value_1, value_2, value_3, value_4, value_5 : str
         Values required by the background.
+
         - if type is 'constant' or 'data', all values will be ignored.
         - if type is 'function' (NOT YET IMPLEMENTED),
           these values may be the names of up to 5 parameters which are passed to the function.
