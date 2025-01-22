@@ -66,16 +66,34 @@ def reflectivity_calculation_problem():
     problem.contrastQzshifts = np.array([0.0, 0.0])
     problem.contrastScalefactors = np.array([1.0, 2.0])
     problem.contrastBackgroundParams = [[1.0], [2.0]]
+    problem.contrastBackgroundTypes = ["constant", "constant"]
     problem.contrastBackgroundActions = [1.0, 1.0]
     problem.contrastResolutionParams = [[1.0], [1.0]]
+    problem.contrastResolutionTypes = ["constant", "constant"]
     problem.contrastCustomFiles = np.array([np.nan, np.nan])
     problem.contrastDomainRatios = np.array([0.0, 0.0])
     problem.resample = np.array([0.0, 0.0])
     problem.dataPresent = np.array([1.0, 1.0])
+    problem.dataLimits = [[0.011403, 0.59342], [0.011403, 0.59342]]
+    problem.simulationLimits = [[0.011403, 0.59342], [0.011403, 0.59342]]
     problem.oilChiDataPresent = np.array([0.0, 0.0])
     problem.numberOfContrasts = 2.0
     problem.numberOfLayers = 6.0
+    problem.repeatLayers = [[0.0, 1.0], [0.0, 1.0]]
+    problem.layersDetails = [
+        np.array([2.0]),
+        np.array([4.0]),
+        np.array([10.0]),
+        np.array([8.0]),
+        np.array([13.0]),
+        np.array([16.0]),
+    ]
+    problem.contrastLayers = [
+        np.array([[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 6.0, 5.0]]),
+        np.array([[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 6.0, 5.0]]),
+    ]
     problem.numberOfDomainContrasts = 0.0
+    problem.domainContrastLayers = []
     problem.fitParams = np.array(
         [
             3.000e00,
@@ -203,16 +221,34 @@ def dream_problem():
     problem.contrastQzshifts = np.array([0.0, 0.0])
     problem.contrastScalefactors = np.array([1.0, 2.0])
     problem.contrastBackgroundParams = [[1.0], [2.0]]
+    problem.contrastBackgroundTypes = ["constant", "constant"]
     problem.contrastBackgroundActions = [1.0, 1.0]
     problem.contrastResolutionParams = [[1.0], [1.0]]
+    problem.contrastResolutionTypes = ["constant", "constant"]
     problem.contrastCustomFiles = np.array([np.nan, np.nan])
     problem.contrastDomainRatios = np.array([0.0, 0.0])
     problem.resample = np.array([0.0, 0.0])
     problem.dataPresent = np.array([1.0, 1.0])
+    problem.dataLimits = [[0.011403, 0.59342], [0.011403, 0.59342]]
+    problem.simulationLimits = [[0.011403, 0.59342], [0.011403, 0.59342]]
     problem.oilChiDataPresent = np.array([0.0, 0.0])
     problem.numberOfContrasts = 2.0
     problem.numberOfLayers = 6.0
+    problem.repeatLayers = [[0.0, 1.0], [0.0, 1.0]]
+    problem.layersDetails = [
+        np.array([2.0]),
+        np.array([4.0]),
+        np.array([10.0]),
+        np.array([8.0]),
+        np.array([13.0]),
+        np.array([16.0]),
+    ]
+    problem.contrastLayers = [
+        np.array([[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 6.0, 5.0]]),
+        np.array([[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 6.0, 5.0]]),
+    ]
     problem.numberOfDomainContrasts = 0.0
+    problem.domainContrastLayers = []
     problem.fitParams = np.array(
         [
             6.19503045e00,

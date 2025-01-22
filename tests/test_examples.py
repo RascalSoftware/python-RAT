@@ -31,8 +31,7 @@ def test_rat_examples(example_name):
     "example_name",
     [
         "DSPC_function_background",
-        # FIXME: https://github.com/RascalSoftware/python-RAT/issues/102
-        # "convert_rascal",
+        "convert_rascal",
     ],
 )
 @pytest.mark.skipif(importlib.util.find_spec("matlab") is None, reason="Matlab not installed")

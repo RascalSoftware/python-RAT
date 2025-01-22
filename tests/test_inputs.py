@@ -140,10 +140,17 @@ def standard_layers_problem():
     problem.contrastDomainRatios = [0]
     problem.resample = [False]
     problem.dataPresent = [1]
+    problem.data = [np.array([[1.0, 1.0, 1.0, 0.0, 0.0, 0.0]])]
+    problem.dataLimits = [[1.0, 1.0]]
+    problem.simulationLimits = [[1.0, 1.0]]
     problem.oilChiDataPresent = [0]
     problem.numberOfContrasts = 1
     problem.numberOfLayers = 1
+    problem.repeatLayers = [[0, 1]]
+    problem.layersDetails = [[2, 3, 4, float("NaN"), 2]]
+    problem.contrastLayers = [[1]]
     problem.numberOfDomainContrasts = 0
+    problem.domainContrastLayers = []
     problem.fitParams = [3.0]
     problem.otherParams = [0.0, 0.0, 0.0, 1e-06, 0.23, 0.0, 6.35e-06, 0.03]
     problem.fitLimits = [[1.0, 5.0]]
@@ -164,7 +171,7 @@ def standard_layers_problem():
 
 @pytest.fixture
 def domains_problem():
-    """The expected problem object from "standard_layers_project"."""
+    """The expected problem object from "domains_project"."""
     problem = ProblemDefinition()
     problem.TF = Calculations.Domains
     problem.modelType = LayerModels.StandardLayers
@@ -191,10 +198,17 @@ def domains_problem():
     problem.contrastDomainRatios = [1]
     problem.resample = [False]
     problem.dataPresent = [1]
+    problem.data = [np.array([[1.0, 1.0, 1.0, 0.0, 0.0, 0.0]])]
+    problem.dataLimits = [[1.0, 1.0]]
+    problem.simulationLimits = [[1.0, 1.0]]
     problem.oilChiDataPresent = [0]
     problem.numberOfContrasts = 1
     problem.numberOfLayers = 1
+    problem.repeatLayers = [[0, 1]]
+    problem.layersDetails = [[2, 3, 4, float("NaN"), 2]]
+    problem.contrastLayers = [[2, 1]]
     problem.numberOfDomainContrasts = 2
+    problem.domainContrastLayers = [[1], [1]]
     problem.fitParams = [3.0]
     problem.otherParams = [0.0, 0.0, 0.0, 1e-06, 0.23, 0.0, 6.35e-06, 0.03, 0.5]
     problem.fitLimits = [[1.0, 5.0]]
@@ -243,10 +257,17 @@ def custom_xy_problem():
     problem.contrastDomainRatios = [0]
     problem.resample = [False]
     problem.dataPresent = [0]
+    problem.data = [np.empty([0, 6])]
+    problem.dataLimits = [[0.0, 0.0]]
+    problem.simulationLimits = [[0.005, 0.7]]
     problem.oilChiDataPresent = [0]
+    problem.repeatLayers = [[0, 1]]
+    problem.layersDetails = []
+    problem.contrastLayers = [[]]
     problem.numberOfContrasts = 1
     problem.numberOfLayers = 0
     problem.numberOfDomainContrasts = 0
+    problem.domainContrastLayers = []
     problem.fitParams = [3.0]
     problem.otherParams = [0.0, 0.0, 0.0, 1e-06, 0.23, 0.0, 6.35e-06, 0.03]
     problem.fitLimits = [[1.0, 5.0]]
@@ -273,8 +294,8 @@ def normal_limits():
     limits = Limits()
     limits.params = [[1.0, 5.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]
     limits.backgroundParams = [[1e-7, 1e-5]]
-    limits.qzshifts = []
     limits.scalefactors = [[0.02, 0.25]]
+    limits.qzshifts = []
     limits.bulkIns = [[0.0, 0.0]]
     limits.bulkOuts = [[6.2e-6, 6.35e-6]]
     limits.resolutionParams = [[0.01, 0.05]]
@@ -289,8 +310,8 @@ def domains_limits():
     limits = Limits()
     limits.params = [[1.0, 5.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]
     limits.backgroundParams = [[1e-7, 1e-5]]
-    limits.qzshifts = []
     limits.scalefactors = [[0.02, 0.25]]
+    limits.qzshifts = []
     limits.bulkIns = [[0.0, 0.0]]
     limits.bulkOuts = [[6.2e-6, 6.35e-6]]
     limits.resolutionParams = [[0.01, 0.05]]
@@ -310,8 +331,8 @@ def normal_priors():
         ["Test Roughness", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf],
     ]
     priors.backgroundParams = [["Background Param 1", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.qzshifts = []
     priors.scalefactors = [["Scalefactor 1", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.qzshifts = []
     priors.bulkIns = [["SLD Air", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.bulkOuts = [["SLD D2O", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.resolutionParams = [["Resolution Param 1", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
@@ -353,8 +374,8 @@ def domains_priors():
         ["Test Roughness", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf],
     ]
     priors.backgroundParams = [["Background Param 1", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.qzshifts = []
     priors.scalefactors = [["Scalefactor 1", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.qzshifts = []
     priors.bulkIns = [["SLD Air", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.bulkOuts = [["SLD D2O", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.resolutionParams = [["Resolution Param 1", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
@@ -469,8 +490,8 @@ def test_checks():
     checks = Checks()
     checks.params = [1, 0, 0, 0]
     checks.backgroundParams = [0]
-    checks.qzshifts = []
     checks.scalefactors = [0]
+    checks.qzshifts = []
     checks.bulkIns = [0]
     checks.bulkOuts = [0]
     checks.resolutionParams = [0]
@@ -725,7 +746,12 @@ def check_problem_equal(actual_problem, expected_problem) -> None:
         "contrastDomainRatios",
         "resample",
         "dataPresent",
+        "dataLimits",
+        "simulationLimits",
         "oilChiDataPresent",
+        "repeatLayers",
+        "contrastLayers",
+        "domainContrastLayers",
         "fitParams",
         "otherParams",
         "fitLimits",
@@ -737,7 +763,17 @@ def check_problem_equal(actual_problem, expected_problem) -> None:
     for array_field in array_fields:
         assert np.all(getattr(actual_problem, array_field) == getattr(expected_problem, array_field))
 
-    # Need to account for "NaN" entries in contrastCustomFiles field
+    # Data field is a numpy array
+    assert [
+        actual_data == expected_data for (actual_data, expected_data) in zip(actual_problem.data, expected_problem.data)
+    ]
+
+    # Need to account for "NaN" entries in layersDetails and contrastCustomFiles field
+    for actual_layer, expected_layer in zip(actual_problem.layersDetails, expected_problem.layersDetails):
+        assert (actual_layer == expected_layer) or ["NaN" if np.isnan(el) else el for el in actual_layer] == [
+            "NaN" if np.isnan(el) else el for el in expected_layer
+        ]
+
     assert (actual_problem.contrastCustomFiles == expected_problem.contrastCustomFiles).all() or [
         "NaN" if np.isnan(el) else el for el in actual_problem.contrastCustomFiles
     ] == ["NaN" if np.isnan(el) else el for el in expected_problem.contrastCustomFiles]
