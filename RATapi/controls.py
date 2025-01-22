@@ -56,7 +56,7 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid"):
     updatePlotFreq: int = 20
     # DE
     populationSize: int = Field(20, ge=1)
-    fWeight: float = 0.5
+    fWeight: float = Field(0.5, gt=0.0)
     crossoverProbability: float = Field(0.8, gt=0.0, lt=1.0)
     strategy: Strategies = Strategies.RandomWithPerVectorDither
     targetValue: float = Field(1.0, ge=1.0)
