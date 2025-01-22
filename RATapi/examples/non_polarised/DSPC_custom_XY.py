@@ -6,7 +6,7 @@ import RATapi as RAT
 
 
 def DSPC_custom_XY():
-    """Custom XY Example for Supported DSPC layer.
+    r"""Custom XY Example for Supported DSPC layer.
 
     In this example, we model the same data (DSPC supported bilayer) as the Custom Layers example, but this time we will
     use continuous distributions of the volume fractions of each component to build up the SLD profiles (as described in
@@ -19,7 +19,7 @@ def DSPC_custom_XY():
     We can define our lipid in terms of an Area per Molecule, almost in its entirety, if we recognise that where the
     volume is known, the thickness of the layer is simply given by the layer volume / APM:
 
-    $d_{\textrm{layer}} =\frac{V_{\textrm{layer}} }{{\textrm{APM}}_{\textrm{layer}}}$.
+    .. math:: d_{\textrm{layer}} =\frac{V_{\textrm{layer}} }{{\textrm{APM}}_{\textrm{layer}}}.
 
     We can then define the Volume Fraction of this layer with a roughened Heaviside of length dlayer and a height of 1.
     Then, the total volume occupied will be given by the sum of the volume fractions across the interface. Of course,
@@ -27,7 +27,7 @@ def DSPC_custom_XY():
     functions by relevant coverage parameters. When this is correctly done, we can obtain the remaining water
     distribution as:
 
-    $${\textrm{VF}}_{\textrm{wat}} =1-\\sum_n {\textrm{VF}}_n$$
+    .. math:: {\textrm{VF}}_{\textrm{wat}} =1-\\sum_n {\textrm{VF}}_n
 
     where VFn is the Volume Fraction of the n'th layer.
     """
