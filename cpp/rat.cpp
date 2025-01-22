@@ -1013,7 +1013,7 @@ py::list pyListFromRatCellWrap0(coder::array<RAT::cell_wrap_0, 2U> values)
     py::list result;
     for (int32_T idx0{0}; idx0 < values.size(1); idx0++) {
         std::string tmp;
-        stringToRatBoundedArray(tmp, values[idx0].f1.data, values[idx0].f1.size);
+        stringFromRatBoundedArray(values[idx0].f1.data, values[idx0].f1.size, tmp);
         result.append(tmp);
     }
 
