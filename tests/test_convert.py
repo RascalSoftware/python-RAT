@@ -102,7 +102,7 @@ def test_r1_involution(project, request, monkeypatch):
 def test_invalid_constraints():
     """Test that invalid constraints are fixed where necessary."""
     with pytest.warns(
-        match="The parameter Background parameter 1 has invalid constraints,"
+        match=r"The parameter (.+) has invalid constraints,"
         " these have been adjusted to satisfy the current value of the parameter."
     ):
         output_project = r1_to_project_class(pathlib.Path(TEST_DIR_PATH, "R1DoubleBilayerVolumeModel.mat"))

@@ -630,7 +630,7 @@ def test_check_protected_parameters(delete_operation) -> None:
         ("background_parameters", ["source"]),
         ("resolution_parameters", ["source"]),
         ("parameters", ["roughness"]),
-        ("data", ["data", "source", "source"]),
+        ("data", ["data", "source"]),
         ("custom_files", ["source", "source"]),
         ("backgrounds", ["background"]),
         ("bulk_in", ["bulk_in"]),
@@ -645,7 +645,6 @@ def test_rename_models(test_project, model: str, fields: list[str]) -> None:
     """
     if model == "data":
         test_project.backgrounds[0] = RATapi.models.Background(type="data", source="Simulation")
-        test_project.resolutions[0] = RATapi.models.Resolution(type="data", source="Simulation")
     if model == "custom_files":
         test_project.backgrounds[0] = RATapi.models.Background(type="function", source="Test Custom File")
         # workaround until function resolutions are added
@@ -753,7 +752,6 @@ def test_allowed_absorption_layers(field: str) -> None:
     "resolution_type, expected_field",
     [
         [TypeOptions.Constant, "resolution_parameters"],
-        [TypeOptions.Data, "data"],
         # uncomment when function resolutions are added!
         # [TypeOptions.Function, "custom_files"],
     ],
@@ -1168,6 +1166,7 @@ def test_write_script_wrong_extension(test_project, extension: str) -> None:
         ("contrasts", "", "resolution"),
     ],
 )
+@pytest.mark.filterwarnings("ignore:The following values are not recognised by this*:UserWarning")
 def test_wrap_set(test_project, class_list: str, model_type: str, field: str) -> None:
     """If we set the field values of a model in a ClassList as undefined values, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
@@ -1246,6 +1245,7 @@ def test_wrap_del(test_project, class_list: str, parameter: str, field: str) -> 
         ("contrasts", "", "resolution", {}),
     ],
 )
+@pytest.mark.filterwarnings("ignore:The following values are not recognised by this*:UserWarning")
 def test_wrap_iadd(test_project, class_list: str, model_type: str, field: str, model_params: dict) -> None:
     """If we add a model containing undefined values to a ClassList, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
@@ -1292,6 +1292,7 @@ def test_wrap_iadd(test_project, class_list: str, model_type: str, field: str, m
         ("contrasts", "", "resolution", {}),
     ],
 )
+@pytest.mark.filterwarnings("ignore:The following values are not recognised by this*:UserWarning")
 def test_wrap_append(test_project, class_list: str, model_type: str, field: str, model_params: dict) -> None:
     """If we append a model containing undefined values to a ClassList, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
@@ -1339,6 +1340,7 @@ def test_wrap_append(test_project, class_list: str, model_type: str, field: str,
         ("contrasts", "", "resolution", {}),
     ],
 )
+@pytest.mark.filterwarnings("ignore:The following values are not recognised by this*:UserWarning")
 def test_wrap_insert(test_project, class_list: str, model_type: str, field: str, model_params: dict) -> None:
     """If we insert a model containing undefined values into a ClassList, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
@@ -1382,6 +1384,7 @@ def test_wrap_insert(test_project, class_list: str, model_type: str, field: str,
         ("contrasts", "resolution"),
     ],
 )
+@pytest.mark.filterwarnings("ignore:The following values are not recognised by this*:UserWarning")
 def test_wrap_insert_type_error(test_project, class_list: str, field: str) -> None:
     """If we raise a TypeError using the wrapped insert routine, we should re-raise the error."""
     test_attribute = getattr(test_project, class_list)
@@ -1518,6 +1521,7 @@ def test_wrap_clear(test_project, class_list: str, parameter: str, field: str) -
         ("contrasts", "", "resolution", {}),
     ],
 )
+@pytest.mark.filterwarnings("ignore:The following values are not recognised by this*:UserWarning")
 def test_wrap_extend(test_project, class_list: str, model_type: str, field: str, model_params: dict) -> None:
     """If we extend a ClassList with model containing undefined values, we should raise a ValidationError."""
     test_attribute = getattr(test_project, class_list)
