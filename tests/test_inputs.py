@@ -132,14 +132,14 @@ def test_names():
 def test_checks():
     """The expected checks object from "standard_layers_project", "domains_project" and "custom_xy_project"."""
     checks = Checks()
-    checks.params = [1, 0, 0, 0]
-    checks.backgroundParams = [0]
-    checks.scalefactors = [0]
-    checks.qzshifts = []
-    checks.bulkIns = [0]
-    checks.bulkOuts = [0]
-    checks.resolutionParams = [0]
-    checks.domainRatios = []
+    checks.params = np.array([1, 0, 0, 0])
+    checks.backgroundParams = np.array([0])
+    checks.scalefactors = np.array([0])
+    checks.qzshifts = np.array([])
+    checks.bulkIns = np.array([0])
+    checks.bulkOuts = np.array([0])
+    checks.resolutionParams = np.array([0])
+    checks.domainRatios = np.array([])
 
     return checks
 

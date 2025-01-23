@@ -168,6 +168,47 @@ def reflectivity_calculation_problem():
             [1.00e-02, 5.00e-02],
         ],
     )
+    problem.names.params = [
+        "Substrate Roughness",
+        "Oxide Thickness",
+        "Oxide SLD",
+        "SAM Tails Thickness",
+        "SAM Tails SLD",
+        "SAM Tails Hydration",
+        "SAM Roughness",
+        "CW Thickness",
+        "CW SLD",
+        "SAM Heads Thickness",
+        "SAM Heads SLD",
+        "SAM Heads Hydration",
+        "Bilayer Heads Thickness",
+        "Bilayer Heads SLD",
+        "Bilayer Roughness",
+        "Bilayer Tails Thickness",
+        "Bilayer Tails SLD",
+        "Bilayer Tails Hydration",
+        "Bilayer Heads Hydration",
+        "CW Hydration",
+        "Oxide Hydration",
+    ]
+    problem.names.backgroundParams = ["Background parameter D2O", "Background parameter SMW"]
+    problem.names.scalefactors = ["Scalefactor 1", "Scalefactor 2"]
+    problem.names.qzshifts = []
+    problem.names.bulkIns = ["Silicon"]
+    problem.names.bulkOuts = ["D2O", "SMW"]
+    problem.names.resolutionParams = ["Resolution Param 1"]
+    problem.names.domainRatios = []
+    problem.names.contrasts = ["D2O", "SMW"]
+    problem.checks.params = np.array(
+        [1.0, 1.0, 0.0, 1.0, 0.0, 1.0, 1.0, 1.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0]
+    )
+    problem.checks.backgroundParams = np.array([1.0, 1.0])
+    problem.checks.scalefactors = np.array([0.0, 0.0])
+    problem.checks.qzshifts = np.array([])
+    problem.checks.bulkIns = np.array([0.0])
+    problem.checks.bulkOuts = np.array([1.0, 1.0])
+    problem.checks.resolutionParams = np.array([0.0])
+    problem.checks.domainRatios = np.array([])
 
     return problem
 
@@ -325,6 +366,47 @@ def dream_problem():
             [0.00e00, 0.00e00],
         ],
     )
+    problem.names.params = [
+        "Substrate Roughness",
+        "Oxide Thickness",
+        "Oxide SLD",
+        "SAM Tails Thickness",
+        "SAM Tails SLD",
+        "SAM Tails Hydration",
+        "SAM Roughness",
+        "CW Thickness",
+        "CW SLD",
+        "SAM Heads Thickness",
+        "SAM Heads SLD",
+        "SAM Heads Hydration",
+        "Bilayer Heads Thickness",
+        "Bilayer Heads SLD",
+        "Bilayer Roughness",
+        "Bilayer Tails Thickness",
+        "Bilayer Tails SLD",
+        "Bilayer Tails Hydration",
+        "Bilayer Heads Hydration",
+        "CW Hydration",
+        "Oxide Hydration",
+    ]
+    problem.names.backgroundParams = ["Background parameter D2O", "Background parameter SMW"]
+    problem.names.scalefactors = ["Scalefactor 1", "Scalefactor 2"]
+    problem.names.qzshifts = []
+    problem.names.bulkIns = ["Silicon"]
+    problem.names.bulkOuts = ["D2O", "SMW"]
+    problem.names.resolutionParams = ["Resolution Param 1"]
+    problem.names.domainRatios = []
+    problem.names.contrasts = ["D2O", "SMW"]
+    problem.checks.params = np.array(
+        [1.0, 1.0, 0.0, 1.0, 0.0, 1.0, 1.0, 1.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0]
+    )
+    problem.checks.backgroundParams = np.array([1.0, 1.0])
+    problem.checks.scalefactors = np.array([0.0, 0.0])
+    problem.checks.qzshifts = np.array([])
+    problem.checks.bulkIns = np.array([0.0])
+    problem.checks.bulkOuts = np.array([1.0, 1.0])
+    problem.checks.resolutionParams = np.array([0.0])
+    problem.checks.domainRatios = np.array([])
 
     return problem
 
