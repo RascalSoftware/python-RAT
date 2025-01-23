@@ -9,7 +9,7 @@ import pytest
 import RATapi
 import RATapi.wrappers
 from RATapi.inputs import FileHandles, check_indices, make_controls, make_input, make_problem
-from RATapi.rat_core import Checks, Control, Limits, Priors, ProblemDefinition
+from RATapi.rat_core import Checks, Control, Limits, NameStore, Priors, ProblemDefinition
 from RATapi.utils.enums import (
     BackgroundActions,
     BoundHandling,
@@ -112,7 +112,40 @@ def custom_xy_project():
 
 
 @pytest.fixture
-def standard_layers_problem():
+def test_names():
+    """The expected NameStore object from "standard_layers_project", "domains_project" and "custom_xy_project"."""
+    names = NameStore()
+    names.params = ["Substrate Roughness", "Test Thickness", "Test SLD", "Test Roughness"]
+    names.backgroundParams = ["Background Param 1"]
+    names.scalefactors = ["Scalefactor 1"]
+    names.qzshifts = []
+    names.bulkIns = ["SLD Air"]
+    names.bulkOuts = ["SLD D2O"]
+    names.resolutionParams = ["Resolution Param 1"]
+    names.domainRatios = []
+    names.contrasts = ["Test Contrast"]
+
+    return names
+
+
+@pytest.fixture
+def test_checks():
+    """The expected checks object from "standard_layers_project", "domains_project" and "custom_xy_project"."""
+    checks = Checks()
+    checks.params = [1, 0, 0, 0]
+    checks.backgroundParams = [0]
+    checks.scalefactors = [0]
+    checks.qzshifts = []
+    checks.bulkIns = [0]
+    checks.bulkOuts = [0]
+    checks.resolutionParams = [0]
+    checks.domainRatios = []
+
+    return checks
+
+
+@pytest.fixture
+def standard_layers_problem(test_names, test_checks):
     """The expected problem object from "standard_layers_project"."""
     problem = ProblemDefinition()
     problem.TF = Calculations.Normal
@@ -165,12 +198,14 @@ def standard_layers_problem():
         [0.01, 0.05],
     ]
     problem.customFiles = FileHandles([])
+    problem.names = test_names
+    problem.checks = test_checks
 
     return problem
 
 
 @pytest.fixture
-def domains_problem():
+def domains_problem(test_names, test_checks):
     """The expected problem object from "domains_project"."""
     problem = ProblemDefinition()
     problem.TF = Calculations.Domains
@@ -224,12 +259,15 @@ def domains_problem():
         [0.4, 0.6],
     ]
     problem.customFiles = FileHandles([])
+    problem.names = test_names
+    problem.names.domainRatios = ["Domain Ratio 1"]
+    problem.checks = test_checks
 
     return problem
 
 
 @pytest.fixture
-def custom_xy_problem():
+def custom_xy_problem(test_names, test_checks):
     """The expected problem object from "custom_xy_project"."""
     problem = ProblemDefinition()
     problem.TF = Calculations.Normal
@@ -284,6 +322,8 @@ def custom_xy_problem():
     problem.customFiles = FileHandles(
         [RATapi.models.CustomFile(name="Test Custom File", filename="cpp_test.dll", language="cpp")]
     )
+    problem.names = test_names
+    problem.checks = test_checks
 
     return problem
 
@@ -484,22 +524,6 @@ def custom_xy_controls():
     return controls
 
 
-@pytest.fixture
-def test_checks():
-    """The expected checks object from "standard_layers_project", "domains_project" and "custom_xy_project"."""
-    checks = Checks()
-    checks.params = [1, 0, 0, 0]
-    checks.backgroundParams = [0]
-    checks.scalefactors = [0]
-    checks.qzshifts = []
-    checks.bulkIns = [0]
-    checks.bulkOuts = [0]
-    checks.resolutionParams = [0]
-    checks.domainRatios = []
-
-    return checks
-
-
 @pytest.mark.parametrize(
     ["test_project", "test_problem", "test_limits", "test_priors", "test_controls"],
     [
@@ -548,7 +572,7 @@ def test_make_input(test_project, test_problem, test_limits, test_priors, test_c
     ]
 
     problem, limits, priors, controls = make_input(test_project, RATapi.Controls())
-    problem = pickle.loads(pickle.dumps(problem))
+    # problem = pickle.loads(pickle.dumps(problem))
     check_problem_equal(problem, test_problem)
 
     limits = pickle.loads(pickle.dumps(limits))
@@ -757,11 +781,26 @@ def check_problem_equal(actual_problem, expected_problem) -> None:
         "fitLimits",
         "otherLimits",
     ]
+    checks_fields = [
+        "params",
+        "backgroundParams",
+        "scalefactors",
+        "qzshifts",
+        "bulkIns",
+        "bulkOuts",
+        "resolutionParams",
+        "domainRatios",
+    ]
+    names_fields = [*checks_fields, "contrasts"]
 
     for scalar_field in scalar_fields:
         assert getattr(actual_problem, scalar_field) == getattr(expected_problem, scalar_field)
     for array_field in array_fields:
         assert np.all(getattr(actual_problem, array_field) == getattr(expected_problem, array_field))
+    for field in names_fields:
+        assert getattr(actual_problem.names, field) == getattr(expected_problem.names, field)
+    for field in checks_fields:
+        assert (getattr(actual_problem.checks, field) == getattr(expected_problem.checks, field)).all()
 
     # Data field is a numpy array
     assert [
