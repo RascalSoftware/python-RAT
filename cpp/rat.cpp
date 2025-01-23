@@ -1853,13 +1853,13 @@ PYBIND11_MODULE(rat_core, m) {
                                       p.bulkIns, p.bulkOuts, p.resolutionParams, p.params, p.numberOfLayers, p.contrastLayers, p.layersDetails, 
                                       p.customFiles, p.modelType, p.contrastCustomFiles, p.contrastDomainRatios, p.domainRatios, 
                                       p.numberOfDomainContrasts, p.domainContrastLayers, p.fitParams, p.otherParams, p.fitLimits, 
-                                      p.otherLimits, p.names.backgroundParams, p.names.scalefactors, p.names.qzshifts, p.names.bulkIns, 
-                                      p.names.bulkOuts, p.names.resolutionParams, p.names.domainRatios, p.names.contrasts, 
+                                      p.otherLimits, p.names.params, p.names.backgroundParams, p.names.scalefactors, p.names.qzshifts,
+                                      p.names.bulkIns, p.names.bulkOuts, p.names.resolutionParams, p.names.domainRatios, p.names.contrasts, 
                                       p.checks.params, p.checks.backgroundParams, p.checks.scalefactors, p.checks.qzshifts,  
                                       p.checks.bulkIns, p.checks.bulkOuts, p.checks.resolutionParams, p.checks.domainRatios);
             },
             [](py::tuple t) { // __setstate__
-                if (t.size() != 57)
+                if (t.size() != 58)
                     throw std::runtime_error("Encountered invalid state unpickling ProblemDefinition object!");
 
                 /* Create a new C++ instance */
@@ -1907,23 +1907,24 @@ PYBIND11_MODULE(rat_core, m) {
                 p.fitLimits = t[39].cast<py::array_t<real_T>>();
                 p.otherLimits = t[40].cast<py::array_t<real_T>>();
                 
-                p.names.backgroundParams = t[41].cast<py::list>(); 
-                p.names.scalefactors = t[42].cast<py::list>();
-                p.names.qzshifts = t[43].cast<py::list>();
-                p.names.bulkIns = t[44].cast<py::list>();
-                p.names.bulkOuts = t[45].cast<py::list>();
-                p.names.resolutionParams = t[46].cast<py::list>();
-                p.names.domainRatios = t[47].cast<py::list>();
-                p.names.contrasts = t[48].cast<py::list>(); 
+                p.names.params = t[41].cast<py::list>(); 
+                p.names.backgroundParams = t[42].cast<py::list>(); 
+                p.names.scalefactors = t[43].cast<py::list>();
+                p.names.qzshifts = t[44].cast<py::list>();
+                p.names.bulkIns = t[45].cast<py::list>();
+                p.names.bulkOuts = t[46].cast<py::list>();
+                p.names.resolutionParams = t[47].cast<py::list>();
+                p.names.domainRatios = t[48].cast<py::list>();
+                p.names.contrasts = t[49].cast<py::list>(); 
 
-                p.checks.params = t[49].cast<py::array_t<real_T>>(); 
-                p.checks.backgroundParams = t[50].cast<py::array_t<real_T>>(); 
-                p.checks.scalefactors = t[51].cast<py::array_t<real_T>>();
-                p.checks.qzshifts = t[52].cast<py::array_t<real_T>>(); 
-                p.checks.bulkIns = t[53].cast<py::array_t<real_T>>(); 
-                p.checks.bulkOuts = t[54].cast<py::array_t<real_T>>(); 
-                p.checks.resolutionParams = t[55].cast<py::array_t<real_T>>(); 
-                p.checks.domainRatios = t[56].cast<py::array_t<real_T>>();
+                p.checks.params = t[50].cast<py::array_t<real_T>>(); 
+                p.checks.backgroundParams = t[51].cast<py::array_t<real_T>>(); 
+                p.checks.scalefactors = t[52].cast<py::array_t<real_T>>();
+                p.checks.qzshifts = t[53].cast<py::array_t<real_T>>(); 
+                p.checks.bulkIns = t[54].cast<py::array_t<real_T>>(); 
+                p.checks.bulkOuts = t[55].cast<py::array_t<real_T>>(); 
+                p.checks.resolutionParams = t[56].cast<py::array_t<real_T>>(); 
+                p.checks.domainRatios = t[57].cast<py::array_t<real_T>>();
 
                 return p;
             }));

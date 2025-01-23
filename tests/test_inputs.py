@@ -572,7 +572,7 @@ def test_make_input(test_project, test_problem, test_limits, test_priors, test_c
     ]
 
     problem, limits, priors, controls = make_input(test_project, RATapi.Controls())
-    # problem = pickle.loads(pickle.dumps(problem))
+    problem = pickle.loads(pickle.dumps(problem))
     check_problem_equal(problem, test_problem)
 
     limits = pickle.loads(pickle.dumps(limits))
