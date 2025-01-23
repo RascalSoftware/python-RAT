@@ -30,7 +30,7 @@ def check_results_equal(actual_results, expected_results) -> None:
     We focus here on the fields common to both results objects, and also check the equality of the subclasses
     "CalculationResults" and "ContrastParams".
     """
-    list_fields = ["reflectivity", "simulation", "shiftedData"]
+    list_fields = ["reflectivity", "simulation", "shiftedData", "backgrounds", "resolutions"]
     double_list_fields = ["layerSlds", "sldProfiles", "resampledLayers"]
     contrast_param_fields = [
         "scalefactors",
