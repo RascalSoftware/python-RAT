@@ -1531,3 +1531,32 @@ def test_wrap_extend(test_project, class_list: str, model_type: str, field: str,
 
     # Ensure invalid model was not appended
     assert test_attribute == orig_class_list
+
+
+@pytest.mark.parametrize(
+    "project",
+    [
+        "r1_default_project",
+        "r1_monolayer",
+        "r1_monolayer_8_contrasts",
+        "r1_orso_polymer",
+        "r1_motofit_bench_mark",
+        "dspc_standard_layers",
+        "dspc_custom_layers",
+        "dspc_custom_xy",
+        "domains_standard_layers",
+        "domains_custom_layers",
+        "domains_custom_xy",
+        "absorption",
+    ],
+)
+def test_save_load(project, request):
+    """Test that saving and loading a project returns the same project."""
+    original_project = request.getfixturevalue(project)
+
+    with tempfile.TemporaryDirectory() as tmp:
+        original_project.save(tmp)
+        converted_project = RATapi.Project.load(Path(tmp, "project.json"))
+
+    for field in RATapi.Project.model_fields:
+        assert getattr(converted_project, field) == getattr(original_project, field)

@@ -8,7 +8,7 @@ import tempfile
 import pytest
 
 import RATapi
-from RATapi.utils.convert import project_class_to_r1, project_from_json, project_to_json, r1_to_project_class
+from RATapi.utils.convert import project_class_to_r1, r1_to_project_class
 
 TEST_DIR_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_data")
 
@@ -108,35 +108,6 @@ def test_invalid_constraints():
         output_project = r1_to_project_class(pathlib.Path(TEST_DIR_PATH, "R1DoubleBilayerVolumeModel.mat"))
 
     assert output_project.background_parameters[0].min == output_project.background_parameters[0].value
-
-
-@pytest.mark.parametrize(
-    "project",
-    [
-        "r1_default_project",
-        "r1_monolayer",
-        "r1_monolayer_8_contrasts",
-        "r1_orso_polymer",
-        "r1_motofit_bench_mark",
-        "dspc_bilayer",
-        "dspc_standard_layers",
-        "dspc_custom_layers",
-        "dspc_custom_xy",
-        "domains_standard_layers",
-        "domains_custom_layers",
-        "domains_custom_xy",
-        "absorption",
-    ],
-)
-def test_json_involution(project, request):
-    """Test that converting a Project to JSON and back returns the same project."""
-    original_project = request.getfixturevalue(project)
-    json_data = project_to_json(original_project)
-
-    converted_project = project_from_json(json_data)
-
-    for field in RATapi.Project.model_fields:
-        assert getattr(converted_project, field) == getattr(original_project, field)
 
 
 @pytest.mark.skipif(importlib.util.find_spec("matlab") is None, reason="Matlab not installed")

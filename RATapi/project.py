@@ -3,6 +3,7 @@
 import collections
 import copy
 import functools
+import json
 from enum import Enum
 from pathlib import Path
 from textwrap import indent
@@ -23,7 +24,6 @@ from typing_extensions import get_args, get_origin
 
 import RATapi.models
 from RATapi.classlist import ClassList
-from RATapi.utils.convert import project_from_json, project_to_json
 from RATapi.utils.custom_errors import custom_pydantic_validation_error
 from RATapi.utils.enums import Calculations, Geometries, LayerModels, Priors, TypeOptions
 
@@ -835,20 +835,55 @@ from numpy import array, empty, inf
             + "\n)"
         )
 
-    def save(self, path: str | Path, filename: str = "project"):
+    def save(self, path: Union[str, Path], filename: str = "project"):
         """Save a project to a JSON file.
 
         Parameters
         ----------
         path : str or Path
-            The directory in which the project will be written.
+            The path in which the project will be written.
+        filename : str
+            The name of the generated project file.
 
         """
+        json_dict = {}
+        for field in self.model_fields:
+            attr = getattr(self, field)
+
+            if field == "data":
+
+                def make_data_dict(item):
+                    return {
+                        "name": item.name,
+                        "data": item.data.tolist(),
+                        "data_range": item.data_range,
+                        "simulation_range": item.simulation_range,
+                    }
+
+                json_dict["data"] = [make_data_dict(data) for data in attr]
+
+            elif field == "custom_files":
+
+                def make_custom_file_dict(item):
+                    return {
+                        "name": item.name,
+                        "filename": item.filename,
+                        "language": item.language,
+                        "path": str(item.path),
+                    }
+
+                json_dict["custom_files"] = [make_custom_file_dict(file) for file in attr]
+
+            elif isinstance(attr, ClassList):
+                json_dict[field] = [dict(item) for item in attr]
+            else:
+                json_dict[field] = attr
+
         file = Path(path, f"{filename.removesuffix('.json')}.json")
-        file.write_text(project_to_json(self))
+        file.write_text(json.dumps(json_dict))
 
     @classmethod
-    def load(cls, path: str | Path) -> "Project":
+    def load(cls, path: Union[str, Path]) -> "Project":
         """Load a project from file.
 
         Parameters
@@ -857,8 +892,17 @@ from numpy import array, empty, inf
             The path to the project file.
 
         """
-        file = Path(path)
-        return project_from_json(file.read_text())
+        input = Path(path).read_text()
+        model_dict = json.loads(input)
+        for i in range(0, len(model_dict["data"])):
+            if model_dict["data"][i]["name"] == "Simulation":
+                model_dict["data"][i]["data"] = np.empty([0, 3])
+                del model_dict["data"][i]["data_range"]
+            else:
+                data = model_dict["data"][i]["data"]
+                model_dict["data"][i]["data"] = np.array(data)
+
+        return cls.model_validate(model_dict)
 
     def _classlist_wrapper(self, class_list: ClassList, func: Callable):
         """Defines the function used to wrap around ClassList routines to force revalidation.
