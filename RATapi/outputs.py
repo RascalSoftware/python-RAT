@@ -81,6 +81,7 @@ class Results:
     simulation: list
     shiftedData: list
     backgrounds: list
+    resolutions: list
     layerSlds: list
     sldProfiles: list
     resampledLayers: list
@@ -239,6 +240,7 @@ def make_results(
             simulation=output_results.simulation,
             shiftedData=output_results.shiftedData,
             backgrounds=output_results.backgrounds,
+            resolutions=output_results.resolutions,
             layerSlds=output_results.layerSlds,
             sldProfiles=output_results.sldProfiles,
             resampledLayers=output_results.resampledLayers,
@@ -260,6 +262,7 @@ def make_results(
             simulation=output_results.simulation,
             shiftedData=output_results.shiftedData,
             backgrounds=output_results.backgrounds,
+            resolutions=output_results.resolutions,
             layerSlds=output_results.layerSlds,
             sldProfiles=output_results.sldProfiles,
             resampledLayers=output_results.resampledLayers,

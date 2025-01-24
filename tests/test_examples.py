@@ -1,6 +1,7 @@
 """Test the RAT examples."""
 
 import importlib
+from pathlib import Path
 
 import pytest
 
@@ -31,13 +32,25 @@ def test_rat_examples(example_name):
     "example_name",
     [
         "DSPC_function_background",
-        # FIXME: https://github.com/RascalSoftware/python-RAT/issues/102
-        # "convert_rascal",
     ],
 )
 @pytest.mark.skipif(importlib.util.find_spec("matlab") is None, reason="Matlab not installed")
-def test_matlab_examples(example_name):
+def test_function_background(example_name):
     """Test examples which rely on MATLAB engine being installed."""
     p, r = getattr(examples, example_name)()
+    assert p is not None
+    assert r is not None
+
+
+@pytest.mark.parametrize(
+    "example_name",
+    [
+        "convert_rascal",
+    ],
+)
+@pytest.mark.skipif(importlib.util.find_spec("matlab") is None, reason="Matlab not installed")
+def test_matlab_examples(example_name, temp_dir):
+    """Test convert_rascal example, directing the output to a temporary directory."""
+    p, r = examples.convert_rascal(Path(temp_dir, "lipid_bilayer.mat"))
     assert p is not None
     assert r is not None

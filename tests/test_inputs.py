@@ -9,7 +9,7 @@ import pytest
 import RATapi
 import RATapi.wrappers
 from RATapi.inputs import FileHandles, check_indices, make_controls, make_input, make_problem
-from RATapi.rat_core import Checks, Control, Limits, Priors, ProblemDefinition
+from RATapi.rat_core import Checks, Control, Limits, NameStore, Priors, ProblemDefinition
 from RATapi.utils.enums import (
     BackgroundActions,
     BoundHandling,
@@ -112,7 +112,40 @@ def custom_xy_project():
 
 
 @pytest.fixture
-def standard_layers_problem():
+def test_names():
+    """The expected NameStore object from "standard_layers_project", "domains_project" and "custom_xy_project"."""
+    names = NameStore()
+    names.params = ["Substrate Roughness", "Test Thickness", "Test SLD", "Test Roughness"]
+    names.backgroundParams = ["Background Param 1"]
+    names.scalefactors = ["Scalefactor 1"]
+    names.qzshifts = []
+    names.bulkIns = ["SLD Air"]
+    names.bulkOuts = ["SLD D2O"]
+    names.resolutionParams = ["Resolution Param 1"]
+    names.domainRatios = []
+    names.contrasts = ["Test Contrast"]
+
+    return names
+
+
+@pytest.fixture
+def test_checks():
+    """The expected checks object from "standard_layers_project", "domains_project" and "custom_xy_project"."""
+    checks = Checks()
+    checks.params = np.array([1, 0, 0, 0])
+    checks.backgroundParams = np.array([0])
+    checks.scalefactors = np.array([0])
+    checks.qzshifts = np.array([])
+    checks.bulkIns = np.array([0])
+    checks.bulkOuts = np.array([0])
+    checks.resolutionParams = np.array([0])
+    checks.domainRatios = np.array([])
+
+    return checks
+
+
+@pytest.fixture
+def standard_layers_problem(test_names, test_checks):
     """The expected problem object from "standard_layers_project"."""
     problem = ProblemDefinition()
     problem.TF = Calculations.Normal
@@ -140,10 +173,17 @@ def standard_layers_problem():
     problem.contrastDomainRatios = [0]
     problem.resample = [False]
     problem.dataPresent = [1]
+    problem.data = [np.array([[1.0, 1.0, 1.0, 0.0, 0.0, 0.0]])]
+    problem.dataLimits = [[1.0, 1.0]]
+    problem.simulationLimits = [[1.0, 1.0]]
     problem.oilChiDataPresent = [0]
     problem.numberOfContrasts = 1
     problem.numberOfLayers = 1
+    problem.repeatLayers = [[0, 1]]
+    problem.layersDetails = [[2, 3, 4, float("NaN"), 2]]
+    problem.contrastLayers = [[1]]
     problem.numberOfDomainContrasts = 0
+    problem.domainContrastLayers = []
     problem.fitParams = [3.0]
     problem.otherParams = [0.0, 0.0, 0.0, 1e-06, 0.23, 0.0, 6.35e-06, 0.03]
     problem.fitLimits = [[1.0, 5.0]]
@@ -158,13 +198,15 @@ def standard_layers_problem():
         [0.01, 0.05],
     ]
     problem.customFiles = FileHandles([])
+    problem.names = test_names
+    problem.checks = test_checks
 
     return problem
 
 
 @pytest.fixture
-def domains_problem():
-    """The expected problem object from "standard_layers_project"."""
+def domains_problem(test_names, test_checks):
+    """The expected problem object from "domains_project"."""
     problem = ProblemDefinition()
     problem.TF = Calculations.Domains
     problem.modelType = LayerModels.StandardLayers
@@ -191,10 +233,17 @@ def domains_problem():
     problem.contrastDomainRatios = [1]
     problem.resample = [False]
     problem.dataPresent = [1]
+    problem.data = [np.array([[1.0, 1.0, 1.0, 0.0, 0.0, 0.0]])]
+    problem.dataLimits = [[1.0, 1.0]]
+    problem.simulationLimits = [[1.0, 1.0]]
     problem.oilChiDataPresent = [0]
     problem.numberOfContrasts = 1
     problem.numberOfLayers = 1
+    problem.repeatLayers = [[0, 1]]
+    problem.layersDetails = [[2, 3, 4, float("NaN"), 2]]
+    problem.contrastLayers = [[2, 1]]
     problem.numberOfDomainContrasts = 2
+    problem.domainContrastLayers = [[1], [1]]
     problem.fitParams = [3.0]
     problem.otherParams = [0.0, 0.0, 0.0, 1e-06, 0.23, 0.0, 6.35e-06, 0.03, 0.5]
     problem.fitLimits = [[1.0, 5.0]]
@@ -210,12 +259,15 @@ def domains_problem():
         [0.4, 0.6],
     ]
     problem.customFiles = FileHandles([])
+    problem.names = test_names
+    problem.names.domainRatios = ["Domain Ratio 1"]
+    problem.checks = test_checks
 
     return problem
 
 
 @pytest.fixture
-def custom_xy_problem():
+def custom_xy_problem(test_names, test_checks):
     """The expected problem object from "custom_xy_project"."""
     problem = ProblemDefinition()
     problem.TF = Calculations.Normal
@@ -243,10 +295,17 @@ def custom_xy_problem():
     problem.contrastDomainRatios = [0]
     problem.resample = [False]
     problem.dataPresent = [0]
+    problem.data = [np.empty([0, 6])]
+    problem.dataLimits = [[0.0, 0.0]]
+    problem.simulationLimits = [[0.005, 0.7]]
     problem.oilChiDataPresent = [0]
+    problem.repeatLayers = [[0, 1]]
+    problem.layersDetails = []
+    problem.contrastLayers = [[]]
     problem.numberOfContrasts = 1
     problem.numberOfLayers = 0
     problem.numberOfDomainContrasts = 0
+    problem.domainContrastLayers = []
     problem.fitParams = [3.0]
     problem.otherParams = [0.0, 0.0, 0.0, 1e-06, 0.23, 0.0, 6.35e-06, 0.03]
     problem.fitLimits = [[1.0, 5.0]]
@@ -263,6 +322,8 @@ def custom_xy_problem():
     problem.customFiles = FileHandles(
         [RATapi.models.CustomFile(name="Test Custom File", filename="cpp_test.dll", language="cpp")]
     )
+    problem.names = test_names
+    problem.checks = test_checks
 
     return problem
 
@@ -273,8 +334,8 @@ def normal_limits():
     limits = Limits()
     limits.params = [[1.0, 5.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]
     limits.backgroundParams = [[1e-7, 1e-5]]
-    limits.qzshifts = []
     limits.scalefactors = [[0.02, 0.25]]
+    limits.qzshifts = []
     limits.bulkIns = [[0.0, 0.0]]
     limits.bulkOuts = [[6.2e-6, 6.35e-6]]
     limits.resolutionParams = [[0.01, 0.05]]
@@ -289,8 +350,8 @@ def domains_limits():
     limits = Limits()
     limits.params = [[1.0, 5.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]
     limits.backgroundParams = [[1e-7, 1e-5]]
-    limits.qzshifts = []
     limits.scalefactors = [[0.02, 0.25]]
+    limits.qzshifts = []
     limits.bulkIns = [[0.0, 0.0]]
     limits.bulkOuts = [[6.2e-6, 6.35e-6]]
     limits.resolutionParams = [[0.01, 0.05]]
@@ -310,8 +371,8 @@ def normal_priors():
         ["Test Roughness", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf],
     ]
     priors.backgroundParams = [["Background Param 1", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.qzshifts = []
     priors.scalefactors = [["Scalefactor 1", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.qzshifts = []
     priors.bulkIns = [["SLD Air", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.bulkOuts = [["SLD D2O", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.resolutionParams = [["Resolution Param 1", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
@@ -353,8 +414,8 @@ def domains_priors():
         ["Test Roughness", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf],
     ]
     priors.backgroundParams = [["Background Param 1", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.qzshifts = []
     priors.scalefactors = [["Scalefactor 1", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
+    priors.qzshifts = []
     priors.bulkIns = [["SLD Air", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.bulkOuts = [["SLD D2O", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
     priors.resolutionParams = [["Resolution Param 1", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
@@ -461,22 +522,6 @@ def custom_xy_controls():
     controls.adaptPCR = True
 
     return controls
-
-
-@pytest.fixture
-def test_checks():
-    """The expected checks object from "standard_layers_project", "domains_project" and "custom_xy_project"."""
-    checks = Checks()
-    checks.params = [1, 0, 0, 0]
-    checks.backgroundParams = [0]
-    checks.qzshifts = []
-    checks.scalefactors = [0]
-    checks.bulkIns = [0]
-    checks.bulkOuts = [0]
-    checks.resolutionParams = [0]
-    checks.domainRatios = []
-
-    return checks
 
 
 @pytest.mark.parametrize(
@@ -725,19 +770,49 @@ def check_problem_equal(actual_problem, expected_problem) -> None:
         "contrastDomainRatios",
         "resample",
         "dataPresent",
+        "dataLimits",
+        "simulationLimits",
         "oilChiDataPresent",
+        "repeatLayers",
+        "contrastLayers",
+        "domainContrastLayers",
         "fitParams",
         "otherParams",
         "fitLimits",
         "otherLimits",
     ]
+    checks_fields = [
+        "params",
+        "backgroundParams",
+        "scalefactors",
+        "qzshifts",
+        "bulkIns",
+        "bulkOuts",
+        "resolutionParams",
+        "domainRatios",
+    ]
+    names_fields = [*checks_fields, "contrasts"]
 
     for scalar_field in scalar_fields:
         assert getattr(actual_problem, scalar_field) == getattr(expected_problem, scalar_field)
     for array_field in array_fields:
         assert np.all(getattr(actual_problem, array_field) == getattr(expected_problem, array_field))
+    for field in names_fields:
+        assert getattr(actual_problem.names, field) == getattr(expected_problem.names, field)
+    for field in checks_fields:
+        assert (getattr(actual_problem.checks, field) == getattr(expected_problem.checks, field)).all()
 
-    # Need to account for "NaN" entries in contrastCustomFiles field
+    # Data field is a numpy array
+    assert [
+        actual_data == expected_data for (actual_data, expected_data) in zip(actual_problem.data, expected_problem.data)
+    ]
+
+    # Need to account for "NaN" entries in layersDetails and contrastCustomFiles field
+    for actual_layer, expected_layer in zip(actual_problem.layersDetails, expected_problem.layersDetails):
+        assert (actual_layer == expected_layer) or ["NaN" if np.isnan(el) else el for el in actual_layer] == [
+            "NaN" if np.isnan(el) else el for el in expected_layer
+        ]
+
     assert (actual_problem.contrastCustomFiles == expected_problem.contrastCustomFiles).all() or [
         "NaN" if np.isnan(el) else el for el in actual_problem.contrastCustomFiles
     ] == ["NaN" if np.isnan(el) else el for el in expected_problem.contrastCustomFiles]

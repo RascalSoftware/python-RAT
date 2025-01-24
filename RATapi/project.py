@@ -62,7 +62,6 @@ values_defined_in = {
     "resolutions.value_4": "resolution_parameters",
     "resolutions.value_5": "resolution_parameters",
     "resolutions.constant.source": "resolution_parameters",
-    "resolutions.data.source": "data",
     "resolutions.function.source": "custom_files",
     "layers.thickness": "parameters",
     "layers.SLD": "parameters",
@@ -90,7 +89,6 @@ model_names_used_in = {
     "data": [
         AllFields("contrasts", ["data"]),
         AllFields("backgrounds", ["source"]),
-        AllFields("resolutions", ["source"]),
     ],
     "custom_files": [AllFields("backgrounds", ["source"]), AllFields("resolutions", ["source"])],
     "backgrounds": [AllFields("contrasts", ["background"])],

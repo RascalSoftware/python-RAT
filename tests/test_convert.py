@@ -102,7 +102,7 @@ def test_r1_involution(project, request, monkeypatch):
 def test_invalid_constraints():
     """Test that invalid constraints are fixed where necessary."""
     with pytest.warns(
-        match="The parameter Background parameter 1 has invalid constraints,"
+        match=r"The parameter (.+) has invalid constraints,"
         " these have been adjusted to satisfy the current value of the parameter."
     ):
         output_project = r1_to_project_class(pathlib.Path(TEST_DIR_PATH, "R1DoubleBilayerVolumeModel.mat"))
@@ -119,9 +119,9 @@ def test_invalid_constraints():
         "r1_orso_polymer",
         "r1_motofit_bench_mark",
         "dspc_bilayer",
-        # "dspc_standard_layers",
-        # "dspc_custom_layers",
-        # "dspc_custom_xy",
+        "dspc_standard_layers",
+        "dspc_custom_layers",
+        "dspc_custom_xy",
         "domains_standard_layers",
         "domains_custom_layers",
         "domains_custom_xy",

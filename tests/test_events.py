@@ -23,9 +23,7 @@ def test_event_register() -> None:
 
     RATapi.events.register(RATapi.events.EventTypes.Message, second_callback)
     # the list is not guaranteed to be in the same order as inputted hence the set
-    assert set(RATapi.events.get_event_callback(RATapi.events.EventTypes.Message)) == set(
-        [first_callback, second_callback]
-    )
+    assert set(RATapi.events.get_event_callback(RATapi.events.EventTypes.Message)) == {first_callback, second_callback}
 
     RATapi.events.clear(RATapi.events.EventTypes.Message, second_callback)
     result = RATapi.events.get_event_callback(RATapi.events.EventTypes.Message)
