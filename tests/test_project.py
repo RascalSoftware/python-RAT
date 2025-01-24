@@ -1,8 +1,6 @@
 """Test the project module."""
 
 import copy
-import shutil
-import tempfile
 from pathlib import Path
 from typing import Callable
 
@@ -134,13 +132,6 @@ def default_project_str():
         "|   0   | Simulation |  []  |     []     |   [0.005, 0.7]   |\n"
         "+-------+------------+------+------------+------------------+\n\n"
     )
-
-
-@pytest.fixture
-def temp_dir():
-    path = tempfile.mkdtemp()
-    yield path
-    shutil.rmtree(path)
 
 
 def test_classlists(test_project) -> None:

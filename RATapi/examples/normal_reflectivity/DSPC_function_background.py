@@ -142,10 +142,9 @@ def DSPC_function_background():
     )
     problem.backgrounds.append(name="SMW Background", type="constant", source="Background parameter SMW")
 
-    # FIXME: replace this with a Python custom file when Python backgrounds are added!
     problem.custom_files.append(
         name="D2O Background Function",
-        filename="backgroundFunction.py",
+        filename="background_function.py",
         language="python",
         path=pathlib.Path(__file__).parent.resolve(),
     )

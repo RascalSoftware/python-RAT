@@ -1,3 +1,5 @@
+import shutil
+import tempfile
 from pathlib import Path
 
 import numpy as np
@@ -7,6 +9,13 @@ import RATapi
 import RATapi.classlist
 import RATapi.outputs
 import RATapi.rat_core
+
+
+@pytest.fixture
+def temp_dir():
+    path = tempfile.mkdtemp()
+    yield path
+    shutil.rmtree(path)
 
 
 @pytest.fixture

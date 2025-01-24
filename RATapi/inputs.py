@@ -280,10 +280,7 @@ def make_problem(project: RATapi.Project, checks: Checks) -> ProblemDefinition:
         resolution = project.resolutions[contrast.resolution]
         contrast_resolution_types.append(resolution.type)
         contrast_resolution_param = []
-        if resolution.type == TypeOptions.Data:
-            # The source field is empty for a data resolution
-            pass
-        elif resolution.type == TypeOptions.Function:
+        if resolution.type == TypeOptions.Function:
             contrast_resolution_param.append(project.custom_files.index(resolution.source, True))
             contrast_resolution_param.extend(
                 [
@@ -299,7 +296,7 @@ def make_problem(project: RATapi.Project, checks: Checks) -> ProblemDefinition:
                 ]
             )
 
-        else:
+        elif resolution.type == TypeOptions.Constant:
             contrast_resolution_param.append(project.resolution_parameters.index(resolution.source, True))
 
         contrast_resolution_params.append(contrast_resolution_param)
