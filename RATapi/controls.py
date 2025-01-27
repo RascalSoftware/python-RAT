@@ -2,6 +2,8 @@ import contextlib
 import os
 import tempfile
 import warnings
+from pathlib import Path
+from typing import Union
 
 import prettytable
 from pydantic import (
@@ -220,3 +222,30 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid", use_attribut
         with contextlib.suppress(FileNotFoundError):
             os.remove(self._IPCFilePath)
         return None
+
+    def save(self, path: Union[str, Path], filename: str = "controls"):
+        """Save a controls object to a JSON file.
+
+        Parameters
+        ----------
+        path : str or Path
+            The directory in which the controls object will be written.
+        filename : str
+            The name for the JSON file containing the controls object.
+
+        """
+        file = Path(path, f"{filename.removesuffix('.json')}.json")
+        file.write_text(self.model_dump_json())
+
+    @classmethod
+    def load(cls, path: Union[str, Path]) -> "Controls":
+        """Load a controls object from file.
+
+        Parameters
+        ----------
+        path : str or Path
+            The path to the controls object file.
+
+        """
+        file = Path(path)
+        return cls.model_validate_json(file.read_text())
