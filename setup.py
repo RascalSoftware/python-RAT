@@ -8,7 +8,7 @@ from setuptools import Extension, find_packages, setup
 from setuptools.command.build_clib import build_clib
 from setuptools.command.build_ext import build_ext
 
-__version__ = "0.0.0.dev3"
+__version__ = "0.0.0.dev4"
 PACKAGE_NAME = "RATapi"
 
 with open("README.md") as f:
