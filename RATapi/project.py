@@ -875,7 +875,7 @@ from numpy import array, empty, inf
                 json_dict["custom_files"] = [make_custom_file_dict(file) for file in attr]
 
             elif isinstance(attr, ClassList):
-                json_dict[field] = [dict(item) for item in attr]
+                json_dict[field] = [item.model_dump() for item in attr]
             else:
                 json_dict[field] = attr
 

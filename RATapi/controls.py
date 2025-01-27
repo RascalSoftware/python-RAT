@@ -230,6 +230,8 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid", use_attribut
         ----------
         path : str or Path
             The directory in which the controls object will be written.
+        filename : str
+            The name for the JSON file containing the controls object.
 
         """
         file = Path(path, f"{filename.removesuffix('.json')}.json")
