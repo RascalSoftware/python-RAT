@@ -7,7 +7,6 @@ import json
 import warnings
 from enum import Enum
 from pathlib import Path
-from sys import version_info
 from textwrap import indent
 from typing import Annotated, Any, Callable, Union
 
@@ -972,28 +971,15 @@ def try_relative_to(path: Path, relative_to: Path) -> Path:
     abs_path = Path(path).resolve()
     abs_base = Path(relative_to).resolve()
 
-    # 'walking up' paths is only added in Python 3.12
-    if version_info.minor < 12:
-        try:
-            relative_path = abs_path.relative_to(abs_base)
-        except ValueError as err:
-            warnings.warn(
-                "Could not save a custom file path as relative to the project directory. "
-                "This may mean the project may not open on other devices. "
-                f"Error message: {err}",
-                stacklevel=2,
-            )
-            return abs_path
-    else:
-        try:
-            relative_path = abs_path.relative_to(abs_base, walk_up=True)
-        except ValueError as err:
-            warnings.warn(
-                "Could not save a custom file path as relative to the project directory. "
-                "This may mean the project may not open on other devices. "
-                f"Error message: {err}",
-                stacklevel=2,
-            )
-            return abs_path
+    try:
+        relative_path = abs_path.relative_to(abs_base)
+    except ValueError:
+        warnings.warn(
+            "Could not save custom file path as relative to the project directory. "
+            "To ensure that your project works on other devices, make sure your custom files "
+            "are in a subfolder of the project save location.",
+            stacklevel=2,
+        )
+        return abs_path
 
     return relative_path

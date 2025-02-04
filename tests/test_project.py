@@ -4,7 +4,6 @@ import copy
 import tempfile
 import warnings
 from pathlib import Path
-from sys import version_info
 from typing import Callable
 
 import numpy as np
@@ -1574,7 +1573,7 @@ def test_save_load(project, request):
 
 
 def test_relative_paths():
-    """Test that ``try_relative_to`` correctly creates relative paths."""
+    """Test that ``try_relative_to`` correctly creates relative paths to subfolders."""
 
     with tempfile.TemporaryDirectory() as tmp:
         data_path = Path(tmp, "data/myfile.dat")
@@ -1583,19 +1582,16 @@ def test_relative_paths():
 
 
 def test_relative_paths_version():
-    """Test that we only walk up paths on Python 3.12 or greater."""
+    """Test that we get a warning for trying to walk up paths."""
 
     data_path = "/tmp/project/data/mydata.dat"
     relative_path = "/tmp/project/project_path/myproj.dat"
 
-    if version_info.minor >= 12:
-        with warnings.catch_warnings():
-            warnings.simplefilter("error")
-            assert RATapi.project.try_relative_to(data_path, relative_path) == Path("../../data/mydata.dat")
-    else:
-        with pytest.warns(
-            match="Could not save a custom file path as relative to the project directory. "
-            "This may mean the project may not open on other devices. "
-            "Error message:"
-        ):
-            assert RATapi.project.try_relative_to(data_path, relative_path) == Path("/tmp/project/data/mydata.dat")
+    with pytest.warns(
+        match="Could not save custom file path as relative to the project directory. "
+        "To ensure that your project works on other devices, make sure your custom files "
+        "are in a subfolder of the project save location."
+    ):
+        assert (
+            RATapi.project.try_relative_to(data_path, relative_path) == Path("/tmp/project/data/mydata.dat").resolve()
+        )
