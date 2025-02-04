@@ -1559,10 +1559,11 @@ def test_save_load(project, request):
 
     with tempfile.TemporaryDirectory() as tmp:
         # ignore relative path warnings
+        path = Path(tmp, "project.json")
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            original_project.save(tmp)
-        converted_project = RATapi.Project.load(Path(tmp, "project.json"))
+            original_project.save(path)
+        converted_project = RATapi.Project.load(path)
 
     # resolve custom files in case the original project had unresolvable relative paths
     for file in original_project.custom_files:
@@ -1583,7 +1584,7 @@ def test_relative_paths():
 
 def test_relative_paths_version():
     """Test that we only walk up paths on Python 3.12 or greater."""
-    
+
     data_path = "/tmp/project/data/mydata.dat"
     relative_path = "/tmp/project/project_path/myproj.dat"
 
@@ -1591,8 +1592,10 @@ def test_relative_paths_version():
         with warnings.catch_warnings():
             warnings.simplefilter("error")
             assert RATapi.project.try_relative_to(data_path, relative_path) == Path("../../data/mydata.dat")
-    else: 
-        with pytest.warns(match="Could not save a custom file path as relative to the project directory. "
-                          "This may mean the project may not open on other devices. "
-                          "Error message:"):
+    else:
+        with pytest.warns(
+            match="Could not save a custom file path as relative to the project directory. "
+            "This may mean the project may not open on other devices. "
+            "Error message:"
+        ):
             assert RATapi.project.try_relative_to(data_path, relative_path) == Path("/tmp/project/data/mydata.dat")

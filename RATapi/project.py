@@ -837,18 +837,17 @@ from numpy import array, empty, inf
             + "\n)"
         )
 
-    def save(self, filepath: Union[str, Path], filename: str = "project"):
+    def save(self, filepath: Union[str, Path] = "./project.json"):
         """Save a project to a JSON file.
 
         Parameters
         ----------
         filepath : str or Path
-            The path in which the project will be written.
-        filename : str
-            The name of the generated project file.
+            The path to where the project file will be written.
 
         """
-        filepath = Path(filepath)
+        filepath = Path(filepath).with_suffix(".json")
+
         json_dict = {}
         for field in self.model_fields:
             attr = getattr(self, field)
@@ -882,8 +881,7 @@ from numpy import array, empty, inf
             else:
                 json_dict[field] = attr
 
-        file = Path(filepath, f"{filename.removesuffix('.json')}.json")
-        file.write_text(json.dumps(json_dict))
+        filepath.write_text(json.dumps(json_dict))
 
     @classmethod
     def load(cls, path: Union[str, Path]) -> "Project":
@@ -979,17 +977,23 @@ def try_relative_to(path: Path, relative_to: Path) -> Path:
         try:
             relative_path = abs_path.relative_to(abs_base)
         except ValueError as err:
-            warnings.warn("Could not save a custom file path as relative to the project directory. "
-                          "This may mean the project may not open on other devices. "
-                          f"Error message: {err}", stacklevel=2)
-            return abs_path 
+            warnings.warn(
+                "Could not save a custom file path as relative to the project directory. "
+                "This may mean the project may not open on other devices. "
+                f"Error message: {err}",
+                stacklevel=2,
+            )
+            return abs_path
     else:
         try:
-            relative_path = abs_path.relative_to(abs_base, walk_up = True)
+            relative_path = abs_path.relative_to(abs_base, walk_up=True)
         except ValueError as err:
-            warnings.warn("Could not save a custom file path as relative to the project directory. "
-                          "This may mean the project may not open on other devices. "
-                          f"Error message: {err}", stacklevel=2)
-            return abs_path 
+            warnings.warn(
+                "Could not save a custom file path as relative to the project directory. "
+                "This may mean the project may not open on other devices. "
+                f"Error message: {err}",
+                stacklevel=2,
+            )
+            return abs_path
 
     return relative_path
