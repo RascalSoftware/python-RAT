@@ -4,8 +4,10 @@ import collections
 import copy
 import functools
 import json
+import warnings
 from enum import Enum
 from pathlib import Path
+from sys import version_info
 from textwrap import indent
 from typing import Annotated, Any, Callable, Union
 
@@ -835,17 +837,18 @@ from numpy import array, empty, inf
             + "\n)"
         )
 
-    def save(self, path: Union[str, Path], filename: str = "project"):
+    def save(self, filepath: Union[str, Path], filename: str = "project"):
         """Save a project to a JSON file.
 
         Parameters
         ----------
-        path : str or Path
+        filepath : str or Path
             The path in which the project will be written.
         filename : str
             The name of the generated project file.
 
         """
+        filepath = Path(filepath)
         json_dict = {}
         for field in self.model_fields:
             attr = getattr(self, field)
@@ -869,7 +872,7 @@ from numpy import array, empty, inf
                         "name": item.name,
                         "filename": item.filename,
                         "language": item.language,
-                        "path": str(item.path),
+                        "path": str(try_relative_to(item.path, filepath)),
                     }
 
                 json_dict["custom_files"] = [make_custom_file_dict(file) for file in attr]
@@ -879,7 +882,7 @@ from numpy import array, empty, inf
             else:
                 json_dict[field] = attr
 
-        file = Path(path, f"{filename.removesuffix('.json')}.json")
+        file = Path(filepath, f"{filename.removesuffix('.json')}.json")
         file.write_text(json.dumps(json_dict))
 
     @classmethod
@@ -892,15 +895,21 @@ from numpy import array, empty, inf
             The path to the project file.
 
         """
-        input = Path(path).read_text()
-        model_dict = json.loads(input)
-        for i in range(0, len(model_dict["data"])):
-            if model_dict["data"][i]["name"] == "Simulation":
-                model_dict["data"][i]["data"] = np.empty([0, 3])
-                del model_dict["data"][i]["data_range"]
+        path = Path(path)
+        input_data = path.read_text()
+        model_dict = json.loads(input_data)
+        for dataset in model_dict["data"]:
+            if dataset["name"] == "Simulation":
+                dataset["data"] = np.empty([0, 3])
+                del dataset["data_range"]
             else:
-                data = model_dict["data"][i]["data"]
-                model_dict["data"][i]["data"] = np.array(data)
+                data = dataset["data"]
+                dataset["data"] = np.array(data)
+
+        # file paths are saved as relative to the project directory
+        for file in model_dict["custom_files"]:
+            if not Path(file["path"]).is_absolute():
+                file["path"] = Path(path, file["path"])
 
         return cls.model_validate(model_dict)
 
@@ -943,3 +952,44 @@ from numpy import array, empty, inf
             return return_value
 
         return wrapped_func
+
+
+def try_relative_to(path: Path, relative_to: Path) -> Path:
+    """Attempt to create a relative path and warn the user if it isn't possible.
+
+    Parameters
+    ----------
+    path : Path
+        The path to try to find a relative path for.
+    relative_to: Path
+        The path to which we find a relative path for ``path``.
+
+    Returns
+    -------
+    Path
+        The relative path if successful, else the absolute path.
+
+    """
+    # we use the absolute paths to resolve symlinks and so on
+    abs_path = Path(path).resolve()
+    abs_base = Path(relative_to).resolve()
+
+    # 'walking up' paths is only added in Python 3.12
+    if version_info.minor < 12:
+        try:
+            relative_path = abs_path.relative_to(abs_base)
+        except ValueError as err:
+            warnings.warn("Could not save a custom file path as relative to the project directory. "
+                          "This may mean the project may not open on other devices. "
+                          f"Error message: {err}", stacklevel=2)
+            return abs_path 
+    else:
+        try:
+            relative_path = abs_path.relative_to(abs_base, walk_up = True)
+        except ValueError as err:
+            warnings.warn("Could not save a custom file path as relative to the project directory. "
+                          "This may mean the project may not open on other devices. "
+                          f"Error message: {err}", stacklevel=2)
+            return abs_path 
+
+    return relative_path
