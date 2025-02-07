@@ -10,3 +10,4 @@ StrEnum >= 0.4.15; python_version < '3.11'
 ruff >= 0.4.10
 scipy >= 1.13.1
 tqdm >= 4.66.5
+orsopy >= 1.2.1
