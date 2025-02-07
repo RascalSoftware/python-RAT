@@ -865,6 +865,7 @@ def plot_bayes(project: RATapi.Project, results: RATapi.outputs.BayesResults):
     all parameters.
 
     Parameters
+    ----------
     project : Project
               An instance of the Project class
     results : Union[Results, BayesResults]

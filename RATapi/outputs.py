@@ -62,12 +62,40 @@ class RATResult:
 
 @dataclass
 class CalculationResults(RATResult):
+    """The goodness of fit from the Abeles calculation.
+
+    Attributes
+    ----------
+    chiValues : np.ndarray
+        The chi-squared value for each contrast.
+    sumChi : float
+        The sum of the chiValues array.
+
+    """
+
     chiValues: np.ndarray
     sumChi: float
 
 
 @dataclass
 class ContrastParams(RATResult):
+    """The experimental parameters for each contrast.
+
+    Attributes
+    ----------
+    scalefactors : np.ndarray
+        An array containing the scalefactor values for each contrast.
+    bulkIn : np.ndarray
+        An array containing the bulk in values for each contrast.
+    bulkOut : np.ndarray
+        An array containing the bulk out values for each contrast.
+    subRoughs : np.ndarray
+        An array containing the substrate roughness values for each contrast.
+    resample : np.ndarray
+        An array containing whether each contrast was resampled.
+
+    """
+
     scalefactors: np.ndarray
     bulkIn: np.ndarray
     bulkOut: np.ndarray
@@ -77,6 +105,43 @@ class ContrastParams(RATResult):
 
 @dataclass
 class Results:
+    """The results of a RAT calculation.
+
+    Attributes
+    ----------
+    reflectivity : list
+        The reflectivity curves for each contrast,
+        with the same range as the data
+        (``data_range`` in the contrast's ``Data`` object)
+    simulation : list
+        The reflectivity curves for each contrast,
+        which can be a different range to allow extrapolation
+        (``simulation_range`` in the contrast's ``Data`` object).
+    shiftedData : list
+        The data from each contrast extrapolated over the simulation range
+        with scalefactors and background corrections applied.
+    backgrounds : list
+        The background for each contrast, constructed from the contrast's background data.
+    resolutions : list
+        The resolution for each contrast, constructed from the contrast's resolution data.
+    layerSlds : list
+        The array of layer parameter values for each contrast.
+    sldProfiles : list
+        The SLD profiles for each contrast.
+    resampledLayers : list
+        If resampling is used, the SLD for each contrast after resampling has been performed.
+    calculationResults : CalculationResults
+        The chi-squared fit results from the final calculation and fit.
+    contrastParams : ContrastParams
+        The experimental parameters for the contrasts.
+    fitParams : np.ndarray
+        The best fit value of the parameter with name ``fitNames[i]``.
+    fitNames : list[str]
+        The names of the fit parameters, where ``fitNames[i]`` is the name
+        of the parameter with value given in ``fitParams[i]``.
+
+    """
+
     reflectivity: list
     simulation: list
     shiftedData: list
@@ -99,6 +164,25 @@ class Results:
 
 @dataclass
 class PredictionIntervals(RATResult):
+    """The Bayesian prediction intervals for 95% and 65% confidence.
+
+    For ``reflectivity`` and ``sld``, each list item is an array
+    with five rows. The 0th and 4th index are the minimum and maximum
+    range with 95% confidence, the 1st and 3rd are the minimum and maximum
+    with 65% confidence, and the 2nd is the mean value of the interval.
+    Column ``i`` is this data for the i'th point of the reflectivity or
+    SLD result.
+
+    Attributes
+    ----------
+    reflectivity : list
+        The prediction interval data for reflectivity of each contrast.
+    SLD : list
+        The prediction interval data for SLD of each contrast.
+    sampleChi : np.ndarray
+
+    """
+
     reflectivity: list
     sld: list
     sampleChi: np.ndarray
@@ -106,6 +190,19 @@ class PredictionIntervals(RATResult):
 
 @dataclass
 class ConfidenceIntervals(RATResult):
+    """
+    The 65% and 95% confidence intervals for the best fit results.
+
+    Attributes
+    ----------
+    percentile95 : np.ndarray
+        The 95% confidence intervals.
+    percentile65 : np.ndarray
+        The 65% confidence intervals
+    mean : np.ndarray
+
+    """
+
     percentile95: np.ndarray
     percentile65: np.ndarray
     mean: np.ndarray
@@ -113,6 +210,54 @@ class ConfidenceIntervals(RATResult):
 
 @dataclass
 class DreamParams(RATResult):
+    """The parameters used by the inner DREAM algorithm.
+
+    Attributes
+    ----------
+    nParams : float
+        The number of parameters used by the algorithm.
+    nChains : float
+        The number of MCMC chains used by the algorithm.
+    nGenerations : float
+        The number of DE generations calculated per iteration.
+    parallel : bool
+        Whether the algorithm should run chains in parallel.
+    CPU : float
+        The number of processor cores used for parallel chains.
+    jumpProbability : float
+        A probability range for the size of jumps when performing subspace sampling.
+    pUnitGamma : float
+        The probability that the scaling-down factor of jumps will be ignored
+        and a larger jump will be taken for one iteration.
+    nCR : float
+        The number of crossovers performed each iteration.
+    delta : float
+        The number of chain mutation pairs proposed each iteration.
+    steps : float
+        The number of MCMC steps to perform between conversion checks.
+    zeta : float
+        The ergodicity of the algorithm.
+    outlier : str
+        What test should be used to detect outliers.
+    adaptPCR : bool
+        Whether the crossover probability for differential evolution should be
+        adapted by the algorithm as it runs.
+    thinning : float
+        The thinning rate of each Markov chain (to reduce memory intensity)
+    epsilon : float
+        The cutoff threshold for Approximate Bayesian Computation (if used)
+    ABC : bool
+        Whether Approximate Bayesian Computation is used.
+    IO : bool
+        Whether the algorithm should perform IO writes of the model in parallel.
+    storeOutput : bool
+        Whether output model simulations are performed.
+    R : np.ndarray
+        An array where row ``i`` is the list of chains
+        with which chain ``i`` can mutate.
+
+    """
+
     nParams: float
     nChains: float
     nGenerations: float
@@ -136,6 +281,45 @@ class DreamParams(RATResult):
 
 @dataclass
 class DreamOutput(RATResult):
+    """The diagnostic output information from DREAM.
+
+    Attributes
+    ----------
+    allChains : np.ndarray
+        An ``nGenerations`` x ``nParams + 2`` x ``nChains`` size array,
+        where ``chain_k = DreamOutput.allChains[:, :, k]``
+        is the data of chain ``k`` in the final iteration;
+        for generation i of the final iteration, ``chain_k[i, j]`` represents:
+
+        - the sampled value of parameter ``j`` for ``j in 0:nParams``;
+        - the associated log-prior for those sampled values for ``j = nParams + 1``;
+        - the associated log-likelihood for those sampled values for ``j = nParams + 2``.
+
+    outlierChains : np.ndarray
+        A two-column array where ``DreamOutput.AR[i, 1]`` is the index of a chain
+        and ``DreamOutput.AR[i, 0]`` is the length of that chain when it was removed
+        for being an outlier.
+    runtime : float
+        The runtime of the DREAM algorithm in seconds.
+    iteration : float
+        The number of iterations performed.
+    modelOutput : float
+        Unused. Will always be 0.
+    AR : np.ndarray
+        A two-column array where ``DreamOutput.AR[i, 0]`` is an iteration number
+        and ``DreamOutput.AR[i, 1]`` is the average acceptance rate of chain step
+        proposals for that iteration.
+    R_stat : np.ndarray
+        An array where ``DreamOutput.R_stat[i, 0]`` is an iteration number and
+        ``DreamOutput.R_stat[i, j]`` is the convergence statistic for parameter ``j``
+        at that iteration (where chains are indexed 1 to ``nParams`` inclusive).
+    CR : np.ndarray
+        A four-column array where ``DreamOutput.CR[i, 0]`` is an iteration number,
+        ``and DreamOutput.CR[i, j]`` is the selection probability of the ``j``'th crossover
+        value for that iteration.
+
+    """
+
     allChains: np.ndarray
     outlierChains: np.ndarray
     runtime: float
@@ -148,6 +332,26 @@ class DreamOutput(RATResult):
 
 @dataclass
 class NestedSamplerOutput(RATResult):
+    """The output information from the Nested Sampler (ns).
+
+    Attributes
+    ----------
+    logZ : float
+        The natural logarithm of the evidence Z for the parameter values.
+    logZErr : float
+        The estimated uncertainty in the final value of logZ.
+    nestSamples : np.ndarray
+        ``NestedSamplerOutput.nestSamples[i, j]`` represents the values
+        sampled at iteration ``i``, where this value is:
+
+        - the value sampled for parameter ``j``, for ``j`` in ``0:nParams``,
+        - the minimum log-likelihood for ``j = nParams + 1``.
+
+    postSamples : np.ndarray
+        The posterior values at the points sampled in ``NestedSamplerOutput.nestSamples``.
+
+    """
+
     logZ: float
     logZErr: float
     nestSamples: np.ndarray
@@ -156,6 +360,26 @@ class NestedSamplerOutput(RATResult):
 
 @dataclass
 class BayesResults(Results):
+    """The results of a Bayesian RAT calculation.
+
+    Attributes
+    ----------
+    predictionIntervals : PredictionIntervals
+        The prediction intervals.
+    confidenceIntervals : ConfidenceIntervals
+        The 65% and 95% confidence intervals for the best fit results.
+    dreamParams : DreamParams
+        The parameters used by DREAM, if relevant.
+    dreamOutput : DreamOutput
+        The output from DREAM if DREAM was used.
+    nestedSamplerOutput : NestedSamplerOutput
+        The output from nested sampling if ns was used.
+    chain : np.ndarray
+        The MCMC chains for each parameter.
+        The ``i``'th column of the array contains the chain for parameter ``fitNames[i]``.
+
+    """
+
     predictionIntervals: PredictionIntervals
     confidenceIntervals: ConfidenceIntervals
     dreamParams: DreamParams
@@ -169,7 +393,24 @@ def make_results(
     output_results: RATapi.rat_core.OutputResult,
     bayes_results: Optional[RATapi.rat_core.BayesResults] = None,
 ) -> Union[Results, BayesResults]:
-    """Initialise a python Results or BayesResults object using the outputs from a RAT calculation."""
+    """Initialise a python Results or BayesResults object using the outputs from a RAT calculation.
+
+    Parameters
+    ----------
+    procedure : Procedures
+        The procedure used by the calculation.
+    output_results : RATapi.rat_core.OutputResult
+        The C++ output results from the calculation.
+    bayes_results : Optional[RATapi.rat_core.BayesResults]
+        The optional extra C++ Bayesian output results from a Bayesian calculation.
+
+    Returns
+    -------
+    Results or BayesResults
+        A result object containing the results of the calculation, of type
+        Results for non-Bayesian procedures and BayesResults for Bayesian procedures.
+
+    """
     calculation_results = CalculationResults(
         chiValues=output_results.calculationResults.chiValues,
         sumChi=output_results.calculationResults.sumChi,
