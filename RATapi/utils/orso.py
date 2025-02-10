@@ -7,7 +7,7 @@ import orsopy
 from orsopy.fileio import load_orso
 
 from RATapi import ClassList, Project
-from RATapi.models import AbsorptionLayer, Background, Contrast, Data, Layer, Parameter, Resolution
+from RATapi.models import AbsorptionLayer, Contrast, Data, Layer, Parameter, Resolution
 
 
 def load_ort_data(filepath: str) -> Union[Data, list[Data]]:
@@ -167,12 +167,13 @@ def orso_model_to_rat(model: orsopy.fileio.model_language.SampleModel | str, abs
         parameters.union(layer_params)
         layers.union(layer)
 
-
-    return ORSOSample(bulk_in=bulk_in,
-                      bulk_out=bulk_out,
-                      parameters=parameters,
-                      layers=layers,
-                      model=[layer.material.formula for layer in stack[1:-1]])
+    return ORSOSample(
+        bulk_in=bulk_in,
+        bulk_out=bulk_out,
+        parameters=parameters,
+        layers=layers,
+        model=[layer.material.formula for layer in stack[1:-1]],
+    )
 
 
 def orso_layer_to_rat_layer(
