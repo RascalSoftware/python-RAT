@@ -1,6 +1,7 @@
 """Readers from file formats."""
 
 from dataclasses import dataclass
+from typing import Union
 
 import orsopy
 from orsopy.fileio import load_orso
@@ -9,7 +10,29 @@ from RATapi import ClassList, Project
 from RATapi.models import AbsorptionLayer, Background, Contrast, Data, Layer, Parameter, Resolution
 
 
-def read_ort(filepath: str) -> Project:
+def load_ort_data(filepath: str) -> Union[Data, list[Data]]:
+    """Read data from an .ort file.
+
+    Parameters
+    ----------
+    filepath : str
+        The path to the .ort file.
+
+    Returns
+    -------
+    Data | list[Data]
+        If the .ort file contains one dataset, just the data model.
+        If it contains multiple datasets, returns a list of data models.
+
+    """
+    ort_data = load_orso(filepath)
+    datasets = [Data(name=dataset.info.data_source.sample.name, data=dataset.data) for dataset in ort_data]
+    if len(datasets) == 1:
+        return datasets[0]
+    return datasets
+
+
+def ort_to_project(filepath: str) -> Project:
     """Create a project from an .ort file.
 
     Parameters
@@ -27,58 +50,47 @@ def read_ort(filepath: str) -> Project:
     ort_data = load_orso(filepath)
 
     for dataset in ort_data:
-        metadata = dataset.info
-        sample = metadata.data_source.sample
-        model_info = orso_model_to_rat(sample.model)
-
-        # Add all parameters that aren't already defined
-        project.parameters.union(model_info.parameters)
-        project.layers.extend(model_info.layers)
-        project.bulk_in.append(model_info.bulk_in)
-        project.bulk_out.append(model_info.bulk_out)
+        sample = dataset.info.data_source.sample
 
         project.data.append(Data(name=sample.name, data=dataset.data))
 
-        if dataset.data.shape[1] == 4:
-            project.resolutions.append(
-                Resolution(
-                    name=f"{sample.name} Resolution",
-                    type="data",
+        if sample.model is not None:
+            model_info = orso_model_to_rat(sample.model)
+
+            # Add all parameters that aren't already defined
+            project.parameters.union(model_info.parameters)
+            project.layers.extend(model_info.layers)
+            project.bulk_in.append(model_info.bulk_in)
+            project.bulk_out.append(model_info.bulk_out)
+
+            if dataset.data.shape[1] == 4:
+                project.resolutions.append(
+                    Resolution(
+                        name=f"{sample.name} Resolution",
+                        type="data",
+                    )
+                )
+            else:
+                project.resolutions.append(
+                    Resolution(
+                        name=f"{sample.name} Resolution",
+                        type="constant",
+                        source="Resolution Param 1",
+                    )
+                )
+
+            project.contrasts.append(
+                Contrast(
+                    name=dataset.info.data_source.experiment.title,
+                    data=sample.name,
+                    background="Background 1",
+                    bulk_in=model_info.bulk_in.name,
+                    bulk_out=model_info.bulk_out.name,
+                    scalefactor="Scalefactor 1",
+                    resolution=f"{sample.name} Resolution",
+                    model=model_info.model,
                 )
             )
-        else:
-            project.resolution_parameters.append(Parameter(name=f"{sample.name} Resolution Parameter"))
-            project.resolutions.append(
-                Resolution(
-                    name=f"{sample.name} Resolution",
-                    type="constant",
-                    source=f"{sample.name} Resolution Parameter",
-                )
-            )
-
-        project.background_parameters.append(Parameter(name=f"{sample.name} Background Parameter"))
-        project.backgrounds.append(
-            Background(
-                name=f"{sample.name} Background",
-                type="constant",
-                source=f"{sample.name} Background Parameter",
-            )
-        )
-
-        project.scalefactors.append(Parameter(name=f"{sample.name} Scalefactor"))
-
-        project.contrasts.append(
-            Contrast(
-                name=metadata.data_source.experiment.title,
-                data=sample.name,
-                background=f"{sample.name} Background",
-                bulk_in=model_info.bulk_in.name,
-                bulk_out=model_info.bulk_out.name,
-                scalefactor=f"{sample.name} Scalefactor",
-                resolution=f"{sample.name} Resolution",
-                model=[layer.name for layer in model_info.layers],
-            )
-        )
 
     return project
 
@@ -90,10 +102,11 @@ class ORSOSample:
     bulk_in: Parameter
     bulk_out: Parameter
     parameters: ClassList[Parameter]
-    layers: ClassList[Layer]
+    layers: ClassList[Layer] | ClassList[AbsorptionLayer]
+    model: list[str]
 
 
-def orso_model_to_rat(model: orsopy.fileio.model_language.SampleModel | str) -> ORSOSample:
+def orso_model_to_rat(model: orsopy.fileio.model_language.SampleModel | str, absorption: bool = False) -> ORSOSample:
     """Get information from an ORSO SampleModel object.
 
     Parameters
@@ -101,6 +114,8 @@ def orso_model_to_rat(model: orsopy.fileio.model_language.SampleModel | str) -> 
     model : orsopy.fileio.model_language.SampleModel or str
         The sample model to turn into a RAT data. If given as a string,
         the string is interpreted as a layer stack in ORSO model language.
+    absorption : bool, default False
+        Whether to account for absorption in the model.
 
     Returns
     -------
@@ -148,11 +163,16 @@ def orso_model_to_rat(model: orsopy.fileio.model_language.SampleModel | str) -> 
     layers = ClassList()
 
     for orso_layer in stack[1:-1]:
-        layer_params, layer = orso_layer_to_rat_layer(orso_layer)
+        layer_params, layer = orso_layer_to_rat_layer(orso_layer, absorption)
         parameters.union(layer_params)
-        layers.append(layer)
+        layers.union(layer)
 
-    return ORSOSample(bulk_in=bulk_in, bulk_out=bulk_out, parameters=parameters, layers=layers)
+
+    return ORSOSample(bulk_in=bulk_in,
+                      bulk_out=bulk_out,
+                      parameters=parameters,
+                      layers=layers,
+                      model=[layer.material.formula for layer in stack[1:-1]])
 
 
 def orso_layer_to_rat_layer(
@@ -195,7 +215,7 @@ def orso_layer_to_rat_layer(
             thickness=f"{name} Thickness",
             roughness=f"{name} Roughness",
             SLD_real=f"{name} SLD",
-            SLD_imag=f"{name} SLD imaginary",
+            SLD_imaginary=f"{name} SLD imaginary",
         )
     else:
         layer = Layer(
