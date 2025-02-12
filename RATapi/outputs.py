@@ -84,13 +84,13 @@ class ContrastParams(RATResult):
     Attributes
     ----------
     scalefactors : np.ndarray
-        An array containing the scalefactor values for each contrast.
+        The scalefactor values for each contrast.
     bulkIn : np.ndarray
-        An array containing the bulk in values for each contrast.
+        The bulk in values for each contrast.
     bulkOut : np.ndarray
-        An array containing the bulk out values for each contrast.
+        The bulk out values for each contrast.
     subRoughs : np.ndarray
-        An array containing the substrate roughness values for each contrast.
+        The substrate roughness values for each contrast.
     resample : np.ndarray
         An array containing whether each contrast was resampled.
 
@@ -115,15 +115,14 @@ class Results:
         (``data_range`` in the contrast's ``Data`` object)
     simulation : list
         The reflectivity curves for each contrast,
-        which can be a different range to allow extrapolation
+        which can be a wider range to allow extrapolation
         (``simulation_range`` in the contrast's ``Data`` object).
     shiftedData : list
-        The data from each contrast extrapolated over the simulation range
-        with scalefactors and background corrections applied.
+        The data with scalefactors and background corrections applied.
     backgrounds : list
-        The background for each contrast, constructed from the contrast's background data.
+        The background for each contrast defined over the simulation range.
     resolutions : list
-        The resolution for each contrast, constructed from the contrast's resolution data.
+        The resolution for each contrast defined over the simulation range.
     layerSlds : list
         The array of layer parameter values for each contrast.
     sldProfiles : list
@@ -167,11 +166,13 @@ class PredictionIntervals(RATResult):
     """The Bayesian prediction intervals for 95% and 65% confidence.
 
     For ``reflectivity`` and ``sld``, each list item is an array
-    with five rows. The 0th and 4th index are the minimum and maximum
-    range with 95% confidence, the 1st and 3rd are the minimum and maximum
-    with 65% confidence, and the 2nd is the mean value of the interval.
-    Column ``i`` is this data for the i'th point of the reflectivity or
-    SLD result.
+    with five rows. The rows represent:
+
+    - 0: the 5th percentile;
+    - 1: the 35th percentile;
+    - 2: the mean value of the interval;
+    - 3: the 65th percentile;
+    - 4: the 95th percentile.
 
     Attributes
     ----------
@@ -180,7 +181,7 @@ class PredictionIntervals(RATResult):
     SLD : list
         The prediction interval data for SLD of each contrast.
     sampleChi : np.ndarray
-
+        The value of sumChi at each point of the Markov chain.
     """
 
     reflectivity: list
@@ -196,11 +197,11 @@ class ConfidenceIntervals(RATResult):
     Attributes
     ----------
     percentile95 : np.ndarray
-        The 95% confidence intervals.
+        The 95% confidence intervals for each fit parameter.
     percentile65 : np.ndarray
-        The 65% confidence intervals
+        The 65% confidence intervals for each fit parameter.
     mean : np.ndarray
-
+        The mean values for each fit parameter.
     """
 
     percentile95: np.ndarray
