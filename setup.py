@@ -172,11 +172,12 @@ setup(
         "pydantic >= 2.7.2",
         "matplotlib >= 3.8.3",
         "scipy >= 1.13.1",
-        "tqdm>=4.66.5",
+        "tqdm >= 4.66.5",
     ],
     extras_require={
         ':python_version < "3.11"': ["StrEnum >= 0.4.15"],
         "Dev": ["pytest>=7.4.0", "pytest-cov>=4.1.0", "ruff>=0.4.10"],
+        "Orso": ["orsopy>=1.2.1", "pint>=0.24.4"],
         "Matlab_latest": ["matlabengine"],
         "Matlab_2025a": ["matlabengine == 25.1.*"],
         "Matlab_2024b": ["matlabengine == 24.2.2"],
