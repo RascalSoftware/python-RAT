@@ -20,7 +20,7 @@ def load_ort_data(filepath: str) -> Union[Data, list[Data]]:
 
     Returns
     -------
-    Data | list[Data]
+    Data or list[Data]
         If the .ort file contains one dataset, just the data model.
         If it contains multiple datasets, returns a list of data models.
 
@@ -102,11 +102,13 @@ class ORSOSample:
     bulk_in: Parameter
     bulk_out: Parameter
     parameters: ClassList[Parameter]
-    layers: ClassList[Layer] | ClassList[AbsorptionLayer]
+    layers: Union[ClassList[Layer], ClassList[AbsorptionLayer]]
     model: list[str]
 
 
-def orso_model_to_rat(model: orsopy.fileio.model_language.SampleModel | str, absorption: bool = False) -> ORSOSample:
+def orso_model_to_rat(
+    model: Union[orsopy.fileio.model_language.SampleModel, str], absorption: bool = False
+) -> ORSOSample:
     """Get information from an ORSO SampleModel object.
 
     Parameters
