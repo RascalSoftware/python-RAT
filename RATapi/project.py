@@ -967,19 +967,16 @@ def try_relative_to(path: Path, relative_to: Path) -> Path:
         The relative path if successful, else the absolute path.
 
     """
-    # we use the absolute paths to resolve symlinks and so on
-    abs_path = Path(path).resolve()
-    abs_base = Path(relative_to).resolve()
-
-    try:
-        relative_path = abs_path.relative_to(abs_base)
-    except ValueError:
+    path = Path(path)
+    relative_to = Path(relative_to)
+    if path.is_relative_to(relative_to):
+        return str(path.relative_to(relative_to))
+    else:
         warnings.warn(
-            "Could not save custom file path as relative to the project directory. "
-            "To ensure that your project works on other devices, make sure your custom files "
+            "Could not save custom file path as relative to the project directory, "
+            "which means that it may not work on other devices."
+            "If you would like to share your project, make sure your custom files "
             "are in a subfolder of the project save location.",
             stacklevel=2,
         )
-        return abs_path
-
-    return relative_path
+        return str(path.resolve())
