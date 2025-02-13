@@ -1578,7 +1578,7 @@ def test_relative_paths():
     with tempfile.TemporaryDirectory() as tmp:
         data_path = Path(tmp, "data/myfile.dat")
 
-        assert RATapi.project.try_relative_to(data_path, tmp) == "data/myfile.dat"
+        assert Path(RATapi.project.try_relative_to(data_path, tmp)) == Path("data/myfile.dat")
 
 
 def test_relative_paths_warning():
@@ -1593,4 +1593,7 @@ def test_relative_paths_warning():
         "If you would like to share your project, make sure your custom files "
         "are in a subfolder of the project save location.",
     ):
-        assert RATapi.project.try_relative_to(data_path, relative_path) == "/tmp/project/data/mydata.dat"
+        assert (
+            Path(RATapi.project.try_relative_to(data_path, relative_path))
+            == Path("/tmp/project/data/mydata.dat").resolve()
+        )
