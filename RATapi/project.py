@@ -870,7 +870,7 @@ from numpy import array, empty, inf
                         "name": item.name,
                         "filename": item.filename,
                         "language": item.language,
-                        "path": str(try_relative_to(item.path, filepath)),
+                        "path": try_relative_to(item.path, filepath),
                     }
 
                 json_dict["custom_files"] = [make_custom_file_dict(file) for file in attr]
@@ -951,7 +951,7 @@ from numpy import array, empty, inf
         return wrapped_func
 
 
-def try_relative_to(path: Path, relative_to: Path) -> Path:
+def try_relative_to(path: Path, relative_to: Path) -> str:
     """Attempt to create a relative path and warn the user if it isn't possible.
 
     Parameters
@@ -963,7 +963,7 @@ def try_relative_to(path: Path, relative_to: Path) -> Path:
 
     Returns
     -------
-    Path
+    str
         The relative path if successful, else the absolute path.
 
     """
