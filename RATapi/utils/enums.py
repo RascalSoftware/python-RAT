@@ -1,3 +1,5 @@
+"""The Enum values used in the parameters of various RATapi classes and functions."""
+
 from typing import Union
 
 try:
@@ -7,6 +9,8 @@ except ImportError:
 
 
 class RATEnum(StrEnum):
+    """A subclass of StrEnum with some adjustments for variable spellings."""
+
     @classmethod
     def _missing_(cls, value: str):
         value = value.lower()
@@ -22,25 +26,39 @@ class RATEnum(StrEnum):
 
 # Controls
 class Procedures(RATEnum):
-    """Defines the available options for procedures"""
+    """The available options for procedures."""
 
     Calculate = "calculate"
+    """Run an Abelès reflectivity calculation and calculate chi-squared to the data."""
+
     Simplex = "simplex"
+    """Run a Nelder-Mead simplex optimisation over the fit parameters."""
+
     DE = "de"
+    """Run a Differential Evolution optimisation over the fit parameters."""
+
     NS = "ns"
+    """Run Bayesian Nested Sampling over the fit parameters."""
+
     DREAM = "dream"
+    """Run the Bayesian DREAM algorithm over the fit parameters."""
 
 
 class Parallel(RATEnum):
-    """Defines the available options for parallelization"""
+    """The available options for parallelisation."""
 
     Single = "single"
+    """Do not parallelise."""
+
     Points = "points"
+    """Split all contrasts into groups of points, and assign a process to each group."""
+
     Contrasts = "contrasts"
+    """Assign one process to each contrast."""
 
 
 class Display(RATEnum):
-    """Defines the available options for display"""
+    """The available options for terminal output."""
 
     Off = "off"
     Iter = "iter"
@@ -49,14 +67,29 @@ class Display(RATEnum):
 
 
 class Strategies(RATEnum):
-    """Defines the available options for differential evolution strategies"""
+    """The available strategies for generating base vectors in differential evolution."""
 
     Random = "random"
+    """The base vector is random."""
+
     LocalToBest = "local to best"
+    """The base vector is a combination of one randomly-selected local solution 
+    and the best solution of the previous iteration."""
+
     BestWithJitter = "best jitter"
+    """The base vector is the best solution of the previous iteration, with a small random perturbation applied."""
+
     RandomWithPerVectorDither = "vector dither"
+    """The base vector is random, with a random scaling factor applied to each mutant. 
+    This scaling factor is different for each mutant."""
+
     RandomWithPerGenerationDither = "generation dither"
+    """The base vector is random, with a random scaling factor applied to each mutant. 
+    This scaling factor is the same for every mutant, and randomised every generation."""
+
     RandomEitherOrAlgorithm = "either or"
+    """The base vector is randomly chosen from either a pure random mutation, 
+    or a pure recombination of parent parameter values."""
 
     @classmethod
     def _missing_(cls, value: Union[int, str]):
@@ -68,60 +101,101 @@ class Strategies(RATEnum):
         return super()._missing_(value)
 
     def __int__(self):
+        """Convert the DE strategy to its hardcoded index in the internal code."""
         # as RAT core expects strategy as an integer
         return list(Strategies).index(self) + 1
 
 
 class BoundHandling(RATEnum):
-    """Defines the available options for bound handling"""
+    """The available options for bound handling in DREAM."""
 
     Off = "off"
+    """Allow points to be sampled out of the parameter bounds."""
+
     Reflect = "reflect"
+    """If a step passes a boundary, reflect it back across the boundary."""
+
     Bound = "bound"
+    """If a step passes a boundary, set it equal to the nearest point on the boundary."""
+
     Fold = "fold"
+    """Treat the boundary as periodic and ‘wrap the step around’ to the other side of the space."""
 
 
 # Models
 class TypeOptions(RATEnum):
+    """The types of signal (``Background`` and ``Resolution``)."""
+
     Constant = "constant"
+    """A uniform constant signal given by a parameter."""
+
     Data = "data"
+    """A signal given in the dataset for the contrast."""
+
     Function = "function"
+    """A signal defined by a custom function."""
 
 
 class BackgroundActions(RATEnum):
+    """Ways that the background can be applied to the model."""
+
     Add = "add"
     Subtract = "subtract"
 
 
 class Languages(RATEnum):
+    """Language options for custom files."""
+
     Cpp = "cpp"
     Python = "python"
     Matlab = "matlab"
 
 
 class Hydration(RATEnum):
+    """Options for the 'hydrate with' parameter of a Layer."""
+
     None_ = "none"
     BulkIn = "bulk in"
     BulkOut = "bulk out"
 
 
 class Priors(RATEnum):
+    """Prior distributions for parameters."""
+
     Uniform = "uniform"
+    """A uniform distribution over the parameter range."""
+
     Gaussian = "gaussian"
+    """A Gaussian distribution centred on the parameter value,
+    with shape defined by ``mu`` and ``sigma`` for the parameter."""
 
 
 # Project
 class Calculations(RATEnum):
+    """Types of calculations that can be performed by RAT."""
+
     Normal = "normal"
     Domains = "domains"
 
 
 class LayerModels(RATEnum):
+    """Types of layer model supported by RAT."""
+
     CustomLayers = "custom layers"
+    """The layer model is given by a custom function."""
+
     CustomXY = "custom xy"
+    """The continuous SLD of the layer model is given by a custom function."""
+
     StandardLayers = "standard layers"
+    """The layer model is given by a list of ``Layer``s or ``DomainContrast``s."""
 
 
 class Geometries(RATEnum):
+    """Where the substrate roughness is placed."""
+
     AirSubstrate = "air/substrate"
+    """The substrate roughness is placed at the end of the stack."""
+
     SubstrateLiquid = "substrate/liquid"
+    """The substrate roughness is placed at the beginning of the stack."""

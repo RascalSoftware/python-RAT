@@ -1,7 +1,10 @@
+"""A custom bilayer model for the custom file languages benchmark."""
+
 import numpy as np
 
 
 def custom_bilayer(params, bulk_in, bulk_out, contrast):
+    """Calculate the layer parameters for a custom bilayer model."""
     sub_rough = params[0]
     oxide_thick = params[1]
     oxide_hydration = params[2]

@@ -358,9 +358,11 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", use_attribute
         return value
 
     def model_post_init(self, __context: Any) -> None:
-        """Initialises the class in the ClassLists for empty data fields, sets protected parameters, gets names of all
-        defined parameters, determines the contents of the "model" field in contrasts, and wraps ClassList routines to
-        control revalidation.
+        """Set up the Class to protect against disallowed modification.
+
+        We initialise the class handle in the ClassLists for empty data fields, sets protected parameters, get names of
+        all defined parameters, determines the contents of the "model" field in contrasts,
+        and wraps ClassList routines to control revalidation.
         """
         # Ensure all ClassLists have the correct _class_handle defined
         for field in (fields := self.model_fields):
@@ -440,9 +442,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", use_attribute
 
     @model_validator(mode="after")
     def set_domain_contrasts(self) -> "Project":
-        """If we are not running a domains calculation with standard layers, ensure the domain_contrasts component of
-        the model is empty.
-        """
+        """Ensure ``domain_contrasts`` is empty if we are not running a standard layer domains calculation."""
         if not (self.calculation == Calculations.Domains and self.model == LayerModels.StandardLayers):
             self.domain_contrasts.data = []
         return self
@@ -487,8 +487,10 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", use_attribute
 
     @model_validator(mode="after")
     def set_contrast_model_field(self) -> "Project":
-        """The contents of the "model" field of "contrasts" depend on the values of the "calculation" and "model_type"
-        defined in the project. If they have changed, clear the contrast models.
+        """Clear the contrast models if ``calculation`` or ``model_type`` has changed.
+
+        The contents of the "model" field of "contrasts" depend on the values of the "calculation" and "model_type"
+        defined in the project.
         """
         model_field = self.get_contrast_model_field()
         if model_field != self._contrast_model_field:
@@ -499,8 +501,10 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", use_attribute
 
     @model_validator(mode="after")
     def check_contrast_model_length(self) -> "Project":
-        """Given certain values of the "calculation" and "model" defined in the project, the "model" field of
-        "contrasts" may be constrained in its length.
+        """Ensure the contrast model isn't too long for a domains, custom layers, or custom XY calculation.
+
+        If a custom model is used, the ``model`` field of the contrast should just be one item long. For
+        a standard layers domain calculation, it should be exactly two items long.
         """
         if self.model == LayerModels.StandardLayers and self.calculation == Calculations.Domains:
             for contrast in self.contrasts:
@@ -695,8 +699,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", use_attribute
         allowed_values: list[str],
         allowed_field: str,
     ) -> None:
-        """The contents of the "model" field of "contrasts" and "domain_contrasts" must be defined elsewhere in the
-        project.
+        """Ensure the contents of the ``model`` for a contrast or domain contrast exist in the required project fields.
 
         Parameters
         ----------
@@ -911,7 +914,7 @@ from numpy import array, empty, inf
         return cls.model_validate(model_dict)
 
     def _classlist_wrapper(self, class_list: ClassList, func: Callable):
-        """Defines the function used to wrap around ClassList routines to force revalidation.
+        """Define the function used to wrap around ClassList routines to force revalidation.
 
         Parameters
         ----------
@@ -929,8 +932,11 @@ from numpy import array, empty, inf
 
         @functools.wraps(func)
         def wrapped_func(*args, **kwargs):
-            """Run the given function and then revalidate the "Project" model. If any exception is raised, restore
-            the previous state of the given ClassList and report details of the exception.
+            """Run the given function and then revalidate the "Project" model.
+
+            If any exception is raised, restore the previous state of the given ClassList
+            and report details of the exception.
+
             """
             previous_state = copy.deepcopy(class_list.data)
             return_value = None

@@ -1,4 +1,4 @@
-"""Converts python models to the necessary inputs for the compiled RAT code"""
+"""Converts python models to the necessary inputs for the compiled RAT code."""
 
 import importlib
 import os
@@ -67,8 +67,8 @@ class FileHandles:
         self.index = 0
         return self
 
-    def get_handle(self, index):
-        """Returns file handle for a given custom file.
+    def get_handle(self, index: int):
+        """Return file handle for a given custom file.
 
         Parameters
         ----------
@@ -87,7 +87,15 @@ class FileHandles:
 
         return file_handle
 
-    def copy(self):
+    def copy(self) -> "FileHandles":
+        """Create a copy of the FileHandles object.
+
+        Returns
+        -------
+        FileHandles
+            The copy of this FileHandles object.
+
+        """
         handles = FileHandles()
         handles.files = [file.copy() for file in self.files]
 
@@ -106,8 +114,7 @@ class FileHandles:
 
 
 def make_input(project: RATapi.Project, controls: RATapi.Controls) -> tuple[ProblemDefinition, Limits, Control]:
-    """Constructs the inputs required for the compiled RAT code using the data defined in the input project and
-    controls.
+    """Construct the inputs required for the compiled RAT code using the data defined in the input project and controls.
 
     Parameters
     ----------
@@ -148,12 +155,15 @@ def make_input(project: RATapi.Project, controls: RATapi.Controls) -> tuple[Prob
 
 
 def make_problem(project: RATapi.Project) -> ProblemDefinition:
-    """Constructs the problem input required for the compiled RAT code.
+    """Construct the problem input required for the compiled RAT code.
 
     Parameters
     ----------
     project : RAT.Project
         The project model, which defines the physical system under study.
+    checks : RAT.rat_core.Checks
+        States whether or not to fit each parameter defined in the project.
+
 
     Returns
     -------
@@ -395,7 +405,7 @@ def make_problem(project: RATapi.Project) -> ProblemDefinition:
 
 
 def make_resample(project: RATapi.Project) -> list[int]:
-    """Constructs the "resample" field of the problem input required for the compiled RAT code.
+    """Construct the "resample" field of the problem input required for the compiled RAT code.
 
     Parameters
     ----------
@@ -404,7 +414,7 @@ def make_resample(project: RATapi.Project) -> list[int]:
 
     Returns
     -------
-     : list[int]
+    list[int]
         The "resample" field of the problem input used in the compiled RAT code.
 
     """
@@ -412,7 +422,7 @@ def make_resample(project: RATapi.Project) -> list[int]:
 
 
 def make_data_present(project: RATapi.Project) -> list[int]:
-    """Constructs the "dataPresent" field of the problem input required for the compiled RAT code.
+    """Construct the "dataPresent" field of the problem input required for the compiled RAT code.
 
     Parameters
     ----------
@@ -421,7 +431,7 @@ def make_data_present(project: RATapi.Project) -> list[int]:
 
     Returns
     -------
-     : list[int]
+    list[int]
         The "dataPresent" field of the problem input used in the compiled RAT code.
 
     """
@@ -429,8 +439,7 @@ def make_data_present(project: RATapi.Project) -> list[int]:
 
 
 def check_indices(problem: ProblemDefinition) -> None:
-    """Checks the indices in contrast lists in a ProblemDefinition object lie within the range of the corresponding
-    parameter lists.
+    """Check the indices a problem's contrast lists lie within the range of the corresponding parameter lists.
 
     Parameters
     ----------
@@ -518,14 +527,12 @@ def append_data_background(data: np.array, background: np.array) -> np.array:
 
 
 def make_controls(input_controls: RATapi.Controls) -> Control:
-    """Converts the controls object to the format required by the compiled RAT code.
+    """Convert the controls object to the format required by the compiled RAT code.
 
     Parameters
     ----------
     input_controls : RAT.Controls
         The controls model, which defines algorithmic properties.
-    checks : Rat.rat_core.Checks
-        States whether or not to fit each parameter defined in the project.
 
     Returns
     -------

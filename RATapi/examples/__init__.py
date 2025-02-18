@@ -1,3 +1,5 @@
+"""Usage examples for the Python RAT API."""
+
 from RATapi.examples.absorption.absorption import absorption
 from RATapi.examples.convert_rascal_project.convert_rascal import convert_rascal
 from RATapi.examples.domains.domains_custom_layers import domains_custom_layers

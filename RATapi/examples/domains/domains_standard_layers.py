@@ -1,7 +1,19 @@
+"""An example using domains with standard layers."""
+
 import RATapi as RAT
 
 
 def domains_standard_layers():
+    """Calculate an example for using standard layers with domains.
+
+    Domains standard layers projects proceed in much the same way as a normal standard layers problem,
+    except that there is an additional grouping step between layers and contrasts.
+
+    Layers are grouped into ‘Domain Contrasts’.
+    The model for the actual experimental contrast is built from these domain contrasts rather than from layers.
+    There are exactly two domains for each contrast,
+    with the the ratio of them controlled by a fittable ‘domain ratio’ parameter.
+    """
     problem = RAT.Project(calculation="domains")
 
     # Define the parameters we need to define our two domains

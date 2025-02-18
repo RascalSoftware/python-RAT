@@ -348,7 +348,7 @@ def project_class_to_r1(
         ----------
         params: ClassList
             A list of parameter type from the Project.
-        names, constrs, values, fits : str
+        name, constr, value, fit : str
             The keys for names, constraints, values
             and whether to fit for a type of parameter.
         number : str, optional, default ""

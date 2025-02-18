@@ -1,3 +1,5 @@
+"""RATapi is a Python package for modelling, fitting and optimising reflectivity problems."""
+
 import RATapi.examples as examples
 from RATapi import events, models
 from RATapi.classlist import ClassList

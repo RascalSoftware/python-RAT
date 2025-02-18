@@ -74,6 +74,14 @@ class Signal(RATModel):
 
     @property
     def display_fields(self) -> dict:
+        """The fields which should be visible in a table and their values.
+
+        Returns
+        -------
+        dict
+            A dictionary of the fields which should be visible in a table and their values.
+
+        """
         visible_fields = ["name", "type", "source"]
         if self.type != TypeOptions.Constant:
             visible_fields.append("value_1")
@@ -300,17 +308,18 @@ class CustomFile(RATModel):
     path: pathlib.Path = pathlib.Path(".")
 
     def model_post_init(self, __context: Any) -> None:
-        """If a "filename" is supplied but the "function_name" field is not set, the "function_name" should be set to
-        the file name without the extension.
+        """Autogenerate the function name from the filename if not set.
+
+        If a filename is supplied but the ``function_name`` field is not set, the ``function_name`` should be set to
+        the filename without the extension.
+
         """
         if "filename" in self.model_fields_set and "function_name" not in self.model_fields_set:
             self.function_name = pathlib.Path(self.filename).stem
 
     @model_validator(mode="after")
     def set_matlab_function_name(self):
-        """If we have a matlab custom function, the "function_name" should be set to the filename without the
-        extension.
-        """
+        """For a matlab custom function, ``function_name`` should be set to the filename without the extension."""
         if self.language == Languages.Matlab and self.function_name != pathlib.Path(self.filename).stem:
             self.function_name = pathlib.Path(self.filename).stem
 
@@ -339,7 +348,7 @@ class Data(RATModel, arbitrary_types_allowed=True):
     @field_validator("data")
     @classmethod
     def check_data_dimension(cls, data: np.ndarray[float]) -> np.ndarray[float]:
-        """The data must be a two-dimensional array containing at least three columns."""
+        """Ensure the data is be a two-dimensional array containing at least three columns."""
         try:
             data.shape[1]
         except IndexError:
@@ -352,13 +361,15 @@ class Data(RATModel, arbitrary_types_allowed=True):
     @field_validator("data_range", "simulation_range")
     @classmethod
     def check_min_max(cls, limits: list[float], info: ValidationInfo) -> list[float]:
-        """The data range and simulation range maximum must be greater than the minimum."""
+        """Ensure the data range and simulation range maximum is greater than the minimum."""
         if limits[0] > limits[1]:
             raise ValueError(f'{info.field_name} "min" value is greater than the "max" value')
         return limits
 
     def model_post_init(self, __context: Any) -> None:
-        """If the "data_range" and "simulation_range" fields are not set, but "data" is supplied, the ranges should be
+        """Automatically generate ``data_range`` and ``simulation_range`` from the data.
+
+        If the ``data_range`` and ``simulation_range`` fields are not set, but ``data`` is supplied, the ranges are
         set to the min and max values of the first column (assumed to be q) of the supplied data.
         """
         if self.data.shape[0] > 0:
@@ -370,7 +381,9 @@ class Data(RATModel, arbitrary_types_allowed=True):
 
     @model_validator(mode="after")
     def check_ranges(self) -> "Data":
-        """The limits of the "data_range" field must lie within the range of the supplied data, whilst the limits
+        """Check that ``data_range`` is within the q-range of the data, and ``simulation_range`` is outside it.
+
+        The limits of the "data_range" field must lie within the range of the supplied data, whilst the limits
         of the "simulation_range" field must lie outside the range of the supplied data.
         """
         if self.data.shape[0] > 0:
@@ -547,20 +560,21 @@ class Parameter(RATModel):
 
     @model_validator(mode="after")
     def check_min_max(self) -> "Parameter":
-        """The maximum value of a parameter must be greater than the minimum."""
+        """Ensure the maximum value of a parameter is greater than the minimum."""
         if self.min > self.max:
             raise ValueError(f"The maximum value {self.max} must be greater than the minimum value {self.min}")
         return self
 
     @model_validator(mode="after")
     def check_value_in_range(self) -> "Parameter":
-        """The value of a parameter must lie within its defined bounds."""
+        """Ensure the value of a parameter lies within its defined bounds."""
         if self.value < self.min or self.value > self.max:
             raise ValueError(f"value {self.value} is not within the defined range: {self.min} <= value <= {self.max}")
         return self
 
     @property
     def display_fields(self) -> dict:
+        """Only display Prior information if ``show_priors`` is true."""
         visible_fields = ["name", "min", "value", "max", "fit"]
         if self.show_priors:
             visible_fields.append("prior_type")
