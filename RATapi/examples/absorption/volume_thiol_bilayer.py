@@ -1,3 +1,6 @@
+"""Custom layer model file for the absorption example."""
+
+
 def volume_thiol_bilayer(params, bulk_in, bulk_out, contrast):
     """VolumeThiolBilayer  RAT Custom Layer Model File.
 

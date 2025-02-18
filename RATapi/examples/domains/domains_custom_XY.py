@@ -1,10 +1,21 @@
+"""An example of using domains with a Custom XY model."""
+
 import pathlib
 
 import RATapi as RAT
 
 
 def domains_custom_XY():
-    """Simple example of a layer containing domains using a custom XY model"""
+    """Calculate an example of a layer containing domains using a custom XY model.
+
+    Domains custom XY models operate in the same way as domains custom layer models,
+    in that there is an additional input to the custom model
+    specifying the domain to be calculated.
+
+    This is then used within the function to calculate the correct SLD profile
+    for each contrast and domain. In this example, we simulate a hydrogenated layer
+    on a silicon substrate, containing domains of a larger SLD, against D2O, SMW and water.
+    """
     problem = RAT.Project(calculation="domains", model="custom xy", geometry="substrate/liquid")
 
     problem.parameters.append(name="Oxide Thickness", min=10.0, value=20.0, max=50.0, fit=True)

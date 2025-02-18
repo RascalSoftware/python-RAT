@@ -9,11 +9,11 @@ def custom_pydantic_validation_error(
     error_list: list[pydantic_core.ErrorDetails],
     custom_error_msgs: Optional[dict[str, str]] = None,
 ) -> list[pydantic_core.ErrorDetails]:
-    """Run through the list of errors generated from a pydantic ValidationError, substituting the standard error for a
-    PydanticCustomError for a given set of error types.
+    """Give Pydantic errors a better custom message with extraneous information removed.
 
-    For errors that do not have a custom error message defined, we redefine them using a PydanticCustomError to remove
-    the url from the error message.
+    We substitute the standard error for a PydanticCustomError for a given set of error types.
+    For errors that do not have a custom error message defined,
+    we redefine them using a PydanticCustomError to remove the url from the error message.
 
     Parameters
     ----------

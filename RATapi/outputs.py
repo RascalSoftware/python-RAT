@@ -1,4 +1,4 @@
-"""Converts outputs from the compiled RAT code to python dataclasses"""
+"""Converts results from the compiled RAT code to python dataclasses."""
 
 from dataclasses import dataclass
 from typing import Any, Optional, Union
@@ -10,8 +10,9 @@ from RATapi.utils.enums import Procedures
 
 
 def get_field_string(field: str, value: Any, array_limit: int):
-    """Returns a string representation of class fields where large and multidimensional arrays are represented by their
-    shape.
+    """Return a string representation of class fields where large arrays are represented by their shape.
+
+    An array will be displayed as just its shape if it is multidimensional or 1D and longer than ``array_limit``.
 
     Parameters
     ----------
@@ -26,6 +27,20 @@ def get_field_string(field: str, value: Any, array_limit: int):
     -------
     field_string : str
         The string representation of the field in the RAT output class.
+
+    Examples
+    --------
+    >>> get_field_string("data", 130, 5)
+    "data = 130"
+
+    >>> get_field_string("data", array([1, 2, 3, 4, 5]), 10)
+    "data = [1 2 3 4 5]"
+
+    >>> get_field_string("data", array([1, 2, 3, 4, 5]), 3)
+    "data = Data array: [5],"
+
+    >>> get_field_string("data", array([[1, 2, 3], [4, 5, 6]]), 10)
+    "data = Data array: [2 x 3],"
 
     """
     array_text = "Data array: "
@@ -53,6 +68,8 @@ def get_field_string(field: str, value: Any, array_limit: int):
 
 
 class RATResult:
+    """A mixin class which truncates arrays when the class is displayed."""
+
     def __str__(self):
         output = f"{self.__class__.__name__}(\n"
         for key, value in self.__dict__.items():

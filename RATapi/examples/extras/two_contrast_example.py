@@ -1,10 +1,12 @@
+"""The example project with two contrasts from the user guide."""
+
 import numpy as np
 
 import RATapi as RAT
 
 
 def two_contrast_example():
-    # Two contrast example for the user guide
+    """Generate the two-contrast example project from the user guide."""
     problem = RAT.Project(name="DSPC monolayers")
     parameters = [
         RAT.models.Parameter(name="Tails Thickness", min=10, value=20, max=30, fit=True),

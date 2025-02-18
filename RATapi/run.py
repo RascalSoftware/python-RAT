@@ -1,3 +1,5 @@
+"""The function used to run a RAT algorithm for a given project and controls."""
+
 import time
 
 from tqdm.auto import tqdm
@@ -9,13 +11,12 @@ from RATapi.utils.enums import Display
 
 
 class ProgressBar:
-    """Creates a progress bar that gets updates from the progress event during a
-    calculation
+    """Create a progress bar that gets updates from the progress event during a calculation.
 
     Parameters
     ----------
-    display : bool, default: True
-            Indicates if displaying is allowed
+    display : bool, default True
+        Indicates if displaying is allowed
 
     """
 
@@ -36,7 +37,7 @@ class ProgressBar:
         return self
 
     def updateProgress(self, event):
-        """Callback for the progress event.
+        """Update the progress bar with progress event data.
 
         Parameters
         ----------
@@ -60,7 +61,7 @@ class ProgressBar:
 
 
 class TextOutput:
-    """Pipes the message event to stdout
+    """Context manager to pipe message events to stdout.
 
     Parameters
     ----------
@@ -79,7 +80,7 @@ class TextOutput:
         return self
 
     def printMessage(self, msg):
-        """Callback for the message event.
+        """Print an event message.
 
         Parameters
         ----------
