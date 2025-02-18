@@ -649,13 +649,15 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", use_attribute
 
         """
         class_list = getattr(self, attribute)
-        for model in class_list:
+        for index, model in enumerate(class_list):
             for field in field_list:
                 value = getattr(model, field, "")
                 if value and value not in allowed_values:
                     raise ValueError(
-                        f'The value "{value}" in the "{field}" field of "{attribute}" must be defined in '
-                        f'"{values_defined_in[f"{attribute}.{field}"]}".',
+                        f'The value "{value}" used in the "{field}" field at index {index} of "{attribute}" '
+                        f'must be defined in "{values_defined_in[f"{attribute}.{field}"]}". Please either add '
+                        f'"{value}" to "{values_defined_in[f"{attribute}.{field}"]}" before including it in'
+                        f' "{attribute}", or remove it from "{attribute}.{field}" before attempting to delete it.',
                     )
 
     def check_allowed_source(self, attribute: str) -> None:
@@ -945,7 +947,7 @@ from numpy import array, empty, inf
                 Project.model_validate(self)
             except ValidationError as exc:
                 class_list.data = previous_state
-                custom_error_list = custom_pydantic_validation_error(exc.errors())
+                custom_error_list = custom_pydantic_validation_error(exc.errors(include_url=False))
                 raise ValidationError.from_exception_data(exc.title, custom_error_list, hide_input=True) from None
             except (TypeError, ValueError):
                 class_list.data = previous_state
