@@ -4,6 +4,7 @@ import collections
 import copy
 import functools
 import json
+import warnings
 from enum import Enum
 from pathlib import Path
 from textwrap import indent
@@ -835,17 +836,17 @@ from numpy import array, empty, inf
             + "\n)"
         )
 
-    def save(self, path: Union[str, Path], filename: str = "project"):
+    def save(self, filepath: Union[str, Path] = "./project.json"):
         """Save a project to a JSON file.
 
         Parameters
         ----------
-        path : str or Path
-            The path in which the project will be written.
-        filename : str
-            The name of the generated project file.
+        filepath : str or Path
+            The path to where the project file will be written.
 
         """
+        filepath = Path(filepath).with_suffix(".json")
+
         json_dict = {}
         for field in self.model_fields:
             attr = getattr(self, field)
@@ -869,7 +870,7 @@ from numpy import array, empty, inf
                         "name": item.name,
                         "filename": item.filename,
                         "language": item.language,
-                        "path": str(item.path),
+                        "path": try_relative_to(item.path, filepath),
                     }
 
                 json_dict["custom_files"] = [make_custom_file_dict(file) for file in attr]
@@ -879,8 +880,7 @@ from numpy import array, empty, inf
             else:
                 json_dict[field] = attr
 
-        file = Path(path, f"{filename.removesuffix('.json')}.json")
-        file.write_text(json.dumps(json_dict))
+        filepath.write_text(json.dumps(json_dict))
 
     @classmethod
     def load(cls, path: Union[str, Path]) -> "Project":
@@ -892,15 +892,21 @@ from numpy import array, empty, inf
             The path to the project file.
 
         """
-        input = Path(path).read_text()
-        model_dict = json.loads(input)
-        for i in range(0, len(model_dict["data"])):
-            if model_dict["data"][i]["name"] == "Simulation":
-                model_dict["data"][i]["data"] = np.empty([0, 3])
-                del model_dict["data"][i]["data_range"]
+        path = Path(path)
+        input_data = path.read_text()
+        model_dict = json.loads(input_data)
+        for dataset in model_dict["data"]:
+            if dataset["name"] == "Simulation":
+                dataset["data"] = np.empty([0, 3])
+                del dataset["data_range"]
             else:
-                data = model_dict["data"][i]["data"]
-                model_dict["data"][i]["data"] = np.array(data)
+                data = dataset["data"]
+                dataset["data"] = np.array(data)
+
+        # file paths are saved as relative to the project directory
+        for file in model_dict["custom_files"]:
+            if not Path(file["path"]).is_absolute():
+                file["path"] = Path(path, file["path"])
 
         return cls.model_validate(model_dict)
 
@@ -943,3 +949,34 @@ from numpy import array, empty, inf
             return return_value
 
         return wrapped_func
+
+
+def try_relative_to(path: Path, relative_to: Path) -> str:
+    """Attempt to create a relative path and warn the user if it isn't possible.
+
+    Parameters
+    ----------
+    path : Path
+        The path to try to find a relative path for.
+    relative_to: Path
+        The path to which we find a relative path for ``path``.
+
+    Returns
+    -------
+    str
+        The relative path if successful, else the absolute path.
+
+    """
+    path = Path(path)
+    relative_to = Path(relative_to)
+    if path.is_relative_to(relative_to):
+        return str(path.relative_to(relative_to))
+    else:
+        warnings.warn(
+            "Could not save custom file path as relative to the project directory, "
+            "which means that it may not work on other devices."
+            "If you would like to share your project, make sure your custom files "
+            "are in a subfolder of the project save location.",
+            stacklevel=2,
+        )
+        return str(path.resolve())

@@ -2,6 +2,7 @@
 
 import copy
 import tempfile
+import warnings
 from pathlib import Path
 from typing import Callable
 
@@ -1556,8 +1557,43 @@ def test_save_load(project, request):
     original_project = request.getfixturevalue(project)
 
     with tempfile.TemporaryDirectory() as tmp:
-        original_project.save(tmp)
-        converted_project = RATapi.Project.load(Path(tmp, "project.json"))
+        # ignore relative path warnings
+        path = Path(tmp, "project.json")
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            original_project.save(path)
+        converted_project = RATapi.Project.load(path)
+
+    # resolve custom files in case the original project had unresolvable relative paths
+    for file in original_project.custom_files:
+        file.path = file.path.resolve()
 
     for field in RATapi.Project.model_fields:
         assert getattr(converted_project, field) == getattr(original_project, field)
+
+
+def test_relative_paths():
+    """Test that ``try_relative_to`` correctly creates relative paths to subfolders."""
+
+    with tempfile.TemporaryDirectory() as tmp:
+        data_path = Path(tmp, "data/myfile.dat")
+
+        assert Path(RATapi.project.try_relative_to(data_path, tmp)) == Path("data/myfile.dat")
+
+
+def test_relative_paths_warning():
+    """Test that we get a warning for trying to walk up paths."""
+
+    data_path = "/tmp/project/data/mydata.dat"
+    relative_path = "/tmp/project/project_path/myproj.dat"
+
+    with pytest.warns(
+        match="Could not save custom file path as relative to the project directory, "
+        "which means that it may not work on other devices."
+        "If you would like to share your project, make sure your custom files "
+        "are in a subfolder of the project save location.",
+    ):
+        assert (
+            Path(RATapi.project.try_relative_to(data_path, relative_path))
+            == Path("/tmp/project/data/mydata.dat").resolve()
+        )
