@@ -46,6 +46,7 @@ class FileHandles:
     ----------
     files : ClassList[CustomFile]
         A list of custom file models.
+
     """
 
     def __init__(self, files=None):

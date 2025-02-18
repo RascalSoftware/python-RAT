@@ -79,6 +79,7 @@ def plot_ref_sld_helper(
             Controls whether the grid is shown
     show_legend : bool, default: True
             Controls whether the lengend is shown
+
     Returns
     -------
     fig : matplotlib.pyplot.figure
@@ -345,6 +346,7 @@ class LivePlot:
         ----------
         event: PlotEventData
             The plot event data.
+
         """
         if not self.closed and self.figure.number in plt.get_fignums():
             plot_ref_sld_helper(event, self.figure)
@@ -675,6 +677,7 @@ def panel_plot_helper(plot_func: Callable, indices: list[int]) -> matplotlib.fig
     -------
     matplotlib.figure.Figure
         A figure containing a grid of plots over the indices in `indices`.
+
     """
     nplots = len(indices)
     nrows, ncols = ceil(sqrt(nplots)), round(sqrt(nplots))
@@ -747,7 +750,6 @@ def plot_hists(
         If `return_fig` is True, return the figure - otherwise, return nothing.
 
     """
-
     # first convert names to indices if given
     fitname_to_index = partial(name_to_index, names=results.fitNames)
 

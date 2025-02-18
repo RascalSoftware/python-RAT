@@ -11,8 +11,18 @@ line-length = 120
 extend-exclude = ["*.ipynb"]
 
 [tool.ruff.lint]
-select = ["E", "F", "UP", "B", "SIM", "I"]
-ignore = ["SIM103", "SIM108"]
+select = ["E",   # pycodestyle errors
+          "F",   # pyflakes
+          "UP",  # pyupgrade
+          "B",   # flake8-bugbear
+          "SIM", # flake8-simplify
+          "I",   # isort
+          "D"]  # pydocstyle
+
+ignore = ["SIM103", # needless bool
+          "SIM108", # if-else block instead of ternary operator
+          "D105",   # undocumented __init__
+          "D107"]   # undocumented magic method
 
 [tool.ruff.lint.flake8-pytest-style]
 fixture-parentheses = false

@@ -829,7 +829,8 @@ def test__validate_name_field(two_name_class_list: ClassList, input_dict: dict[s
 )
 def test__validate_name_field_not_unique(two_name_class_list: ClassList, input_dict: dict[str, Any]) -> None:
     """We should raise a ValueError if we input values containing a name_field defined in an object in the ClassList,
-    accounting for case sensitivity."""
+    accounting for case sensitivity.
+    """
     with pytest.raises(
         ValueError,
         match=f"Input arguments contain the {two_name_class_list.name_field} "

@@ -6548,7 +6548,6 @@ def dream_results():
 @pytest.fixture
 def r1_default_project():
     """The Project corresponding to the data in R1defaultProject.mat."""
-
     project = RATapi.Project(
         name="defaultProject",
         calculation="normal",

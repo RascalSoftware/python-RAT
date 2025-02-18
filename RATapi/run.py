@@ -16,6 +16,7 @@ class ProgressBar:
     ----------
     display : bool, default: True
             Indicates if displaying is allowed
+
     """
 
     def __init__(self, display=True):
@@ -41,6 +42,7 @@ class ProgressBar:
         ----------
         event: ProgressEventData
             The progress event data.
+
         """
         if self.pbar is None:
             self.pbar = tqdm(**self.tqdm_kwargs)
@@ -64,6 +66,7 @@ class TextOutput:
     ----------
     display : bool, default: True
             Indicates if displaying is allowed
+
     """
 
     def __init__(self, display=True):
@@ -82,6 +85,7 @@ class TextOutput:
         ----------
         msg: str
             The event message.
+
         """
         print(msg, end="")
 
