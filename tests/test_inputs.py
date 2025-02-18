@@ -9,7 +9,7 @@ import pytest
 import RATapi
 import RATapi.wrappers
 from RATapi.inputs import FileHandles, check_indices, make_controls, make_input, make_problem
-from RATapi.rat_core import Checks, Control, Limits, NameStore, Priors, ProblemDefinition
+from RATapi.rat_core import Checks, Control, Limits, NameStore, ProblemDefinition
 from RATapi.utils.enums import (
     BackgroundActions,
     BoundHandling,
@@ -197,6 +197,28 @@ def standard_layers_problem(test_names, test_checks):
         [6.2e-06, 6.35e-06],
         [0.01, 0.05],
     ]
+    problem.priorNames = [
+        "Substrate Roughness",
+        "Test Thickness",
+        "Test SLD",
+        "Test Roughness",
+        "Background Param 1",
+        "Scalefactor 1",
+        "SLD Air",
+        "SLD D2O",
+        "Resolution Param 1",
+    ]
+    problem.priorValues = [
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+    ]
     problem.customFiles = FileHandles([])
     problem.names = test_names
     problem.checks = test_checks
@@ -257,6 +279,30 @@ def domains_problem(test_names, test_checks):
         [6.2e-06, 6.35e-06],
         [0.01, 0.05],
         [0.4, 0.6],
+    ]
+    problem.priorNames = [
+        "Substrate Roughness",
+        "Test Thickness",
+        "Test SLD",
+        "Test Roughness",
+        "Background Param 1",
+        "Scalefactor 1",
+        "SLD Air",
+        "SLD D2O",
+        "Resolution Param 1",
+        "Domain Ratio 1",
+    ]
+    problem.priorValues = [
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
     ]
     problem.customFiles = FileHandles([])
     problem.names = test_names
@@ -319,6 +365,28 @@ def custom_xy_problem(test_names, test_checks):
         [6.2e-06, 6.35e-06],
         [0.01, 0.05],
     ]
+    problem.priorNames = [
+        "Substrate Roughness",
+        "Test Thickness",
+        "Test SLD",
+        "Test Roughness",
+        "Background Param 1",
+        "Scalefactor 1",
+        "SLD Air",
+        "SLD D2O",
+        "Resolution Param 1",
+    ]
+    problem.priorValues = [
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+        [1, 0.0, np.inf],
+    ]
     problem.customFiles = FileHandles(
         [RATapi.models.CustomFile(name="Test Custom File", filename="cpp_test.dll", language="cpp")]
     )
@@ -358,94 +426,6 @@ def domains_limits():
     limits.domainRatios = [[0.4, 0.6]]
 
     return limits
-
-
-@pytest.fixture
-def normal_priors():
-    """The expected priors object from "standard_layers_project" and "custom_xy_project"."""
-    priors = Priors()
-    priors.params = [
-        ["Substrate Roughness", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf],
-        ["Test Thickness", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf],
-        ["Test SLD", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf],
-        ["Test Roughness", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf],
-    ]
-    priors.backgroundParams = [["Background Param 1", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.scalefactors = [["Scalefactor 1", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.qzshifts = []
-    priors.bulkIns = [["SLD Air", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.bulkOuts = [["SLD D2O", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.resolutionParams = [["Resolution Param 1", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.domainRatios = []
-    priors.priorNames = [
-        "Substrate Roughness",
-        "Test Thickness",
-        "Test SLD",
-        "Test Roughness",
-        "Background Param 1",
-        "Scalefactor 1",
-        "SLD Air",
-        "SLD D2O",
-        "Resolution Param 1",
-    ]
-    priors.priorValues = [
-        [1, 0.0, np.inf],
-        [1, 0.0, np.inf],
-        [1, 0.0, np.inf],
-        [1, 0.0, np.inf],
-        [1, 0.0, np.inf],
-        [1, 0.0, np.inf],
-        [1, 0.0, np.inf],
-        [1, 0.0, np.inf],
-        [1, 0.0, np.inf],
-    ]
-
-    return priors
-
-
-@pytest.fixture
-def domains_priors():
-    """The expected priors object from "domains_project"."""
-    priors = Priors()
-    priors.params = [
-        ["Substrate Roughness", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf],
-        ["Test Thickness", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf],
-        ["Test SLD", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf],
-        ["Test Roughness", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf],
-    ]
-    priors.backgroundParams = [["Background Param 1", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.scalefactors = [["Scalefactor 1", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.qzshifts = []
-    priors.bulkIns = [["SLD Air", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.bulkOuts = [["SLD D2O", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.resolutionParams = [["Resolution Param 1", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.domainRatios = [["Domain Ratio 1", RATapi.utils.enums.Priors.Uniform, 0.0, np.inf]]
-    priors.priorNames = [
-        "Substrate Roughness",
-        "Test Thickness",
-        "Test SLD",
-        "Test Roughness",
-        "Background Param 1",
-        "Scalefactor 1",
-        "SLD Air",
-        "SLD D2O",
-        "Resolution Param 1",
-        "Domain Ratio 1",
-    ]
-    priors.priorValues = [
-        [1, 0.0, np.inf],
-        [1, 0.0, np.inf],
-        [1, 0.0, np.inf],
-        [1, 0.0, np.inf],
-        [1, 0.0, np.inf],
-        [1, 0.0, np.inf],
-        [1, 0.0, np.inf],
-        [1, 0.0, np.inf],
-        [1, 0.0, np.inf],
-        [1, 0.0, np.inf],
-    ]
-
-    return priors
 
 
 @pytest.fixture
@@ -525,39 +505,35 @@ def custom_xy_controls():
 
 
 @pytest.mark.parametrize(
-    ["test_project", "test_problem", "test_limits", "test_priors", "test_controls"],
+    ["test_project", "test_problem", "test_limits", "test_controls"],
     [
         (
             "standard_layers_project",
             "standard_layers_problem",
             "normal_limits",
-            "normal_priors",
             "standard_layers_controls",
         ),
         (
             "custom_xy_project",
             "custom_xy_problem",
             "normal_limits",
-            "normal_priors",
             "custom_xy_controls",
         ),
         (
             "domains_project",
             "domains_problem",
             "domains_limits",
-            "domains_priors",
             "standard_layers_controls",
         ),
     ],
 )
-def test_make_input(test_project, test_problem, test_limits, test_priors, test_controls, request) -> None:
+def test_make_input(test_project, test_problem, test_limits, test_controls, request) -> None:
     """When converting the "project" and "controls", we should obtain the five input objects required for the compiled
     RAT code.
     """
     test_project = request.getfixturevalue(test_project)
     test_problem = request.getfixturevalue(test_problem)
     test_limits = request.getfixturevalue(test_limits)
-    test_priors = request.getfixturevalue(test_priors)
     test_controls = request.getfixturevalue(test_controls)
 
     parameter_fields = [
@@ -571,7 +547,7 @@ def test_make_input(test_project, test_problem, test_limits, test_priors, test_c
         "domainRatios",
     ]
 
-    problem, limits, priors, controls = make_input(test_project, RATapi.Controls())
+    problem, limits, controls = make_input(test_project, RATapi.Controls())
     problem = pickle.loads(pickle.dumps(problem))
     check_problem_equal(problem, test_problem)
 
@@ -579,32 +555,24 @@ def test_make_input(test_project, test_problem, test_limits, test_priors, test_c
     for limit_field in parameter_fields:
         assert np.all(getattr(limits, limit_field) == getattr(test_limits, limit_field))
 
-    priors = pickle.loads(pickle.dumps(priors))
-    for prior_field in parameter_fields:
-        assert getattr(priors, prior_field) == getattr(test_priors, prior_field)
-
-    assert priors.priorNames == test_priors.priorNames
-    assert np.all(priors.priorValues == test_priors.priorValues)
-
     controls = pickle.loads(pickle.dumps(controls))
     check_controls_equal(controls, test_controls)
 
 
 @pytest.mark.parametrize(
-    ["test_project", "test_check", "test_problem"],
+    ["test_project", "test_problem"],
     [
-        ("standard_layers_project", "test_checks", "standard_layers_problem"),
-        ("custom_xy_project", "test_checks", "custom_xy_problem"),
-        ("domains_project", "test_checks", "domains_problem"),
+        ("standard_layers_project", "standard_layers_problem"),
+        ("custom_xy_project", "custom_xy_problem"),
+        ("domains_project", "domains_problem"),
     ],
 )
-def test_make_problem(test_project, test_problem, test_check, request) -> None:
+def test_make_problem(test_project, test_problem, request) -> None:
     """The problem object should contain the relevant parameters defined in the input project object."""
     test_project = request.getfixturevalue(test_project)
     test_problem = request.getfixturevalue(test_problem)
-    test_check = request.getfixturevalue(test_check)
 
-    problem = make_problem(test_project, test_check)
+    problem = make_problem(test_project)
     check_problem_equal(problem, test_problem)
 
 
@@ -749,6 +717,7 @@ def check_problem_equal(actual_problem, expected_problem) -> None:
         "numberOfContrasts",
         "numberOfLayers",
         "numberOfDomainContrasts",
+        "priorNames",
     ]
 
     array_fields = [
@@ -780,6 +749,7 @@ def check_problem_equal(actual_problem, expected_problem) -> None:
         "otherParams",
         "fitLimits",
         "otherLimits",
+        "priorValues",
     ]
     checks_fields = [
         "params",

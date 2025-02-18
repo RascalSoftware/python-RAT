@@ -145,6 +145,7 @@ def DSPC_function_background():
     problem.custom_files.append(
         name="D2O Background Function",
         filename="background_function.py",
+        function_name="backgroundFunction",
         language="python",
         path=pathlib.Path(__file__).parent.resolve(),
     )
