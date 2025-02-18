@@ -26,6 +26,7 @@ def get_field_string(field: str, value: Any, array_limit: int):
     -------
     field_string : str
         The string representation of the field in the RAT output class.
+
     """
     array_text = "Data array: "
     if isinstance(value, list) and len(value) > 0:
@@ -182,6 +183,7 @@ class PredictionIntervals(RATResult):
         The prediction interval data for SLD of each contrast.
     sampleChi : np.ndarray
         The value of sumChi at each point of the Markov chain.
+
     """
 
     reflectivity: list
@@ -191,8 +193,7 @@ class PredictionIntervals(RATResult):
 
 @dataclass
 class ConfidenceIntervals(RATResult):
-    """
-    The 65% and 95% confidence intervals for the best fit results.
+    """The 65% and 95% confidence intervals for the best fit results.
 
     Attributes
     ----------
@@ -202,6 +203,7 @@ class ConfidenceIntervals(RATResult):
         The 65% confidence intervals for each fit parameter.
     mean : np.ndarray
         The mean values for each fit parameter.
+
     """
 
     percentile95: np.ndarray
