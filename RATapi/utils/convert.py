@@ -46,7 +46,8 @@ def r1_to_project_class(filename: Union[str, PathLike]) -> Project:
     def zip_if_several(*params) -> Union[tuple, list[tuple]]:
         """Zips parameters if necessary, but can handle single-item parameters.
 
-        Examples:
+        Examples
+        --------
         zip_if_several([1, 2], [3, 4]) = [(1, 3), (2, 4)]
         zip_if_several(1, 2, 3) = [(1, 2, 3)]
 
@@ -79,6 +80,7 @@ def r1_to_project_class(filename: Union[str, PathLike]) -> Project:
         -------
         ClassList
             A list of all relevant parameters.
+
         """
 
         def fix_invalid_constraints(name: str, constrs: tuple[float, float], value: float) -> tuple[float, float]:
@@ -334,6 +336,7 @@ def project_class_to_r1(
     -------
     dict or None
         If `return_struct` is True, return the r1 struct. Else, return nothing.
+
     """
 
     def convert_parameters(
@@ -345,7 +348,7 @@ def project_class_to_r1(
         ----------
         params: ClassList
             A list of parameter type from the Project.
-        names, constrs, values, fits : str
+        name, constr, value, fit : str
             The keys for names, constraints, values
             and whether to fit for a type of parameter.
         number : str, optional, default ""
@@ -355,6 +358,7 @@ def project_class_to_r1(
         -------
         dict
             A dict of the relevant struct fields.
+
         """
         output = {
             name: [p.name for p in params],

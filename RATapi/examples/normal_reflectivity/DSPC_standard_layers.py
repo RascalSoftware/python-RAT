@@ -1,3 +1,5 @@
+"""An example of a standard layers model in RAT."""
+
 import pathlib
 
 import numpy as np
@@ -6,7 +8,10 @@ import RATapi as RAT
 
 
 def DSPC_standard_layers():
-    """Standard Layers fit of a DSPC floating bilayer"""
+    """Calculate a standard Layers fit of a DSPC floating bilayer.
+
+    The sample consists of a DSPC bilayer, on a silane SAM on Silicon.
+    """
     problem = RAT.Project(name="original_dspc_bilayer", model="standard layers", geometry="substrate/liquid")
 
     # Set up the relevant parameters

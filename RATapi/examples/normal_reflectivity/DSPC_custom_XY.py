@@ -1,3 +1,5 @@
+"""An example of analysing a Custom XY model."""
+
 import pathlib
 
 import numpy as np
@@ -6,7 +8,7 @@ import RATapi as RAT
 
 
 def DSPC_custom_XY():
-    r"""Custom XY Example for Supported DSPC layer.
+    r"""Calculate a Custom XY Example for Supported DSPC layer.
 
     In this example, we model the same data (DSPC supported bilayer) as the Custom Layers example, but this time we will
     use continuous distributions of the volume fractions of each component to build up the SLD profiles (as described in

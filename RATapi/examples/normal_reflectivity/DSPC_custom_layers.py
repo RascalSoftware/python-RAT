@@ -1,3 +1,5 @@
+"""Example of using custom layers to model a DSPC supported bilayer."""
+
 import pathlib
 
 import numpy as np
@@ -6,10 +8,7 @@ import RATapi as RAT
 
 
 def DSPC_custom_layers():
-    """Custom Layers example for Supported DSPC layer.
-
-    Example of using custom layers to model a DSPC supported bilayer.
-    """
+    """Calculate a Custom Layers example for a supported DSPC layer."""
     problem = RAT.Project(name="Orso lipid example - custom layers", model="custom layers", geometry="substrate/liquid")
 
     # First we need to set up a parameters group. We will be using a pre-prepared custom model file, so we need to add

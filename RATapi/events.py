@@ -1,3 +1,5 @@
+"""Hooks for connecting to run callback events."""
+
 import os
 from typing import Callable, Union
 
@@ -5,8 +7,7 @@ from RATapi.rat_core import EventBridge, EventTypes, PlotEventData, ProgressEven
 
 
 def notify(event_type: EventTypes, data: Union[str, PlotEventData, ProgressEventData]) -> None:
-    """Calls registered callbacks with the data when event type has
-    been triggered.
+    """Call registered callbacks with data when event type has been triggered.
 
     Parameters
     ----------
@@ -22,7 +23,7 @@ def notify(event_type: EventTypes, data: Union[str, PlotEventData, ProgressEvent
 
 
 def get_event_callback(event_type: EventTypes) -> list[Callable[[Union[str, PlotEventData, ProgressEventData]], None]]:
-    """Returns all callbacks registered for the given event type.
+    """Return all callbacks registered for the given event type.
 
     Parameters
     ----------
@@ -39,7 +40,7 @@ def get_event_callback(event_type: EventTypes) -> list[Callable[[Union[str, Plot
 
 
 def register(event_type: EventTypes, callback: Callable[[Union[str, PlotEventData, ProgressEventData]], None]) -> None:
-    """Registers a new callback for the event type.
+    """Register a new callback for the event type.
 
     Parameters
     ----------
@@ -58,12 +59,14 @@ def register(event_type: EventTypes, callback: Callable[[Union[str, PlotEventDat
 
 
 def clear(key=None, callback=None) -> None:
-    """Clears all event callbacks or specific callback.
+    """Clear all event callbacks or specific callback.
 
     Parameters
     ----------
-    callback : Callable[[Union[str, PlotEventData, ProgressEventData]], None]
-        The callback for when the event is triggered.
+    key : EventTypes, optional
+        The event type of the callback to clear if given.
+    callback : Callable[[Union[str, PlotEventData, ProgressEventData]], None], optional
+        A callback for an event which will be cleared if given.
 
     """
     if key is None and callback is None:
