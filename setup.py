@@ -26,6 +26,7 @@ ext_modules = [
             pybind11.get_include(),
             pybind11.get_include(True),
             "cpp/RAT/",
+            "cpp/includes/",
         ],
         language="c++",
     ),

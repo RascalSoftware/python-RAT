@@ -66,12 +66,17 @@ class MatlabWrapper:
                 )
                 return np.array(output, "float").tolist()
             else:
-                output, sub_rough = getattr(self.engine, self.function_name)(
+                matlab_args = [
                     np.array(args[0], "float"),  # params
                     np.array(args[1], "float"),  # bulk in
                     np.array(args[2], "float"),  # bulk out
                     float(args[3] + 1),  # contrast
-                    float(-1 if len(args) < 5 else args[4] + 1),  # domain
+                ]
+                if len(args) > 4:
+                    matlab_args.append(float(args[4] + 1))  # domain number
+
+                output, sub_rough = getattr(self.engine, self.function_name)(
+                    *matlab_args,
                     nargout=2,
                 )
                 return np.array(output, "float").tolist(), float(sub_rough)
