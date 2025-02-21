@@ -104,7 +104,7 @@ def run(project, controls):
 
     horizontal_line = "\u2500" * 107 + "\n"
     display_on = controls.display != Display.Off
-    problem_definition, limits, priors, cpp_controls = make_input(project, controls)
+    problem_definition, limits, cpp_controls = make_input(project, controls)
 
     if display_on:
         print("Starting RAT " + horizontal_line)
@@ -115,7 +115,6 @@ def run(project, controls):
             problem_definition,
             limits,
             cpp_controls,
-            priors,
         )
     end = time.time()
 

@@ -395,20 +395,6 @@ struct BayesResults
     py::array_t<real_T> chain;
 };
 
-struct Priors
-{
-    py::list params;
-    py::list backgroundParams;
-    py::list scalefactors;
-    py::list qzshifts;
-    py::list bulkIns;
-    py::list bulkOuts;
-    py::list resolutionParams;
-    py::list domainRatios;
-    py::list priorNames;
-    py::array_t<real_T> priorValues;
-};
-
 struct Checks {
     py::array_t<real_T> params;
     py::array_t<real_T> backgroundParams;
@@ -515,6 +501,8 @@ struct ProblemDefinition {
     py::array_t<real_T> otherParams;
     py::array_t<real_T> fitLimits;
     py::array_t<real_T> otherLimits;
+    py::list priorNames;
+    py::array_t<real_T> priorValues;
     NameStore names;
     Checks checks {};
 };
@@ -665,47 +653,6 @@ coder::array<real_T, 2U> pyArrayToRatArray2d(py::array_t<real_T> value)
     return result;
 }
 
-coder::array<RAT::cell_7, 1U> pyListToUnboundedCell0(py::list values)
-{
-    coder::array<RAT::cell_7, 1U> result;
-    result.set_size(values.size());
-    int32_T idx {0};
-    for (py::handle list: values)
-    { 
-        py::list value = py::cast<py::list>(list);
-        if (py::len(list) != 4 || !py::isinstance<py::str>(value[0]) || !py::isinstance<py::str>(value[1]) ||
-                !py::isinstance<py::float_>(value[2]) || !py::isinstance<py::float_>(value[3]))
-            throw std::runtime_error("Expects a 2D list where each row must contain 4 elements. " 
-                                     "Columns 1 and 2 must be strings and Columns 3 and 4 must be numeric arrays");
-
-        stringToRatBoundedArray(value[0].cast<std::string>(), result[idx].f1.data, result[idx].f1.size);
-        stringToRatBoundedArray(value[1].cast<std::string>(), result[idx].f2.data, result[idx].f2.size);
-        result[idx].f3 = value[2].cast<real_T>();
-        result[idx].f4 = value[3].cast<real_T>();
-        idx++;
-    }
-
-    return result;
-}
-
-coder::array<RAT::cell_wrap_8, 1U> pyListToUnboundedCell1(py::list values)
-{
-    coder::array<RAT::cell_wrap_8, 1U> result;
-    result.set_size(values.size());
-    int32_T idx {0};
-    for (py::handle list: values)
-    { 
-        if (py::isinstance<py::str>(list)) {
-            std::string value = py::cast<std::string>(list);
-            stringToRatCharArray(value, result[idx].f1); 
-            idx++;
-        }
-        else
-            throw std::runtime_error("Expects a 1D list of strings");
-    }
-
-    return result;
-}
 coder::array<RAT::cell_wrap_1, 2U> pyListToRatCellWrap1(py::list values)
 {
     coder::array<RAT::cell_wrap_1, 2U> result;
@@ -800,7 +747,26 @@ coder::array<RAT::cell_wrap_6, 2U> pyListToRatCellWrap6(py::list values)
     return result;
 }
 
-coder::array<RAT::cell_wrap_0, 2U> pyListToRatCellWrap0(py::list values)
+coder::array<RAT::cell_wrap_0, 1U> pyListToRatCellWrap01d(py::list values)
+{
+    coder::array<RAT::cell_wrap_0, 1U> result;
+    result.set_size(values.size());
+    int32_T idx {0};
+    for (py::handle array: values)
+    { 
+        if (py::isinstance<py::str>(array)) {
+            std::string name = py::cast<std::string>(array);
+            stringToRatBoundedArray(name, result[idx].f1.data, result[idx].f1.size);
+            idx++;
+        }
+        else
+            throw std::runtime_error("Expects a 1D list of strings");
+    }
+
+    return result;
+}
+
+coder::array<RAT::cell_wrap_0, 2U> pyListToRatCellWrap02d(py::list values)
 {
     coder::array<RAT::cell_wrap_0, 2U> result;
     result.set_size(1, values.size());
@@ -839,15 +805,15 @@ coder::array<RAT::cell_wrap_0, 2U> py_function_array_to_rat_cell_wrap_0(py::obje
 RAT::struct1_T createStruct1(const NameStore& names)
 {
     RAT::struct1_T names_struct;
-    names_struct.params = customCaller("NameStore.params", pyListToRatCellWrap0, names.params);
-    names_struct.backgroundParams = customCaller("NameStore.backgroundParams", pyListToRatCellWrap0, names.backgroundParams);
-    names_struct.scalefactors = customCaller("NameStore.scalefactors", pyListToRatCellWrap0, names.scalefactors);
-    names_struct.qzshifts = customCaller("NameStore.qzshifts", pyListToRatCellWrap0, names.qzshifts);
-    names_struct.bulkIns = customCaller("NameStore.bulkIns", pyListToRatCellWrap0, names.bulkIns);
-    names_struct.bulkOuts = customCaller("NameStore.bulkOuts", pyListToRatCellWrap0, names.bulkOuts);
-    names_struct.resolutionParams = customCaller("NameStore.resolutionParams", pyListToRatCellWrap0, names.resolutionParams);
-    names_struct.domainRatios = customCaller("NameStore.domainRatios", pyListToRatCellWrap0, names.domainRatios);
-    names_struct.contrasts = customCaller("NameStore.contrasts", pyListToRatCellWrap0, names.contrasts);
+    names_struct.params = customCaller("NameStore.params", pyListToRatCellWrap02d, names.params);
+    names_struct.backgroundParams = customCaller("NameStore.backgroundParams", pyListToRatCellWrap02d, names.backgroundParams);
+    names_struct.scalefactors = customCaller("NameStore.scalefactors", pyListToRatCellWrap02d, names.scalefactors);
+    names_struct.qzshifts = customCaller("NameStore.qzshifts", pyListToRatCellWrap02d, names.qzshifts);
+    names_struct.bulkIns = customCaller("NameStore.bulkIns", pyListToRatCellWrap02d, names.bulkIns);
+    names_struct.bulkOuts = customCaller("NameStore.bulkOuts", pyListToRatCellWrap02d, names.bulkOuts);
+    names_struct.resolutionParams = customCaller("NameStore.resolutionParams", pyListToRatCellWrap02d, names.resolutionParams);
+    names_struct.domainRatios = customCaller("NameStore.domainRatios", pyListToRatCellWrap02d, names.domainRatios);
+    names_struct.contrasts = customCaller("NameStore.contrasts", pyListToRatCellWrap02d, names.contrasts);
     
     return names_struct;
 }
@@ -883,14 +849,14 @@ RAT::struct0_T createStruct0(const ProblemDefinition& problem)
     problem_struct.useImaginary = problem.useImaginary;
     problem_struct.repeatLayers = customCaller("Problem.repeatLayers", pyListToRatCellWrap2, problem.repeatLayers);
     problem_struct.contrastBackgroundParams = customCaller("Problem.contrastBackgroundParams", pyListToRatCellWrap3, problem.contrastBackgroundParams); 
-    problem_struct.contrastBackgroundTypes = customCaller("Problem.contrastBackgroundTypes", pyListToRatCellWrap0, problem.contrastBackgroundTypes);
-    problem_struct.contrastBackgroundActions = customCaller("Problem.contrastBackgroundActions", pyListToRatCellWrap0, problem.contrastBackgroundActions);
+    problem_struct.contrastBackgroundTypes = customCaller("Problem.contrastBackgroundTypes", pyListToRatCellWrap02d, problem.contrastBackgroundTypes);
+    problem_struct.contrastBackgroundActions = customCaller("Problem.contrastBackgroundActions", pyListToRatCellWrap02d, problem.contrastBackgroundActions);
     problem_struct.contrastQzshifts = customCaller("Problem.contrastQzshifts", pyArrayToRatRowArray1d, problem.contrastQzshifts);
     problem_struct.contrastScalefactors = customCaller("Problem.contrastScalefactors", pyArrayToRatRowArray1d, problem.contrastScalefactors);
     problem_struct.contrastBulkIns = customCaller("Problem.contrastBulkIns", pyArrayToRatRowArray1d, problem.contrastBulkIns);
     problem_struct.contrastBulkOuts = customCaller("Problem.contrastBulkOuts", pyArrayToRatRowArray1d, problem.contrastBulkOuts);
     problem_struct.contrastResolutionParams = customCaller("Problem.contrastResolutionParams", pyListToRatCellWrap4, problem.contrastResolutionParams);
-    problem_struct.contrastResolutionTypes = customCaller("Problem.contrastResolutionTypes", pyListToRatCellWrap0, problem.contrastResolutionTypes);
+    problem_struct.contrastResolutionTypes = customCaller("Problem.contrastResolutionTypes", pyListToRatCellWrap02d, problem.contrastResolutionTypes);
     problem_struct.backgroundParams = customCaller("Problem.backgroundParams", pyArrayToRatRowArray1d, problem.backgroundParams);
     problem_struct.qzshifts = customCaller("Problem.qzshifts", pyArrayToRatRowArray1d, problem.qzshifts);
     problem_struct.scalefactors = customCaller("Problem.scalefactors", pyArrayToRatRowArray1d, problem.scalefactors);
@@ -912,6 +878,8 @@ RAT::struct0_T createStruct0(const ProblemDefinition& problem)
     problem_struct.otherParams =  customCaller("Problem.otherParams", pyArrayToRatRowArray1d, problem.otherParams);
     problem_struct.fitLimits =  customCaller("Problem.fitLimits", pyArrayToRatArray2d, problem.fitLimits);
     problem_struct.otherLimits =  customCaller("Problem.otherLimits", pyArrayToRatArray2d, problem.otherLimits);
+    problem_struct.priorNames = customCaller("Problem.priorNames", pyListToRatCellWrap01d, problem.priorNames);
+    problem_struct.priorValues =  customCaller("Problem.priorValues", pyArrayToRatArray2d, problem.priorValues);
 
     problem_struct.names = createStruct1(problem.names);
     problem_struct.checks = createStruct2(problem.checks);
@@ -936,22 +904,6 @@ RAT::struct3_T createStruct3(const Limits& limits)
     return limits_struct;
 }
 
-RAT::struct5_T createStruct5(const Priors& priors)
-{
-    RAT::struct5_T priors_struct;
-    priors_struct.params = customCaller("Priors.params", pyListToUnboundedCell0, priors.params);
-    priors_struct.backgroundParams = customCaller("Priors.backgroundParams", pyListToUnboundedCell0, priors.backgroundParams);
-    priors_struct.scalefactors = customCaller("Priors.scalefactors", pyListToUnboundedCell0, priors.scalefactors);
-    priors_struct.qzshifts = customCaller("Priors.qzshifts", pyListToUnboundedCell0, priors.qzshifts);
-    priors_struct.bulkIns = customCaller("Priors.bulkIns", pyListToUnboundedCell0, priors.bulkIns);
-    priors_struct.bulkOuts = customCaller("Priors.bulkOuts", pyListToUnboundedCell0, priors.bulkOuts);
-    priors_struct.resolutionParams = customCaller("Priors.resolutionParams", pyListToUnboundedCell0, priors.resolutionParams);
-    priors_struct.domainRatios = customCaller("Priors.domainRatios", pyListToUnboundedCell0, priors.domainRatios);
-    priors_struct.priorNames = customCaller("Priors.priorNames", pyListToUnboundedCell1, priors.priorNames);
-    priors_struct.priorValues =  customCaller("Priors.priorValues", pyArrayToRatArray2d, priors.priorValues);
-    
-    return priors_struct;
-}
 
 RAT::struct4_T createStruct4(const Control& control)
 {
@@ -1008,7 +960,19 @@ py::array_t<real_T> pyArrayFromRatArray2d(coder::array<real_T, 2U> array)
     return result_array;
 }
 
-py::list pyListFromRatCellWrap0(coder::array<RAT::cell_wrap_0, 2U> values)
+py::list pyListFromRatCellWrap01d(coder::array<RAT::cell_wrap_0, 1U> values)
+{
+    py::list result;
+    for (int32_T idx0{0}; idx0 < values.size(0); idx0++) {
+        std::string tmp;
+        stringFromRatBoundedArray(values[idx0].f1.data, values[idx0].f1.size, tmp);
+        result.append(tmp);
+    }
+
+    return result;
+}
+
+py::list pyListFromRatCellWrap02d(coder::array<RAT::cell_wrap_0, 2U> values)
 {
     py::list result;
     for (int32_T idx0{0}; idx0 < values.size(1); idx0++) {
@@ -1114,7 +1078,7 @@ py::array_t<real_T> pyArrayFromRatArray3d(coder::array<real_T, 3U> array)
     return result_array;
 }
 
-OutputResult OutputResultFromStruct6T(const RAT::struct6_T result)
+OutputResult OutputResultFromStruct5T(const RAT::struct5_T result)
 {
     // Copy problem to output
     OutputResult output_result;
@@ -1240,14 +1204,14 @@ ProblemDefinition problemDefinitionFromStruct0T(const RAT::struct0_T problem)
     problem_def.useImaginary = problem.useImaginary;       
     problem_def.repeatLayers = pyListFromRatCellWrap2(problem.repeatLayers);
     problem_def.contrastBackgroundParams = pyListFromBoundedCellWrap<coder::array<RAT::cell_wrap_3, 2U>>(problem.contrastBackgroundParams);
-    problem_def.contrastBackgroundTypes = pyListFromRatCellWrap0(problem.contrastBackgroundTypes);
-    problem_def.contrastBackgroundActions = pyListFromRatCellWrap0(problem.contrastBackgroundActions);    
+    problem_def.contrastBackgroundTypes = pyListFromRatCellWrap02d(problem.contrastBackgroundTypes);
+    problem_def.contrastBackgroundActions = pyListFromRatCellWrap02d(problem.contrastBackgroundActions);    
     problem_def.contrastQzshifts = pyArrayFromRatArray1d<coder::array<real_T, 2U>>(problem.contrastQzshifts);
     problem_def.contrastScalefactors = pyArrayFromRatArray1d<coder::array<real_T, 2U>>(problem.contrastScalefactors);
     problem_def.contrastBulkIns = pyArrayFromRatArray1d<coder::array<real_T, 2U>>(problem.contrastBulkIns);
     problem_def.contrastBulkOuts = pyArrayFromRatArray1d<coder::array<real_T, 2U>>(problem.contrastBulkOuts);
     problem_def.contrastResolutionParams = pyListFromBoundedCellWrap<coder::array<RAT::cell_wrap_4, 2U>>(problem.contrastResolutionParams);
-    problem_def.contrastResolutionTypes = pyListFromRatCellWrap0(problem.contrastResolutionTypes);
+    problem_def.contrastResolutionTypes = pyListFromRatCellWrap02d(problem.contrastResolutionTypes);
     problem_def.backgroundParams = pyArrayFromRatArray1d<coder::array<real_T, 2U>>(problem.backgroundParams);
     problem_def.qzshifts = pyArrayFromRatArray1d<coder::array<real_T, 2U>>(problem.qzshifts);
     problem_def.scalefactors = pyArrayFromRatArray1d<coder::array<real_T, 2U>>(problem.scalefactors);
@@ -1269,16 +1233,18 @@ ProblemDefinition problemDefinitionFromStruct0T(const RAT::struct0_T problem)
     problem_def.otherParams = pyArrayFromRatArray1d<coder::array<real_T, 2U>>(problem.otherParams);
     problem_def.fitLimits = pyArrayFromRatArray2d(problem.fitLimits);
     problem_def.otherLimits = pyArrayFromRatArray2d(problem.otherLimits);
+    problem_def.priorNames = pyListFromRatCellWrap01d(problem.priorNames);
+    problem_def.priorValues = pyArrayFromRatArray2d(problem.priorValues);
     
-    problem_def.names.params = pyListFromRatCellWrap0(problem.names.params);
-    problem_def.names.backgroundParams = pyListFromRatCellWrap0(problem.names.backgroundParams);
-    problem_def.names.scalefactors = pyListFromRatCellWrap0(problem.names.scalefactors);
-    problem_def.names.qzshifts = pyListFromRatCellWrap0(problem.names.qzshifts);
-    problem_def.names.bulkIns = pyListFromRatCellWrap0(problem.names.bulkIns);
-    problem_def.names.bulkOuts = pyListFromRatCellWrap0(problem.names.bulkOuts);
-    problem_def.names.resolutionParams = pyListFromRatCellWrap0(problem.names.resolutionParams);
-    problem_def.names.domainRatios = pyListFromRatCellWrap0(problem.names.domainRatios);
-    problem_def.names.contrasts = pyListFromRatCellWrap0(problem.names.contrasts);
+    problem_def.names.params = pyListFromRatCellWrap02d(problem.names.params);
+    problem_def.names.backgroundParams = pyListFromRatCellWrap02d(problem.names.backgroundParams);
+    problem_def.names.scalefactors = pyListFromRatCellWrap02d(problem.names.scalefactors);
+    problem_def.names.qzshifts = pyListFromRatCellWrap02d(problem.names.qzshifts);
+    problem_def.names.bulkIns = pyListFromRatCellWrap02d(problem.names.bulkIns);
+    problem_def.names.bulkOuts = pyListFromRatCellWrap02d(problem.names.bulkOuts);
+    problem_def.names.resolutionParams = pyListFromRatCellWrap02d(problem.names.resolutionParams);
+    problem_def.names.domainRatios = pyListFromRatCellWrap02d(problem.names.domainRatios);
+    problem_def.names.contrasts = pyListFromRatCellWrap02d(problem.names.contrasts);
     
     problem_def.checks.params = pyArrayFromRatArray1d<coder::array<real_T, 2U>>(problem.checks.params);
     problem_def.checks.backgroundParams = pyArrayFromRatArray1d<coder::array<real_T, 2U>>(problem.checks.backgroundParams);
@@ -1292,14 +1258,14 @@ ProblemDefinition problemDefinitionFromStruct0T(const RAT::struct0_T problem)
     return problem_def;
 }
 
-BayesResults bayesResultsFromStruct9T(const RAT::struct9_T results)
+BayesResults bayesResultsFromStruct8T(const RAT::struct8_T results)
 {
     BayesResults bayesResults;
 
     bayesResults.chain = pyArrayFromRatArray2d(results.chain);
 
-    bayesResults.predictionIntervals.reflectivity = pyList1DFromRatCellWrap1D<coder::array<RAT::cell_wrap_12, 1U>>(results.predictionIntervals.reflectivity);
-    bayesResults.predictionIntervals.sld = pyList2dFromRatCellWrap<coder::array<RAT::cell_wrap_12, 2U>>(results.predictionIntervals.sld);
+    bayesResults.predictionIntervals.reflectivity = pyList1DFromRatCellWrap1D<coder::array<RAT::cell_wrap_11, 1U>>(results.predictionIntervals.reflectivity);
+    bayesResults.predictionIntervals.sld = pyList2dFromRatCellWrap<coder::array<RAT::cell_wrap_11, 2U>>(results.predictionIntervals.sld);
     bayesResults.predictionIntervals.sampleChi = pyArray1dFromBoundedArray<coder::bounded_array<real_T, 1000U, 1U>>(results.predictionIntervals.sampleChi);
 
     bayesResults.confidenceIntervals.percentile95 = pyArrayFromRatArray2d(results.confidenceIntervals.percentile95);
@@ -1343,23 +1309,22 @@ BayesResults bayesResultsFromStruct9T(const RAT::struct9_T results)
     return bayesResults;
 }
 
-py::tuple RATMain(const ProblemDefinition& problem_def, const Limits& limits, const Control& control, const Priors& priors)
+py::tuple RATMain(const ProblemDefinition& problem_def, const Limits& limits, const Control& control)
 {
     RAT::struct0_T problem_def_struct = createStruct0(problem_def);
     RAT::struct3_T limits_struct = createStruct3(limits);
     RAT::struct4_T control_struct = createStruct4(control);
-    RAT::struct5_T priors_struct = createStruct5(priors);
     // Output
-    RAT::struct6_T results;
-    RAT::struct9_T bayesResults;
+    RAT::struct5_T results;
+    RAT::struct8_T bayesResults;
     // Call the entry-point
-    RAT::RATMain(&problem_def_struct, &limits_struct, &control_struct, &priors_struct, &results, &bayesResults);
+    RAT::RATMain(&problem_def_struct, &limits_struct, &control_struct, &results, &bayesResults);
     // Copy result to output
     auto out_problem_def = problemDefinitionFromStruct0T(problem_def_struct);
     out_problem_def.customFiles = problem_def.customFiles.attr("copy")(); 
     return py::make_tuple(out_problem_def, 
-                          OutputResultFromStruct6T(results), 
-                          bayesResultsFromStruct9T(bayesResults));    
+                          OutputResultFromStruct5T(results), 
+                          bayesResultsFromStruct8T(bayesResults));    
 }
 
 py::array_t<real_T> makeSLDProfileXY(real_T bulk_in,
@@ -1677,45 +1642,6 @@ PYBIND11_MODULE(rat_core, m) {
                 return lim;
             }));
 
-    py::class_<Priors>(m, "Priors")
-        .def(py::init<>())
-        .def_readwrite("params", &Priors::params)
-        .def_readwrite("backgroundParams", &Priors::backgroundParams)
-        .def_readwrite("scalefactors", &Priors::scalefactors)
-        .def_readwrite("qzshifts", &Priors::qzshifts)
-        .def_readwrite("bulkIns", &Priors::bulkIns)
-        .def_readwrite("bulkOuts", &Priors::bulkOuts)
-        .def_readwrite("resolutionParams", &Priors::resolutionParams)
-        .def_readwrite("domainRatios", &Priors::domainRatios)
-        .def_readwrite("priorNames", &Priors::priorNames)
-        .def_readwrite("priorValues", &Priors::priorValues)
-        .def(py::pickle(
-            [](const Priors &prior) { // __getstate__
-                /* Return a tuple that fully encodes the state of the object */
-                return py::make_tuple(prior.params, prior.backgroundParams, prior.scalefactors, prior.qzshifts, prior.bulkIns, 
-                                      prior.bulkOuts, prior.resolutionParams, prior.domainRatios, prior.priorNames, prior.priorValues);
-            },
-            [](py::tuple t) { // __setstate__
-                if (t.size() != 10)
-                    throw std::runtime_error("Encountered invalid state unpickling Limits object!");
-
-                /* Create a new C++ instance */
-                Priors prior;
-
-                prior.params = t[0].cast<py::list>();
-                prior.backgroundParams = t[1].cast<py::list>();
-                prior.scalefactors = t[2].cast<py::list>();
-                prior.qzshifts = t[3].cast<py::list>();
-                prior.bulkIns = t[4].cast<py::list>();
-                prior.bulkOuts = t[5].cast<py::list>();
-                prior.resolutionParams = t[6].cast<py::list>();
-                prior.domainRatios = t[7].cast<py::list>();
-                prior.priorNames = t[8].cast<py::list>();
-                prior.priorValues = t[9].cast<py::array_t<real_T>>();
-
-                return prior;
-            }));
-
     py::class_<Control>(m, "Control")
         .def(py::init<>())
         .def_readwrite("parallel", &Control::parallel)
@@ -1840,6 +1766,8 @@ PYBIND11_MODULE(rat_core, m) {
         .def_readwrite("otherParams", &ProblemDefinition::otherParams)
         .def_readwrite("fitLimits", &ProblemDefinition::fitLimits)
         .def_readwrite("otherLimits", &ProblemDefinition::otherLimits)
+        .def_readwrite("priorNames", &ProblemDefinition::priorNames)
+        .def_readwrite("priorValues", &ProblemDefinition::priorValues)
         .def_readwrite("names", &ProblemDefinition::names)
         .def_readwrite("checks", &ProblemDefinition::checks)
         .def(py::pickle(
@@ -1853,13 +1781,13 @@ PYBIND11_MODULE(rat_core, m) {
                                       p.bulkIns, p.bulkOuts, p.resolutionParams, p.params, p.numberOfLayers, p.contrastLayers, p.layersDetails, 
                                       p.customFiles, p.modelType, p.contrastCustomFiles, p.contrastDomainRatios, p.domainRatios, 
                                       p.numberOfDomainContrasts, p.domainContrastLayers, p.fitParams, p.otherParams, p.fitLimits, 
-                                      p.otherLimits, p.names.params, p.names.backgroundParams, p.names.scalefactors, p.names.qzshifts,
-                                      p.names.bulkIns, p.names.bulkOuts, p.names.resolutionParams, p.names.domainRatios, p.names.contrasts, 
-                                      p.checks.params, p.checks.backgroundParams, p.checks.scalefactors, p.checks.qzshifts,  
+                                      p.otherLimits, p.priorNames, p.priorValues, p.names.params, p.names.backgroundParams, p.names.scalefactors,
+                                      p.names.qzshifts, p.names.bulkIns, p.names.bulkOuts, p.names.resolutionParams, p.names.domainRatios,
+                                      p.names.contrasts, p.checks.params, p.checks.backgroundParams, p.checks.scalefactors, p.checks.qzshifts,  
                                       p.checks.bulkIns, p.checks.bulkOuts, p.checks.resolutionParams, p.checks.domainRatios);
             },
             [](py::tuple t) { // __setstate__
-                if (t.size() != 58)
+                if (t.size() != 60)
                     throw std::runtime_error("Encountered invalid state unpickling ProblemDefinition object!");
 
                 /* Create a new C++ instance */
@@ -1906,25 +1834,27 @@ PYBIND11_MODULE(rat_core, m) {
                 p.otherParams = t[38].cast<py::array_t<real_T>>();
                 p.fitLimits = t[39].cast<py::array_t<real_T>>();
                 p.otherLimits = t[40].cast<py::array_t<real_T>>();
+                p.priorNames = t[41].cast<py::list>();
+                p.priorValues = t[42].cast<py::array_t<real_T>>();
                 
-                p.names.params = t[41].cast<py::list>(); 
-                p.names.backgroundParams = t[42].cast<py::list>(); 
-                p.names.scalefactors = t[43].cast<py::list>();
-                p.names.qzshifts = t[44].cast<py::list>();
-                p.names.bulkIns = t[45].cast<py::list>();
-                p.names.bulkOuts = t[46].cast<py::list>();
-                p.names.resolutionParams = t[47].cast<py::list>();
-                p.names.domainRatios = t[48].cast<py::list>();
-                p.names.contrasts = t[49].cast<py::list>(); 
+                p.names.params = t[43].cast<py::list>(); 
+                p.names.backgroundParams = t[44].cast<py::list>(); 
+                p.names.scalefactors = t[45].cast<py::list>();
+                p.names.qzshifts = t[46].cast<py::list>();
+                p.names.bulkIns = t[47].cast<py::list>();
+                p.names.bulkOuts = t[48].cast<py::list>();
+                p.names.resolutionParams = t[49].cast<py::list>();
+                p.names.domainRatios = t[50].cast<py::list>();
+                p.names.contrasts = t[51].cast<py::list>(); 
 
-                p.checks.params = t[50].cast<py::array_t<real_T>>(); 
-                p.checks.backgroundParams = t[51].cast<py::array_t<real_T>>(); 
-                p.checks.scalefactors = t[52].cast<py::array_t<real_T>>();
-                p.checks.qzshifts = t[53].cast<py::array_t<real_T>>(); 
-                p.checks.bulkIns = t[54].cast<py::array_t<real_T>>(); 
-                p.checks.bulkOuts = t[55].cast<py::array_t<real_T>>(); 
-                p.checks.resolutionParams = t[56].cast<py::array_t<real_T>>(); 
-                p.checks.domainRatios = t[57].cast<py::array_t<real_T>>();
+                p.checks.params = t[52].cast<py::array_t<real_T>>(); 
+                p.checks.backgroundParams = t[53].cast<py::array_t<real_T>>(); 
+                p.checks.scalefactors = t[54].cast<py::array_t<real_T>>();
+                p.checks.qzshifts = t[55].cast<py::array_t<real_T>>(); 
+                p.checks.bulkIns = t[56].cast<py::array_t<real_T>>(); 
+                p.checks.bulkOuts = t[57].cast<py::array_t<real_T>>(); 
+                p.checks.resolutionParams = t[58].cast<py::array_t<real_T>>(); 
+                p.checks.domainRatios = t[59].cast<py::array_t<real_T>>();
 
                 return p;
             }));
