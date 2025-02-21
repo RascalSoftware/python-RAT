@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def backgroundFunction(xdata, params):
+def background_function(xdata, params):
     # Split up the params array
     Ao = params[0]
     k = params[1]
