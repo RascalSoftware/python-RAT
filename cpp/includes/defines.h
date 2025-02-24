@@ -509,7 +509,7 @@ dataLimits : list
 simulationLimits : list;
     Simulation for each contrast.
 oilChiDataPresent : np.ndarray[np.float] 
-    If ``dataPresent[i]`` is non-zero, then contrast ``i`` has oilChi data. This currently not being used.
+    If ``dataPresent[i]`` is non-zero, then contrast ``i`` has oilChi data. This is currently not being used.
 numberOfContrasts : int
     Number of contrasts.
 geometry : str
@@ -518,7 +518,7 @@ useImaginary : bool
     Indicates whether imaginary component is used for the SLD value in layers, i.e.
     absorption is set to True for the project.
 repeatLayers : list
-    Information about repeating layers for each contrast. This currently not being used.
+    Information about repeating layers for each contrast. This is currently not being used.
 contrastBackgroundParams : list
     Indices of backgroundParams used for each contrast
 contrastBackgroundTypes : list
@@ -526,7 +526,7 @@ contrastBackgroundTypes : list
 contrastBackgroundActions : list
     Background action for each contrast.
 contrastQzshifts : np.ndarray[np.float]
-    Indices of Qzshifts used for each contrast. This currently not being used.
+    Indices of Qzshifts used for each contrast. This is currently not being used.
 contrastScalefactors : np.ndarray[np.float] 
     Indices of scalefactors used for each contrast.
 contrastBulkIns : np.ndarray[np.float] 
