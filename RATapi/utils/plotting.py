@@ -158,8 +158,7 @@ def plot_ref_sld_helper(
                     layers[-1, 1],  # Bulk Out
                     data.subRoughs[i],  # roughness
                     layer,
-                    len(layer),
-                    1.0,
+                    1,
                 )
 
                 sld_plot.plot(

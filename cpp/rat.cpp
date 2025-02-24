@@ -17,103 +17,15 @@ setup_pybind11(cfg)
 #include "RAT/RATMain_terminate.h"
 #include "RAT/RATMain_types.h"
 #include "RAT/makeSLDProfileXY.h"
-#include "RAT/classHandle.hpp"
 #include "RAT/dylib.hpp"
 #include "RAT/events/eventManager.h"
+#include "includes/defines.h"
+#include "includes/functions.h"
 
 namespace py = pybind11;
 
 const int DEFAULT_DOMAIN = -1;
-
-template <typename Function, typename ... Args> 
-auto customCaller(std::string identifier, Function f, Args&& ... args) -> decltype((*f)(std::forward<Args>(args)...))
-{
-    try 
-    {
-        return (*f)(std::forward<Args>(args)...);
-    }
-    catch(const std::runtime_error& re) 
-    {
-        std::string errorMsg;
-        size_t start_pos = std::string(re.what()).find("$id");
-        if(start_pos == std::string::npos)
-        {
-            errorMsg = std::string("Error occurred when setting ") + identifier + ". " + re.what();
-        }            
-        else
-        {
-            errorMsg = re.what();
-            errorMsg.replace(start_pos, 3, identifier);
-        }    
-            
-        throw std::runtime_error(errorMsg);
-    }
-}
-
-class Library: public CallbackInterface
-{
-    public:
-
-    py::function function;
-
-    Library(const py::function function){
-        this->function = function;
-    };
-
-
-    void setOutput(py::tuple& result, std::vector<double>& output, double *outputSize)
-    {
-        int nRows = 0, idx = 0;
-        for (py::handle rowHandle : result[0])
-        {
-            py::list rows = py::cast<py::list>(rowHandle); 
-            for (py::handle value : rows)
-            {
-                output.push_back(py::cast<double>(value));
-                idx++;
-            }
-            nRows++;
-        }
-
-        outputSize[0] = nRows;
-        outputSize[1] = (nRows == 0) ? 0 : idx / nRows;
-    }
-
-    // Backgrounds
-    void invoke(std::vector<double>& xdata, std::vector<double>& params, std::vector<double>& output)
-    {
-        auto f = py::cast<std::function<py::tuple(py::list, py::list)>>(this->function);
-        auto result = f(py::cast(xdata), py::cast(params));
-        for (py::handle rowHandle : result)
-        {   
-            if (py::isinstance<py::list>(rowHandle))
-                output.push_back(py::cast<double>(py::cast<py::list>(rowHandle)[0]));  
-            else
-                output.push_back(py::cast<double>(rowHandle));
-            
-        }
-    };
-        
-    // Domain overload
-    void invoke(std::vector<double>& params, std::vector<double>& bulkIn, std::vector<double>& bulkOut, 
-                        int contrast, int domainNumber, std::vector<double>& output, double *outputSize, double *roughness)
-    {
-        auto f = py::cast<std::function<py::tuple(py::list, py::list, py::list, int, int)>>(this->function);
-        auto result = f(py::cast(params), py::cast(bulkIn), py::cast(bulkOut), contrast, domainNumber);
-        *roughness = py::cast<double>(result[1]);
-        setOutput(result, output, outputSize);
-    };
-    
-    // Non-Domain overload
-    void invoke(std::vector<double>& params, std::vector<double>& bulkIn, std::vector<double>& bulkOut, 
-                        int contrast, std::vector<double>& output, double *outputSize, double *roughness)
-    {
-        auto f = py::cast<std::function<py::tuple(py::list, py::list, py::list, int)>>(this->function);
-        auto result = f(py::cast(params), py::cast(bulkIn), py::cast(bulkOut), contrast);
-        *roughness = py::cast<double>(result[1]);
-        setOutput(result, output, outputSize);
-    };
-};
+const int DEFAULT_NREPEATS = 1;
 
 class DylibEngine
 {
@@ -183,25 +95,6 @@ class DylibEngine
             throw std::runtime_error("failed to get dynamic library symbol for " + functionName);
         }        
     };
-};
-
-struct ProgressEventData
-{
-    std::string message;
-    double percent;
-};
-
-struct PlotEventData
-{
-    py::list reflectivity;
-    py::list shiftedData;
-    py::list sldProfiles;
-    py::list resampledLayers;
-    py::array_t<double> subRoughs;
-    py::array_t<double> resample;
-    py::array_t<double> dataPresent;
-    std::string modelType;
-    py::list contrastNames;
 };
 
 class EventBridge
@@ -327,480 +220,6 @@ class EventBridge
         clearListeners();
     };
 };
-
-struct PredictionIntervals
-{
-    py::list reflectivity;
-    py::list sld;
-    py::array_t<real_T> sampleChi; 
-};
-
-struct ConfidenceIntervals
-{
-    py::array_t<real_T> percentile95;
-    py::array_t<real_T> percentile65;
-    py::array_t<real_T> mean;
-};
-
-struct NestedSamplerOutput
-{
-    real_T logZ;
-    real_T logZErr;
-    py::array_t<real_T> nestSamples;
-    py::array_t<real_T> postSamples;
-};
-
-struct DreamParams
-{
-    real_T nParams;
-    real_T nChains;
-    real_T nGenerations;
-    boolean_T parallel;
-    real_T CPU;
-    real_T jumpProbability;
-    real_T pUnitGamma;
-    real_T nCR;
-    real_T delta;
-    real_T steps;
-    real_T zeta;
-    std::string outlier;
-    boolean_T adaptPCR;
-    real_T thinning;
-    real_T epsilon;
-    boolean_T ABC;
-    boolean_T IO;
-    boolean_T storeOutput;
-    py::array_t<real_T> R;
-};
-
-struct DreamOutput
-{
-    py::array_t<real_T> allChains;
-    py::array_t<real_T> outlierChains;
-    real_T runtime;
-    real_T iteration;
-    real_T modelOutput;
-    py::array_t<real_T> AR;
-    py::array_t<real_T> R_stat;
-    py::array_t<real_T> CR;
-};
-
-struct BayesResults
-{
-    PredictionIntervals predictionIntervals;
-    ConfidenceIntervals confidenceIntervals;
-    DreamParams dreamParams;
-    DreamOutput dreamOutput;
-    NestedSamplerOutput nestedSamplerOutput;
-    py::array_t<real_T> chain;
-};
-
-struct Checks {
-    py::array_t<real_T> params;
-    py::array_t<real_T> backgroundParams;
-    py::array_t<real_T> qzshifts;
-    py::array_t<real_T> scalefactors;
-    py::array_t<real_T> bulkIns;
-    py::array_t<real_T> bulkOuts;
-    py::array_t<real_T> resolutionParams;
-    py::array_t<real_T> domainRatios;
-};
-
-struct Calculation
-{
-    py::array_t<real_T> chiValues;
-    real_T sumChi;
-};
-
-struct ContrastParams
-{
-    py::array_t<real_T> scalefactors;
-    py::array_t<real_T> bulkIn;
-    py::array_t<real_T> bulkOut;
-    py::array_t<real_T> subRoughs;
-    py::array_t<real_T> resample;
-};
-
-struct OutputResult {
-    py::list reflectivity;
-    py::list simulation;
-    py::list shiftedData;
-    py::list backgrounds;
-    py::list resolutions;
-    py::list layerSlds;
-    py::list sldProfiles;
-    py::list resampledLayers;
-    Calculation calculationResults {};
-    ContrastParams contrastParams {};
-    py::array_t<real_T> fitParams;
-    py::list fitNames;
-};
-
-struct Limits {
-    py::array_t<real_T> params;
-    py::array_t<real_T> backgroundParams;
-    py::array_t<real_T> scalefactors;
-    py::array_t<real_T> qzshifts;
-    py::array_t<real_T> bulkIns;
-    py::array_t<real_T> bulkOuts;
-    py::array_t<real_T> resolutionParams;
-    py::array_t<real_T> domainRatios;
-};
-
-struct NameStore {
-    py::list params;
-    py::list backgroundParams;
-    py::list scalefactors;
-    py::list qzshifts;
-    py::list bulkIns;
-    py::list bulkOuts;
-    py::list resolutionParams;
-    py::list domainRatios;
-    py::list contrasts;
-};
-
-struct ProblemDefinition {
-    std::string  TF {};
-    py::array_t<real_T> resample;
-    py::list data;
-    py::array_t<real_T> dataPresent;
-    py::list dataLimits;
-    py::list simulationLimits;
-    py::array_t<real_T> oilChiDataPresent;
-    real_T numberOfContrasts;
-    std::string  geometry {};
-    boolean_T useImaginary {};
-    py::list repeatLayers;
-    py::list contrastBackgroundParams;
-    py::list contrastBackgroundTypes;
-    py::list contrastBackgroundActions;
-    py::array_t<real_T> contrastQzshifts;
-    py::array_t<real_T> contrastScalefactors;
-    py::array_t<real_T> contrastBulkIns;
-    py::array_t<real_T> contrastBulkOuts;
-    py::list contrastResolutionParams;
-    py::list contrastResolutionTypes;
-    py::array_t<real_T> backgroundParams;
-    py::array_t<real_T> qzshifts;
-    py::array_t<real_T> scalefactors;
-    py::array_t<real_T> bulkIns;
-    py::array_t<real_T> bulkOuts;
-    py::array_t<real_T> resolutionParams;
-    py::array_t<real_T> params;
-    real_T numberOfLayers {};
-    py::list contrastLayers;
-    py::list layersDetails;
-    py::object customFiles;
-    std::string  modelType {};
-    py::array_t<real_T> contrastCustomFiles;
-    py::array_t<real_T> contrastDomainRatios;
-    py::array_t<real_T> domainRatios;
-    real_T numberOfDomainContrasts {};
-    py::list domainContrastLayers;
-    py::array_t<real_T> fitParams;
-    py::array_t<real_T> otherParams;
-    py::array_t<real_T> fitLimits;
-    py::array_t<real_T> otherLimits;
-    py::list priorNames;
-    py::array_t<real_T> priorValues;
-    NameStore names;
-    Checks checks {};
-};
-
-struct Control {
-    std::string parallel {};
-    std::string procedure {};
-    std::string display {};
-    real_T xTolerance {};
-    real_T funcTolerance {};
-    real_T maxFuncEvals {};
-    real_T maxIterations {};
-    real_T populationSize {};
-    real_T fWeight {};
-    real_T crossoverProbability {};
-    real_T targetValue {};
-    real_T numGenerations {};
-    real_T strategy {};
-    real_T nLive {};
-    real_T nMCMC {};
-    real_T propScale {};
-    real_T nsTolerance {};
-    boolean_T calcSldDuringFit {};
-    real_T resampleMinAngle {};
-    real_T resampleNPoints {};
-    real_T updateFreq {};
-    real_T updatePlotFreq {};
-    real_T nSamples {};
-    real_T nChains {};
-    real_T jumpProbability {};
-    real_T pUnitGamma {};
-    std::string boundHandling {};
-    boolean_T adaptPCR;
-    std::string IPCFilePath {};
-};
-
-
-void stringToRatBoundedArray(std::string value, char_T result_data[], int32_T result_size[2])
-{
-    result_size[0] = 1;
-    result_size[1] = value.length();
-
-    for (int32_T idx1{0}; idx1 < value.length(); idx1++) {
-        result_data[idx1] = value[idx1];
-    }
-}
-
-void stringToRatCharArray(std::string value, coder::array<char_T, 2U>& result)
-{
-    result.set_size(1, value.length());
-
-    for (int32_T idx{0}; idx < value.length(); idx++) {
-        result[idx] = value[idx];
-    }
-}
-
-void stringFromRatBoundedArray(const char_T array_data[], const int32_T array_size[2], std::string& result) 
-{
-    result.resize(array_size[1]);
-    memcpy(&result[0], array_data, array_size[1]);
-}
-
-
-coder::array<real_T, 2U> pyArrayToRatRowArray1d(py::array_t<real_T> value)
-{
-    coder::array<real_T, 2U> result;
-
-    py::buffer_info buffer_info = value.request();
-    
-    if (buffer_info.size == 0)
-        return result;
-    
-    if (buffer_info.ndim != 1)
-        throw std::runtime_error("Expects a 1D numeric array");
-
-    result.set_size(1, buffer_info.shape[0]);
-    for (int32_T idx0{0}; idx0 < buffer_info.shape[0]; idx0++) {
-        result[idx0] = value.at(idx0);
-    }
-
-    return result;
-}
-
-coder::bounded_array<real_T, 10U, 2U> pyArrayToRatBoundedArray(py::array_t<real_T> value)
-{
-    coder::bounded_array<real_T, 10U, 2U> result {};
-
-    py::buffer_info buffer_info = value.request();
-    
-    if (buffer_info.size == 0)
-        return result;
-    
-    if (buffer_info.ndim != 1)
-        throw std::runtime_error("Expects a 1D numeric array");
-    
-    result.size[0] = 1;
-    result.size[1] = buffer_info.shape[0];
-    for (int32_T idx0{0}; idx0 < buffer_info.shape[0]; idx0++) {
-        result.data[idx0] = value.at(idx0);
-    }
-
-    return result;
-}
-
-coder::bounded_array<real_T, 5U, 2U> pyArrayToRatBoundedArray3(py::array_t<real_T> value)
-{
-    coder::bounded_array<real_T, 5U, 2U> result {};
-
-    py::buffer_info buffer_info = value.request();
-    
-    if (buffer_info.size == 0)
-        return result;
-    
-    if (buffer_info.ndim != 1)
-        throw std::runtime_error("Expects a 1D numeric array");
-    
-    result.size[0] = 1;
-    result.size[1] = buffer_info.shape[0];
-    for (int32_T idx0{0}; idx0 < buffer_info.shape[0]; idx0++) {
-        result.data[idx0] = value.at(idx0);
-    }
-
-    return result;
-}
-
-coder::array<real_T, 2U> pyArrayToRatArray2d(py::array_t<real_T> value)
-{
-    coder::array<real_T, 2U> result;
-
-    py::buffer_info buffer_info = value.request();
-
-    if (buffer_info.size == 0)
-        return result;
-
-    if (buffer_info.ndim != 2)
-        throw std::runtime_error("Expects a 2D numeric array");
-    
-    result.set_size(buffer_info.shape[0], buffer_info.shape[1]);
-    
-    int32_T idx {0};
-    for (int32_T idx0{0}; idx0 < buffer_info.shape[0]; idx0++) {
-        for (int32_T idx1{0}; idx1 < buffer_info.shape[1]; idx1++) {
-            idx  = idx0 + result.size(0) * idx1;  
-            result[idx] = value.at(idx0, idx1);
-        }
-    }
-
-    return result;
-}
-
-coder::array<RAT::cell_wrap_1, 2U> pyListToRatCellWrap1(py::list values)
-{
-    coder::array<RAT::cell_wrap_1, 2U> result;
-    result.set_size(1, values.size());
-    int32_T idx {0};
-    for (py::handle array: values)
-    { 
-        py::array_t<real_T> casted_array = py::cast<py::array>(array);
-        result[idx].f1 = customCaller("$id[" + std::to_string(idx) +"]", pyArrayToRatArray2d, casted_array);
-        idx++;
-    }
-
-    return result;
-}
-
-coder::array<RAT::cell_wrap_2, 2U> pyListToRatCellWrap2(py::list values)
-{
-    coder::array<RAT::cell_wrap_2, 2U> result;
-    result.set_size(1, values.size());
-    int32_T idx {0};
-    for (py::handle array: values)
-    { 
-        py::array_t<real_T> casted_array = py::cast<py::array>(array);    
-        if (casted_array.size() != 2)
-            throw std::runtime_error("Expects a 2D list where each row contains exactly 2 numbers");
-        result[idx].f1[0] = casted_array.at(0);
-        result[idx].f1[1] = casted_array.at(1);
-        idx++;
-    }
-
-    return result;
-}
-
-
-coder::array<RAT::cell_wrap_3, 2U> pyListToRatCellWrap3(py::list values)
-{
-    coder::array<RAT::cell_wrap_3, 2U> result;
-    result.set_size(1, values.size());
-    int32_T idx {0};
-    for (py::handle array: values)
-    { 
-        py::array_t<real_T> casted_array = py::cast<py::array>(array);
-        result[idx].f1 = customCaller("$id[" + std::to_string(idx) +"]", pyArrayToRatBoundedArray3, casted_array);
-        idx++;
-    }
-
-    return result;
-}
-
-coder::array<RAT::cell_wrap_4, 2U> pyListToRatCellWrap4(py::list values)
-{
-    coder::array<RAT::cell_wrap_4, 2U> result;
-    result.set_size(1, values.size());
-    int32_T idx {0};
-    for (py::handle array: values)
-    { 
-        py::array_t<real_T> casted_array = py::cast<py::array>(array);
-        result[idx].f1 = customCaller("$id[" + std::to_string(idx) +"]", pyArrayToRatBoundedArray3, casted_array);
-        idx++;
-    }
-
-    return result;
-}
-
-coder::array<RAT::cell_wrap_5, 2U> pyListToRatCellWrap5(py::list values)
-{
-    coder::array<RAT::cell_wrap_5, 2U> result;
-    result.set_size(1, values.size());
-    int32_T idx {0};
-    for (py::handle array: values)
-    { 
-        py::array_t<real_T> casted_array = py::cast<py::array>(array);
-        result[idx].f1 = customCaller("$id[" + std::to_string(idx) +"]", pyArrayToRatRowArray1d, casted_array);
-        idx++;
-    }
-
-    return result;
-}
-
-coder::array<RAT::cell_wrap_6, 2U> pyListToRatCellWrap6(py::list values)
-{
-    coder::array<RAT::cell_wrap_6, 2U> result;
-    result.set_size(1, values.size());
-    int32_T idx {0};
-    for (py::handle array: values)
-    { 
-        py::array_t<real_T> casted_array = py::cast<py::array>(array);
-        result[idx].f1 = customCaller("$id[" + std::to_string(idx) +"]", pyArrayToRatBoundedArray, casted_array);
-        idx++;
-    }
-
-    return result;
-}
-
-coder::array<RAT::cell_wrap_0, 1U> pyListToRatCellWrap01d(py::list values)
-{
-    coder::array<RAT::cell_wrap_0, 1U> result;
-    result.set_size(values.size());
-    int32_T idx {0};
-    for (py::handle array: values)
-    { 
-        if (py::isinstance<py::str>(array)) {
-            std::string name = py::cast<std::string>(array);
-            stringToRatBoundedArray(name, result[idx].f1.data, result[idx].f1.size);
-            idx++;
-        }
-        else
-            throw std::runtime_error("Expects a 1D list of strings");
-    }
-
-    return result;
-}
-
-coder::array<RAT::cell_wrap_0, 2U> pyListToRatCellWrap02d(py::list values)
-{
-    coder::array<RAT::cell_wrap_0, 2U> result;
-    result.set_size(1, values.size());
-    int32_T idx {0};
-    for (py::handle array: values)
-    { 
-        if (py::isinstance<py::str>(array)) {
-            std::string name = py::cast<std::string>(array);
-            stringToRatBoundedArray(name, result[idx].f1.data, result[idx].f1.size);
-            idx++;
-        }
-        else
-            throw std::runtime_error("Expects a 1D list of strings");
-    }
-
-    return result;
-}
-
-coder::array<RAT::cell_wrap_0, 2U> py_function_array_to_rat_cell_wrap_0(py::object values)
-{
-    auto handles = py::cast<py::list>(values);
-    coder::array<RAT::cell_wrap_0, 2U> result;
-    result.set_size(1, handles.size());
-    int32_T idx {0};
-    for (py::handle array: handles)
-    { 
-        auto func = py::cast<py::function>(array);
-        std::string func_ptr = convertPtr2String<CallbackInterface>(new Library(func));
-        stringToRatBoundedArray(func_ptr, result[idx].f1.data, result[idx].f1.size);
-        idx++;
-    }
-
-    return result;
-}
 
 RAT::struct1_T createStruct1(const NameStore& names)
 {
@@ -939,143 +358,6 @@ RAT::struct4_T createStruct4(const Control& control)
     stringToRatBoundedArray(control.IPCFilePath, control_struct.IPCFilePath.data, control_struct.IPCFilePath.size);
 
     return control_struct;
-}
-
-
-template <typename T> 
-py::array_t<real_T> pyArrayFromRatArray1d(T array, bool isCol=true)
-{
-    auto size = isCol ?  array.size(1) : array.size(0);
-    auto result_array = py::array_t<real_T>(size);
-    std::memcpy(result_array.request().ptr, array.data(), result_array.nbytes());
-
-    return result_array;
-}
-
-py::array_t<real_T> pyArrayFromRatArray2d(coder::array<real_T, 2U> array)
-{
-    auto result_array = py::array_t<real_T, py::array::f_style>({array.size(0), array.size(1)});
-    std::memcpy(result_array.request().ptr, array.data(), result_array.nbytes());
-
-    return result_array;
-}
-
-py::list pyListFromRatCellWrap01d(coder::array<RAT::cell_wrap_0, 1U> values)
-{
-    py::list result;
-    for (int32_T idx0{0}; idx0 < values.size(0); idx0++) {
-        std::string tmp;
-        stringFromRatBoundedArray(values[idx0].f1.data, values[idx0].f1.size, tmp);
-        result.append(tmp);
-    }
-
-    return result;
-}
-
-py::list pyListFromRatCellWrap02d(coder::array<RAT::cell_wrap_0, 2U> values)
-{
-    py::list result;
-    for (int32_T idx0{0}; idx0 < values.size(1); idx0++) {
-        std::string tmp;
-        stringFromRatBoundedArray(values[idx0].f1.data, values[idx0].f1.size, tmp);
-        result.append(tmp);
-    }
-
-    return result;
-}
-
-py::list pyListFromRatCellWrap2(coder::array<RAT::cell_wrap_2, 2U> values)
-{
-    py::list result;
-    
-    for (int32_T idx0{0}; idx0 < values.size(1); idx0++) {
-        py::list inner = py::make_tuple(values[idx0].f1[0], values[idx0].f1[1]);
-        result.append(inner);
-    }
-
-    return result;
-}
-
-template <typename T> 
-py::list pyList1DFromRatCellWrap2D(const T& values)
-{
-    py::list result;
-    
-    for (int32_T idx0{0}; idx0 < values.size(1); idx0++) {
-        result.append(pyArrayFromRatArray2d(values[idx0].f1));
-    }
-
-    return result;
-}
-
-template <typename T>
-py::list pyList1DFromRatCellWrap1D(const T& values)
-{
-    py::list result;
-
-    for (int32_T idx0{0}; idx0 < values.size(0); idx0++) {
-        result.append(pyArrayFromRatArray2d(values[idx0].f1));
-    }
-
-    return result;
-}
-
-template <typename T> 
-py::list pyList2dFromRatCellWrap(const T& values)
-{
-    py::list result;
-    int32_T idx {0};
-    for (int32_T idx0{0}; idx0 < values.size(0); idx0++) {
-        py::list inner;
-        for (int32_T idx1{0}; idx1 < values.size(1); idx1++) {
-            idx  = idx0 + values.size(0) * idx1;  
-            inner.append(pyArrayFromRatArray2d(values[idx].f1));
-        }
-        result.append(inner);
-    }
-
-    return result;
-}
-
-template <class T>
-py::list pyListFromBoundedCellWrap(const T& values)
-{
-    py::list result;
-    
-    for (int32_T idx0{0}; idx0 < values.size(1); idx0++) {
-        auto array = py::array_t<real_T, py::array::f_style>({values[idx0].f1.size[0]});
-        std::memcpy(array.request().ptr, values[idx0].f1.data, array.nbytes());
-    
-        result.append(array);
-    }
-
-    return result;
-}
-
-template <class T>
-py::array_t<real_T> pyArray1dFromBoundedArray(const T& array)
-{
-    auto result_array = py::array_t<real_T, py::array::f_style>({array.size[0]});
-    std::memcpy(result_array.request().ptr, array.data, result_array.nbytes());
-    
-    return result_array;
-}
-
-template <class T>
-py::array_t<real_T> pyArray2dFromBoundedArray(const T& array)
-{
-    auto result_array = py::array_t<real_T, py::array::f_style>({array.size[0], array.size[1]});
-    std::memcpy(result_array.request().ptr, array.data, result_array.nbytes());
-    
-    return result_array;
-}
-
-py::array_t<real_T> pyArrayFromRatArray3d(coder::array<real_T, 3U> array)
-{
-    auto result_array = py::array_t<real_T, py::array::f_style>({array.size(0), array.size(1), array.size(2)});
-    std::memcpy(result_array.request().ptr, array.data(), result_array.nbytes());
-
-    return result_array;
 }
 
 OutputResult OutputResultFromStruct5T(const RAT::struct5_T result)
@@ -1309,6 +591,27 @@ BayesResults bayesResultsFromStruct8T(const RAT::struct8_T results)
     return bayesResults;
 }
 
+const std::string docsRATMain = R"(Entry point for the main reflectivity computation.
+
+Parameters
+----------
+problem_def : Rat.rat_core.ProblemDefinition
+    The project input for the RAT calculation.
+limits : RATapi.rat_core.Limits
+    Min and max values for each parameter defined in the problem definition.
+control : RATapi.rat_core.Control
+    The controls object for the RAT calculation.
+
+Returns
+-------
+out_problem_def : Rat.rat_core.ProblemDefinition
+    The project input with the updated fit values.
+results : Rat.rat_core.OutputResult
+    The results from a RAT calculation.
+bayes_result : Rat.rat_core.BayesResults
+    The extra results if RAT calculation is Bayesian.
+)";
+
 py::tuple RATMain(const ProblemDefinition& problem_def, const Limits& limits, const Control& control)
 {
     RAT::struct0_T problem_def_struct = createStruct0(problem_def);
@@ -1327,21 +630,42 @@ py::tuple RATMain(const ProblemDefinition& problem_def, const Limits& limits, co
                           bayesResultsFromStruct8T(bayesResults));    
 }
 
+const std::string docsMakeSLDProfileXY = R"(Creates the profiles for the SLD plots
+
+Parameters
+----------
+bulk_in : float
+    Bulk in value for contrast.
+bulk_out : float
+    Bulk out value for contrast.
+ssub : float
+    Substrate roughness.
+layers : np.ndarray[np.float]
+    Array of parameters for each layer in the contrast.
+number_of_repeats : int, default: 1
+    Number of times the layers are repeated.
+
+Returns
+-------
+sld_profile : np.ndarray[np.float]
+    Computed SLD profile
+)";
+
 py::array_t<real_T> makeSLDProfileXY(real_T bulk_in,
                                      real_T bulk_out,
                                      real_T ssub,
                                      const py::array_t<real_T> &layers,
-                                     real_T number_of_layers,
-                                     real_T repeats)
+                                     int number_of_repeats=DEFAULT_NREPEATS)
 {
     coder::array<real_T, 2U> out;
     coder::array<real_T, 2U> layers_array = pyArrayToRatArray2d(layers);
+    py::buffer_info buffer_info = layers.request();
     RAT::makeSLDProfileXY(bulk_in,
                           bulk_out,
                           ssub,
                           layers_array,
-                          number_of_layers,
-                          repeats,
+                          buffer_info.shape[0],
+                          number_of_repeats,
                           out);
 
     return pyArrayFromRatArray2d(out);
@@ -1387,13 +711,13 @@ PYBIND11_MODULE(rat_core, m) {
         .def("invoke", overload_cast_<std::vector<double>&, 
                                       std::vector<double>&>()(&DylibEngine::invoke), py::arg("xdata"), py::arg("param"));
 
-    py::class_<PredictionIntervals>(m, "PredictionIntervals")
+    py::class_<PredictionIntervals>(m, "PredictionIntervals", docsPredictionIntervals.c_str())
         .def(py::init<>())
         .def_readwrite("reflectivity", &PredictionIntervals::reflectivity)
         .def_readwrite("sld", &PredictionIntervals::sld)
         .def_readwrite("sampleChi", &PredictionIntervals::sampleChi);
     
-    py::class_<PlotEventData>(m, "PlotEventData")
+    py::class_<PlotEventData>(m, "PlotEventData", docsPlotEventData.c_str())
         .def(py::init<>())
         .def_readwrite("reflectivity", &PlotEventData::reflectivity)
         .def_readwrite("shiftedData", &PlotEventData::shiftedData)
@@ -1430,7 +754,7 @@ PYBIND11_MODULE(rat_core, m) {
                 return evt;
             }));
 
-    py::class_<ProgressEventData>(m, "ProgressEventData")
+    py::class_<ProgressEventData>(m, "ProgressEventData", docsProgressEventData.c_str())
         .def(py::init<>())
         .def_readwrite("message", &ProgressEventData::message)
         .def_readwrite("percent", &ProgressEventData::percent)
@@ -1452,7 +776,7 @@ PYBIND11_MODULE(rat_core, m) {
                 return evt;
             }));
 
-    py::class_<ConfidenceIntervals>(m, "ConfidenceIntervals")
+    py::class_<ConfidenceIntervals>(m, "ConfidenceIntervals", docsConfidenceIntervals.c_str())
         .def(py::init<>())
         .def_readwrite("percentile95", &ConfidenceIntervals::percentile95)
         .def_readwrite("percentile65", &ConfidenceIntervals::percentile65)
@@ -1480,14 +804,14 @@ PYBIND11_MODULE(rat_core, m) {
         .def_readwrite("storeOutput", &DreamParams::storeOutput)
         .def_readwrite("R", &DreamParams::R);
 
-    py::class_<NestedSamplerOutput>(m, "NestedSamplerOutput")
+    py::class_<NestedSamplerOutput>(m, "NestedSamplerOutput", docsNestedSamplerOutput.c_str())
         .def(py::init<>())
         .def_readwrite("logZ", &NestedSamplerOutput::logZ)
         .def_readwrite("logZErr", &NestedSamplerOutput::logZErr)
         .def_readwrite("nestSamples", &NestedSamplerOutput::nestSamples)
         .def_readwrite("postSamples", &NestedSamplerOutput::postSamples);
 
-    py::class_<DreamOutput>(m, "DreamOutput")
+    py::class_<DreamOutput>(m, "DreamOutput", docsDreamOutput.c_str())
         .def(py::init<>())
         .def_readwrite("allChains", &DreamOutput::allChains)
         .def_readwrite("outlierChains", &DreamOutput::outlierChains)
@@ -1498,7 +822,7 @@ PYBIND11_MODULE(rat_core, m) {
         .def_readwrite("R_stat", &DreamOutput::R_stat)
         .def_readwrite("CR", &DreamOutput::CR);
 
-    py::class_<BayesResults>(m, "BayesResults")
+    py::class_<BayesResults>(m, "BayesResults", docsBayesResults.c_str())
         .def(py::init<>())
         .def_readwrite("predictionIntervals", &BayesResults::predictionIntervals)
         .def_readwrite("confidenceIntervals", &BayesResults::confidenceIntervals)
@@ -1507,12 +831,12 @@ PYBIND11_MODULE(rat_core, m) {
         .def_readwrite("nestedSamplerOutput", &BayesResults::nestedSamplerOutput)
         .def_readwrite("chain", &BayesResults::chain);
 
-    py::class_<Calculation>(m, "Calculation")
+    py::class_<Calculation>(m, "Calculation", docsCalculation.c_str())
         .def(py::init<>())
         .def_readwrite("chiValues", &Calculation::chiValues)
         .def_readwrite("sumChi", &Calculation::sumChi);
 
-    py::class_<ContrastParams>(m, "ContrastParams")
+    py::class_<ContrastParams>(m, "ContrastParams", docsContrastParams.c_str())
         .def(py::init<>())
         .def_readwrite("scalefactors", &ContrastParams::scalefactors)
         .def_readwrite("bulkIn", &ContrastParams::bulkIn)
@@ -1520,7 +844,7 @@ PYBIND11_MODULE(rat_core, m) {
         .def_readwrite("subRoughs", &ContrastParams::subRoughs)
         .def_readwrite("resample", &ContrastParams::resample);
     
-    py::class_<OutputResult>(m, "OutputResult")
+    py::class_<OutputResult>(m, "OutputResult", docsOutputResult.c_str())
         .def(py::init<>())
         .def_readwrite("reflectivity", &OutputResult::reflectivity)
         .def_readwrite("simulation", &OutputResult::simulation)
@@ -1535,7 +859,7 @@ PYBIND11_MODULE(rat_core, m) {
         .def_readwrite("fitParams", &OutputResult::fitParams)
         .def_readwrite("fitNames", &OutputResult::fitNames);
 
-    py::class_<NameStore>(m, "NameStore")
+    py::class_<NameStore>(m, "NameStore", docsNameStore.c_str())
         .def(py::init<>())
         .def_readwrite("params", &NameStore::params)
         .def_readwrite("backgroundParams", &NameStore::backgroundParams)
@@ -1572,7 +896,7 @@ PYBIND11_MODULE(rat_core, m) {
                 return names;
             }));
 
-    py::class_<Checks>(m, "Checks")
+    py::class_<Checks>(m, "Checks", docsChecks.c_str())
         .def(py::init<>())
         .def_readwrite("params", &Checks::params)
         .def_readwrite("backgroundParams", &Checks::backgroundParams)
@@ -1607,7 +931,7 @@ PYBIND11_MODULE(rat_core, m) {
                 return chk;
             }));
 
-    py::class_<Limits>(m, "Limits")
+    py::class_<Limits>(m, "Limits", docsLimits.c_str())
         .def(py::init<>())
         .def_readwrite("params", &Limits::params)
         .def_readwrite("backgroundParams", &Limits::backgroundParams)
@@ -1642,7 +966,7 @@ PYBIND11_MODULE(rat_core, m) {
                 return lim;
             }));
 
-    py::class_<Control>(m, "Control")
+    py::class_<Control>(m, "Control", docsControl.c_str())
         .def(py::init<>())
         .def_readwrite("parallel", &Control::parallel)
         .def_readwrite("procedure", &Control::procedure)
@@ -1723,7 +1047,7 @@ PYBIND11_MODULE(rat_core, m) {
                 return ctrl;
             }));
 
-    py::class_<ProblemDefinition>(m, "ProblemDefinition")
+    py::class_<ProblemDefinition>(m, "ProblemDefinition", docsProblemDefinition.c_str())
         .def(py::init<>())
         .def_readwrite("TF", &ProblemDefinition::TF)
         .def_readwrite("resample", &ProblemDefinition::resample)
@@ -1859,7 +1183,8 @@ PYBIND11_MODULE(rat_core, m) {
                 return p;
             }));
 
-    m.def("RATMain", &RATMain, "Entry point for the main reflectivity computation.");
+    m.def("RATMain", &RATMain, docsRATMain.c_str(), py::arg("problem_def"), py::arg("limits"), py::arg("control"));
 
-    m.def("makeSLDProfileXY", &makeSLDProfileXY, "Creates the profiles for the SLD plots");
+    m.def("makeSLDProfileXY", &makeSLDProfileXY, docsMakeSLDProfileXY.c_str(), 
+          py::arg("bulk_in"), py::arg("bulk_out"), py::arg("ssub"), py::arg("layers"), py::arg("number_of_repeats") = DEFAULT_NREPEATS);
 }

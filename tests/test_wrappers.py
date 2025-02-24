@@ -27,7 +27,7 @@ def test_matlab_wrapper() -> None:
         mocked_engine.demo.return_value = ([2], 5)
         result = handle([1], [2], [3], 0)
         assert result == ([2], 5)
-        assert wrapper.engine.demo.call_args[0] == ([1], [2], [3], 1, -1)
+        assert wrapper.engine.demo.call_args[0] == ([1], [2], [3], 1)
         mocked_engine.demo.assert_called_once()
 
         mocked_engine.demo.return_value = ([3, 1], 7)
