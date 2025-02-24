@@ -207,7 +207,7 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid", use_attribut
     def sendStopEvent(self):
         """Send the stop event via the inter-process communication file.
 
-        Warnings:
+        Warnings
         --------
         UserWarning
             Raised if we try to delete an IPC file that was not initialised.

@@ -26,11 +26,16 @@ ignore = ["SIM103", # needless bool
           "D203",   # blank line before class docstring
           "D213"]   # multi line summary should start at second line
 
-[tool.ruff.lint.flake8-pytest-style]
-fixture-parentheses = false
-mark-parentheses = false
-
 # ignore docstring lints in the tests and install script
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["D"]
 "setup.py" = ["D"]
+
+[tool.ruff.lint.flake8-pytest-style]
+fixture-parentheses = false
+mark-parentheses = false
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+

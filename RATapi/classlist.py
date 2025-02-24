@@ -33,7 +33,7 @@ class ClassList(collections.UserList, Generic[T]):
     ----------
     init_list : Sequence [T] or T, optional
         An instance, or list of instance(s), of the class to be used in this ClassList.
-    ``name_field`` : str, optional
+    name_field : str, optional
         The field used to define unique objects in the ClassList (default is "name").
 
     """
