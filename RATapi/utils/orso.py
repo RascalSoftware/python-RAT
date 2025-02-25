@@ -1,98 +1,32 @@
 """Readers from file formats."""
 
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Union
 
 import orsopy
 from orsopy.fileio import load_orso
 
-from RATapi import ClassList, Project
-from RATapi.models import AbsorptionLayer, Contrast, Data, Layer, Parameter, Resolution
+from RATapi import ClassList
+from RATapi.models import AbsorptionLayer, Data, Layer, Parameter
 
 
-def load_ort_data(filepath: str) -> Union[Data, list[Data]]:
-    """Read data from an .ort file.
-
-    Parameters
-    ----------
-    filepath : str
-        The path to the .ort file.
-
-    Returns
-    -------
-    Data or list[Data]
-        If the .ort file contains one dataset, just the data model.
-        If it contains multiple datasets, returns a list of data models.
-
-    """
-    ort_data = load_orso(filepath)
-    datasets = [Data(name=dataset.info.data_source.sample.name, data=dataset.data) for dataset in ort_data]
-    if len(datasets) == 1:
-        return datasets[0]
-    return datasets
-
-
-def ort_to_project(filepath: str) -> Project:
-    """Create a project from an .ort file.
+class ORSOProject:
+    """A class to encapsulate model information and data from an .ort file.
 
     Parameters
     ----------
-    filepath : str
+    filepath : str or Path
         The path to the .ort file.
+    absorption : bool, default None
+        Whether to account for absorption in the model data.
 
-    Returns
-    -------
-    Project
-        The project data from the .ort file.
     """
-    project = Project()
 
-    ort_data = load_orso(filepath)
-
-    for dataset in ort_data:
-        sample = dataset.info.data_source.sample
-
-        project.data.append(Data(name=sample.name, data=dataset.data))
-
-        if sample.model is not None:
-            model_info = orso_model_to_rat(sample.model)
-
-            # Add all parameters that aren't already defined
-            project.parameters.union(model_info.parameters)
-            project.layers.extend(model_info.layers)
-            project.bulk_in.append(model_info.bulk_in)
-            project.bulk_out.append(model_info.bulk_out)
-
-            if dataset.data.shape[1] == 4:
-                project.resolutions.append(
-                    Resolution(
-                        name=f"{sample.name} Resolution",
-                        type="data",
-                    )
-                )
-            else:
-                project.resolutions.append(
-                    Resolution(
-                        name=f"{sample.name} Resolution",
-                        type="constant",
-                        source="Resolution Param 1",
-                    )
-                )
-
-            project.contrasts.append(
-                Contrast(
-                    name=dataset.info.data_source.experiment.title,
-                    data=sample.name,
-                    background="Background 1",
-                    bulk_in=model_info.bulk_in.name,
-                    bulk_out=model_info.bulk_out.name,
-                    scalefactor="Scalefactor 1",
-                    resolution=f"{sample.name} Resolution",
-                    model=model_info.model,
-                )
-            )
-
-    return project
+    def __init__(self, filepath: Union[str, Path], absorption: bool = False):
+        ort_data = load_orso(filepath)
+        self.data = [Data(name=dataset.info.data_source.sample.name, data=dataset.data) for dataset in ort_data]
+        self.samples = [orso_model_to_rat(dataset.info.data_source.sample.model) for dataset in ort_data]
 
 
 @dataclass
@@ -108,7 +42,7 @@ class ORSOSample:
 
 def orso_model_to_rat(
     model: Union[orsopy.fileio.model_language.SampleModel, str], absorption: bool = False
-) -> ORSOSample:
+) -> Union[ORSOSample, None]:
     """Get information from an ORSO SampleModel object.
 
     Parameters
@@ -122,20 +56,20 @@ def orso_model_to_rat(
     Returns
     -------
     ORSOSample
-        A dataclass containing the sample data.
+        A dataclass containing the sample data, or None if the model is None.
 
     """
+    if model is None:
+        return None
+
     if isinstance(model, str):
         model = orsopy.fileio.model_language.SampleModel(stack=model)
+
     stack = model.resolve_to_layers()
     # if bulk in or out is air, it has SLD predefined
     # else we need to grab it from SLDDB
     if bulk_in_sld := stack[0].material.sld is None:
         bulk_in_sld = stack[0].material.get_sld()
-
-    # orsopy SLDs are in 10^-6 inverse square Angstroms
-    # but RAT uses just inverse square Angstroms
-    bulk_in_sld *= 1e6
 
     # resolve_to_layers loses the name of bulk in and out
     bulk_in_name = model.stack.split("|")[0].strip()
@@ -149,8 +83,6 @@ def orso_model_to_rat(
 
     if bulk_out_sld := stack[-1].material.sld is None:
         bulk_out_sld = stack[-1].material.get_sld()
-
-    bulk_out_sld *= 1e6
 
     bulk_out_name = model.stack.split("|")[-1].strip()
     bulk_out = Parameter(
@@ -199,10 +131,7 @@ def orso_layer_to_rat_layer(
     name = layer.material.formula
     thickness = layer.thickness.as_unit("angstrom")
     roughness = layer.roughness.as_unit("angstrom")
-
-    # orsopy SLDs are in 10^-6 inverse square Angstroms
-    # but RAT uses just inverse square Angstroms
-    sld = layer.material.get_sld() * 1e6
+    sld = layer.material.get_sld()
 
     params = ClassList(
         [
