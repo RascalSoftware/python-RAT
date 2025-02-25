@@ -9,8 +9,8 @@ import pytest
 from orsopy.fileio.model_language import SampleModel
 
 from RATapi.examples.bayes_benchmark.bayes_benchmark import get_project
-from RATapi.project import Project, class_lists
-from RATapi.utils.orso import load_ort_data, orso_model_to_rat, ort_to_project
+from RATapi.project import Project
+from RATapi.utils.orso import ORSOProject, orso_model_to_rat
 
 TEST_DIR_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_data")
 
@@ -92,10 +92,7 @@ def test_load_ort_data(test_data):
                 data_strings[-1] += line
 
     expected_data = list(map(lambda s: np.loadtxt(StringIO(s)), data_strings))
-    actual_data = load_ort_data(Path(TEST_DIR_PATH, test_data))
-
-    if not isinstance(actual_data, list):
-        actual_data = [actual_data]
+    actual_data = ORSOProject(Path(TEST_DIR_PATH, test_data)).data
 
     assert len(actual_data) == len(expected_data)
     for actual_dataset, expected_dataset in zip(actual_data, expected_data):
@@ -111,11 +108,14 @@ def test_load_ort_data(test_data):
 )
 def test_load_ort_project(test_data, expected_data):
     """Test that a project with model data is loaded correctly."""
-    project = ort_to_project(Path(TEST_DIR_PATH, test_data))
+    ort_data = ORSOProject(Path(TEST_DIR_PATH, test_data))
+    sample = ort_data.samples[0]
     exp_project = Project.load(Path(TEST_DIR_PATH, expected_data))
 
-    for class_list in class_lists:
-        assert getattr(project, class_list) == getattr(exp_project, class_list)
+    for class_list in ["bulk_in", "bulk_out"]:
+        assert getattr(sample, class_list) == getattr(exp_project, class_list)[0]
+    assert sample.parameters == exp_project.parameters[1:]
+    assert sample.layers == exp_project.layers
 
-    for data, exp_data in zip(project.data, exp_project.data):
+    for data, exp_data in zip(ort_data.data, exp_project.data[1:]):
         np.testing.assert_array_equal(data.data, exp_data.data)
