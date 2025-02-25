@@ -221,9 +221,9 @@ class EventBridge
     };
 };
 
-RAT::struct1_T createStruct1(const NameStore& names)
+RAT::b_ParamNames createParamNamesStruct(const NameStore& names)
 {
-    RAT::struct1_T names_struct;
+    RAT::b_ParamNames  names_struct;
     names_struct.params = customCaller("NameStore.params", pyListToRatCellWrap02d, names.params);
     names_struct.backgroundParams = customCaller("NameStore.backgroundParams", pyListToRatCellWrap02d, names.backgroundParams);
     names_struct.scalefactors = customCaller("NameStore.scalefactors", pyListToRatCellWrap02d, names.scalefactors);
@@ -237,9 +237,9 @@ RAT::struct1_T createStruct1(const NameStore& names)
     return names_struct;
 }
 
-RAT::struct2_T createStruct2(const Checks& checks)
+RAT::CheckFlags createCheckFlagsStruct(const Checks& checks)
 {
-    RAT::struct2_T checks_struct;
+    RAT::CheckFlags checks_struct;
     checks_struct.params = customCaller("Checks.params", pyArrayToRatRowArray1d, checks.params);
     checks_struct.backgroundParams = customCaller("Checks.backgroundParams", pyArrayToRatRowArray1d, checks.backgroundParams);
     checks_struct.scalefactors = customCaller("Checks.scalefactors", pyArrayToRatRowArray1d, checks.scalefactors);
@@ -252,9 +252,9 @@ RAT::struct2_T createStruct2(const Checks& checks)
     return checks_struct;
 }
 
-RAT::struct0_T createStruct0(const ProblemDefinition& problem)
+RAT::b_ProblemDefinition createProblemDefinitionStruct(const ProblemDefinition& problem)
 {
-    RAT::struct0_T problem_struct;
+    RAT::b_ProblemDefinition problem_struct;
     
     stringToRatBoundedArray(problem.TF, problem_struct.TF.data, problem_struct.TF.size);
     problem_struct.resample = customCaller("Problem.resample", pyArrayToRatRowArray1d, problem.resample);
@@ -300,17 +300,17 @@ RAT::struct0_T createStruct0(const ProblemDefinition& problem)
     problem_struct.priorNames = customCaller("Problem.priorNames", pyListToRatCellWrap01d, problem.priorNames);
     problem_struct.priorValues =  customCaller("Problem.priorValues", pyArrayToRatArray2d, problem.priorValues);
 
-    problem_struct.names = createStruct1(problem.names);
-    problem_struct.checks = createStruct2(problem.checks);
+    problem_struct.names = createParamNamesStruct(problem.names);
+    problem_struct.checks = createCheckFlagsStruct(problem.checks);
 
 
     return problem_struct;
 }
 
 
-RAT::struct3_T createStruct3(const Limits& limits)
+RAT::ProblemLimits createProblemLimitsStruct(const Limits& limits)
 {
-    RAT::struct3_T limits_struct;
+    RAT::ProblemLimits limits_struct;
     limits_struct.params = customCaller("Limits.params", pyArrayToRatArray2d, limits.params);
     limits_struct.backgroundParams = customCaller("Limits.backgroundParams", pyArrayToRatArray2d, limits.backgroundParams);
     limits_struct.scalefactors = customCaller("Limits.scalefactors", pyArrayToRatArray2d, limits.scalefactors);
@@ -324,9 +324,9 @@ RAT::struct3_T createStruct3(const Limits& limits)
 }
 
 
-RAT::struct4_T createStruct4(const Control& control)
+RAT::Controls createControlsStruct(const Control& control)
 {
-    RAT::struct4_T control_struct;
+    RAT::Controls control_struct;
     control_struct.funcTolerance = control.funcTolerance;
     control_struct.maxFuncEvals = control.maxFuncEvals;
     control_struct.maxIterations = control.maxIterations;
@@ -360,7 +360,7 @@ RAT::struct4_T createStruct4(const Control& control)
     return control_struct;
 }
 
-OutputResult OutputResultFromStruct5T(const RAT::struct5_T result)
+OutputResult OutputResultFromStruct(const RAT::Results result)
 {
     // Copy problem to output
     OutputResult output_result;
@@ -470,7 +470,7 @@ OutputResult OutputResultFromStruct5T(const RAT::struct5_T result)
     return output_result;
 }
 
-ProblemDefinition problemDefinitionFromStruct0T(const RAT::struct0_T problem)
+ProblemDefinition problemDefinitionFromStruct(const RAT::b_ProblemDefinition problem)
 {
     ProblemDefinition problem_def;
     
@@ -540,7 +540,7 @@ ProblemDefinition problemDefinitionFromStruct0T(const RAT::struct0_T problem)
     return problem_def;
 }
 
-BayesResults bayesResultsFromStruct8T(const RAT::struct8_T results)
+BayesResults bayesResultsFromStruct(const RAT::BayesResults results)
 {
     BayesResults bayesResults;
 
@@ -614,20 +614,20 @@ bayes_result : Rat.rat_core.BayesResults
 
 py::tuple RATMain(const ProblemDefinition& problem_def, const Limits& limits, const Control& control)
 {
-    RAT::struct0_T problem_def_struct = createStruct0(problem_def);
-    RAT::struct3_T limits_struct = createStruct3(limits);
-    RAT::struct4_T control_struct = createStruct4(control);
+    RAT::b_ProblemDefinition problem_def_struct = createProblemDefinitionStruct(problem_def);
+    RAT::ProblemLimits limits_struct = createProblemLimitsStruct(limits);
+    RAT::Controls control_struct = createControlsStruct(control);
     // Output
-    RAT::struct5_T results;
-    RAT::struct8_T bayesResults;
+    RAT::Results results;
+    RAT::BayesResults bayesResults;
     // Call the entry-point
     RAT::RATMain(&problem_def_struct, &limits_struct, &control_struct, &results, &bayesResults);
     // Copy result to output
-    auto out_problem_def = problemDefinitionFromStruct0T(problem_def_struct);
+    auto out_problem_def = problemDefinitionFromStruct(problem_def_struct);
     out_problem_def.customFiles = problem_def.customFiles.attr("copy")(); 
     return py::make_tuple(out_problem_def, 
-                          OutputResultFromStruct5T(results), 
-                          bayesResultsFromStruct8T(bayesResults));    
+                          OutputResultFromStruct(results), 
+                          bayesResultsFromStruct(bayesResults));    
 }
 
 const std::string docsMakeSLDProfileXY = R"(Creates the profiles for the SLD plots
