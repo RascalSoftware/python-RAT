@@ -1,6 +1,4 @@
-"""The classlist module. Contains the ClassList class, which defines a list containing instances of a particular
-class.
-"""
+"""The ClassList class, which defines a list containing instances of a particular class."""
 
 import collections
 import contextlib
@@ -24,12 +22,12 @@ class ClassList(collections.UserList, Generic[T]):
     attribute given in the ClassList's "name_field" attribute (the default is "name"), the ClassList will ensure that
     all objects within the ClassList have unique values for that attribute. It is then possible to use this attribute
     of an object in the .remove(), .count(), and .index() routines in place of the full object. Due to the requirement
-    of unique values of the name_field attribute, the multiplication operators __mul__, __rmul__, and __imul__ have
+    of unique values of the ``name_field`` attribute, the multiplication operators __mul__, __rmul__, and __imul__ have
     been disabled, since they cannot allow for unique attribute values by definition.
 
     We extend the UserList class to enable objects to be added and modified using just the keyword arguments, enable
-    the object name_field attribute to be used in place of the full object, and ensure all elements are of the
-    specified type, with unique name_field attributes defined.
+    the object ``name_field`` attribute to be used in place of the full object, and ensure all elements are of the
+    specified type, with unique ``name_field`` attributes defined.
 
     Parameters
     ----------
@@ -171,8 +169,9 @@ class ClassList(collections.UserList, Generic[T]):
         raise TypeError(f"unsupported operand type(s) for *=: '{self.__class__.__name__}' and '{n.__class__.__name__}'")
 
     def append(self, obj: T = None, **kwargs) -> None:
-        """Append a new object to the ClassList using either the object itself, or keyword arguments to set attribute
-        values.
+        """Append a new object to the ClassList.
+
+        This method can use the object itself, or can provide attribute values as keyword arguments for a new object.
 
         Parameters
         ----------
@@ -184,7 +183,7 @@ class ClassList(collections.UserList, Generic[T]):
         Raises
         ------
         ValueError
-            Raised if the input arguments contain a name_field value already defined in the ClassList.
+            Raised if the input arguments contain a ``name_field`` value already defined in the ClassList.
 
         Warnings
         --------
@@ -216,8 +215,9 @@ class ClassList(collections.UserList, Generic[T]):
             self.data.append(self._class_handle(**kwargs))
 
     def insert(self, index: int, obj: T = None, **kwargs) -> None:
-        """Insert a new object into the ClassList at a given index using either the object itself, or keyword arguments
-        to set attribute values.
+        """Insert a new object at a given index.
+
+        This method can use the object itself, or can provide attribute values as keyword arguments for a new object.
 
         Parameters
         ----------
@@ -231,7 +231,7 @@ class ClassList(collections.UserList, Generic[T]):
         Raises
         ------
         ValueError
-            Raised if the input arguments contain a name_field value already defined in the ClassList.
+            Raised if the input arguments contain a ``name_field`` value already defined in the ClassList.
 
         Warnings
         --------
@@ -263,20 +263,25 @@ class ClassList(collections.UserList, Generic[T]):
             self.data.insert(index, self._class_handle(**kwargs))
 
     def remove(self, item: Union[T, str]) -> None:
-        """Remove an object from the ClassList using either the object itself or its name_field value."""
+        """Remove an object from the ClassList using either the object itself or its ``name_field`` value."""
         item = self._get_item_from_name_field(item)
         self.data.remove(item)
 
     def count(self, item: Union[T, str]) -> int:
-        """Return the number of times an object appears in the ClassList using either the object itself or its
-        name_field value.
+        """Return the number of times an object appears in the ClassList.
+
+        This method can use either the object itself or its ``name_field`` value.
+
         """
         item = self._get_item_from_name_field(item)
         return self.data.count(item)
 
     def index(self, item: Union[T, str], offset: bool = False, *args) -> int:
-        """Return the index of a particular object in the ClassList using either the object itself or its
-        name_field value. If offset is specified, add one to the index. This is used to account for one-based indexing.
+        """Return the index of a particular object in the ClassList.
+
+        This method can use either the object itself or its ``name_field`` value.
+        If offset is specified, add one to the index. This is used to account for one-based indexing.
+
         """
         item = self._get_item_from_name_field(item)
         return self.data.index(item, *args) + int(offset)
@@ -357,12 +362,12 @@ class ClassList(collections.UserList, Generic[T]):
             self._class_handle.model_validate(self.data[index])
 
     def get_names(self) -> list[str]:
-        """Return a list of the values of the name_field attribute of each class object in the list.
+        """Return a list of the values of the ``name_field`` attribute of each class object in the list.
 
         Returns
         -------
         names : list [str]
-            The value of the name_field attribute of each object in the ClassList.
+            The value of the ``name_field`` attribute of each object in the ClassList.
 
         """
         return [getattr(model, self.name_field) for model in self.data if hasattr(model, self.name_field)]
@@ -389,8 +394,7 @@ class ClassList(collections.UserList, Generic[T]):
         ]
 
     def _validate_name_field(self, input_args: dict[str, Any]) -> None:
-        """Raise a ValueError if the name_field attribute is passed as an object parameter, and its value is already
-        used within the ClassList.
+        """Raise a ValueError if the user tries to add an object with a ``name_field`` already in the ClassList.
 
         Parameters
         ----------
@@ -400,7 +404,7 @@ class ClassList(collections.UserList, Generic[T]):
         Raises
         ------
         ValueError
-            Raised if the input arguments contain a name_field value already defined in the ClassList.
+            Raised if the input arguments contain a ``name_field`` value already defined in the ClassList.
 
         """
         names = [name.lower() for name in self.get_names()]
@@ -413,8 +417,7 @@ class ClassList(collections.UserList, Generic[T]):
                 )
 
     def _check_unique_name_fields(self, input_list: Sequence[T]) -> None:
-        """Raise a ValueError if any value of the name_field attribute is used more than once in a list of class
-        objects.
+        """Raise a ValueError if any value of the ``name_field`` attribute is repeated in a list of class objects.
 
         Parameters
         ----------
@@ -470,17 +473,17 @@ class ClassList(collections.UserList, Generic[T]):
                 )
 
     def _check_classes(self, input_list: Sequence[T]) -> None:
-        """Raise a ValueError if any object in a list of objects is not of the type specified by self._class_handle.
+        """Raise a ValueError if any object in a list of objects is not of the type specified by ``self._class_handle``.
 
         Parameters
         ----------
         input_list : iterable
-            A list of instances of the class given in self._class_handle.
+            A list of instances of the class given in ``self._class_handle``.
 
         Raises
         ------
         ValueError
-            Raised if the input list contains objects of any type other than that given in self._class_handle.
+            If the input list contains objects of any type other than that given in ``self._class_handle``.
 
         """
         error_list = []
@@ -495,18 +498,18 @@ class ClassList(collections.UserList, Generic[T]):
             )
 
     def _get_item_from_name_field(self, value: Union[T, str]) -> Union[T, str]:
-        """Return the object with the given value of the name_field attribute in the ClassList.
+        """Return the object with the given value of the ``name_field`` attribute in the ClassList.
 
         Parameters
         ----------
         value : T or str
-            Either an object in the ClassList, or the value of the name_field attribute of an object in the ClassList.
+            Either an object in the ClassList, or the value of the ``name_field`` for an object in the ClassList.
 
         Returns
         -------
         instance : T or str
-            Either the object with the value of the name_field attribute given by value, or the input value if an
-            object with that value of the name_field attribute cannot be found.
+            Either the object with the value of the ``name_field`` attribute given by value, or the input value if an
+            object with that value of the ``name_field`` attribute cannot be found.
 
         """
         try:
@@ -518,24 +521,27 @@ class ClassList(collections.UserList, Generic[T]):
 
     @staticmethod
     def _determine_class_handle(input_list: Sequence[T]):
-        """When inputting a sequence of object to a ClassList, the _class_handle should be set as the type of the
-        element which satisfies "issubclass" for all the other elements.
+        """Determine the class handle from a sequence of objects.
+
+        The ``_class_handle`` of the sequence is the type of the first element in the sequence
+        which is a subclass of all elements in the sequence. If no such element exists, the handle
+        is set to be the type of the first element in the list.
 
         Parameters
         ----------
-        input_list : Sequence [object]
+        input_list : Sequence[T]
             A list of instances to populate the ClassList.
 
         Returns
         -------
         class_handle : type
-            The type object of the element fulfilling the condition of satisfying "issubclass" for all of the other
-            elements.
+            The type object of the first element which is a subclass of all of the other
+            elements, or the first element if no such element exists.
 
         """
-        for this_element in input_list:
-            if all([issubclass(type(instance), type(this_element)) for instance in input_list]):
-                class_handle = type(this_element)
+        for element in input_list:
+            if all(issubclass(type(instance), type(element)) for instance in input_list):
+                class_handle = type(element)
                 break
         else:
             class_handle = type(input_list[0])

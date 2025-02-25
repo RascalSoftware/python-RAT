@@ -1,7 +1,10 @@
+"""A custom model file for a monolayer volume model."""
+
 from math import cos, radians
 
 
 def Model_IIb(params, bulk_in, bulk_out, contrast):
+    """Calculate layer parameters for a monolayer volume model at two deuterations."""
     # converted from matlab file Model_IIb.m
 
     Roughness, APM, thickHead, theta = params

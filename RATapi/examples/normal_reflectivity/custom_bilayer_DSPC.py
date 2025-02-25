@@ -1,8 +1,10 @@
+"""A custom layer model for a DSPC supported bilayer."""
+
 import numpy as np
 
 
 def custom_bilayer_DSPC(params, bulk_in, bulk_out, contrast):
-    """CUSTOMBILAYER RAT Custom Layer Model File.
+    """Calculate layer parameters for a DSPC supported bilayer.
 
     This file accepts 3 vectors containing the values for params, bulk in and bulk out.
     The final parameter is an index of the contrast being calculated.

@@ -1,3 +1,5 @@
+"""An example of how to convert a RasCAL-1 project to RAT."""
+
 import pathlib
 from pprint import pp
 
@@ -6,6 +8,23 @@ import RATapi as RAT
 
 # convert R1 project to Project class
 def convert_rascal(mat_filename="lipid_bilayer.mat"):
+    """Convert a project from RasCAL-1 and a project to RasCAL-1.
+
+    We convert a RasCAL-1 monolayer volume model to RAT, and the DSPC Standard Layers
+    example to RasCAL-1.
+
+    Parameters
+    ----------
+    mat_filename : str
+        The filename of the output of the RAT project converted to RasCAL-2.
+
+    Returns
+    -------
+    project, struct
+        A RasCAL-1 monolayer volume model converted to a RAT project, and the
+        struct of the DSPC standard layers example converted to a RasCAL-1 struct.
+
+    """
     project_path = pathlib.Path(__file__).parent / "R1monolayerVolumeModel.mat"
     project = RAT.utils.convert.r1_to_project_class(project_path)
 

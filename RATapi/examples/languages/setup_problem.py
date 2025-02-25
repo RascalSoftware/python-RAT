@@ -1,3 +1,5 @@
+"""A custom example problem for the languages benchmark."""
+
 import pathlib
 
 import numpy as np
@@ -6,7 +8,7 @@ import RATapi as RAT
 
 
 def make_example_problem():
-    """Custom Layers example for Supported DSPC layer.
+    """Generate a Custom Layers example for Supported DSPC layer.
 
     Example of using custom layers to model a DSPC supported bilayer.
     """

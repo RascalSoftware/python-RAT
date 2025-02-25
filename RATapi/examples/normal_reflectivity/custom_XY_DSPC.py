@@ -1,10 +1,12 @@
+"""A custom XY model for a supported DSPC bilayer."""
+
 import math
 
 import numpy as np
 
 
 def custom_XY_DSPC(params, bulk_in, bulk_out, contrast):
-    """This function makes a model of a supported DSPC bilayer using volume restricted distribution functions."""
+    """Calculate the continuous SLD of a supported DSPC bilayer using volume restricted distribution functions."""
     # Split up the parameters
     subRough = params[0]
     oxideThick = params[1]
@@ -118,7 +120,8 @@ def custom_XY_DSPC(params, bulk_in, bulk_out, contrast):
 
 
 def layer(z, prevLaySurf, thickness, height, Sigma_L, Sigma_R):
-    """This produces a layer, with a defined thickness, height and roughness.
+    """Produce a layer, with a defined thickness, height and roughness.
+
     Each side of the layer has its own roughness value.
     """
     # Find the edges

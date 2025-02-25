@@ -1,10 +1,18 @@
+"""An example of using domains with custom layer models."""
+
 import pathlib
 
 import RATapi as RAT
 
 
 def domains_custom_layers():
-    """An example custom layers domains project involving incoherent summing on a permalloy layer"""
+    """Calculate an example custom layers domains project involving incoherent summing on a permalloy layer.
+
+    For a custom layers model, rather than being forced to define our layers as [Thick SLD Rough…. etc],
+    we can parameterise however we like and then use a function to calculate the parameters for each layer.
+    So for example, if the volume of lipid tails are known (from the literature),
+    then all we need is the Area per molecule to calculate the layers.
+    """
     problem = RAT.Project(calculation="domains", model="custom layers", geometry="substrate/liquid")
 
     # Make some parameters...

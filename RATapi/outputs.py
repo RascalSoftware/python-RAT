@@ -1,4 +1,4 @@
-"""Converts outputs from the compiled RAT code to python dataclasses"""
+"""Converts results from the compiled RAT code to python dataclasses."""
 
 from dataclasses import dataclass
 from typing import Any, Optional, Union
@@ -10,8 +10,9 @@ from RATapi.utils.enums import Procedures
 
 
 def get_field_string(field: str, value: Any, array_limit: int):
-    """Returns a string representation of class fields where large and multidimensional arrays are represented by their
-    shape.
+    """Return a string representation of class fields where large arrays are represented by their shape.
+
+    An array will be displayed as just its shape if it is multidimensional or 1D and longer than ``array_limit``.
 
     Parameters
     ----------
@@ -26,6 +27,21 @@ def get_field_string(field: str, value: Any, array_limit: int):
     -------
     field_string : str
         The string representation of the field in the RAT output class.
+
+    Examples
+    --------
+    >>> get_field_string("data", 130, 5)
+    "data = 130"
+
+    >>> get_field_string("data", array([1, 2, 3, 4, 5]), 10)
+    "data = [1 2 3 4 5]"
+
+    >>> get_field_string("data", array([1, 2, 3, 4, 5]), 3)
+    "data = Data array: [5],"
+
+    >>> get_field_string("data", array([[1, 2, 3], [4, 5, 6]]), 10)
+    "data = Data array: [2 x 3],"
+
     """
     array_text = "Data array: "
     if isinstance(value, list) and len(value) > 0:
@@ -52,6 +68,8 @@ def get_field_string(field: str, value: Any, array_limit: int):
 
 
 class RATResult:
+    """A mixin class which truncates arrays when the class is displayed."""
+
     def __str__(self):
         output = f"{self.__class__.__name__}(\n"
         for key, value in self.__dict__.items():
@@ -64,7 +82,7 @@ class RATResult:
 class CalculationResults(RATResult):
     """The goodness of fit from the Abeles calculation.
 
-    Attributes
+    Parameters
     ----------
     chiValues : np.ndarray
         The chi-squared value for each contrast.
@@ -81,7 +99,7 @@ class CalculationResults(RATResult):
 class ContrastParams(RATResult):
     """The experimental parameters for each contrast.
 
-    Attributes
+    Parameters
     ----------
     scalefactors : np.ndarray
         The scalefactor values for each contrast.
@@ -107,7 +125,7 @@ class ContrastParams(RATResult):
 class Results:
     """The results of a RAT calculation.
 
-    Attributes
+    Parameters
     ----------
     reflectivity : list
         The reflectivity curves for each contrast,
@@ -174,7 +192,7 @@ class PredictionIntervals(RATResult):
     - 3: the 65th percentile;
     - 4: the 95th percentile.
 
-    Attributes
+    Parameters
     ----------
     reflectivity : list
         The prediction interval data for reflectivity of each contrast.
@@ -182,6 +200,7 @@ class PredictionIntervals(RATResult):
         The prediction interval data for SLD of each contrast.
     sampleChi : np.ndarray
         The value of sumChi at each point of the Markov chain.
+
     """
 
     reflectivity: list
@@ -191,10 +210,9 @@ class PredictionIntervals(RATResult):
 
 @dataclass
 class ConfidenceIntervals(RATResult):
-    """
-    The 65% and 95% confidence intervals for the best fit results.
+    """The 65% and 95% confidence intervals for the best fit results.
 
-    Attributes
+    Parameters
     ----------
     percentile95 : np.ndarray
         The 95% confidence intervals for each fit parameter.
@@ -202,6 +220,7 @@ class ConfidenceIntervals(RATResult):
         The 65% confidence intervals for each fit parameter.
     mean : np.ndarray
         The mean values for each fit parameter.
+
     """
 
     percentile95: np.ndarray
@@ -213,7 +232,7 @@ class ConfidenceIntervals(RATResult):
 class DreamParams(RATResult):
     """The parameters used by the inner DREAM algorithm.
 
-    Attributes
+    Parameters
     ----------
     nParams : float
         The number of parameters used by the algorithm.
@@ -284,7 +303,7 @@ class DreamParams(RATResult):
 class DreamOutput(RATResult):
     """The diagnostic output information from DREAM.
 
-    Attributes
+    Parameters
     ----------
     allChains : np.ndarray
         An ``nGenerations`` x ``nParams + 2`` x ``nChains`` size array,
@@ -335,7 +354,7 @@ class DreamOutput(RATResult):
 class NestedSamplerOutput(RATResult):
     """The output information from the Nested Sampler (ns).
 
-    Attributes
+    Parameters
     ----------
     logZ : float
         The natural logarithm of the evidence Z for the parameter values.
@@ -363,7 +382,7 @@ class NestedSamplerOutput(RATResult):
 class BayesResults(Results):
     """The results of a Bayesian RAT calculation.
 
-    Attributes
+    Parameters
     ----------
     predictionIntervals : PredictionIntervals
         The prediction intervals.

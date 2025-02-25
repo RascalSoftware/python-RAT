@@ -1,3 +1,5 @@
+"""The Controls class for providing RAT algorithm settings."""
+
 import contextlib
 import os
 import tempfile
@@ -196,19 +198,20 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid", use_attribut
         return table.get_string()
 
     def initialise_IPC(self):
-        """Setup the inter-process communication file."""
+        """Set up the inter-process communication file."""
         IPC_obj, self._IPCFilePath = tempfile.mkstemp()
         os.write(IPC_obj, b"0")
         os.close(IPC_obj)
         return None
 
     def sendStopEvent(self):
-        """Sends the stop event via the inter-process communication file.
+        """Send the stop event via the inter-process communication file.
 
         Warnings
         --------
         UserWarning
             Raised if we try to delete an IPC file that was not initialised.
+
         """
         if os.path.isfile(self._IPCFilePath):
             with open(self._IPCFilePath, "wb") as f:

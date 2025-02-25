@@ -1,4 +1,4 @@
-"""Plots using the matplotlib library"""
+"""Plot results using the matplotlib library."""
 
 import copy
 from functools import partial, wraps
@@ -21,7 +21,7 @@ from RATapi.rat_core import PlotEventData, makeSLDProfileXY
 
 
 def plot_errorbars(ax: Axes, x: np.ndarray, y: np.ndarray, err: np.ndarray, one_sided: bool, color: str):
-    """Plots the error bars.
+    """Plot the error bars.
 
     Parameters
     ----------
@@ -55,7 +55,7 @@ def plot_ref_sld_helper(
     show_grid: bool = False,
     show_legend: bool = True,
 ):
-    """Clears the previous plots and updates the ref and SLD plots.
+    """Clear the previous plots and updates the ref and SLD plots.
 
     Parameters
     ----------
@@ -79,6 +79,7 @@ def plot_ref_sld_helper(
             Controls whether the grid is shown
     show_legend : bool, default: True
             Controls whether the lengend is shown
+
     Returns
     -------
     fig : matplotlib.pyplot.figure
@@ -206,7 +207,7 @@ def plot_ref_sld(
     show_grid: bool = False,
     show_legend: bool = True,
 ) -> Union[plt.Figure, None]:
-    """Plots the reflectivity and SLD profiles.
+    """Plot the reflectivity and SLD profiles.
 
     Parameters
     ----------
@@ -311,8 +312,7 @@ def plot_ref_sld(
 
 
 class LivePlot:
-    """Creates a plot that gets updates from the plot event during a
-    calculation
+    """Create a plot that gets updates from the plot event during a calculation.
 
     Parameters
     ----------
@@ -334,16 +334,19 @@ class LivePlot:
         return self.figure
 
     def _setCloseState(self, _):
-        """Close event handler"""
+        """Close event handler."""
         self.closed = True
 
     def plotEvent(self, event):
-        """Callback for the plot event.
+        """Plot the figure from plot event data.
+
+        This is a callback for the plot event.
 
         Parameters
         ----------
         event: PlotEventData
             The plot event data.
+
         """
         if not self.closed and self.figure.number in plt.get_fignums():
             plot_ref_sld_helper(event, self.figure)
@@ -355,7 +358,9 @@ class LivePlot:
 
 
 def assert_bayesian(name: str):
-    """Decorator to ensure the results passed to a function are Bayesian.
+    """Ensure the results passed to a function are Bayesian.
+
+    This is a decorator.
 
     Parameters
     ----------
@@ -663,17 +668,20 @@ def plot_contour(
 
 
 def panel_plot_helper(plot_func: Callable, indices: list[int]) -> matplotlib.figure.Figure:
-    """Helper function for panel-based plots.
+    """Generate a panel-based plot from a single plot function.
 
     Parameters
     ----------
     plot_func : Callable
         A function which plots one parameter on an Axes object, given its index.
+    indices : list[int]
+        The list of indices to pass into ``plot_func``.
 
     Returns
     -------
     matplotlib.figure.Figure
         A figure containing a grid of plots over the indices in `indices`.
+
     """
     nplots = len(indices)
     nrows, ncols = ceil(sqrt(nplots)), round(sqrt(nplots))
@@ -746,7 +754,6 @@ def plot_hists(
         If `return_fig` is True, return the figure - otherwise, return nothing.
 
     """
-
     # first convert names to indices if given
     fitname_to_index = partial(name_to_index, names=results.fitNames)
 

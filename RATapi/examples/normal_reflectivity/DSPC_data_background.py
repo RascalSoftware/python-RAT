@@ -1,3 +1,5 @@
+"""A standard layers example with a data background."""
+
 import pathlib
 
 import numpy as np
@@ -6,7 +8,7 @@ import RATapi as RAT
 
 
 def DSPC_data_background():
-    """Standard Layers fit of a DSPC floating bilayer"""
+    """Calculate a Standard Layers fit of a DSPC floating bilayer with a data background."""
     problem = RAT.Project(name="original_dspc_bilayer", model="standard layers", geometry="substrate/liquid")
 
     # Set up the relevant parameters

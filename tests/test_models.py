@@ -338,7 +338,6 @@ def test_contrast_bad_ratio():
 @pytest.mark.filterwarnings("ignore:The following values are not recognised by this*:UserWarning")
 def test_type_change_clear(model):
     """If the type of a background or resolution is changed, it should wipe the other fields and warn the user."""
-
     model_instance = model(
         name="Test",
         type="constant",
