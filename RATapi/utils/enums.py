@@ -101,8 +101,11 @@ class Strategies(RATEnum):
         return super()._missing_(value)
 
     def __int__(self):
-        """Convert the DE strategy to its hardcoded index in the internal code."""
-        # as RAT core expects strategy as an integer
+        """Convert the DE strategy to its hardcoded index in the internal code.
+
+        RAT core expects strategy to be an integer, as this is how it is given to
+        the internal DE algorithm.
+        """
         return list(Strategies).index(self) + 1
 
 
@@ -130,7 +133,7 @@ class TypeOptions(RATEnum):
     """A uniform constant signal given by a parameter."""
 
     Data = "data"
-    """A signal given in the dataset for the contrast."""
+    """A signal for each q-value given by a dataset."""
 
     Function = "function"
     """A signal defined by a custom function."""

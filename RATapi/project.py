@@ -360,9 +360,9 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", use_attribute
     def model_post_init(self, __context: Any) -> None:
         """Set up the Class to protect against disallowed modification.
 
-        We initialise the class handle in the ClassLists for empty data fields, sets protected parameters, get names of
-        all defined parameters, determines the contents of the "model" field in contrasts,
-        and wraps ClassList routines to control revalidation.
+        We initialise the class handle in the ClassLists for empty data fields, set protected parameters, get names of
+        all defined parameters, determine the contents of the "model" field in contrasts,
+        and wrap ClassList routines to control revalidation.
         """
         # Ensure all ClassLists have the correct _class_handle defined
         for field in (fields := self.model_fields):

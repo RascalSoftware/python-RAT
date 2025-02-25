@@ -535,7 +535,7 @@ class ClassList(collections.UserList, Generic[T]):
         Returns
         -------
         class_handle : type
-            The type object of the first element which is a subcalss of all of the other
+            The type object of the first element which is a subclass of all of the other
             elements, or the first element if no such element exists.
 
         """

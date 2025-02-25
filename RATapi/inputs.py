@@ -161,9 +161,6 @@ def make_problem(project: RATapi.Project) -> ProblemDefinition:
     ----------
     project : RAT.Project
         The project model, which defines the physical system under study.
-    checks : RAT.rat_core.Checks
-        States whether or not to fit each parameter defined in the project.
-
 
     Returns
     -------
@@ -439,7 +436,7 @@ def make_data_present(project: RATapi.Project) -> list[int]:
 
 
 def check_indices(problem: ProblemDefinition) -> None:
-    """Check the indices a problem's contrast lists lie within the range of the corresponding parameter lists.
+    """Check the indices given in a problem's contrasts lie within the range of the corresponding parameter lists.
 
     Parameters
     ----------
