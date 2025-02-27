@@ -118,7 +118,6 @@ def test_names():
     names.params = ["Substrate Roughness", "Test Thickness", "Test SLD", "Test Roughness"]
     names.backgroundParams = ["Background Param 1"]
     names.scalefactors = ["Scalefactor 1"]
-    names.qzshifts = []
     names.bulkIns = ["SLD Air"]
     names.bulkOuts = ["SLD D2O"]
     names.resolutionParams = ["Resolution Param 1"]
@@ -135,7 +134,6 @@ def test_checks():
     checks.params = np.array([1, 0, 0, 0])
     checks.backgroundParams = np.array([0])
     checks.scalefactors = np.array([0])
-    checks.qzshifts = np.array([])
     checks.bulkIns = np.array([0])
     checks.bulkOuts = np.array([0])
     checks.resolutionParams = np.array([0])
@@ -155,14 +153,12 @@ def standard_layers_problem(test_names, test_checks):
     problem.params = [3.0, 0.0, 0.0, 0.0]
     problem.bulkIns = [0.0]
     problem.bulkOuts = [6.35e-06]
-    problem.qzshifts = []
     problem.scalefactors = [0.23]
     problem.domainRatios = []
     problem.backgroundParams = [1e-06]
     problem.resolutionParams = [0.03]
     problem.contrastBulkIns = [1]
     problem.contrastBulkOuts = [1]
-    problem.contrastQzshifts = []
     problem.contrastScalefactors = [1]
     problem.contrastBackgroundParams = [[1]]
     problem.contrastBackgroundActions = [BackgroundActions.Add]
@@ -176,7 +172,6 @@ def standard_layers_problem(test_names, test_checks):
     problem.data = [np.array([[1.0, 1.0, 1.0, 0.0, 0.0, 0.0]])]
     problem.dataLimits = [[1.0, 1.0]]
     problem.simulationLimits = [[1.0, 1.0]]
-    problem.oilChiDataPresent = [0]
     problem.numberOfContrasts = 1
     problem.numberOfLayers = 1
     problem.repeatLayers = [[0, 1]]
@@ -185,18 +180,7 @@ def standard_layers_problem(test_names, test_checks):
     problem.numberOfDomainContrasts = 0
     problem.domainContrastLayers = []
     problem.fitParams = [3.0]
-    problem.otherParams = [0.0, 0.0, 0.0, 1e-06, 0.23, 0.0, 6.35e-06, 0.03]
     problem.fitLimits = [[1.0, 5.0]]
-    problem.otherLimits = [
-        [0.0, 0.0],
-        [0.0, 0.0],
-        [0.0, 0.0],
-        [1e-07, 1e-05],
-        [0.02, 0.25],
-        [0.0, 0.0],
-        [6.2e-06, 6.35e-06],
-        [0.01, 0.05],
-    ]
     problem.priorNames = [
         "Substrate Roughness",
         "Test Thickness",
@@ -237,14 +221,12 @@ def domains_problem(test_names, test_checks):
     problem.params = [3.0, 0.0, 0.0, 0.0]
     problem.bulkIns = [0.0]
     problem.bulkOuts = [6.35e-06]
-    problem.qzshifts = []
     problem.scalefactors = [0.23]
     problem.domainRatios = [0.5]
     problem.backgroundParams = [1e-06]
     problem.resolutionParams = [0.03]
     problem.contrastBulkIns = [1]
     problem.contrastBulkOuts = [1]
-    problem.contrastQzshifts = []
     problem.contrastScalefactors = [1]
     problem.contrastBackgroundParams = [[1]]
     problem.contrastBackgroundActions = [BackgroundActions.Add]
@@ -258,7 +240,6 @@ def domains_problem(test_names, test_checks):
     problem.data = [np.array([[1.0, 1.0, 1.0, 0.0, 0.0, 0.0]])]
     problem.dataLimits = [[1.0, 1.0]]
     problem.simulationLimits = [[1.0, 1.0]]
-    problem.oilChiDataPresent = [0]
     problem.numberOfContrasts = 1
     problem.numberOfLayers = 1
     problem.repeatLayers = [[0, 1]]
@@ -267,19 +248,7 @@ def domains_problem(test_names, test_checks):
     problem.numberOfDomainContrasts = 2
     problem.domainContrastLayers = [[1], [1]]
     problem.fitParams = [3.0]
-    problem.otherParams = [0.0, 0.0, 0.0, 1e-06, 0.23, 0.0, 6.35e-06, 0.03, 0.5]
     problem.fitLimits = [[1.0, 5.0]]
-    problem.otherLimits = [
-        [0.0, 0.0],
-        [0.0, 0.0],
-        [0.0, 0.0],
-        [1e-07, 1e-05],
-        [0.02, 0.25],
-        [0.0, 0.0],
-        [6.2e-06, 6.35e-06],
-        [0.01, 0.05],
-        [0.4, 0.6],
-    ]
     problem.priorNames = [
         "Substrate Roughness",
         "Test Thickness",
@@ -323,14 +292,12 @@ def custom_xy_problem(test_names, test_checks):
     problem.params = [3.0, 0.0, 0.0, 0.0]
     problem.bulkIns = [0.0]
     problem.bulkOuts = [6.35e-06]
-    problem.qzshifts = []
     problem.scalefactors = [0.23]
     problem.domainRatios = []
     problem.backgroundParams = [1e-06]
     problem.resolutionParams = [0.03]
     problem.contrastBulkIns = [1]
     problem.contrastBulkOuts = [1]
-    problem.contrastQzshifts = []
     problem.contrastScalefactors = [1]
     problem.contrastBackgroundParams = [[1]]
     problem.contrastBackgroundActions = [BackgroundActions.Add]
@@ -344,7 +311,6 @@ def custom_xy_problem(test_names, test_checks):
     problem.data = [np.empty([0, 6])]
     problem.dataLimits = [[0.0, 0.0]]
     problem.simulationLimits = [[0.005, 0.7]]
-    problem.oilChiDataPresent = [0]
     problem.repeatLayers = [[0, 1]]
     problem.layersDetails = []
     problem.contrastLayers = [[]]
@@ -353,18 +319,7 @@ def custom_xy_problem(test_names, test_checks):
     problem.numberOfDomainContrasts = 0
     problem.domainContrastLayers = []
     problem.fitParams = [3.0]
-    problem.otherParams = [0.0, 0.0, 0.0, 1e-06, 0.23, 0.0, 6.35e-06, 0.03]
     problem.fitLimits = [[1.0, 5.0]]
-    problem.otherLimits = [
-        [0.0, 0.0],
-        [0.0, 0.0],
-        [0.0, 0.0],
-        [1e-07, 1e-05],
-        [0.02, 0.25],
-        [0.0, 0.0],
-        [6.2e-06, 6.35e-06],
-        [0.01, 0.05],
-    ]
     problem.priorNames = [
         "Substrate Roughness",
         "Test Thickness",
@@ -403,7 +358,6 @@ def normal_limits():
     limits.params = [[1.0, 5.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]
     limits.backgroundParams = [[1e-7, 1e-5]]
     limits.scalefactors = [[0.02, 0.25]]
-    limits.qzshifts = []
     limits.bulkIns = [[0.0, 0.0]]
     limits.bulkOuts = [[6.2e-6, 6.35e-6]]
     limits.resolutionParams = [[0.01, 0.05]]
@@ -419,7 +373,6 @@ def domains_limits():
     limits.params = [[1.0, 5.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]
     limits.backgroundParams = [[1e-7, 1e-5]]
     limits.scalefactors = [[0.02, 0.25]]
-    limits.qzshifts = []
     limits.bulkIns = [[0.0, 0.0]]
     limits.bulkOuts = [[6.2e-6, 6.35e-6]]
     limits.resolutionParams = [[0.01, 0.05]]
@@ -540,7 +493,6 @@ def test_make_input(test_project, test_problem, test_limits, test_controls, requ
         "params",
         "backgroundParams",
         "scalefactors",
-        "qzshifts",
         "bulkIns",
         "bulkOuts",
         "resolutionParams",
@@ -723,7 +675,6 @@ def check_problem_equal(actual_problem, expected_problem) -> None:
     array_fields = [
         "params",
         "backgroundParams",
-        "qzshifts",
         "scalefactors",
         "bulkIns",
         "bulkOuts",
@@ -731,7 +682,6 @@ def check_problem_equal(actual_problem, expected_problem) -> None:
         "domainRatios",
         "contrastBackgroundParams",
         "contrastBackgroundActions",
-        "contrastQzshifts",
         "contrastScalefactors",
         "contrastBulkIns",
         "contrastBulkOuts",
@@ -741,21 +691,17 @@ def check_problem_equal(actual_problem, expected_problem) -> None:
         "dataPresent",
         "dataLimits",
         "simulationLimits",
-        "oilChiDataPresent",
         "repeatLayers",
         "contrastLayers",
         "domainContrastLayers",
         "fitParams",
-        "otherParams",
         "fitLimits",
-        "otherLimits",
         "priorValues",
     ]
     checks_fields = [
         "params",
         "backgroundParams",
         "scalefactors",
-        "qzshifts",
         "bulkIns",
         "bulkOuts",
         "resolutionParams",
