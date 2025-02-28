@@ -397,8 +397,6 @@ backgroundParams : np.ndarray[np.float]
     Limits for backgroundParams in the problem definition.
 scalefactors : np.ndarray[np.float] 
     Limits for scalefactors in the problem definition.
-qzshifts : np.ndarray[np.float] 
-    Limits for qzshifts in the problem definition.
 bulkIns : np.ndarray[np.float] 
     Limits for bulkIns in the problem definition.
 bulkOuts : np.ndarray[np.float] 
@@ -413,7 +411,6 @@ struct Limits {
     py::array_t<real_T> params;
     py::array_t<real_T> backgroundParams;
     py::array_t<real_T> scalefactors;
-    py::array_t<real_T> qzshifts;
     py::array_t<real_T> bulkIns;
     py::array_t<real_T> bulkOuts;
     py::array_t<real_T> resolutionParams;
@@ -431,8 +428,6 @@ backgroundParams : list
     Names of backgroundParams in the problem definition.
 scalefactors : list 
     Names of scalefactors in the problem definition.
-qzshifts : list 
-    Names of qzshifts in the problem definition.
 bulkIns : list 
     Names of bulkIns in the problem definition.
 bulkName: list 
@@ -447,7 +442,6 @@ struct NameStore {
     py::list params;
     py::list backgroundParams;
     py::list scalefactors;
-    py::list qzshifts;
     py::list bulkIns;
     py::list bulkOuts;
     py::list resolutionParams;
@@ -469,8 +463,6 @@ backgroundParams : np.ndarray[np.float]
     Non-zero values indicates which backgroundParams is fitted.
 scalefactors : np.ndarray[np.float] 
     Non-zero values indicates which scalefactors is fitted.
-qzshifts : np.ndarray[np.float] 
-    Non-zero values indicates which qzshifts is fitted.
 bulkIns : np.ndarray[np.float] 
     Non-zero values indicates which bulkIns is fitted.
 bulkOuts : np.ndarray[np.float] 
@@ -484,7 +476,6 @@ domainRatios : np.ndarray[np.float]
 struct Checks {
     py::array_t<real_T> params;
     py::array_t<real_T> backgroundParams;
-    py::array_t<real_T> qzshifts;
     py::array_t<real_T> scalefactors;
     py::array_t<real_T> bulkIns;
     py::array_t<real_T> bulkOuts;
@@ -508,8 +499,6 @@ dataLimits : list
     Data limits for each contrast.
 simulationLimits : list;
     Simulation for each contrast.
-oilChiDataPresent : np.ndarray[np.float] 
-    If ``dataPresent[i]`` is non-zero, then contrast ``i`` has oilChi data. This is currently not being used.
 numberOfContrasts : int
     Number of contrasts.
 geometry : str
@@ -525,8 +514,6 @@ contrastBackgroundTypes : list
     Background type for each contrast.
 contrastBackgroundActions : list
     Background action for each contrast.
-contrastQzshifts : np.ndarray[np.float]
-    Indices of Qzshifts used for each contrast. This is currently not being used.
 contrastScalefactors : np.ndarray[np.float] 
     Indices of scalefactors used for each contrast.
 contrastBulkIns : np.ndarray[np.float] 
@@ -539,8 +526,6 @@ contrastResolutionTypes : list
     Resolution type for each contrast.
 backgroundParams : np.ndarray[np.float] 
     Background parameter values.
-qzshifts : np.ndarray[np.float]
-    Qzshift values. This currently not being used.
 scalefactors : np.ndarray[np.float] 
     Scalefactors values.
 bulkIns : np.ndarray[np.float]
@@ -573,12 +558,8 @@ domainContrastLayers : list
     Indices of layers added to the model of each domain contrast.
 fitParams : np.ndarray[np.float] 
     Values of fitted parameters.
-otherParams : np.ndarray[np.float]
-    Values of non-fitted parameters.
 fitLimits : np.ndarray[np.float] 
     Limits of fitted parameters.
-otherLimits : np.ndarray[np.float] 
-    Limits of non fitted parameters.
 priorNames : list 
     Parameter names for for all parameters in the problem definition.
 priorValues : np.ndarray[np.float] 
@@ -596,7 +577,6 @@ struct ProblemDefinition {
     py::array_t<real_T> dataPresent;
     py::list dataLimits;
     py::list simulationLimits;
-    py::array_t<real_T> oilChiDataPresent;
     real_T numberOfContrasts;
     std::string  geometry {};
     boolean_T useImaginary {};
@@ -604,14 +584,12 @@ struct ProblemDefinition {
     py::list contrastBackgroundParams;
     py::list contrastBackgroundTypes;
     py::list contrastBackgroundActions;
-    py::array_t<real_T> contrastQzshifts;
     py::array_t<real_T> contrastScalefactors;
     py::array_t<real_T> contrastBulkIns;
     py::array_t<real_T> contrastBulkOuts;
     py::list contrastResolutionParams;
     py::list contrastResolutionTypes;
     py::array_t<real_T> backgroundParams;
-    py::array_t<real_T> qzshifts;
     py::array_t<real_T> scalefactors;
     py::array_t<real_T> bulkIns;
     py::array_t<real_T> bulkOuts;
@@ -628,9 +606,7 @@ struct ProblemDefinition {
     real_T numberOfDomainContrasts {};
     py::list domainContrastLayers;
     py::array_t<real_T> fitParams;
-    py::array_t<real_T> otherParams;
     py::array_t<real_T> fitLimits;
-    py::array_t<real_T> otherLimits;
     py::list priorNames;
     py::array_t<real_T> priorValues;
     NameStore names;
