@@ -56,14 +56,12 @@ def reflectivity_calculation_problem():
     )
     problem.bulkIns = np.array([2.073e-06])
     problem.bulkOuts = np.array([5.98e-06, 2.21e-06])
-    problem.qzshifts = np.array([0.0])
     problem.scalefactors = np.array([0.1, 0.15])
     problem.domainRatios = np.array([])
     problem.backgroundParams = np.array([2.23e-06, 3.38e-06])
     problem.resolutionParams = np.array([0.03])
     problem.contrastBulkIns = np.array([1.0, 1.0])
     problem.contrastBulkOuts = np.array([1.0, 2.0])
-    problem.contrastQzshifts = np.array([0.0, 0.0])
     problem.contrastScalefactors = np.array([1.0, 2.0])
     problem.contrastBackgroundParams = [[1.0], [2.0]]
     problem.contrastBackgroundTypes = ["constant", "constant"]
@@ -76,7 +74,6 @@ def reflectivity_calculation_problem():
     problem.dataPresent = np.array([1.0, 1.0])
     problem.dataLimits = [[0.011403, 0.59342], [0.011403, 0.59342]]
     problem.simulationLimits = [[0.011403, 0.59342], [0.011403, 0.59342]]
-    problem.oilChiDataPresent = np.array([0.0, 0.0])
     problem.numberOfContrasts = 2.0
     problem.numberOfLayers = 6.0
     problem.repeatLayers = [[0.0, 1.0], [0.0, 1.0]]
@@ -116,21 +113,6 @@ def reflectivity_calculation_problem():
             2.210e-06,
         ],
     )
-    problem.otherParams = np.array(
-        [
-            3.390e-06,
-            -4.010e-07,
-            0.000e00,
-            1.750e-06,
-            1.470e-06,
-            -4.610e-07,
-            1.000e02,
-            1.000e-01,
-            1.500e-01,
-            2.073e-06,
-            3.000e-02,
-        ],
-    )
     problem.fitLimits = np.array(
         [
             [1.00e00, 1.00e01],
@@ -151,21 +133,6 @@ def reflectivity_calculation_problem():
             [1.00e-10, 4.99e-06],
             [5.50e-06, 6.40e-06],
             [1.00e-06, 4.99e-06],
-        ],
-    )
-    problem.otherLimits = np.array(
-        [
-            [3.39e-06, 3.41e-06],
-            [-5.00e-07, -3.00e-07],
-            [0.00e00, 1.00e-09],
-            [1.00e-07, 2.00e-06],
-            [5.00e-07, 1.50e-06],
-            [-5.00e-07, 0.00e00],
-            [9.99e01, 1.00e02],
-            [5.00e-02, 2.00e-01],
-            [5.00e-02, 2.00e-01],
-            [2.00e-06, 2.10e-06],
-            [1.00e-02, 5.00e-02],
         ],
     )
     problem.names.params = [
@@ -193,7 +160,6 @@ def reflectivity_calculation_problem():
     ]
     problem.names.backgroundParams = ["Background parameter D2O", "Background parameter SMW"]
     problem.names.scalefactors = ["Scalefactor 1", "Scalefactor 2"]
-    problem.names.qzshifts = []
     problem.names.bulkIns = ["Silicon"]
     problem.names.bulkOuts = ["D2O", "SMW"]
     problem.names.resolutionParams = ["Resolution Param 1"]
@@ -204,7 +170,6 @@ def reflectivity_calculation_problem():
     )
     problem.checks.backgroundParams = np.array([1.0, 1.0])
     problem.checks.scalefactors = np.array([0.0, 0.0])
-    problem.checks.qzshifts = np.array([])
     problem.checks.bulkIns = np.array([0.0])
     problem.checks.bulkOuts = np.array([1.0, 1.0])
     problem.checks.resolutionParams = np.array([0.0])
@@ -252,14 +217,12 @@ def dream_problem():
     )
     problem.bulkIns = np.array([2.073e-06])
     problem.bulkOuts = np.array([6.01489149e-06, 1.59371685e-06])
-    problem.qzshifts = np.array([0.0])
     problem.scalefactors = np.array([0.1, 0.15])
     problem.domainRatios = np.array([])
     problem.backgroundParams = np.array([2.37113128e-06, 1.99006694e-06])
     problem.resolutionParams = np.array([0.03])
     problem.contrastBulkIns = np.array([1.0, 1.0])
     problem.contrastBulkOuts = np.array([1.0, 2.0])
-    problem.contrastQzshifts = np.array([0.0, 0.0])
     problem.contrastScalefactors = np.array([1.0, 2.0])
     problem.contrastBackgroundParams = [[1.0], [2.0]]
     problem.contrastBackgroundTypes = ["constant", "constant"]
@@ -272,7 +235,6 @@ def dream_problem():
     problem.dataPresent = np.array([1.0, 1.0])
     problem.dataLimits = [[0.011403, 0.59342], [0.011403, 0.59342]]
     problem.simulationLimits = [[0.011403, 0.59342], [0.011403, 0.59342]]
-    problem.oilChiDataPresent = np.array([0.0, 0.0])
     problem.numberOfContrasts = 2.0
     problem.numberOfLayers = 6.0
     problem.repeatLayers = [[0.0, 1.0], [0.0, 1.0]]
@@ -312,22 +274,6 @@ def dream_problem():
             1.59371685e-06,
         ],
     )
-    problem.otherParams = np.array(
-        [
-            3.390e-06,
-            -4.010e-07,
-            0.000e00,
-            1.750e-06,
-            1.470e-06,
-            -4.610e-07,
-            1.000e02,
-            1.000e-01,
-            1.500e-01,
-            2.073e-06,
-            3.000e-02,
-            0.000e00,
-        ],
-    )
     problem.fitLimits = np.array(
         [
             [1.00e00, 1.00e01],
@@ -348,22 +294,6 @@ def dream_problem():
             [1.00e-10, 4.99e-06],
             [5.50e-06, 6.40e-06],
             [1.00e-06, 4.99e-06],
-        ],
-    )
-    problem.otherLimits = np.array(
-        [
-            [3.39e-06, 3.41e-06],
-            [-5.00e-07, -3.00e-07],
-            [0.00e00, 1.00e-09],
-            [1.00e-07, 2.00e-06],
-            [5.00e-07, 1.50e-06],
-            [-5.00e-07, 0.00e00],
-            [9.99e01, 1.00e02],
-            [5.00e-02, 2.00e-01],
-            [5.00e-02, 2.00e-01],
-            [2.00e-06, 2.10e-06],
-            [1.00e-02, 5.00e-02],
-            [0.00e00, 0.00e00],
         ],
     )
     problem.names.params = [
@@ -391,7 +321,6 @@ def dream_problem():
     ]
     problem.names.backgroundParams = ["Background parameter D2O", "Background parameter SMW"]
     problem.names.scalefactors = ["Scalefactor 1", "Scalefactor 2"]
-    problem.names.qzshifts = []
     problem.names.bulkIns = ["Silicon"]
     problem.names.bulkOuts = ["D2O", "SMW"]
     problem.names.resolutionParams = ["Resolution Param 1"]
@@ -402,7 +331,6 @@ def dream_problem():
     )
     problem.checks.backgroundParams = np.array([1.0, 1.0])
     problem.checks.scalefactors = np.array([0.0, 0.0])
-    problem.checks.qzshifts = np.array([])
     problem.checks.bulkIns = np.array([0.0])
     problem.checks.bulkOuts = np.array([1.0, 1.0])
     problem.checks.resolutionParams = np.array([0.0])

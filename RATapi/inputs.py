@@ -142,9 +142,6 @@ def make_input(project: RATapi.Project, controls: RATapi.Controls) -> tuple[Prob
             [[element.min, element.max] for element in getattr(project, class_list)],
         )
 
-    # Use dummy value for qzshifts
-    limits.qzshifts = []
-
     if project.model == LayerModels.CustomXY:
         controls.calcSldDuringFit = True
 
@@ -298,7 +295,6 @@ def make_problem(project: RATapi.Project) -> ProblemDefinition:
     problem.dataPresent = make_data_present(project)
     problem.dataLimits = data_limits
     problem.simulationLimits = simulation_limits
-    problem.oilChiDataPresent = [0] * len(project.contrasts)
     problem.numberOfContrasts = len(project.contrasts)
     problem.geometry = project.geometry
     problem.useImaginary = project.absorption
@@ -306,7 +302,6 @@ def make_problem(project: RATapi.Project) -> ProblemDefinition:
     problem.contrastBackgroundParams = contrast_background_params
     problem.contrastBackgroundTypes = contrast_background_types
     problem.contrastBackgroundActions = [contrast.background_action for contrast in project.contrasts]
-    problem.contrastQzshifts = [1] * len(project.contrasts)  # This is marked as "to do" in RAT
     problem.contrastScalefactors = [
         project.scalefactors.index(contrast.scalefactor, True) for contrast in project.contrasts
     ]
@@ -317,7 +312,6 @@ def make_problem(project: RATapi.Project) -> ProblemDefinition:
     problem.contrastResolutionTypes = contrast_resolution_types
 
     problem.backgroundParams = [param.value for param in project.background_parameters]
-    problem.qzshifts = [0.0]
     problem.scalefactors = [param.value for param in project.scalefactors]
     problem.bulkIns = [param.value for param in project.bulk_in]
     problem.bulkOuts = [param.value for param in project.bulk_out]
@@ -358,18 +352,6 @@ def make_problem(project: RATapi.Project) -> ProblemDefinition:
         for param in getattr(project, class_list)
         if param.fit
     ]
-    problem.otherParams = [
-        param.value
-        for class_list in RATapi.project.parameter_class_lists
-        for param in getattr(project, class_list)
-        if not param.fit
-    ]
-    problem.otherLimits = [
-        [param.min, param.max]
-        for class_list in RATapi.project.parameter_class_lists
-        for param in getattr(project, class_list)
-        if not param.fit
-    ]
     problem.priorNames = [
         param.name for class_list in RATapi.project.parameter_class_lists for param in getattr(project, class_list)
     ]
@@ -391,10 +373,6 @@ def make_problem(project: RATapi.Project) -> ProblemDefinition:
         setattr(
             problem.checks, parameter_field[class_list], [int(element.fit) for element in getattr(project, class_list)]
         )
-
-    # Use dummy values for qz shifts
-    problem.names.qzshifts = []
-    problem.checks.qzshifts = []
 
     check_indices(problem)
 
