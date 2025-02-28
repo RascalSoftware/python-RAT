@@ -2,9 +2,11 @@
 
 from dataclasses import dataclass
 from pathlib import Path
+from textwrap import shorten
 from typing import Union
 
 import orsopy
+import prettytable
 from orsopy.fileio import load_orso
 
 from RATapi import ClassList
@@ -25,8 +27,36 @@ class ORSOProject:
 
     def __init__(self, filepath: Union[str, Path], absorption: bool = False):
         ort_data = load_orso(filepath)
-        self.data = [Data(name=dataset.info.data_source.sample.name, data=dataset.data) for dataset in ort_data]
-        self.samples = [orso_model_to_rat(dataset.info.data_source.sample.model) for dataset in ort_data]
+        self.data = ClassList(
+            [Data(name=dataset.info.data_source.sample.name, data=dataset.data) for dataset in ort_data]
+        )
+        self.samples = [
+            orso_model_to_rat(dataset.info.data_source.sample.model, absorption=absorption) for dataset in ort_data
+        ]
+
+    def __str__(self):
+        data_str = f"Data:\n{str(self.data)}\n\n"
+        if len(self.samples) == 1:
+            samples_str = f"Sample:\n{str(self.samples[0])}"
+        else:
+            table = prettytable.PrettyTable()
+            table.field_names = ["index", "bulk in", "bulk out", "parameters", "layers", "model"]
+            for index, sample in enumerate(self.samples):
+                if sample is None:
+                    row = [index, "", "", "", "", ""]
+                else:
+                    row = [
+                        index,
+                        sample.bulk_in.name,
+                        sample.bulk_out.name,
+                        shorten(", ".join([p.name for p in sample.parameters]), width=20, placeholder="..."),
+                        shorten(", ".join([layer.name for layer in sample.layers]), width=20, placeholder="..."),
+                        shorten(str(sample.model), width=20, placeholder="..."),
+                    ]
+                table.add_row(row)
+            samples_str = table.get_string()
+
+        return data_str + samples_str
 
 
 @dataclass
@@ -38,6 +68,20 @@ class ORSOSample:
     parameters: ClassList[Parameter]
     layers: Union[ClassList[Layer], ClassList[AbsorptionLayer]]
     model: list[str]
+
+    def __str__(self):
+        return (
+            "Bulk in:\n"
+            f"{str(self.bulk_in)}\n\n"
+            "Bulk out:\n"
+            f"{str(self.bulk_out)}\n\n"
+            "Parameters:\n"
+            f"{str(self.parameters)}\n\n"
+            "Layers:\n"
+            f"{str(self.layers)}\n\n"
+            "Model:\n"
+            f"{self.model}"
+        )
 
 
 def orso_model_to_rat(
