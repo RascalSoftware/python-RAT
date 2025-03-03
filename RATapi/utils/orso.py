@@ -1,6 +1,7 @@
 """Readers from file formats."""
 
 from dataclasses import dataclass
+from itertools import count
 from pathlib import Path
 from textwrap import shorten
 from typing import Union
@@ -27,9 +28,17 @@ class ORSOProject:
 
     def __init__(self, filepath: Union[str, Path], absorption: bool = False):
         ort_data = load_orso(filepath)
-        self.data = ClassList(
-            [Data(name=dataset.info.data_source.sample.name, data=dataset.data) for dataset in ort_data]
-        )
+        datasets = [Data(name=dataset.info.data_source.sample.name, data=dataset.data) for dataset in ort_data]
+        # orso datasets in the same file can have repeated names!
+        # but classlists do not allow this
+        # use this dict to keep track of counts for repeated names
+        name_counts = {d.name: count(1) for d in datasets}
+        names = [d.name for d in datasets]
+        if len(names) > len(list(set(names))):
+            for i, data in enumerate(datasets):
+                if data.name in names[:i]:
+                    data.name += f"-{name_counts[data.name]}"
+        self.data = ClassList(datasets)
         self.samples = [
             orso_model_to_rat(dataset.info.data_source.sample.model, absorption=absorption) for dataset in ort_data
         ]
