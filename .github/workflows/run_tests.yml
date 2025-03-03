@@ -53,5 +53,5 @@ jobs:
       - name: Install and Test with pytest
         run: |
           export PATH="$pythonLocation:$PATH"
-          python -m pip install -e .[Dev]
+          python -m pip install -e .[Dev,Orso]
           pytest tests/ --cov=RATapi --cov-report=term
