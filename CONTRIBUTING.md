@@ -5,7 +5,7 @@ issue has not been reported already) or submitting a pull request.
 
 Create Developer Environment
 ----------------------------
-This project targets Python 3.9 or later. Install an appropriate version of Python and other dependencies
+This project targets Python 3.10 or later. Install an appropriate version of Python and other dependencies
 
 Then create a fork of the python-RAT repo, and clone the fork
 
