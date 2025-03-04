@@ -296,10 +296,14 @@ class ClassList(collections.UserList, Generic[T]):
         self._check_unique_name_fields(other)
         self.data.extend(other)
 
-    def set_fields(self, index: int, **kwargs) -> None:
+    def set_fields(self, index: Union[int, slice, str, T], **kwargs) -> None:
         """Assign the values of an existing object's attributes using keyword arguments."""
         self._validate_name_field(kwargs)
         pydantic_object = False
+
+        # Find index if name or object is supplied
+        if isinstance(index, (str, self._class_handle)):
+            index = self.index(index)
 
         if importlib.util.find_spec("pydantic"):
             # Pydantic is installed, so set up a context manager that will

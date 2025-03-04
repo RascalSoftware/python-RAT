@@ -729,6 +729,7 @@ def test_extend_empty_classlist(extended_list: Sequence, one_name_class_list: Cl
     assert isinstance(extended_list[-1], class_list._class_handle)
 
 
+@pytest.mark.parametrize("index", [0, "Alice"])
 @pytest.mark.parametrize(
     ["new_values", "expected_classlist"],
     [
@@ -739,10 +740,12 @@ def test_extend_empty_classlist(extended_list: Sequence, one_name_class_list: Cl
         ),
     ],
 )
-def test_set_fields(two_name_class_list: ClassList, new_values: dict[str, Any], expected_classlist: ClassList) -> None:
+def test_set_fields(
+    two_name_class_list: ClassList, index: Union[int, str], new_values: dict[str, Any], expected_classlist: ClassList
+) -> None:
     """We should be able to set field values in an element of a ClassList using keyword arguments."""
     class_list = two_name_class_list
-    class_list.set_fields(0, **new_values)
+    class_list.set_fields(index, **new_values)
     assert class_list == expected_classlist
 
 
