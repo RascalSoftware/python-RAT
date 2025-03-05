@@ -37,7 +37,7 @@ class ORSOProject:
         if len(names) > len(list(set(names))):
             for i, data in enumerate(datasets):
                 if data.name in names[:i]:
-                    data.name += f"-{name_counts[data.name]}"
+                    data.name += f"-{next(name_counts[data.name])}"
         self.data = ClassList(datasets)
         self.samples = [
             orso_model_to_rat(dataset.info.data_source.sample.model, absorption=absorption) for dataset in ort_data
