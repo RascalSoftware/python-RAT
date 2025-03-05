@@ -729,7 +729,7 @@ def test_extend_empty_classlist(extended_list: Sequence, one_name_class_list: Cl
     assert isinstance(extended_list[-1], class_list._class_handle)
 
 
-@pytest.mark.parametrize("index", [0, "Alice"])
+@pytest.mark.parametrize("index", [0, "Alice", InputAttributes(name="Alice")])
 @pytest.mark.parametrize(
     ["new_values", "expected_classlist"],
     [
