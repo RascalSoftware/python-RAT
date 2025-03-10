@@ -172,6 +172,9 @@ class Priors(RATEnum):
     """A Gaussian distribution centred on the parameter value,
     with shape defined by ``mu`` and ``sigma`` for the parameter."""
 
+    Jeffreys = "jeffreys"
+    """A Jeffreys' prior distribution over the parameter range."""
+
 
 # Project
 class Calculations(RATEnum):
