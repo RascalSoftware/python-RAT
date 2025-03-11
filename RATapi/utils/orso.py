@@ -148,9 +148,12 @@ def orso_model_to_rat(
 
     parameters = ClassList()
     layers = ClassList()
+    contrast_model = []
 
     for orso_layer in stack[1:-1]:
-        layer_params, layer = orso_layer_to_rat_layer(orso_layer, absorption)
+        name = get_material_name(orso_layer.material, model)
+        contrast_model.append(name)
+        layer_params, layer = orso_layer_to_rat_layer(orso_layer, name, absorption)
         parameters.union(layer_params)
         layers.union(layer)
 
@@ -159,12 +162,12 @@ def orso_model_to_rat(
         bulk_out=bulk_out,
         parameters=parameters,
         layers=layers,
-        model=[layer.material.formula for layer in stack[1:-1]],
+        model=contrast_model,
     )
 
 
 def orso_layer_to_rat_layer(
-    layer: orsopy.fileio.model_language.Layer, absorption: bool = False
+    layer: orsopy.fileio.model_language.Layer, name: str, absorption: bool = False
 ) -> tuple[ClassList[Parameter], Layer]:
     """Convert an ``orsopy`` layer to a RAT layer.
 
@@ -172,6 +175,8 @@ def orso_layer_to_rat_layer(
     ----------
     layer : orsopy.fileio.model_language.Layer
         An ``orsopy`` Layer.
+    name : str
+        The name of the material in the layer.
     absorption : bool, default True
         Whether absorption should be accounted for in the layer.
 
@@ -181,7 +186,6 @@ def orso_layer_to_rat_layer(
         The parameters required for the RAT layer and the layer itself.
 
     """
-    name = layer.material.formula
     thickness = layer.thickness.as_unit("angstrom")
     roughness = layer.roughness.as_unit("angstrom")
     sld = layer.material.get_sld()
@@ -196,7 +200,7 @@ def orso_layer_to_rat_layer(
     if absorption:
         params.append(Parameter(name=f"{name} SLD imaginary", min=sld.imag, value=sld.imag, max=sld.imag, fit=False))
         layer = AbsorptionLayer(
-            name=f"{name}",
+            name=name,
             thickness=f"{name} Thickness",
             roughness=f"{name} Roughness",
             SLD_real=f"{name} SLD",
@@ -204,10 +208,41 @@ def orso_layer_to_rat_layer(
         )
     else:
         layer = Layer(
-            name=f"{name}",
+            name=name,
             thickness=f"{name} Thickness",
             roughness=f"{name} Roughness",
             SLD=f"{name} SLD",
         )
 
     return params, layer
+
+
+def get_material_name(
+    material: orsopy.fileio.model_language.Material, model: orsopy.fileio.model_language.SampleModel
+) -> str:
+    """Get the name of a material in the model.
+
+    Layers with custom property definitions may not have a formula, so this adjusts the name for that.
+
+    Parameters
+    ----------
+    material : Material
+        The material to get the name of.
+    model : SampleModel
+        The sample model from which the material came.
+
+    Returns
+    -------
+    str
+        The name of the material.
+
+    """
+    if material.formula is not None:
+        return material.formula
+    else:
+        matching_materials = [k for k, v in model.materials.items() if v == material]
+        if matching_materials:
+            return matching_materials[0]
+        else:
+            # orsopy should catch that this is the case before we get here, but just in case...
+            raise ValueError("ORSO model contains layers with undefined materials!")
