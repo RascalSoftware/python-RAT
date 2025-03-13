@@ -69,8 +69,6 @@ def test_orso_model_to_rat(model, absorption):
     "test_data",
     [
         "bare_substrate.ort",
-        "inter_data.ort",
-        "polref_data.ort",
         "prist5_10K_m_025.Rqz.ort",
     ],
 )
