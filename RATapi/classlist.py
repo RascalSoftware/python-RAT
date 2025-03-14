@@ -296,6 +296,19 @@ class ClassList(collections.UserList, Generic[T]):
         self._check_unique_name_fields(other)
         self.data.extend(other)
 
+    def union(self, other: Sequence[T]) -> None:
+        """Extend the ClassList by a sequence, ignoring input items with names that already exist."""
+        if other and not (isinstance(other, Sequence) and not isinstance(other, str)):
+            other = [other]
+
+        self.extend(
+            [
+                item
+                for item in other
+                if hasattr(item, self.name_field) and getattr(item, self.name_field) not in self.get_names()
+            ]
+        )
+
     def set_fields(self, index: Union[int, slice, str, T], **kwargs) -> None:
         """Assign the values of an existing object's attributes using keyword arguments."""
         self._validate_name_field(kwargs)
