@@ -6,6 +6,6 @@ from RATapi.classlist import ClassList
 from RATapi.controls import Controls
 from RATapi.project import Project
 from RATapi.run import run
-from RATapi.utils import convert, plotting
+from RATapi.utils import convert, orso, plotting
 
-__all__ = ["examples", "models", "events", "ClassList", "Controls", "Project", "run", "plotting", "convert"]
+__all__ = ["examples", "models", "events", "ClassList", "Controls", "Project", "run", "plotting", "convert", "orso"]
