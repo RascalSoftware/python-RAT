@@ -141,12 +141,13 @@ class Results:
         The background for each contrast defined over the simulation range.
     resolutions : list
         The resolution for each contrast defined over the simulation range.
-    layerSlds : list
-        The array of layer parameter values for each contrast.
     sldProfiles : list
         The SLD profiles for each contrast.
+    layers : list
+        The array of layer parameter values for each contrast.
     resampledLayers : list
-        If resampling is used, the SLD for each contrast after resampling has been performed.
+        If resampling is used, the array of layer parameter values for each contrast after resampling has been
+        performed.
     calculationResults : CalculationResults
         The chi-squared fit results from the final calculation and fit.
     contrastParams : ContrastParams
@@ -164,8 +165,8 @@ class Results:
     shiftedData: list
     backgrounds: list
     resolutions: list
-    layerSlds: list
     sldProfiles: list
+    layers: list
     resampledLayers: list
     calculationResults: CalculationResults
     contrastParams: ContrastParams
@@ -502,8 +503,8 @@ def make_results(
             shiftedData=output_results.shiftedData,
             backgrounds=output_results.backgrounds,
             resolutions=output_results.resolutions,
-            layerSlds=output_results.layerSlds,
             sldProfiles=output_results.sldProfiles,
+            layers=output_results.layers,
             resampledLayers=output_results.resampledLayers,
             calculationResults=calculation_results,
             contrastParams=contrast_params,
@@ -524,8 +525,8 @@ def make_results(
             shiftedData=output_results.shiftedData,
             backgrounds=output_results.backgrounds,
             resolutions=output_results.resolutions,
-            layerSlds=output_results.layerSlds,
             sldProfiles=output_results.sldProfiles,
+            layers=output_results.layers,
             resampledLayers=output_results.resampledLayers,
             calculationResults=calculation_results,
             contrastParams=contrast_params,
