@@ -109,7 +109,7 @@ def run(project, controls):
 
     horizontal_line = "\u2500" * 107 + "\n"
     display_on = controls.display != Display.Off
-    problem_definition, limits, cpp_controls = make_input(project, controls)
+    problem_definition, cpp_controls = make_input(project, controls)
 
     if display_on:
         print("Starting RAT " + horizontal_line)
@@ -118,7 +118,6 @@ def run(project, controls):
     with ProgressBar(display=display_on), TextOutput(display=display_on):
         problem_definition, output_results, bayes_results = RATapi.rat_core.RATMain(
             problem_definition,
-            limits,
             cpp_controls,
         )
     end = time.time()

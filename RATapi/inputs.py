@@ -10,7 +10,7 @@ import numpy as np
 import RATapi
 import RATapi.controls
 import RATapi.wrappers
-from RATapi.rat_core import Checks, Control, Limits, NameStore, ProblemDefinition
+from RATapi.rat_core import Checks, Control, NameStore, ProblemDefinition
 from RATapi.utils.enums import Calculations, Languages, LayerModels, TypeOptions
 
 parameter_field = {
@@ -113,7 +113,7 @@ class FileHandles:
         return len(self.files)
 
 
-def make_input(project: RATapi.Project, controls: RATapi.Controls) -> tuple[ProblemDefinition, Limits, Control]:
+def make_input(project: RATapi.Project, controls: RATapi.Controls) -> tuple[ProblemDefinition, Control]:
     """Construct the inputs required for the compiled RAT code using the data defined in the input project and controls.
 
     Parameters
@@ -127,28 +127,14 @@ def make_input(project: RATapi.Project, controls: RATapi.Controls) -> tuple[Prob
     -------
     problem : RAT.rat_core.ProblemDefinition
         The problem input used in the compiled RAT code.
-    limits : RAT.rat_core.Limits
-        A list of min/max values for each parameter defined in the project.
     cpp_controls : RAT.rat_core.Control
         The controls object used in the compiled RAT code.
 
     """
-    limits = Limits()
-
-    for class_list in RATapi.project.parameter_class_lists:
-        setattr(
-            limits,
-            parameter_field[class_list],
-            [[element.min, element.max] for element in getattr(project, class_list)],
-        )
-
-    if project.model == LayerModels.CustomXY:
-        controls.calcSldDuringFit = True
-
     problem = make_problem(project)
     cpp_controls = make_controls(controls)
 
-    return problem, limits, cpp_controls
+    return problem, cpp_controls
 
 
 def make_problem(project: RATapi.Project) -> ProblemDefinition:
