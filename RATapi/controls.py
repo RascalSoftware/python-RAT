@@ -118,7 +118,7 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid", use_attribut
     nSamples: int = Field(20000, ge=0)
     """[DREAM] The number of samples in the initial population for each chain."""
 
-    nChains: int = Field(10, gt=0)
+    nChains: int = Field(10, gt=1)
     """[DREAM] The number of Markov chains to use in the algorithm."""
 
     jumpProbability: float = Field(0.5, gt=0.0, lt=1.0)
