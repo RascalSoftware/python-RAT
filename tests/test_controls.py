@@ -859,7 +859,7 @@ class TestDream:
     @pytest.mark.parametrize("value", [-5, 0])
     def test_dream_nChains_error(self, value: int) -> None:
         """Tests the nChains setter error in Dream class."""
-        with pytest.raises(pydantic.ValidationError, match="Input should be greater than 0"):
+        with pytest.raises(pydantic.ValidationError, match="Input should be greater than 1"):
             self.dream.nChains = value
 
     def test_control_class_dream_str(self, table_str) -> None:
