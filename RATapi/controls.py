@@ -116,7 +116,7 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid", use_attribut
 
     # Dream
     nSamples: int = Field(20000, ge=0)
-    """[DREAM] The number of samples in the initial population for each chain."""
+    """[DREAM] The total number of function evaluations (number of algorithm generations times number of chains)."""
 
     nChains: int = Field(10, gt=1)
     """[DREAM] The number of Markov chains to use in the algorithm."""
