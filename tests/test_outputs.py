@@ -119,7 +119,6 @@ def dream_str():
         "\toutlierChains = Data array: [1 x 2],\n"
         "\truntime = 2.6e-06,\n"
         "\titeration = 2.0,\n"
-        "\tmodelOutput = 0.0,\n"
         "\tAR = Data array: [1 x 2],\n"
         "\tR_stat = Data array: [1 x 19],\n"
         "\tCR = Data array: [1 x 4],\n"

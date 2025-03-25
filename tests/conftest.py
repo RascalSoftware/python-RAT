@@ -3984,7 +3984,6 @@ def dream_bayes():
     bayes.dreamOutput.outlierChains = np.array([[0.0, 0.0]])
     bayes.dreamOutput.runtime = 2.6e-06
     bayes.dreamOutput.iteration = 2.0
-    bayes.dreamOutput.modelOutput = 0.0
     bayes.dreamOutput.AR = np.array([[1.0, np.nan]])
     bayes.dreamOutput.R_stat = np.array(
         [
@@ -6463,7 +6462,6 @@ def dream_results():
             outlierChains=np.array([[0.0, 0.0]]),
             runtime=2.6e-06,
             iteration=2.0,
-            modelOutput=0.0,
             AR=np.array([[1.0, np.nan]]),
             R_stat=np.array(
                 [

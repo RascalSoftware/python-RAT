@@ -109,7 +109,7 @@ def check_bayes_fields_equal(actual_results, expected_results) -> None:
             "IO",
             "storeOutput",
         ],
-        "dreamOutput": ["runtime", "iteration", "modelOutput"],
+        "dreamOutput": ["runtime", "iteration"],
         "nestedSamplerOutput": ["logZ"],
     }
 

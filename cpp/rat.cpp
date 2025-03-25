@@ -301,21 +301,6 @@ RAT::b_ProblemDefinition createProblemDefinitionStruct(const ProblemDefinition& 
 }
 
 
-RAT::ProblemLimits createProblemLimitsStruct(const Limits& limits)
-{
-    RAT::ProblemLimits limits_struct;
-    limits_struct.params = customCaller("Limits.params", pyArrayToRatArray2d, limits.params);
-    limits_struct.backgroundParams = customCaller("Limits.backgroundParams", pyArrayToRatArray2d, limits.backgroundParams);
-    limits_struct.scalefactors = customCaller("Limits.scalefactors", pyArrayToRatArray2d, limits.scalefactors);
-    limits_struct.bulkIns = customCaller("Limits.bulkIns", pyArrayToRatArray2d, limits.bulkIns);
-    limits_struct.bulkOuts = customCaller("Limits.bulkOuts", pyArrayToRatArray2d, limits.bulkOuts);
-    limits_struct.resolutionParams = customCaller("Limits.resolutionParams", pyArrayToRatArray2d, limits.resolutionParams);
-    limits_struct.domainRatios = customCaller("Limits.domainRatios", pyArrayToRatArray2d, limits.domainRatios);
-    
-    return limits_struct;
-}
-
-
 RAT::Controls createControlsStruct(const Control& control)
 {
     RAT::Controls control_struct;
@@ -391,17 +376,6 @@ OutputResult OutputResultFromStruct(const RAT::Results result)
         output_result.resolutions.append(array);
     }
 
-    for (int32_T idx0{0}; idx0 < result.layerSlds.size(0); idx0++) {
-        py::list inner_list;
-        for (int32_T idx1{0}; idx1 < result.layerSlds.size(1); idx1++) {
-            auto tmp = result.layerSlds[idx0 +  result.layerSlds.size(0) * idx1];
-            auto array = py::array_t<real_T, py::array::f_style>({tmp.f1.size(0), tmp.f1.size(1)});
-            std::memcpy(array.request().ptr, tmp.f1.data(), array.nbytes());
-            inner_list.append(array);
-        }
-        output_result.layerSlds.append(inner_list);
-    }
-
     for (int32_T idx0{0}; idx0 < result.sldProfiles.size(0); idx0++) {
         py::list inner_list;
         for (int32_T idx1{0}; idx1 < result.sldProfiles.size(1); idx1++) {
@@ -411,6 +385,17 @@ OutputResult OutputResultFromStruct(const RAT::Results result)
             inner_list.append(array);
         }
         output_result.sldProfiles.append(inner_list);
+    }
+
+    for (int32_T idx0{0}; idx0 < result.layers.size(0); idx0++) {
+        py::list inner_list;
+        for (int32_T idx1{0}; idx1 < result.layers.size(1); idx1++) {
+            auto tmp = result.layers[idx0 +  result.layers.size(0) * idx1];
+            auto array = py::array_t<real_T, py::array::f_style>({tmp.f1.size(0), tmp.f1.size(1)});
+            std::memcpy(array.request().ptr, tmp.f1.data(), array.nbytes());
+            inner_list.append(array);
+        }
+        output_result.layers.append(inner_list);
     }
 
     for (int32_T idx0{0}; idx0 < result.resampledLayers.size(0); idx0++) {
@@ -548,7 +533,6 @@ BayesResults bayesResultsFromStruct(const RAT::BayesResults results)
     bayesResults.dreamOutput.outlierChains = pyArray2dFromBoundedArray<coder::bounded_array<real_T, 2000U, 2U>>(results.dreamOutput.outlierChains);
     bayesResults.dreamOutput.runtime = results.dreamOutput.runtime;
     bayesResults.dreamOutput.iteration = results.dreamOutput.iteration;
-    bayesResults.dreamOutput.modelOutput = results.dreamOutput.modelOutput;
     bayesResults.dreamOutput.R_stat = pyArrayFromRatArray2d(results.dreamOutput.R_stat);
     bayesResults.dreamOutput.CR = pyArrayFromRatArray2d(results.dreamOutput.CR);
     bayesResults.dreamOutput.AR = pyArray2dFromBoundedArray<coder::bounded_array<real_T, 2000U, 2U>>(results.dreamOutput.AR);
@@ -582,8 +566,6 @@ Parameters
 ----------
 problem_def : Rat.rat_core.ProblemDefinition
     The project input for the RAT calculation.
-limits : RATapi.rat_core.Limits
-    Min and max values for each parameter defined in the problem definition.
 control : RATapi.rat_core.Control
     The controls object for the RAT calculation.
 
@@ -597,16 +579,15 @@ bayes_result : Rat.rat_core.BayesResults
     The extra results if RAT calculation is Bayesian.
 )";
 
-py::tuple RATMain(const ProblemDefinition& problem_def, const Limits& limits, const Control& control)
+py::tuple RATMain(const ProblemDefinition& problem_def, const Control& control)
 {
     RAT::b_ProblemDefinition problem_def_struct = createProblemDefinitionStruct(problem_def);
-    RAT::ProblemLimits limits_struct = createProblemLimitsStruct(limits);
     RAT::Controls control_struct = createControlsStruct(control);
     // Output
     RAT::Results results;
     RAT::BayesResults bayesResults;
     // Call the entry-point
-    RAT::RATMain(&problem_def_struct, &limits_struct, &control_struct, &results, &bayesResults);
+    RAT::RATMain(&problem_def_struct, &control_struct, &results, &bayesResults);
     // Copy result to output
     auto out_problem_def = problemDefinitionFromStruct(problem_def_struct);
     out_problem_def.customFiles = problem_def.customFiles.attr("copy")(); 
@@ -802,7 +783,6 @@ PYBIND11_MODULE(rat_core, m) {
         .def_readwrite("outlierChains", &DreamOutput::outlierChains)
         .def_readwrite("runtime", &DreamOutput::runtime)
         .def_readwrite("iteration", &DreamOutput::iteration)
-        .def_readwrite("modelOutput", &DreamOutput::modelOutput)
         .def_readwrite("AR", &DreamOutput::AR)
         .def_readwrite("R_stat", &DreamOutput::R_stat)
         .def_readwrite("CR", &DreamOutput::CR);
@@ -836,8 +816,8 @@ PYBIND11_MODULE(rat_core, m) {
         .def_readwrite("shiftedData", &OutputResult::shiftedData)
         .def_readwrite("backgrounds", &OutputResult::backgrounds)
         .def_readwrite("resolutions", &OutputResult::resolutions)
-        .def_readwrite("layerSlds", &OutputResult::layerSlds)
         .def_readwrite("sldProfiles", &OutputResult::sldProfiles)
+        .def_readwrite("layers", &OutputResult::layers)
         .def_readwrite("resampledLayers", &OutputResult::resampledLayers)
         .def_readwrite("calculationResults", &OutputResult::calculationResults)
         .def_readwrite("contrastParams", &OutputResult::contrastParams)        
@@ -910,39 +890,6 @@ PYBIND11_MODULE(rat_core, m) {
                 chk.domainRatios = t[6].cast<py::array_t<real_T>>();
 
                 return chk;
-            }));
-
-    py::class_<Limits>(m, "Limits", docsLimits.c_str())
-        .def(py::init<>())
-        .def_readwrite("params", &Limits::params)
-        .def_readwrite("backgroundParams", &Limits::backgroundParams)
-        .def_readwrite("scalefactors", &Limits::scalefactors)
-        .def_readwrite("bulkIns", &Limits::bulkIns)
-        .def_readwrite("bulkOuts", &Limits::bulkOuts)
-        .def_readwrite("resolutionParams", &Limits::resolutionParams)
-        .def_readwrite("domainRatios", &Limits::domainRatios)
-        .def(py::pickle(
-            [](const Limits &lim) { // __getstate__
-                /* Return a tuple that fully encodes the state of the object */
-                return py::make_tuple(lim.params, lim.backgroundParams, lim.scalefactors, lim.bulkIns, lim.bulkOuts, 
-                                      lim.resolutionParams, lim.domainRatios);
-            },
-            [](py::tuple t) { // __setstate__
-                if (t.size() != 7)
-                    throw std::runtime_error("Encountered invalid state unpickling Limits object!");
-
-                /* Create a new C++ instance */
-                Limits lim;
-
-                lim.params = t[0].cast<py::array_t<real_T>>(); 
-                lim.backgroundParams = t[1].cast<py::array_t<real_T>>(); 
-                lim.scalefactors = t[2].cast<py::array_t<real_T>>(); 
-                lim.bulkIns = t[3].cast<py::array_t<real_T>>(); 
-                lim.bulkOuts = t[4].cast<py::array_t<real_T>>(); 
-                lim.resolutionParams = t[5].cast<py::array_t<real_T>>(); 
-                lim.domainRatios = t[6].cast<py::array_t<real_T>>();
-
-                return lim;
             }));
 
     py::class_<Control>(m, "Control", docsControl.c_str())
@@ -1150,7 +1097,7 @@ PYBIND11_MODULE(rat_core, m) {
                 return p;
             }));
 
-    m.def("RATMain", &RATMain, docsRATMain.c_str(), py::arg("problem_def"), py::arg("limits"), py::arg("control"));
+    m.def("RATMain", &RATMain, docsRATMain.c_str(), py::arg("problem_def"), py::arg("control"));
 
     m.def("makeSLDProfileXY", &makeSLDProfileXY, docsMakeSLDProfileXY.c_str(), 
           py::arg("bulk_in"), py::arg("bulk_out"), py::arg("ssub"), py::arg("layers"), py::arg("number_of_repeats") = DEFAULT_NREPEATS);

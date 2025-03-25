@@ -397,7 +397,7 @@ def custom_xy_controls():
     controls = Control()
     controls.procedure = Procedures.Calculate
     controls.parallel = Parallel.Single
-    controls.calcSldDuringFit = True
+    controls.calcSldDuringFit = False
     controls.resampleMinAngle = 0.9
     controls.resampleNPoints = 50.0
     controls.display = Display.Iter

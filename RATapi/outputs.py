@@ -324,8 +324,6 @@ class DreamOutput(RATResult):
         The runtime of the DREAM algorithm in seconds.
     iteration : float
         The number of iterations performed.
-    modelOutput : float
-        Unused. Will always be 0.
     AR : np.ndarray
         A two-column array where ``DreamOutput.AR[i, 0]`` is an iteration number
         and ``DreamOutput.AR[i, 1]`` is the average acceptance rate of chain step
@@ -345,7 +343,6 @@ class DreamOutput(RATResult):
     outlierChains: np.ndarray
     runtime: float
     iteration: float
-    modelOutput: float
     AR: np.ndarray
     R_stat: np.ndarray
     CR: np.ndarray
@@ -484,7 +481,6 @@ def make_results(
             outlierChains=bayes_results.dreamOutput.outlierChains,
             runtime=bayes_results.dreamOutput.runtime,
             iteration=bayes_results.dreamOutput.iteration,
-            modelOutput=bayes_results.dreamOutput.modelOutput,
             AR=bayes_results.dreamOutput.AR,
             R_stat=bayes_results.dreamOutput.R_stat,
             CR=bayes_results.dreamOutput.CR,

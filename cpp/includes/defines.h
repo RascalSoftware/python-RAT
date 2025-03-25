@@ -237,8 +237,6 @@ runtime : float
     The runtime of the DREAM algorithm in seconds.
 iteration : float
     The number of iterations performed.
-modelOutput : float
-    Unused. Will always be 0.
 AR : np.ndarray[np.float]
     A two-column array where ``DreamOutput.AR[i, 0]`` is an iteration number
     and ``DreamOutput.AR[i, 1]`` is the average acceptance rate of chain step
@@ -259,7 +257,6 @@ struct DreamOutput
     py::array_t<real_T> outlierChains;
     real_T runtime;
     real_T iteration;
-    real_T modelOutput;
     py::array_t<real_T> AR;
     py::array_t<real_T> R_stat;
     py::array_t<real_T> CR;
@@ -354,12 +351,12 @@ backgrounds : list
     The background for each contrast defined over the simulation range.
 resolutions : list
     The resolution for each contrast defined over the simulation range.
-layerSlds : list
-    The array of layer parameter values for each contrast.
 sldProfiles : list
     The SLD profiles for each contrast.
+layers : list
+    The array of layer parameter values for each contrast.
 resampledLayers : list
-    If resampling is used, the SLD for each contrast after resampling has been performed.
+    If resampling is used, the array of layer parameter values for each contrast after resampling has been performed.
 calculationResults : RATapi.rat_core.Calculation
     The chi-squared fit results from the final calculation and fit.
 contrastParams : RATapi.rat_core.ContrastParams
@@ -377,8 +374,8 @@ struct OutputResult {
     py::list shiftedData;
     py::list backgrounds;
     py::list resolutions;
-    py::list layerSlds;
     py::list sldProfiles;
+    py::list layers;
     py::list resampledLayers;
     Calculation calculationResults {};
     ContrastParams contrastParams {};
