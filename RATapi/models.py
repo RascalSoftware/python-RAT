@@ -119,8 +119,8 @@ class Background(Signal):
     name: str = Field(default_factory=lambda: f"New Background {next(background_number)}", min_length=1)
 
     @model_validator(mode="after")
-    def warn_parameters(self):
-        """Raise a warning if the parameters given are not expected for the given type."""
+    def check_unsupported_parameters(self):
+        """Raise an error if the parameters given are not supported for the given type."""
         if self.type == TypeOptions.Constant:
             expected_empty_fields = ["value_1", "value_2", "value_3", "value_4", "value_5"]
         elif self.type == TypeOptions.Data:
@@ -130,10 +130,9 @@ class Background(Signal):
 
         non_empty_fields = [v for v in expected_empty_fields if getattr(self, v) != ""]
         if non_empty_fields:
-            warnings.warn(
-                "The following values are not recognised by this background type and will be ignored: "
-                f"{', '.join(non_empty_fields)}",
-                stacklevel=2,
+            raise ValueError(
+                f'The following values are not supported by the "{self.type}" background type: '
+                f"{', '.join(non_empty_fields)}"
             )
 
         return self
@@ -630,8 +629,8 @@ class Resolution(Signal):
         return type
 
     @model_validator(mode="after")
-    def warn_parameters(self):
-        """Raise a warning if the parameters given are not expected for the given type."""
+    def check_unsupported_parameters(self):
+        """Raise an error if the parameters given are not supported for the given type."""
         if self.type == TypeOptions.Constant:
             expected_empty_fields = ["value_1", "value_2", "value_3", "value_4", "value_5"]
         elif self.type == TypeOptions.Data:
@@ -641,10 +640,9 @@ class Resolution(Signal):
 
         non_empty_fields = [v for v in expected_empty_fields if getattr(self, v) != ""]
         if non_empty_fields:
-            warnings.warn(
-                "The following values are not recognised by this resolution type and will be ignored: "
-                f"{', '.join(non_empty_fields)}",
-                stacklevel=2,
+            raise ValueError(
+                f'The following values are not supported by the "{self.type}" resolution type: '
+                f"{', '.join(non_empty_fields)}"
             )
 
         return self
