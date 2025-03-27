@@ -131,7 +131,7 @@ class Background(Signal):
         non_empty_fields = [v for v in expected_empty_fields if getattr(self, v) != ""]
         if non_empty_fields:
             raise ValueError(
-                f'The following values are not supported by the "{self.type}" background type: '
+                f'The following values are not supported by the "{self.type}" Background type: '
                 f"{', '.join(non_empty_fields)}"
             )
 
@@ -641,7 +641,7 @@ class Resolution(Signal):
         non_empty_fields = [v for v in expected_empty_fields if getattr(self, v) != ""]
         if non_empty_fields:
             raise ValueError(
-                f'The following values are not supported by the "{self.type}" resolution type: '
+                f'The following values are not supported by the "{self.type}" Resolution type: '
                 f"{', '.join(non_empty_fields)}"
             )
 

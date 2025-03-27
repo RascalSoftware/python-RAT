@@ -334,22 +334,50 @@ def test_contrast_bad_ratio():
         RATapi.models.Contrast(name="My Contrast", domain_ratio="bad ratio")
 
 
-@pytest.mark.parametrize("model", [RATapi.models.Background, RATapi.models.Resolution])
-@pytest.mark.filterwarnings("ignore:The following values are not recognised by this*:UserWarning")
-def test_type_change_clear(model):
+@pytest.mark.parametrize(
+    ["model", "type", "values"],
+    [
+        (RATapi.models.Background, "function", ["val1", "val2", "val3", "val4", "val5"]),
+        (RATapi.models.Resolution, "constant", ["", "", "", "", ""]),
+    ],
+)
+def test_type_change_clear(model, type, values):
     """If the type of a background or resolution is changed, it should wipe the other fields and warn the user."""
     model_instance = model(
         name="Test",
-        type="constant",
+        type=type,
         source="src",
-        value_1="val1",
-        value_2="val2",
-        value_3="val3",
-        value_4="val4",
-        value_5="val5",
+        value_1=values[0],
+        value_2=values[1],
+        value_3=values[2],
+        value_4=values[3],
+        value_5=values[4],
     )
 
     with pytest.warns(UserWarning, match="Changing the type of Test clears its source and value fields."):
         model_instance.type = "data"
     for attr in ["source", "value_1", "value_2", "value_3", "value_4", "value_5"]:
         assert getattr(model_instance, attr) == ""
+
+
+@pytest.mark.parametrize(
+    ["model", "signal_type", "values"],
+    [
+        (RATapi.models.Background, "constant", ["value_1", "value_2", "value_3", "value_4", "value_5"]),
+        (RATapi.models.Background, "data", ["value_2", "value_3", "value_4", "value_5"]),
+        (RATapi.models.Resolution, "constant", ["value_1", "value_2", "value_3", "value_4", "value_5"]),
+        (RATapi.models.Resolution, "data", ["value_1", "value_2", "value_3", "value_4", "value_5"]),
+    ],
+)
+def test_unsupported_parameters_error(model, signal_type, values):
+    """If a value is inputted for an unsupported field for a particular type of background or resolution then we should
+    raise an error."""
+    for value in values:
+        with pytest.raises(
+            pydantic.ValidationError,
+            match=(
+                f"1 validation error for {model.__name__}\n  Value error, The following values are not supported"
+                f' by the "{signal_type}" {model.__name__} type: {value}'
+            ),
+        ):
+            model(**{"type": signal_type, value: "unsupported"})
