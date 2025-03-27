@@ -318,6 +318,11 @@ class ClassList(collections.UserList, Generic[T]):
         if isinstance(index, (str, self._class_handle)):
             index = self.index(index)
 
+        # Prioritise changing language to avoid CustomFile validator bug
+        value = kwargs.pop("language", None)
+        if value is not None:
+            kwargs = {"language": value, **kwargs}
+
         if importlib.util.find_spec("pydantic"):
             # Pydantic is installed, so set up a context manager that will
             # suppress custom validation errors until all fields have been set.
