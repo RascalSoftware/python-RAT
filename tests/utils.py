@@ -31,7 +31,7 @@ def check_results_equal(actual_results, expected_results) -> None:
     "CalculationResults" and "ContrastParams".
     """
     list_fields = ["reflectivity", "simulation", "shiftedData", "backgrounds", "resolutions"]
-    double_list_fields = ["layerSlds", "sldProfiles", "resampledLayers"]
+    double_list_fields = ["sldProfiles", "layers", "resampledLayers"]
     contrast_param_fields = [
         "scalefactors",
         "bulkIn",
@@ -109,7 +109,7 @@ def check_bayes_fields_equal(actual_results, expected_results) -> None:
             "IO",
             "storeOutput",
         ],
-        "dreamOutput": ["runtime", "iteration", "modelOutput"],
+        "dreamOutput": ["runtime", "iteration"],
         "nestedSamplerOutput": ["logZ"],
     }
 

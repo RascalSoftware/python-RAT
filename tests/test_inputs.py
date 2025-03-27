@@ -9,7 +9,7 @@ import pytest
 import RATapi
 import RATapi.wrappers
 from RATapi.inputs import FileHandles, check_indices, make_controls, make_input, make_problem
-from RATapi.rat_core import Checks, Control, Limits, NameStore, ProblemDefinition
+from RATapi.rat_core import Checks, Control, NameStore, ProblemDefinition
 from RATapi.utils.enums import (
     BackgroundActions,
     BoundHandling,
@@ -352,36 +352,6 @@ def custom_xy_problem(test_names, test_checks):
 
 
 @pytest.fixture
-def normal_limits():
-    """The expected limits object from "standard_layers_project" and "custom_xy_project"."""
-    limits = Limits()
-    limits.params = [[1.0, 5.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]
-    limits.backgroundParams = [[1e-7, 1e-5]]
-    limits.scalefactors = [[0.02, 0.25]]
-    limits.bulkIns = [[0.0, 0.0]]
-    limits.bulkOuts = [[6.2e-6, 6.35e-6]]
-    limits.resolutionParams = [[0.01, 0.05]]
-    limits.domainRatios = []
-
-    return limits
-
-
-@pytest.fixture
-def domains_limits():
-    """The expected limits object from "domains_project"."""
-    limits = Limits()
-    limits.params = [[1.0, 5.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]
-    limits.backgroundParams = [[1e-7, 1e-5]]
-    limits.scalefactors = [[0.02, 0.25]]
-    limits.bulkIns = [[0.0, 0.0]]
-    limits.bulkOuts = [[6.2e-6, 6.35e-6]]
-    limits.resolutionParams = [[0.01, 0.05]]
-    limits.domainRatios = [[0.4, 0.6]]
-
-    return limits
-
-
-@pytest.fixture
 def standard_layers_controls():
     """The expected controls object for input to the compiled RAT code given the default inputs and
     "standard_layers_project".
@@ -427,7 +397,7 @@ def custom_xy_controls():
     controls = Control()
     controls.procedure = Procedures.Calculate
     controls.parallel = Parallel.Single
-    controls.calcSldDuringFit = True
+    controls.calcSldDuringFit = False
     controls.resampleMinAngle = 0.9
     controls.resampleNPoints = 50.0
     controls.display = Display.Iter
@@ -458,54 +428,37 @@ def custom_xy_controls():
 
 
 @pytest.mark.parametrize(
-    ["test_project", "test_problem", "test_limits", "test_controls"],
+    ["test_project", "test_problem", "test_controls"],
     [
         (
             "standard_layers_project",
             "standard_layers_problem",
-            "normal_limits",
             "standard_layers_controls",
         ),
         (
             "custom_xy_project",
             "custom_xy_problem",
-            "normal_limits",
             "custom_xy_controls",
         ),
         (
             "domains_project",
             "domains_problem",
-            "domains_limits",
             "standard_layers_controls",
         ),
     ],
 )
-def test_make_input(test_project, test_problem, test_limits, test_controls, request) -> None:
-    """When converting the "project" and "controls", we should obtain the five input objects required for the compiled
+def test_make_input(test_project, test_problem, test_controls, request) -> None:
+    """When converting the "project" and "controls", we should obtain the two input objects required for the compiled
     RAT code.
     """
     test_project = request.getfixturevalue(test_project)
     test_problem = request.getfixturevalue(test_problem)
-    test_limits = request.getfixturevalue(test_limits)
     test_controls = request.getfixturevalue(test_controls)
 
-    parameter_fields = [
-        "params",
-        "backgroundParams",
-        "scalefactors",
-        "bulkIns",
-        "bulkOuts",
-        "resolutionParams",
-        "domainRatios",
-    ]
+    problem, controls = make_input(test_project, RATapi.Controls())
 
-    problem, limits, controls = make_input(test_project, RATapi.Controls())
     problem = pickle.loads(pickle.dumps(problem))
     check_problem_equal(problem, test_problem)
-
-    limits = pickle.loads(pickle.dumps(limits))
-    for limit_field in parameter_fields:
-        assert np.all(getattr(limits, limit_field) == getattr(test_limits, limit_field))
 
     controls = pickle.loads(pickle.dumps(controls))
     check_controls_equal(controls, test_controls)

@@ -141,12 +141,13 @@ class Results:
         The background for each contrast defined over the simulation range.
     resolutions : list
         The resolution for each contrast defined over the simulation range.
-    layerSlds : list
-        The array of layer parameter values for each contrast.
     sldProfiles : list
         The SLD profiles for each contrast.
+    layers : list
+        The array of layer parameter values for each contrast.
     resampledLayers : list
-        If resampling is used, the SLD for each contrast after resampling has been performed.
+        If resampling is used, the array of layer parameter values for each contrast after resampling has been
+        performed.
     calculationResults : CalculationResults
         The chi-squared fit results from the final calculation and fit.
     contrastParams : ContrastParams
@@ -164,8 +165,8 @@ class Results:
     shiftedData: list
     backgrounds: list
     resolutions: list
-    layerSlds: list
     sldProfiles: list
+    layers: list
     resampledLayers: list
     calculationResults: CalculationResults
     contrastParams: ContrastParams
@@ -323,8 +324,6 @@ class DreamOutput(RATResult):
         The runtime of the DREAM algorithm in seconds.
     iteration : float
         The number of iterations performed.
-    modelOutput : float
-        Unused. Will always be 0.
     AR : np.ndarray
         A two-column array where ``DreamOutput.AR[i, 0]`` is an iteration number
         and ``DreamOutput.AR[i, 1]`` is the average acceptance rate of chain step
@@ -344,7 +343,6 @@ class DreamOutput(RATResult):
     outlierChains: np.ndarray
     runtime: float
     iteration: float
-    modelOutput: float
     AR: np.ndarray
     R_stat: np.ndarray
     CR: np.ndarray
@@ -483,7 +481,6 @@ def make_results(
             outlierChains=bayes_results.dreamOutput.outlierChains,
             runtime=bayes_results.dreamOutput.runtime,
             iteration=bayes_results.dreamOutput.iteration,
-            modelOutput=bayes_results.dreamOutput.modelOutput,
             AR=bayes_results.dreamOutput.AR,
             R_stat=bayes_results.dreamOutput.R_stat,
             CR=bayes_results.dreamOutput.CR,
@@ -502,8 +499,8 @@ def make_results(
             shiftedData=output_results.shiftedData,
             backgrounds=output_results.backgrounds,
             resolutions=output_results.resolutions,
-            layerSlds=output_results.layerSlds,
             sldProfiles=output_results.sldProfiles,
+            layers=output_results.layers,
             resampledLayers=output_results.resampledLayers,
             calculationResults=calculation_results,
             contrastParams=contrast_params,
@@ -524,8 +521,8 @@ def make_results(
             shiftedData=output_results.shiftedData,
             backgrounds=output_results.backgrounds,
             resolutions=output_results.resolutions,
-            layerSlds=output_results.layerSlds,
             sldProfiles=output_results.sldProfiles,
+            layers=output_results.layers,
             resampledLayers=output_results.resampledLayers,
             calculationResults=calculation_results,
             contrastParams=contrast_params,
