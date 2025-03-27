@@ -383,37 +383,6 @@ struct OutputResult {
     py::list fitNames;
 };
 
-const std::string docsLimits = R"(The Python binding for the C++ limit struct which contains
-Min and max values for each parameter defined in the project.
-
-Parameters
-----------
-params : np.ndarray[np.float] 
-    Limits for params in the problem definition.
-backgroundParams : np.ndarray[np.float] 
-    Limits for backgroundParams in the problem definition.
-scalefactors : np.ndarray[np.float] 
-    Limits for scalefactors in the problem definition.
-bulkIns : np.ndarray[np.float] 
-    Limits for bulkIns in the problem definition.
-bulkOuts : np.ndarray[np.float] 
-    Limits for bulkOuts in the problem definition.
-resolutionParams : np.ndarray[np.float] 
-    Limits for resolutionParams in the problem definition.
-domainRatios : np.ndarray[np.float] 
-    Limits for domainRatios in the problem definition.
-)";
-
-struct Limits {
-    py::array_t<real_T> params;
-    py::array_t<real_T> backgroundParams;
-    py::array_t<real_T> scalefactors;
-    py::array_t<real_T> bulkIns;
-    py::array_t<real_T> bulkOuts;
-    py::array_t<real_T> resolutionParams;
-    py::array_t<real_T> domainRatios;
-};
-
 const std::string docsNameStore = R"(The Python binding for the C++ names struct which 
 contains names of all parameters in the project.
 
