@@ -262,12 +262,12 @@ struct DreamOutput
     py::array_t<real_T> CR;
 };
 
-const std::string docsBayesResults = R"(The Python binding for the C++ bayesResults struct. 
+const std::string docsOutputBayesResult = R"(The Python binding for the C++ bayesResults struct. 
 The results of a Bayesian RAT calculation.
 
 Parameters
 ----------
-predictionIntervals : RATapi.rat_core.orePredictionIntervals
+predictionIntervals : RATapi.rat_core.PredictionIntervals
     The prediction intervals.
 confidenceIntervals : RATapi.rat_core.ConfidenceIntervals
     The 65% and 95% confidence intervals for the best fit results.
@@ -282,7 +282,7 @@ chain : np.ndarray
     The ``i``'th column of the array contains the chain for parameter ``fitNames[i]``.
 )";
 
-struct BayesResults
+struct OutputBayesResult
 {
     PredictionIntervals predictionIntervals;
     ConfidenceIntervals confidenceIntervals;

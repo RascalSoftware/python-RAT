@@ -510,9 +510,9 @@ ProblemDefinition problemDefinitionFromStruct(const RAT::b_ProblemDefinition pro
     return problem_def;
 }
 
-BayesResults bayesResultsFromStruct(const RAT::BayesResults results)
+OutputBayesResult OutputBayesResultsFromStruct(const RAT::BayesResults results)
 {
-    BayesResults bayesResults;
+    OutputBayesResult bayesResults;
 
     bayesResults.chain = pyArrayFromRatArray2d(results.chain);
 
@@ -575,7 +575,7 @@ out_problem_def : Rat.rat_core.ProblemDefinition
     The project input with the updated fit values.
 results : Rat.rat_core.OutputResult
     The results from a RAT calculation.
-bayes_result : Rat.rat_core.BayesResults
+bayes_result : Rat.rat_core.OutputBayesResult
     The extra results if RAT calculation is Bayesian.
 )";
 
@@ -593,7 +593,7 @@ py::tuple RATMain(const ProblemDefinition& problem_def, const Control& control)
     out_problem_def.customFiles = problem_def.customFiles.attr("copy")(); 
     return py::make_tuple(out_problem_def, 
                           OutputResultFromStruct(results), 
-                          bayesResultsFromStruct(bayesResults));    
+                          OutputBayesResultsFromStruct(bayesResults));    
 }
 
 const std::string docsMakeSLDProfileXY = R"(Creates the profiles for the SLD plots
@@ -787,14 +787,14 @@ PYBIND11_MODULE(rat_core, m) {
         .def_readwrite("R_stat", &DreamOutput::R_stat)
         .def_readwrite("CR", &DreamOutput::CR);
 
-    py::class_<BayesResults>(m, "BayesResults", docsBayesResults.c_str())
+    py::class_<OutputBayesResult>(m, "OutputBayesResult", docsOutputBayesResult.c_str())
         .def(py::init<>())
-        .def_readwrite("predictionIntervals", &BayesResults::predictionIntervals)
-        .def_readwrite("confidenceIntervals", &BayesResults::confidenceIntervals)
-        .def_readwrite("dreamParams", &BayesResults::dreamParams)
-        .def_readwrite("dreamOutput", &BayesResults::dreamOutput)
-        .def_readwrite("nestedSamplerOutput", &BayesResults::nestedSamplerOutput)
-        .def_readwrite("chain", &BayesResults::chain);
+        .def_readwrite("predictionIntervals", &OutputBayesResult::predictionIntervals)
+        .def_readwrite("confidenceIntervals", &OutputBayesResult::confidenceIntervals)
+        .def_readwrite("dreamParams", &OutputBayesResult::dreamParams)
+        .def_readwrite("dreamOutput", &OutputBayesResult::dreamOutput)
+        .def_readwrite("nestedSamplerOutput", &OutputBayesResult::nestedSamplerOutput)
+        .def_readwrite("chain", &OutputBayesResult::chain);
 
     py::class_<Calculation>(m, "Calculation", docsCalculation.c_str())
         .def(py::init<>())
