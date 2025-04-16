@@ -26,7 +26,7 @@ def convert_rascal(mat_filename="lipid_bilayer.mat"):
 
     """
     project_path = pathlib.Path(__file__).parent / "R1monolayerVolumeModel.mat"
-    project = RAT.utils.convert.r1_to_project_class(project_path)
+    project = RAT.utils.convert.r1_to_project(project_path)
 
     # change values if you like, including ones not supported by R1
     project.parameters["Head Thickness"].prior_type = "gaussian"
@@ -35,10 +35,10 @@ def convert_rascal(mat_filename="lipid_bilayer.mat"):
 
     # convert DSPC standard layers example to a struct and save as file
     lipid_bilayer_project = RAT.examples.DSPC_standard_layers()[0]
-    RAT.utils.convert.project_class_to_r1(lipid_bilayer_project, filename=mat_filename)
+    RAT.utils.convert.project_to_r1(lipid_bilayer_project, filename=mat_filename)
 
     # convert and return as a Python dictionary
-    struct = RAT.utils.convert.project_class_to_r1(lipid_bilayer_project, return_struct=True)
+    struct = RAT.utils.convert.project_to_r1(lipid_bilayer_project, return_struct=True)
 
     return project, struct
 
