@@ -2253,7 +2253,7 @@ def dream_bayes():
 
     This optimisation used the parameters: nSamples=1, nChains=1.
     """
-    bayes = RATapi.rat_core.BayesResults()
+    bayes = RATapi.rat_core.OutputBayesResult()
     bayes.predictionIntervals = RATapi.rat_core.PredictionIntervals()
     bayes.predictionIntervals.reflectivity = [
         np.array(

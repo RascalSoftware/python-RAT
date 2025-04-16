@@ -140,9 +140,9 @@ def test_ref_sld_bayes(fig, bayes_fig, bayes):
         assert any(isinstance(comp, PolyCollection) for comp in components)
 
 
-@patch("RATapi.utils.plotting.makeSLDProfileXY")
+@patch("RATapi.utils.plotting.makeSLDProfile")
 def test_sld_profile_function_call(mock: MagicMock) -> None:
-    """Tests the makeSLDProfileXY function called with
+    """Tests the makeSLDProfile function called with
     correct args.
     """
     RATplot.plot_ref_sld_helper(data())
@@ -150,21 +150,21 @@ def test_sld_profile_function_call(mock: MagicMock) -> None:
     assert mock.call_count == 3
     assert mock.call_args_list[0].args[0] == 2.07e-06
     assert mock.call_args_list[0].args[1] == 6.28e-06
-    assert mock.call_args_list[0].args[2] == 0.0
+    assert mock.call_args_list[0].args[3] == 0.0
     assert mock.call_args_list[0].args[4] == 1
 
     assert mock.call_args_list[1].args[0] == 2.07e-06
     assert mock.call_args_list[1].args[1] == 1.83e-06
-    assert mock.call_args_list[1].args[2] == 0.0
+    assert mock.call_args_list[1].args[3] == 0.0
     assert mock.call_args_list[1].args[4] == 1
 
     assert mock.call_args_list[2].args[0] == 2.07e-06
     assert mock.call_args_list[2].args[1] == -5.87e-07
-    assert mock.call_args_list[2].args[2] == 0.0
+    assert mock.call_args_list[2].args[3] == 0.0
     assert mock.call_args_list[2].args[4] == 1
 
 
-@patch("RATapi.utils.plotting.makeSLDProfileXY")
+@patch("RATapi.utils.plotting.makeSLDProfile")
 def test_live_plot(mock: MagicMock) -> None:
     plot_data = data()
 
@@ -177,17 +177,17 @@ def test_live_plot(mock: MagicMock) -> None:
     assert mock.call_count == 3
     assert mock.call_args_list[0].args[0] == 2.07e-06
     assert mock.call_args_list[0].args[1] == 6.28e-06
-    assert mock.call_args_list[0].args[2] == 0.0
+    assert mock.call_args_list[0].args[3] == 0.0
     assert mock.call_args_list[0].args[4] == 1
 
     assert mock.call_args_list[1].args[0] == 2.07e-06
     assert mock.call_args_list[1].args[1] == 1.83e-06
-    assert mock.call_args_list[1].args[2] == 0.0
+    assert mock.call_args_list[1].args[3] == 0.0
     assert mock.call_args_list[1].args[4] == 1
 
     assert mock.call_args_list[2].args[0] == 2.07e-06
     assert mock.call_args_list[2].args[1] == -5.87e-07
-    assert mock.call_args_list[2].args[2] == 0.0
+    assert mock.call_args_list[2].args[3] == 0.0
     assert mock.call_args_list[2].args[4] == 1
 
 
