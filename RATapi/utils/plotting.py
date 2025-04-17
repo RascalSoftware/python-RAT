@@ -17,7 +17,7 @@ from scipy.stats import gaussian_kde, lognorm, norm
 import RATapi
 import RATapi.inputs
 import RATapi.outputs
-from RATapi.rat_core import PlotEventData, makeSLDProfileXY
+from RATapi.rat_core import PlotEventData, makeSLDProfile
 
 
 def plot_errorbars(ax: Axes, x: np.ndarray, y: np.ndarray, err: np.ndarray, one_sided: bool, color: str):
@@ -154,11 +154,11 @@ def plot_ref_sld_helper(
                 layer = data.resampledLayers[i][j]
                 if layers.shape[1] == 4:
                     layer = np.delete(layer, 2, 1)
-                new_profile = makeSLDProfileXY(
+                new_profile = makeSLDProfile(
                     layers[0, 1],  # Bulk In
                     layers[-1, 1],  # Bulk Out
-                    data.subRoughs[i],  # roughness
                     layer,
+                    data.subRoughs[i],  # roughness
                     1,
                 )
 

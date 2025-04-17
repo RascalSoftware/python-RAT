@@ -16,7 +16,7 @@ setup_pybind11(cfg)
 #include "RAT/RATMain_initialize.h"
 #include "RAT/RATMain_terminate.h"
 #include "RAT/RATMain_types.h"
-#include "RAT/makeSLDProfileXY.h"
+#include "RAT/makeSLDProfile.h"
 #include "RAT/dylib.hpp"
 #include "RAT/events/eventManager.h"
 #include "includes/defines.h"
@@ -263,7 +263,7 @@ RAT::b_ProblemDefinition createProblemDefinitionStruct(const ProblemDefinition& 
     problem_struct.numberOfContrasts = problem.numberOfContrasts;
     stringToRatBoundedArray(problem.geometry, problem_struct.geometry.data, problem_struct.geometry.size);
     problem_struct.useImaginary = problem.useImaginary;
-    problem_struct.repeatLayers = customCaller("Problem.repeatLayers", pyListToRatCellWrap2, problem.repeatLayers);
+    problem_struct.repeatLayers = customCaller("Problem.repeatLayers", pyArrayToRatRowArray1d, problem.repeatLayers);
     problem_struct.contrastBackgroundParams = customCaller("Problem.contrastBackgroundParams", pyListToRatCellWrap3, problem.contrastBackgroundParams); 
     problem_struct.contrastBackgroundTypes = customCaller("Problem.contrastBackgroundTypes", pyListToRatCellWrap02d, problem.contrastBackgroundTypes);
     problem_struct.contrastBackgroundActions = customCaller("Problem.contrastBackgroundActions", pyListToRatCellWrap02d, problem.contrastBackgroundActions);
@@ -460,7 +460,7 @@ ProblemDefinition problemDefinitionFromStruct(const RAT::b_ProblemDefinition pro
     problem_def.numberOfContrasts = problem.numberOfContrasts;
     stringFromRatBoundedArray(problem.geometry.data, problem.geometry.size, problem_def.geometry);
     problem_def.useImaginary = problem.useImaginary;       
-    problem_def.repeatLayers = pyListFromRatCellWrap2(problem.repeatLayers);
+    problem_def.repeatLayers = pyArrayFromRatArray1d<coder::array<real_T, 2U>>(problem.repeatLayers);
     problem_def.contrastBackgroundParams = pyListFromBoundedCellWrap<coder::array<RAT::cell_wrap_3, 2U>>(problem.contrastBackgroundParams);
     problem_def.contrastBackgroundTypes = pyListFromRatCellWrap02d(problem.contrastBackgroundTypes);
     problem_def.contrastBackgroundActions = pyListFromRatCellWrap02d(problem.contrastBackgroundActions);    
@@ -510,9 +510,9 @@ ProblemDefinition problemDefinitionFromStruct(const RAT::b_ProblemDefinition pro
     return problem_def;
 }
 
-BayesResults bayesResultsFromStruct(const RAT::BayesResults results)
+OutputBayesResult OutputBayesResultsFromStruct(const RAT::BayesResults results)
 {
-    BayesResults bayesResults;
+    OutputBayesResult bayesResults;
 
     bayesResults.chain = pyArrayFromRatArray2d(results.chain);
 
@@ -575,7 +575,7 @@ out_problem_def : Rat.rat_core.ProblemDefinition
     The project input with the updated fit values.
 results : Rat.rat_core.OutputResult
     The results from a RAT calculation.
-bayes_result : Rat.rat_core.BayesResults
+bayes_result : Rat.rat_core.OutputBayesResult
     The extra results if RAT calculation is Bayesian.
 )";
 
@@ -593,10 +593,10 @@ py::tuple RATMain(const ProblemDefinition& problem_def, const Control& control)
     out_problem_def.customFiles = problem_def.customFiles.attr("copy")(); 
     return py::make_tuple(out_problem_def, 
                           OutputResultFromStruct(results), 
-                          bayesResultsFromStruct(bayesResults));    
+                          OutputBayesResultsFromStruct(bayesResults));    
 }
 
-const std::string docsMakeSLDProfileXY = R"(Creates the profiles for the SLD plots
+const std::string docsMakeSLDProfile = R"(Creates the profiles for the SLD plots
 
 Parameters
 ----------
@@ -604,10 +604,10 @@ bulk_in : float
     Bulk in value for contrast.
 bulk_out : float
     Bulk out value for contrast.
-ssub : float
-    Substrate roughness.
 layers : np.ndarray[np.float]
     Array of parameters for each layer in the contrast.
+ssub : float
+    Substrate roughness.
 number_of_repeats : int, default: 1
     Number of times the layers are repeated.
 
@@ -617,22 +617,20 @@ sld_profile : np.ndarray[np.float]
     Computed SLD profile
 )";
 
-py::array_t<real_T> makeSLDProfileXY(real_T bulk_in,
-                                     real_T bulk_out,
-                                     real_T ssub,
-                                     const py::array_t<real_T> &layers,
-                                     int number_of_repeats=DEFAULT_NREPEATS)
+py::array_t<real_T> makeSLDProfile(real_T bulk_in,
+                                   real_T bulk_out,
+                                   const py::array_t<real_T> &layers,
+                                   real_T ssub,
+                                   int number_of_repeats=DEFAULT_NREPEATS)
 {
     coder::array<real_T, 2U> out;
     coder::array<real_T, 2U> layers_array = pyArrayToRatArray2d(layers);
-    py::buffer_info buffer_info = layers.request();
-    RAT::makeSLDProfileXY(bulk_in,
-                          bulk_out,
-                          ssub,
-                          layers_array,
-                          buffer_info.shape[0],
-                          number_of_repeats,
-                          out);
+    RAT::makeSLDProfile(bulk_in,
+                        bulk_out,
+                        layers_array,
+                        ssub,
+                        number_of_repeats,
+                        out);
 
     return pyArrayFromRatArray2d(out);
     
@@ -787,14 +785,14 @@ PYBIND11_MODULE(rat_core, m) {
         .def_readwrite("R_stat", &DreamOutput::R_stat)
         .def_readwrite("CR", &DreamOutput::CR);
 
-    py::class_<BayesResults>(m, "BayesResults", docsBayesResults.c_str())
+    py::class_<OutputBayesResult>(m, "OutputBayesResult", docsOutputBayesResult.c_str())
         .def(py::init<>())
-        .def_readwrite("predictionIntervals", &BayesResults::predictionIntervals)
-        .def_readwrite("confidenceIntervals", &BayesResults::confidenceIntervals)
-        .def_readwrite("dreamParams", &BayesResults::dreamParams)
-        .def_readwrite("dreamOutput", &BayesResults::dreamOutput)
-        .def_readwrite("nestedSamplerOutput", &BayesResults::nestedSamplerOutput)
-        .def_readwrite("chain", &BayesResults::chain);
+        .def_readwrite("predictionIntervals", &OutputBayesResult::predictionIntervals)
+        .def_readwrite("confidenceIntervals", &OutputBayesResult::confidenceIntervals)
+        .def_readwrite("dreamParams", &OutputBayesResult::dreamParams)
+        .def_readwrite("dreamOutput", &OutputBayesResult::dreamOutput)
+        .def_readwrite("nestedSamplerOutput", &OutputBayesResult::nestedSamplerOutput)
+        .def_readwrite("chain", &OutputBayesResult::chain);
 
     py::class_<Calculation>(m, "Calculation", docsCalculation.c_str())
         .def(py::init<>())
@@ -1047,7 +1045,7 @@ PYBIND11_MODULE(rat_core, m) {
                 p.numberOfContrasts = t[6].cast<real_T>();
                 p.geometry = t[7].cast<std::string>(); 
                 p.useImaginary = t[8].cast<bool>();
-                p.repeatLayers = t[9].cast<py::list>();
+                p.repeatLayers = t[9].cast<py::array_t<real_T>>();
                 p.contrastBackgroundParams = t[10].cast<py::list>(); 
                 p.contrastBackgroundTypes = t[11].cast<py::list>(); 
                 p.contrastBackgroundActions = t[12].cast<py::list>(); 
@@ -1099,6 +1097,6 @@ PYBIND11_MODULE(rat_core, m) {
 
     m.def("RATMain", &RATMain, docsRATMain.c_str(), py::arg("problem_def"), py::arg("control"));
 
-    m.def("makeSLDProfileXY", &makeSLDProfileXY, docsMakeSLDProfileXY.c_str(), 
-          py::arg("bulk_in"), py::arg("bulk_out"), py::arg("ssub"), py::arg("layers"), py::arg("number_of_repeats") = DEFAULT_NREPEATS);
+    m.def("makeSLDProfile", &makeSLDProfile, docsMakeSLDProfile.c_str(), 
+          py::arg("bulk_in"), py::arg("bulk_out"), py::arg("layers"), py::arg("ssub"), py::arg("number_of_repeats") = DEFAULT_NREPEATS);
 }

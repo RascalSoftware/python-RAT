@@ -76,7 +76,7 @@ def reflectivity_calculation_problem():
     problem.simulationLimits = [[0.011403, 0.59342], [0.011403, 0.59342]]
     problem.numberOfContrasts = 2.0
     problem.numberOfLayers = 6.0
-    problem.repeatLayers = [[0.0, 1.0], [0.0, 1.0]]
+    problem.repeatLayers = [1.0, 1.0]
     problem.layersDetails = [
         np.array([2.0]),
         np.array([4.0]),
@@ -237,7 +237,7 @@ def dream_problem():
     problem.simulationLimits = [[0.011403, 0.59342], [0.011403, 0.59342]]
     problem.numberOfContrasts = 2.0
     problem.numberOfLayers = 6.0
-    problem.repeatLayers = [[0.0, 1.0], [0.0, 1.0]]
+    problem.repeatLayers = [1.0, 1.0]
     problem.layersDetails = [
         np.array([2.0]),
         np.array([4.0]),

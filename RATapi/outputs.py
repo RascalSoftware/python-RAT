@@ -409,7 +409,7 @@ class BayesResults(Results):
 def make_results(
     procedure: Procedures,
     output_results: RATapi.rat_core.OutputResult,
-    bayes_results: Optional[RATapi.rat_core.BayesResults] = None,
+    bayes_results: Optional[RATapi.rat_core.OutputBayesResult] = None,
 ) -> Union[Results, BayesResults]:
     """Initialise a python Results or BayesResults object using the outputs from a RAT calculation.
 
@@ -419,7 +419,7 @@ def make_results(
         The procedure used by the calculation.
     output_results : RATapi.rat_core.OutputResult
         The C++ output results from the calculation.
-    bayes_results : Optional[RATapi.rat_core.BayesResults]
+    bayes_results : Optional[RATapi.rat_core.OutputBayesResult]
         The optional extra C++ Bayesian output results from a Bayesian calculation.
 
     Returns

@@ -15,7 +15,7 @@ from RATapi.models import Background, Contrast, CustomFile, Data, Layer, Paramet
 from RATapi.utils.enums import Geometries, Languages, LayerModels
 
 
-def r1_to_project_class(filename: Union[str, PathLike]) -> Project:
+def r1_to_project(filename: Union[str, PathLike]) -> Project:
     """Read a RasCAL1 project struct as a Python `Project`.
 
     Parameters
@@ -318,7 +318,7 @@ def r1_to_project_class(filename: Union[str, PathLike]) -> Project:
     return project
 
 
-def project_class_to_r1(
+def project_to_r1(
     project: Project, filename: Union[str, PathLike] = "RAT_project", return_struct: bool = False
 ) -> Union[dict, None]:
     """Convert a RAT Project to a RasCAL1 project struct.
@@ -549,10 +549,10 @@ def project_class_to_r1(
     # scipy.io.savemat doesn't do cells properly:
     # https://github.com/scipy/scipy/issues/3756
     # rather than fiddling we just use matlab
-    eng = wrappers.start_matlab().result()
-    if eng is None:
+    loader = wrappers.MatlabWrapper.loader
+    if loader is None:
         raise ImportError("matlabengine is not installed.")
+    eng = loader.result()
     eng.workspace["problem"] = r1
     eng.save(str(filename), "problem", nargout=0)
-    eng.exit()
     return None

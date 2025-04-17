@@ -8,7 +8,7 @@ import tempfile
 import pytest
 
 import RATapi
-from RATapi.utils.convert import project_class_to_r1, r1_to_project_class
+from RATapi.utils.convert import project_to_r1, r1_to_project
 
 TEST_DIR_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_data")
 
@@ -58,9 +58,9 @@ def dspc_bilayer():
     ],
 )
 @pytest.mark.parametrize("path_type", [os.path.join, pathlib.Path])
-def test_r1_to_project_class(file, project, path_type, request):
+def test_r1_to_project(file, project, path_type, request):
     """Test that R1 to Project class conversion returns the expected Project."""
-    output_project = r1_to_project_class(path_type(TEST_DIR_PATH, file))
+    output_project = r1_to_project(path_type(TEST_DIR_PATH, file))
     expected_project = request.getfixturevalue(project)
 
     # assert statements have to be more careful due to R1 missing features
@@ -83,7 +83,7 @@ def test_r1_to_project_class(file, project, path_type, request):
 def test_r1_involution(project, request, monkeypatch):
     """Test that converting a Project to an R1 struct and back returns the same project."""
     original_project = request.getfixturevalue(project)
-    r1_struct = project_class_to_r1(original_project, return_struct=True)
+    r1_struct = project_to_r1(original_project, return_struct=True)
 
     # rather than writing the struct to a file and reading the file, just directly
     # hand the struct over
@@ -93,7 +93,7 @@ def test_r1_involution(project, request, monkeypatch):
 
     monkeypatch.setattr("RATapi.utils.convert.loadmat", mock_load, raising=True)
 
-    converted_project = r1_to_project_class(project)
+    converted_project = r1_to_project(project)
 
     for class_list in RATapi.project.class_lists:
         assert getattr(converted_project, class_list) == getattr(original_project, class_list)
@@ -105,7 +105,7 @@ def test_invalid_constraints():
         match=r"The parameter (.+) has invalid constraints,"
         " these have been adjusted to satisfy the current value of the parameter."
     ):
-        output_project = r1_to_project_class(pathlib.Path(TEST_DIR_PATH, "R1DoubleBilayerVolumeModel.mat"))
+        output_project = r1_to_project(pathlib.Path(TEST_DIR_PATH, "R1DoubleBilayerVolumeModel.mat"))
 
     assert output_project.background_parameters[0].min == output_project.background_parameters[0].value
 
@@ -117,7 +117,7 @@ def test_matlab_save(path_type, request):
     project = request.getfixturevalue("r1_default_project")
     with tempfile.TemporaryDirectory() as temp:
         matfile = path_type(temp, "testfile.mat")
-        project_class_to_r1(project, filename=matfile)
-        converted_project = r1_to_project_class(matfile)
+        project_to_r1(project, filename=matfile)
+        converted_project = r1_to_project(matfile)
 
     assert project == converted_project
