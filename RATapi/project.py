@@ -1038,9 +1038,8 @@ def try_relative_to(path: Path, relative_to: Path) -> str:
     else:
         warnings.warn(
             "Could not save custom file path as relative to the project directory, "
-            "which means that it may not work on other devices."
-            "If you would like to share your project, make sure your custom files "
-            "are in a subfolder of the project save location.",
+            "which means that it may not work on other devices. If you would like to share your project, "
+            "make sure your custom files are in a subfolder of the project save location.",
             stacklevel=2,
         )
         return str(path.resolve())
