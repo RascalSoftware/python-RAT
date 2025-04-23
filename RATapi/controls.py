@@ -155,7 +155,7 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid", use_attribut
                 f" controls procedure are:\n    "
                 f"{', '.join(fields.get('procedure', []))}\n",
             }
-            custom_error_list = custom_pydantic_validation_error(exc.errors(), custom_error_msgs)
+            custom_error_list = custom_pydantic_validation_error(exc.errors(include_url=False), custom_error_msgs)
             raise ValidationError.from_exception_data(exc.title, custom_error_list, hide_input=True) from None
 
         if isinstance(model_input, validated_self.__class__):
