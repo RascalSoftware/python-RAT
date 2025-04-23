@@ -876,12 +876,13 @@ def test_allowed_contrast_models(
     """If any value in the model field of the contrasts is set to a value not specified in the appropriate part of the
     project, we should raise a ValidationError.
     """
+    missing_values = list(set(test_contrast.model))
     with pytest.raises(
         pydantic.ValidationError,
         match=re.escape(
-            f'1 validation error for Project\n  Value error, The values: "{", ".join(test_contrast.model)}" used in '
-            f'the "model" field of contrasts[0] must be defined in "{field_name}". Please add all required values to '
-            f'"{field_name}" before including them in "contrasts".'
+            f"1 validation error for Project\n  Value error, The value{'s' if len(missing_values) > 1 else ''}: "
+            f'"{", ".join(missing_values)}" used in the "model" field of contrasts[0] must be defined in '
+            f'"{field_name}". Please add all required values to "{field_name}" before including them in "contrasts".'
         ),
     ):
         RATapi.Project(calculation=input_calc, model=input_model, contrasts=RATapi.ClassList(test_contrast))
@@ -895,7 +896,7 @@ def test_allowed_domain_contrast_models() -> None:
     with pytest.raises(
         pydantic.ValidationError,
         match=re.escape(
-            '1 validation error for Project\n  Value error, The values: "undefined" used in the "model" field of '
+            '1 validation error for Project\n  Value error, The value: "undefined" used in the "model" field of '
             'domain_contrasts[0] must be defined in "layers". Please add all required values to "layers" before '
             'including them in "domain_contrasts".'
         ),
@@ -1078,8 +1079,9 @@ def test_check_contrast_model_allowed_values(test_values: list[str]) -> None:
 @pytest.mark.parametrize(
     "test_values",
     [
-        ["Undefined Param"],
-        ["Test Layer", "Undefined Param"],
+        ["Undefined Param 1"],
+        ["Test Layer", "Undefined Param 1"],
+        ["Undefined Param 1 ", "Test Layer", "Undefined Param 2"],
     ],
 )
 def test_check_allowed_contrast_model_not_on_list(test_values: list[str]) -> None:
@@ -1089,21 +1091,25 @@ def test_check_allowed_contrast_model_not_on_list(test_values: list[str]) -> Non
     project = RATapi.Project.model_construct(
         contrasts=RATapi.ClassList(RATapi.models.Contrast(name="Test Contrast", model=test_values)),
     )
+    allowed_values = ["Test Layer"]
+    missing_values = list(set(test_values) - set(allowed_values))
     with pytest.raises(
         ValueError,
         match=re.escape(
-            f'The values: "{", ".join(str(i) for i in test_values)}" used in the "model" field of contrasts[0] must '
-            f'be defined in "layers". Please add all required values to "layers" before including them in "contrasts".'
+            f'The value{"s" if len(missing_values) > 1 else ""}: "{", ".join(str(i) for i in missing_values)}" used '
+            f'in the "model" field of contrasts[0] must be defined in "layers". Please add all required values to '
+            f'"layers" before including them in "contrasts".'
         ),
     ):
-        project.check_contrast_model_allowed_values("contrasts", ["Test Layer"], ["Test Layer"], "layers")
+        project.check_contrast_model_allowed_values("contrasts", allowed_values, allowed_values, "layers")
 
 
 @pytest.mark.parametrize(
     "test_values",
     [
-        ["Test Layer"],
-        ["Test Layer", "Undefined Param"],
+        ["Undefined Param 1"],
+        ["Test Layer", "Undefined Param 1"],
+        ["Undefined Param 1", "Test Layer", "Undefined Param 2"],
     ],
 )
 def test_check_allowed_contrast_model_removed_from_list(test_values: list[str]) -> None:
@@ -1113,15 +1119,18 @@ def test_check_allowed_contrast_model_removed_from_list(test_values: list[str]) 
     project = RATapi.Project.model_construct(
         contrasts=RATapi.ClassList(RATapi.models.Contrast(name="Test Contrast", model=test_values)),
     )
+    previous_values = ["Test Layer", "Undefined Param 1", "Undefined Param 2"]
+    allowed_values = ["Test Layer"]
+    missing_values = list(set(test_values) - set(allowed_values))
     with pytest.raises(
         ValueError,
         match=re.escape(
-            f'The values: "{", ".join(str(i) for i in test_values)}" used in the "model" field of contrasts[0] must '
-            f'be defined in "layers". Please remove all unnecessary values from "model" before attempting to delete '
-            f"them."
+            f'The value{"s" if len(missing_values) > 1 else ""}: "{", ".join(str(i) for i in missing_values)}" used '
+            f'in the "model" field of contrasts[0] must be defined in "layers". Please remove all unnecessary values '
+            f'from "model" before attempting to delete them.'
         ),
     ):
-        project.check_contrast_model_allowed_values("contrasts", [], ["Test Layer", "Undefined Param"], "layers")
+        project.check_contrast_model_allowed_values("contrasts", allowed_values, previous_values, "layers")
 
 
 @pytest.mark.parametrize(

@@ -767,18 +767,20 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", use_attribute
         """
         class_list = getattr(self, contrast_attribute)
         for index, contrast in enumerate(class_list):
-            if (model_values := contrast.model) and not all(value in allowed_values for value in model_values):
+            if (model_values := contrast.model) and (missing_values := list(set(model_values) - set(allowed_values))):
                 if all(value in previous_values for value in model_values):
                     raise ValueError(
-                        f'The values: "{", ".join(str(i) for i in model_values)}" used in the "model" field of '
-                        f'{contrast_attribute}[{index}] must be defined in "{allowed_field}". Please remove '
-                        f'all unnecessary values from "model" before attempting to delete them.',
+                        f"The value{'s' if len(missing_values) > 1 else ''}: "
+                        f'"{", ".join(str(i) for i in missing_values)}" used in the "model" field of '
+                        f'{contrast_attribute}[{index}] must be defined in "{allowed_field}". Please remove all '
+                        f'unnecessary values from "model" before attempting to delete them.',
                     )
                 else:
                     raise ValueError(
-                        f'The values: "{", ".join(str(i) for i in model_values)}" used in the "model" field of '
-                        f'{contrast_attribute}[{index}] must be defined in "{allowed_field}". Please add '
-                        f'all required values to "{allowed_field}" before including them in "{contrast_attribute}".',
+                        f"The value{'s' if len(missing_values) > 1 else ''}: "
+                        f'"{", ".join(str(i) for i in missing_values)}" used in the "model" field of '
+                        f'{contrast_attribute}[{index}] must be defined in "{allowed_field}". Please add all '
+                        f'required values to "{allowed_field}" before including them in "{contrast_attribute}".',
                     )
 
     def get_contrast_model_field(self):
