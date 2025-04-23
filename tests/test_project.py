@@ -1,6 +1,7 @@
 """Test the project module."""
 
 import copy
+import re
 import tempfile
 import warnings
 from pathlib import Path
@@ -666,9 +667,11 @@ def test_allowed_backgrounds(background_type, expected_field) -> None:
     test_background = RATapi.models.Background(type=background_type, source="undefined")
     with pytest.raises(
         pydantic.ValidationError,
-        match=f'1 validation error for Project\n  Value error, The value "undefined" used in the "source" field '
-        f'at index 0 of "backgrounds" must be defined in "{expected_field}". Please add "undefined" to '
-        f'"{expected_field}" before including it in "backgrounds".',
+        match=re.escape(
+            f'1 validation error for Project\n  Value error, The value "undefined" used in the "source" field of '
+            f'backgrounds[0] must be defined in "{expected_field}". Please add "undefined" to "{expected_field}" '
+            f'before including it in "backgrounds".'
+        ),
     ):
         RATapi.Project(backgrounds=RATapi.ClassList(test_background))
 
@@ -689,9 +692,11 @@ def test_allowed_layers(field: str) -> None:
 
     with pytest.raises(
         pydantic.ValidationError,
-        match=f'1 validation error for Project\n  Value error, The value "undefined" used in the "{field}" field '
-        f'at index 0 of "layers" must be defined in "parameters". Please add "undefined" to "parameters" '
-        f'before including it in "layers".',
+        match=re.escape(
+            f'1 validation error for Project\n  Value error, The value "undefined" used in the "{field}" '
+            f'field of layers[0] must be defined in "parameters". Please add "undefined" to "parameters" '
+            f'before including it in "layers".'
+        ),
     ):
         RATapi.Project(
             absorption=False,
@@ -723,9 +728,11 @@ def test_allowed_absorption_layers(field: str) -> None:
 
     with pytest.raises(
         pydantic.ValidationError,
-        match=f'1 validation error for Project\n  Value error, The value "undefined" used in the "{field}" field '
-        f'at index 0 of "layers" must be defined in "parameters". Please add "undefined" to "parameters" '
-        f'before including it in "layers".',
+        match=re.escape(
+            f'1 validation error for Project\n  Value error, The value "undefined" used in the "{field}" field of '
+            f'layers[0] must be defined in "parameters". Please add "undefined" to "parameters" before including it '
+            f'in "layers".'
+        ),
     ):
         RATapi.Project(
             absorption=True,
@@ -755,9 +762,11 @@ def test_allowed_resolutions(resolution_type, expected_field) -> None:
     test_resolution = RATapi.models.Resolution(type=resolution_type, source="undefined")
     with pytest.raises(
         pydantic.ValidationError,
-        match=f'1 validation error for Project\n  Value error, The value "undefined" used in the "source" field '
-        f'at index 0 of "resolutions" must be defined in "{expected_field}". Please add "undefined" to '
-        f'"{expected_field}" before including it in "resolutions".',
+        match=re.escape(
+            f'1 validation error for Project\n  Value error, The value "undefined" used in the "source" field of '
+            f'resolutions[0] must be defined in "{expected_field}". Please add "undefined" to "{expected_field}" '
+            f'before including it in "resolutions".'
+        ),
     ):
         RATapi.Project(resolutions=RATapi.ClassList(test_resolution))
 
@@ -780,9 +789,11 @@ def test_allowed_contrasts(field: str, model_name: str) -> None:
     test_contrast = RATapi.models.Contrast(**{field: "undefined"})
     with pytest.raises(
         pydantic.ValidationError,
-        match=f'1 validation error for Project\n  Value error, The value "undefined" used in the "{field}" field '
-        f'at index 0 of "contrasts" must be defined in "{model_name}". Please add "undefined" to '
-        f'"{model_name}" before including it in "contrasts".',
+        match=re.escape(
+            f'1 validation error for Project\n  Value error, The value "undefined" used in the "{field}" field of '
+            f'contrasts[0] must be defined in "{model_name}". Please add "undefined" to "{model_name}" before '
+            f'including it in "contrasts".'
+        ),
     ):
         RATapi.Project(calculation=Calculations.Normal, contrasts=RATapi.ClassList(test_contrast))
 
@@ -806,9 +817,11 @@ def test_allowed_contrasts_with_ratio(field: str, model_name: str) -> None:
     test_contrast = RATapi.models.ContrastWithRatio(**{field: "undefined"})
     with pytest.raises(
         pydantic.ValidationError,
-        match=f'1 validation error for Project\n  Value error, The value "undefined" used in the "{field}" field '
-        f'at index 0 of "contrasts" must be defined in "{model_name}". Please add "undefined" to '
-        f'"{model_name}" before including it in "contrasts".',
+        match=re.escape(
+            f'1 validation error for Project\n  Value error, The value "undefined" used in the "{field}" field of '
+            f'contrasts[0] must be defined in "{model_name}". Please add "undefined" to "{model_name}" before '
+            f'including it in "contrasts".'
+        ),
     ):
         RATapi.Project(calculation=Calculations.Domains, contrasts=RATapi.ClassList(test_contrast))
 
@@ -865,9 +878,11 @@ def test_allowed_contrast_models(
     """
     with pytest.raises(
         pydantic.ValidationError,
-        match=f'1 validation error for Project\n  Value error, The values: "{", ".join(test_contrast.model)}" '
-        f'used in the "model" field at index 0 of "contrasts" must be defined in "{field_name}". Please add '
-        f'all required values to "{field_name}" before including them in "contrasts".',
+        match=re.escape(
+            f'1 validation error for Project\n  Value error, The values: "{", ".join(test_contrast.model)}" used in '
+            f'the "model" field of contrasts[0] must be defined in "{field_name}". Please add all required values to '
+            f'"{field_name}" before including them in "contrasts".'
+        ),
     ):
         RATapi.Project(calculation=input_calc, model=input_model, contrasts=RATapi.ClassList(test_contrast))
 
@@ -879,9 +894,11 @@ def test_allowed_domain_contrast_models() -> None:
     test_contrast = RATapi.models.DomainContrast(name="Test Domain Contrast", model=["undefined"])
     with pytest.raises(
         pydantic.ValidationError,
-        match='1 validation error for Project\n  Value error, The values: "undefined" used in the "model" field '
-        'at index 0 of "domain_contrasts" must be defined in "layers". Please add all required values to '
-        '"layers" before including them in "domain_contrasts".',
+        match=re.escape(
+            '1 validation error for Project\n  Value error, The values: "undefined" used in the "model" field of '
+            'domain_contrasts[0] must be defined in "layers". Please add all required values to "layers" before '
+            'including them in "domain_contrasts".'
+        ),
     ):
         RATapi.Project(calculation=Calculations.Domains, domain_contrasts=RATapi.ClassList(test_contrast))
 
@@ -954,8 +971,10 @@ def test_check_allowed_values_not_on_list(test_value: str) -> None:
     allowed_values = ["Substrate Roughness"]
     with pytest.raises(
         ValueError,
-        match=f'The value "{test_value}" used in the "roughness" field at index 0 of "layers" must be defined in '
-        f'"parameters". Please add "{test_value}" to "parameters" before including it in "layers".',
+        match=re.escape(
+            f'The value "{test_value}" used in the "roughness" field of layers[0] must be defined in "parameters". '
+            f'Please add "{test_value}" to "parameters" before including it in "layers".'
+        ),
     ):
         project.check_allowed_values("layers", ["roughness"], allowed_values, allowed_values)
 
@@ -1004,9 +1023,11 @@ def test_check_allowed_background_resolution_values_not_on_constant_list(test_va
     )
     with pytest.raises(
         ValueError,
-        match=f'The value "{test_value}" used in the "source" field at index 0 of "backgrounds" must be defined '
-        f'in "background_parameters". Please add "{test_value}" to "background_parameters" before including '
-        f'it in "backgrounds".',
+        match=re.escape(
+            f'The value "{test_value}" used in the "source" field of backgrounds[0] must be defined in '
+            f'"background_parameters". Please add "{test_value}" to "background_parameters" before including it in '
+            f'"backgrounds".'
+        ),
     ):
         project.check_allowed_source(
             "backgrounds",
@@ -1029,8 +1050,10 @@ def test_check_allowed_background_resolution_values_on_data_list(test_value: str
     )
     with pytest.raises(
         ValueError,
-        match=f'The value "{test_value}" used in the "source" field at index 0 of "backgrounds" must be defined '
-        f'in "data". Please add "{test_value}" to "data" before including it in "backgrounds".',
+        match=re.escape(
+            f'The value "{test_value}" used in the "source" field of backgrounds[0] must be defined in "data". Please '
+            f'add "{test_value}" to "data" before including it in "backgrounds".'
+        ),
     ):
         project.check_allowed_source("backgrounds")
 
@@ -1068,9 +1091,10 @@ def test_check_allowed_contrast_model_not_on_list(test_values: list[str]) -> Non
     )
     with pytest.raises(
         ValueError,
-        match=f'The values: "{", ".join(str(i) for i in test_values)}" used in the "model" field at index 0 of '
-        f'"contrasts" must be defined in "layers". Please add all required values to "layers" before '
-        f'including them in "contrasts".',
+        match=re.escape(
+            f'The values: "{", ".join(str(i) for i in test_values)}" used in the "model" field of contrasts[0] must '
+            f'be defined in "layers". Please add all required values to "layers" before including them in "contrasts".'
+        ),
     ):
         project.check_contrast_model_allowed_values("contrasts", ["Test Layer"], ["Test Layer"], "layers")
 
@@ -1091,9 +1115,11 @@ def test_check_allowed_contrast_model_removed_from_list(test_values: list[str]) 
     )
     with pytest.raises(
         ValueError,
-        match=f'The values: "{", ".join(str(i) for i in test_values)}" used in the "model" field at index 0 of '
-        f'"contrasts" must be defined in "layers". Please remove all unnecessary values from "model" before '
-        f"attempting to delete them.",
+        match=re.escape(
+            f'The values: "{", ".join(str(i) for i in test_values)}" used in the "model" field of contrasts[0] must '
+            f'be defined in "layers". Please remove all unnecessary values from "model" before attempting to delete '
+            f"them."
+        ),
     ):
         project.check_contrast_model_allowed_values("contrasts", [], ["Test Layer", "Undefined Param"], "layers")
 
@@ -1187,10 +1213,12 @@ def test_wrap_set(test_project, class_list: str, model_type: str, field: str) ->
 
     with pytest.raises(
         pydantic.ValidationError,
-        match=f'1 validation error for Project\n  Value error, The value "undefined" used in the "{field}" field '
-        f'at index {index} of "{class_list}" must be defined in '
-        f'"{RATapi.project.values_defined_in[class_list_str]}". Please add "undefined" to '
-        f'"{RATapi.project.values_defined_in[class_list_str]}" before including it in "{class_list}".',
+        match=re.escape(
+            f'1 validation error for Project\n  Value error, The value "undefined" used in the "{field}" field of '
+            f'{class_list}[{index}] must be defined in "{RATapi.project.values_defined_in[class_list_str]}". Please '
+            f'add "undefined" to "{RATapi.project.values_defined_in[class_list_str]}" before including it in '
+            f'"{class_list}".'
+        ),
     ):
         test_attribute.set_fields(index, **{field: "undefined"})
 
@@ -1224,9 +1252,11 @@ def test_wrap_del(test_project, class_list: str, parameter: str, field: str) -> 
 
     with pytest.raises(
         pydantic.ValidationError,
-        match=f'1 validation error for Project\n  Value error, The value "{parameter}" used in the "{field}" '
-        f'field at index {sub_index} of "{sub_attribute_name}" must be defined in "{class_list}". '
-        f'Please remove "{parameter}" from "{sub_attribute_name}{sub_index}.{field}" before attempting to delete it.',
+        match=re.escape(
+            f'1 validation error for Project\n  Value error, The value "{parameter}" used in the "{field}" field of '
+            f'{sub_attribute_name}[{sub_index}] must be defined in "{class_list}". Please remove "{parameter}" from '
+            f'"{sub_attribute_name}[{sub_index}].{field}" before attempting to delete it.'
+        ),
     ):
         del test_attribute[index]
 
@@ -1260,10 +1290,12 @@ def test_wrap_iadd(test_project, class_list: str, model_type: str, field: str, m
 
     with pytest.raises(
         pydantic.ValidationError,
-        match=f'1 validation error for Project\n  Value error, The value "undefined" used in the "{field}" field '
-        f'at index {len(test_attribute)} of "{class_list}" must be defined in '
-        f'"{RATapi.project.values_defined_in[class_list_str]}". Please add "undefined" to '
-        f'"{RATapi.project.values_defined_in[class_list_str]}" before including it in "{class_list}".',
+        match=re.escape(
+            f'1 validation error for Project\n  Value error, The value "undefined" used in the "{field}" '
+            f"field of {class_list}[{len(test_attribute)}] must be defined in "
+            f'"{RATapi.project.values_defined_in[class_list_str]}". Please add "undefined" to '
+            f'"{RATapi.project.values_defined_in[class_list_str]}" before including it in "{class_list}".'
+        ),
     ):
         test_attribute += [input_model(**{**model_params, field: "undefined"})]
 
@@ -1298,10 +1330,12 @@ def test_wrap_append(test_project, class_list: str, model_type: str, field: str,
 
     with pytest.raises(
         pydantic.ValidationError,
-        match=f'1 validation error for Project\n  Value error, The value "undefined" used in the "{field}(" field '
-        f'at index {len(test_attribute)} of "){class_list}" must be defined in '
-        f'"{RATapi.project.values_defined_in[class_list_str]}". Please add "undefined" to '
-        f'"{RATapi.project.values_defined_in[class_list_str]}" before including it in "{class_list}".',
+        match=re.escape(
+            f'1 validation error for Project\n  Value error, The value "undefined" used in the "{field}" '
+            f"field of {class_list}[{len(test_attribute)}] must be defined in "
+            f'"{RATapi.project.values_defined_in[class_list_str]}". Please add "undefined" to '
+            f'"{RATapi.project.values_defined_in[class_list_str]}" before including it in "{class_list}".'
+        ),
     ):
         test_attribute.append(input_model(**{**model_params, field: "undefined"}))
 
@@ -1336,10 +1370,12 @@ def test_wrap_insert(test_project, class_list: str, model_type: str, field: str,
 
     with pytest.raises(
         pydantic.ValidationError,
-        match=f'1 validation error for Project\n  Value error, The value "undefined" used in the "{field}" field '
-        f'at index {index} of "{class_list}" must be defined in '
-        f'"{RATapi.project.values_defined_in[class_list_str]}". Please add "undefined" to '
-        f'"{RATapi.project.values_defined_in[class_list_str]}" before including it in "{class_list}".',
+        match=re.escape(
+            f'1 validation error for Project\n  Value error, The value "undefined" used in the "{field}" '
+            f"field of {class_list}[{index}] must be defined in "
+            f'"{RATapi.project.values_defined_in[class_list_str]}". Please add "undefined" to '
+            f'"{RATapi.project.values_defined_in[class_list_str]}" before including it in "{class_list}".'
+        ),
     ):
         test_attribute.insert(index, input_model(**{**model_params, field: "undefined"}))
 
@@ -1410,9 +1446,11 @@ def test_wrap_pop(test_project, class_list: str, parameter: str, field: str) -> 
 
     with pytest.raises(
         pydantic.ValidationError,
-        match=f'1 validation error for Project\n  Value error, The value "{parameter}" used in the "{field}" '
-        f'field at index {sub_index} of "{sub_attribute_name}" must be defined in "{class_list}". Please '
-        f'remove "{parameter}" from "{sub_attribute_name}{sub_index}.{field}" before attempting to delete it.',
+        match=re.escape(
+            f'1 validation error for Project\n  Value error, The value "{parameter}" used in the "{field}" field of '
+            f'{sub_attribute_name}[{sub_index}] must be defined in "{class_list}". Please remove "{parameter}" from '
+            f'"{sub_attribute_name}[{sub_index}].{field}" before attempting to delete it.'
+        ),
     ):
         test_attribute.pop(index)
 
@@ -1445,9 +1483,11 @@ def test_wrap_remove(test_project, class_list: str, parameter: str, field: str) 
 
     with pytest.raises(
         pydantic.ValidationError,
-        match=f'1 validation error for Project\n  Value error, The value "{parameter}" used in the "{field}" '
-        f'field at index {sub_index} of "{sub_attribute_name}" must be defined in "{class_list}". Please '
-        f'remove "{parameter}" from "{sub_attribute_name}{sub_index}.{field}" before attempting to delete it.',
+        match=re.escape(
+            f'1 validation error for Project\n  Value error, The value "{parameter}" used in the "{field}" field of '
+            f'{sub_attribute_name}[{sub_index}] must be defined in "{class_list}". Please remove "{parameter}" from '
+            f'"{sub_attribute_name}[{sub_index}].{field}" before attempting to delete it.'
+        ),
     ):
         test_attribute.remove(parameter)
 
@@ -1480,9 +1520,11 @@ def test_wrap_clear(test_project, class_list: str, parameter: str, field: str) -
 
     with pytest.raises(
         pydantic.ValidationError,
-        match=f'1 validation error for Project\n  Value error, The value "{parameter}" used in the "{field}" '
-        f'field at index {sub_index} of "{sub_attribute_name}" must be defined in "{class_list}". Please '
-        f'remove "{parameter}" from "{sub_attribute_name}{sub_index}.{field}" before attempting to delete it.',
+        match=re.escape(
+            f'1 validation error for Project\n  Value error, The value "{parameter}" used in the "{field}" field of '
+            f'{sub_attribute_name}[{sub_index}] must be defined in "{class_list}". Please remove "{parameter}" from '
+            f'"{sub_attribute_name}[{sub_index}].{field}" before attempting to delete it.'
+        ),
     ):
         test_attribute.clear()
 
@@ -1516,10 +1558,12 @@ def test_wrap_extend(test_project, class_list: str, model_type: str, field: str,
 
     with pytest.raises(
         pydantic.ValidationError,
-        match=f'1 validation error for Project\n  Value error, The value "undefined" used in the "{field}" field '
-        f'at index {len(test_attribute)} of "{class_list}" must be defined in '
-        f'"{RATapi.project.values_defined_in[class_list_str]}". Please add "undefined" to '
-        f'"{RATapi.project.values_defined_in[class_list_str]}" before including it in "{class_list}".',
+        match=re.escape(
+            f'1 validation error for Project\n  Value error, The value "undefined" used in the "{field}" '
+            f"field of {class_list}[{len(test_attribute)}] must be defined in "
+            f'"{RATapi.project.values_defined_in[class_list_str]}". Please add "undefined" to '
+            f'"{RATapi.project.values_defined_in[class_list_str]}" before including it in "{class_list}".'
+        ),
     ):
         test_attribute.extend([input_model(**{**model_params, field: "undefined"})])
 

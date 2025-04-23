@@ -681,16 +681,15 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", use_attribute
                 if value and value not in allowed_values:
                     if value in previous_values:
                         raise ValueError(
-                            f'The value "{value}" used in the "{field}" field at index {index} of "{attribute}" '
-                            f'must be defined in "{values_defined_in[f"{attribute}.{field}"]}". Please remove '
-                            f'"{value}" from "{attribute}{index}.{field}" before attempting to delete it.',
+                            f'The value "{value}" used in the "{field}" field of {attribute}[{index}] must be defined '
+                            f'in "{values_defined_in[f"{attribute}.{field}"]}". Please remove "{value}" from '
+                            f'"{attribute}[{index}].{field}" before attempting to delete it.',
                         )
                     else:
                         raise ValueError(
-                            f'The value "{value}" used in the "{field}" field at index {index} of "{attribute}" '
-                            f'must be defined in "{values_defined_in[f"{attribute}.{field}"]}". Please add '
-                            f'"{value}" to "{values_defined_in[f"{attribute}.{field}"]}" before including it in '
-                            f'"{attribute}".',
+                            f'The value "{value}" used in the "{field}" field of {attribute}[{index}] must be defined '
+                            f'in "{values_defined_in[f"{attribute}.{field}"]}". Please add "{value}" to '
+                            f'"{values_defined_in[f"{attribute}.{field}"]}" before including it in "{attribute}".',
                         )
 
     def check_allowed_source(self, attribute: str) -> None:
@@ -728,16 +727,16 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", use_attribute
             if (value := model.source) != "" and value not in allowed_values:
                 if value in previous_values:
                     raise ValueError(
-                        f'The value "{value}" used in the "source" field at index {index} of "{attribute}" '
-                        f'must be defined in "{values_defined_in[f"{attribute}.{model.type}.source"]}". Please remove '
-                        f'"{value}" from "{attribute}{index}.source" before attempting to delete it.',
+                        f'The value "{value}" used in the "source" field of {attribute}[{index}] must be defined in '
+                        f'"{values_defined_in[f"{attribute}.{model.type}.source"]}". Please remove "{value}" from '
+                        f'"{attribute}[{index}].source" before attempting to delete it.',
                     )
                 else:
                     raise ValueError(
-                        f'The value "{value}" used in the "source" field at index {index} of "{attribute}" '
-                        f'must be defined in "{values_defined_in[f"{attribute}.{model.type}.source"]}". Please add '
-                        f'"{value}" to "{values_defined_in[f"{attribute}.{model.type}.source"]}" before including it '
-                        f'in "{attribute}".',
+                        f'The value "{value}" used in the "source" field of {attribute}[{index}] must be defined in '
+                        f'"{values_defined_in[f"{attribute}.{model.type}.source"]}". Please add "{value}" to '
+                        f'"{values_defined_in[f"{attribute}.{model.type}.source"]}" before including it in '
+                        f'"{attribute}".',
                     )
 
     def check_contrast_model_allowed_values(
@@ -771,16 +770,15 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", use_attribute
             if (model_values := contrast.model) and not all(value in allowed_values for value in model_values):
                 if all(value in previous_values for value in model_values):
                     raise ValueError(
-                        f'The values: "{", ".join(str(i) for i in model_values)}" used in the "model" field at index '
-                        f'{index} of "{contrast_attribute}" must be defined in "{allowed_field}". Please remove '
+                        f'The values: "{", ".join(str(i) for i in model_values)}" used in the "model" field of '
+                        f'{contrast_attribute}[{index}] must be defined in "{allowed_field}". Please remove '
                         f'all unnecessary values from "model" before attempting to delete them.',
                     )
                 else:
                     raise ValueError(
-                        f'The values: "{", ".join(str(i) for i in model_values)}" used in the "model" field at index '
-                        f'{index} of "{contrast_attribute}" must be defined in "{allowed_field}". Please add '
-                        f'all required values to "{allowed_field}" '
-                        f'before including them in "{contrast_attribute}".',
+                        f'The values: "{", ".join(str(i) for i in model_values)}" used in the "model" field of '
+                        f'{contrast_attribute}[{index}] must be defined in "{allowed_field}". Please add '
+                        f'all required values to "{allowed_field}" before including them in "{contrast_attribute}".',
                     )
 
     def get_contrast_model_field(self):
