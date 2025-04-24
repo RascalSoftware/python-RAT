@@ -473,9 +473,7 @@ def plot_corner(
     fig.tight_layout()
     if return_fig:
         return fig
-    fig.show()
-    if block:
-        fig.wait_for_close()
+    plt.show(block=block)
 
 
 @assert_bayesian("Histogram")
@@ -585,9 +583,7 @@ def plot_one_hist(
     if fig is not None:
         if return_fig:
             return fig
-        fig.show()
-        if block:
-            fig.wait_for_close()
+        plt.show(block=block)
 
 
 @assert_bayesian("Contour")
@@ -662,9 +658,7 @@ def plot_contour(
     if fig is not None:
         if return_fig:
             return fig
-        fig.show()
-        if block:
-            fig.wait_for_close()
+        plt.show(block=block)
 
 
 def panel_plot_helper(plot_func: Callable, indices: list[int]) -> matplotlib.figure.Figure:
@@ -804,9 +798,7 @@ def plot_hists(
     )
     if return_fig:
         return fig
-    fig.show()
-    if block:
-        fig.wait_for_close()
+    plt.show(block=block)
 
 
 @assert_bayesian("Chain")
@@ -858,9 +850,7 @@ def plot_chain(
     fig = panel_plot_helper(plot_one_chain, params)
     if return_fig:
         return fig
-    fig.show()
-    if block:
-        fig.wait_for_close()
+    plt.show(block=block)
 
 
 def plot_bayes(project: RATapi.Project, results: RATapi.outputs.BayesResults):
