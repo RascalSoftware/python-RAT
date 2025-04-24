@@ -15,6 +15,9 @@ htmlcov/
 .coverage
 .cache/
 
+# Temp files
+tmp/
+
 # Build
 _build
 docs/.buildinfo
