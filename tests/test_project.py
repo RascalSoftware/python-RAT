@@ -141,7 +141,7 @@ def test_classlists(test_project) -> None:
     """The ClassLists in the "Project" model should contain instances of the models given by the dictionary
     "model_in_classlist".
     """
-    for model in (fields := test_project.model_fields):
+    for model in (fields := RATapi.Project.model_fields):
         if get_origin(fields[model].annotation) == RATapi.ClassList:
             class_list = getattr(test_project, model)
             assert class_list._class_handle == get_args(fields[model].annotation)[0]
@@ -1613,7 +1613,7 @@ def test_save_load(project, request):
     for file in original_project.custom_files:
         file.path = file.path.resolve()
 
-    for field in original_project.model_fields:
+    for field in RATapi.Project.model_fields:
         assert getattr(converted_project, field) == getattr(original_project, field)
 
 

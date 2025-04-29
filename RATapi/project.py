@@ -365,12 +365,12 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", use_attribute
         and wrap ClassList routines to control revalidation.
         """
         # Ensure all ClassLists have the correct _class_handle defined
-        for field in (fields := self.model_fields):
-            type = fields[field].annotation
-            if get_origin(type) == ClassList:
+        for field in (fields := Project.model_fields):
+            annotation = fields[field].annotation
+            if get_origin(annotation) == ClassList:
                 classlist = getattr(self, field)
                 if not hasattr(field, "_class_handle"):
-                    classlist._class_handle = get_args(type)[0]
+                    classlist._class_handle = get_args(annotation)[0]
 
         layers_field = self.layers
         if not hasattr(layers_field, "_class_handle"):

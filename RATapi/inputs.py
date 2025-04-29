@@ -179,7 +179,7 @@ def make_problem(project: RATapi.Project) -> ProblemDefinition:
     for layer in project.layers:
         layer_params = [
             project.parameters.index(getattr(layer, attribute), True)
-            for attribute in list(layer.model_fields.keys())[1:-2]
+            for attribute in list(RATapi.models.Layer.model_fields.keys())[1:-2]
         ]
         layer_params.append(project.parameters.index(layer.hydration, True) if layer.hydration else float("NaN"))
         layer_params.append(hydrate_id[layer.hydrate_with])
