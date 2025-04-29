@@ -340,13 +340,13 @@ class Data(RATModel, arbitrary_types_allowed=True):
     """
 
     name: str = Field(default_factory=lambda: f"New Data {next(data_number)}", min_length=1)
-    data: np.ndarray[np.float64] = np.empty([0, 3])
+    data: np.ndarray = np.empty([0, 3])
     data_range: list[float] = Field(default=[], min_length=2, max_length=2)
     simulation_range: list[float] = Field(default=[], min_length=2, max_length=2)
 
     @field_validator("data")
     @classmethod
-    def check_data_dimension(cls, data: np.ndarray[float]) -> np.ndarray[float]:
+    def check_data_dimension(cls, data: np.ndarray) -> np.ndarray:
         """Ensure the data is be a two-dimensional array containing at least three columns."""
         try:
             data.shape[1]
