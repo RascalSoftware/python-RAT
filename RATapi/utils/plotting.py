@@ -833,7 +833,9 @@ def plot_chain(
     """
     chain = results.chain
     nsimulations, nplots = chain.shape
-    skip = floor(nsimulations / maxpoints)  # to evenly distribute points plotted
+    # skip is to evenly distribute points plotted
+    # all points will be plotted if maxpoints < nsimulations
+    skip = max(floor(nsimulations / maxpoints), 1)
 
     # convert names to indices if given
     fitname_to_index = partial(name_to_index, names=results.fitNames)
