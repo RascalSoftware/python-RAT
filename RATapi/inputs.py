@@ -166,8 +166,7 @@ def make_problem(project: RATapi.Project) -> ProblemDefinition:
             )
         if resolution.source == "" and resolution.type != TypeOptions.Data:
             raise ValueError(
-                f"All constant and function resolutions must have a source defined. For a "
-                f"{resolution.type} type resolution, the source must be defined in "
+                f"Constant resolutions must have a source defined. The source must be defined in "
                 f'"{RATapi.project.values_defined_in[f"resolutions.{resolution.type}.source"]}"'
             )
 
