@@ -557,6 +557,20 @@ class Parameter(RATModel):
 
     show_priors: bool = False
 
+    def model_post_init(self, __context: Any) -> None:
+        """Apply parameter value to limits if they are not set."""
+        if "value" in self.model_fields_set:
+            if self.value > 0.0:
+                if "max" not in self.model_fields_set:
+                    self.max = self.value
+                if "min" not in self.model_fields_set:
+                    self.min = self.value
+            elif self.value < 0.0:
+                if "min" not in self.model_fields_set:
+                    self.min = self.value
+                if "max" not in self.model_fields_set:
+                    self.max = self.value
+
     @model_validator(mode="after")
     def check_min_max(self) -> "Parameter":
         """Ensure the maximum value of a parameter is greater than the minimum."""
