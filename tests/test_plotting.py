@@ -105,27 +105,20 @@ def test_figure_axis_formatting(fig: plt.figure) -> None:
         ]
 
 
-def test_ref_sld_color_formating(fig: plt.figure) -> None:
-    """Tests the color formating of the figure."""
+def test_ref_sld_color_formatting(fig: plt.figure) -> None:
+    """Tests the color formatting of the figure."""
     ref_plot = fig.axes[0]
     sld_plot = fig.axes[1]
 
-    assert len(ref_plot.get_lines()) == 3
+    assert len(ref_plot.get_lines()) == 6
     assert len(sld_plot.get_lines()) == 6
 
-    for axis_ix in range(len(ref_plot.get_lines())):
-        ax1 = axis_ix * 2
-        ax2 = ax1 + 1
-
+    for i in range(0, len(ref_plot.get_lines()), 2):
         # Tests whether the color of the line and the errorbars match on the ref_plot
-        assert (
-            ref_plot.containers[ax1][2][0]._original_edgecolor
-            == ref_plot.containers[ax2][2][0]._original_edgecolor
-            == ref_plot.get_lines()[axis_ix].get_color()
-        )
+        assert ref_plot.containers[i // 2][2][0]._original_edgecolor == ref_plot.get_lines()[i].get_color()
 
         # Tests whether the color of the sld and resampled_sld match on the sld_plot
-        assert sld_plot.get_lines()[ax1].get_color() == sld_plot.get_lines()[ax2].get_color()
+        assert sld_plot.get_lines()[i].get_color() == sld_plot.get_lines()[i + 1].get_color()
 
 
 @pytest.mark.parametrize("bayes", [65, 95])
@@ -483,3 +476,24 @@ def test_bayes_validation(input_project, reflectivity_calculation_results):
         ValueError, match=r"Bayes plots are only available for the results of Bayesian analysis \(NS or DREAM\)"
     ):
         RATplot.plot_bayes(input_project, reflectivity_calculation_results)
+
+
+@pytest.mark.parametrize("data", [data(), domains_data()])
+def test_extract_plot_data(data) -> None:
+    plot_data = RATplot._extract_plot_data(data, False, True)
+    assert len(plot_data["ref"]) == len(data.reflectivity)
+    assert len(plot_data["sld"]) == len(data.shiftedData)
+
+
+@patch("RATapi.utils.plotting.plot_ref_sld_helper")
+def test_blit_plot(plot_helper, fig: plt.figure) -> None:
+    plot_helper.return_value = fig
+    event_data = data()
+    new_plot = RATplot.PLotSLDWithBlitting(event_data)
+    assert plot_helper.call_count == 1
+    new_plot.update(event_data)
+    assert plot_helper.call_count == 1  # foreground only is updated so no call to plot helper
+    new_plot.show_grid = False
+    new_plot.figure = plt.subplots(1, 2)[0]
+    new_plot.update(event_data)  # plot properties have changed so update should call plot_helper
+    assert plot_helper.call_count == 2
