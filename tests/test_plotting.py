@@ -489,7 +489,7 @@ def test_extract_plot_data(data) -> None:
 def test_blit_plot(plot_helper, fig: plt.figure) -> None:
     plot_helper.return_value = fig
     event_data = data()
-    new_plot = RATplot.PLotSLDWithBlitting(event_data)
+    new_plot = RATplot.PlotSLDWithBlitting(event_data)
     assert plot_helper.call_count == 1
     new_plot.update(event_data)
     assert plot_helper.call_count == 1  # foreground only is updated so no call to plot helper

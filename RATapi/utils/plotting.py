@@ -20,12 +20,12 @@ import RATapi.outputs
 from RATapi.rat_core import PlotEventData, makeSLDProfile
 
 
-def _extract_plot_data(data: PlotEventData, q4: bool, show_error_bar: bool):
+def _extract_plot_data(event_data: PlotEventData, q4: bool, show_error_bar: bool):
     """Extract the plot data for the sld, ref, error plot lines.
 
     Parameters
     ----------
-    data : PlotEventData
+    event_data : PlotEventData
         The plot event data that contains all the information
         to generate the ref and sld plots
     q4 : bool, default: False
@@ -41,25 +41,24 @@ def _extract_plot_data(data: PlotEventData, q4: bool, show_error_bar: bool):
     """
     results = {"ref": [], "error": [], "sld": [], "sld_resample": []}
 
-    for i, (r, sd, sld) in enumerate(zip(data.reflectivity, data.shiftedData, data.sldProfiles)):
+    for i, (r, data, sld) in enumerate(zip(event_data.reflectivity, event_data.shiftedData, event_data.sldProfiles)):
         # Calculate the divisor
         div = 1 if i == 0 and not q4 else 2 ** (4 * (i + 1))
-        q4_data = 1 if not q4 or not data.dataPresent[i] else sd[:, 0] ** 4
+        q4_data = 1 if not q4 or not event_data.dataPresent[i] else data[:, 0] ** 4
         mult = q4_data / div
 
         # Plot the reflectivity on plot (1,1)
         results["ref"].append([r[:, 0], r[:, 1] * mult])
 
-        if data.dataPresent[i]:
-            sd_x = sd[:, 0]
-            sd_y, sd_e = map(lambda x: x * mult, (sd[:, 1], sd[:, 2]))
+        if event_data.dataPresent[i]:
+            sd_x = data[:, 0]
+            sd_y, sd_e = map(lambda x: x * mult, (data[:, 1], data[:, 2]))
 
             if show_error_bar:
                 errors = np.zeros(len(sd_e))
                 valid = sd_y - sd_e >= 0
                 errors[valid] = sd_e[valid]
                 valid |= sd_y < 0
-                sd_x[valid], sd_y[valid], sd_e[valid]
 
                 results["error"].append([sd_x[valid], sd_y[valid], sd_e[valid]])
 
@@ -67,18 +66,18 @@ def _extract_plot_data(data: PlotEventData, q4: bool, show_error_bar: bool):
         for j in range(len(sld)):
             results["sld"][-1].append([sld[j][:, 0], sld[j][:, 1]])
 
-        if data.resample[i] == 1 or data.modelType == "custom xy":
-            layers = data.resampledLayers[i][0]
+        if event_data.resample[i] == 1 or event_data.modelType == "custom xy":
+            layers = event_data.resampledLayers[i][0]
             results["sld_resample"].append([])
-            for j in range(len(data.resampledLayers[i])):
-                layer = data.resampledLayers[i][j]
+            for j in range(len(event_data.resampledLayers[i])):
+                layer = event_data.resampledLayers[i][j]
                 if layers.shape[1] == 4:
                     layer = np.delete(layer, 2, 1)
                 new_profile = makeSLDProfile(
                     layers[0, 1],  # Bulk In
                     layers[-1, 1],  # Bulk Out
                     layer,
-                    data.subRoughs[i],  # roughness
+                    event_data.subRoughs[i],  # roughness
                     1,
                 )
 
@@ -87,7 +86,7 @@ def _extract_plot_data(data: PlotEventData, q4: bool, show_error_bar: bool):
     return results
 
 
-class PLotSLDWithBlitting:
+class PlotSLDWithBlitting:
     """Create a SLD plot that uses blitting to get faster draws.
 
     The blit plot stores the background from an
@@ -259,13 +258,11 @@ class PLotSLDWithBlitting:
                 self.figure.axes[1].draw_artist(self.figure.axes[1].lines[i])
                 i += 1
 
-            if not plot_data["sld_resample"]:
-                continue
-
-            for resampled in plot_data["sld_resample"][j]:
-                self.figure.axes[1].lines[i].set_data(resampled[0], resampled[1])
-                self.figure.axes[1].draw_artist(self.figure.axes[1].lines[i])
-                i += 1
+            if plot_data["sld_resample"]:
+                for resampled in plot_data["sld_resample"][j]:
+                    self.figure.axes[1].lines[i].set_data(resampled[0], resampled[1])
+                    self.figure.axes[1].draw_artist(self.figure.axes[1].lines[i])
+                    i += 1
 
         for i, container in enumerate(self.figure.axes[0].containers):
             self.adjustErrorBar(container, plot_data["error"][i][0], plot_data["error"][i][1], plot_data["error"][i][2])
@@ -313,6 +310,8 @@ def plot_ref_sld_helper(
         Controls whether the grid is shown
     show_legend : bool, default: True
         Controls whether the legend is shown
+    animated : bool, default: False
+        Controls whether the animated property of foreground plot elements should be set.
 
     Returns
     -------
