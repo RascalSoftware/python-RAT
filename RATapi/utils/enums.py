@@ -157,7 +157,6 @@ class Languages(RATEnum):
 class Hydration(RATEnum):
     """Options for the 'hydrate with' parameter of a Layer."""
 
-    None_ = "none"
     BulkIn = "bulk in"
     BulkOut = "bulk out"
 

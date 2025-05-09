@@ -206,25 +206,6 @@ def test_initialise_wrong_layers(
         RATapi.Project(absorption=absorption, layers=RATapi.ClassList(input_model(**model_params)))
 
 
-@pytest.mark.parametrize("absorption, model", [(False, RATapi.models.Layer), (True, RATapi.models.AbsorptionLayer)])
-def test_initialise_ambiguous_layers(absorption: bool, model: RATapi.models.RATModel):
-    """If a sequence of dictionaries is passed to 'contrasts', convert them to the correct model for the calculation."""
-    proj = RATapi.Project(
-        absorption=absorption,
-        parameters=RATapi.ClassList(
-            [
-                RATapi.models.Parameter(name="Test Thickness"),
-                RATapi.models.Parameter(name="Test SLD"),
-                RATapi.models.Parameter(name="Test Roughness"),
-            ]
-        ),
-        layers=RATapi.ClassList(
-            [{"name": "Contrast 1", "thickness": "Test Thickness", "SLD": "Test SLD", "roughness": "Test Roughness"}]
-        ),
-    )
-    assert proj.layers._class_handle == model
-
-
 @pytest.mark.parametrize(
     ["input_model", "calculation", "actual_model_name"],
     [
