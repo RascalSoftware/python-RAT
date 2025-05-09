@@ -516,7 +516,7 @@ class AbsorptionLayer(RATModel, populate_by_name=True):
     name: str = Field(default_factory=lambda: f"New Layer {next(layer_number)}", min_length=1)
     thickness: str
     SLD_real: str = Field(validation_alias="SLD")
-    SLD_imaginary: str = ""
+    SLD_imaginary: str
     roughness: str
     hydration: str = ""
     hydrate_with: Hydration = Hydration.BulkOut
@@ -556,6 +556,20 @@ class Parameter(RATModel):
     sigma: float = np.inf
 
     show_priors: bool = False
+
+    def model_post_init(self, __context: Any) -> None:
+        """Apply parameter value to limits if they are not set."""
+        if "value" in self.model_fields_set:
+            if self.value > 0.0:
+                if "max" not in self.model_fields_set:
+                    self.max = self.value
+                if "min" not in self.model_fields_set:
+                    self.min = self.value
+            elif self.value < 0.0:
+                if "min" not in self.model_fields_set:
+                    self.min = self.value
+                if "max" not in self.model_fields_set:
+                    self.max = self.value
 
     @model_validator(mode="after")
     def check_min_max(self) -> "Parameter":

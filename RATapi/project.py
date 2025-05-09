@@ -529,7 +529,9 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", use_attribute
         handle = self.layers._class_handle.__name__
         if self.absorption and handle == "Layer":
             for layer in self.layers:
-                layer_list.append(RATapi.models.AbsorptionLayer(**layer.model_dump()))
+                layer_params = layer.model_dump()
+                layer_params["SLD_imaginary"] = ""
+                layer_list.append(RATapi.models.AbsorptionLayer(**layer_params))
             self.layers.data = layer_list
             self.layers._class_handle = RATapi.models.AbsorptionLayer
         elif not self.absorption and handle == "AbsorptionLayer":

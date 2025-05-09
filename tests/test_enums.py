@@ -49,7 +49,6 @@ from RATapi.utils.enums import (
         (Languages, "cpp", Languages.Cpp),
         (Languages, "python", Languages.Python),
         (Languages, "matlab", Languages.Matlab),
-        (Hydration, "none", Hydration.None_),
         (Hydration, "bulk in", Hydration.BulkIn),
         (Hydration, "bulk out", Hydration.BulkOut),
         (Priors, "uniform", Priors.Uniform),
