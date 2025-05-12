@@ -572,6 +572,69 @@ class TestCheckIndices:
             check_indices(test_problem)
 
 
+@pytest.mark.parametrize("test_project", ["standard_layers_project", "custom_xy_project", "domains_project"])
+@pytest.mark.parametrize("field", ["data", "background", "bulk_in", "bulk_out", "scalefactor", "resolution"])
+def test_undefined_contrast_fields(test_project, field, request):
+    """If a field in a contrast is empty, we should raise an error."""
+    test_project = request.getfixturevalue(test_project)
+    setattr(test_project.contrasts[0], field, "")
+
+    with pytest.raises(
+        ValueError,
+        match=f"In the input project, the {field} of contrast "
+        f'"{test_project.contrasts[0].name}" does not have a value defined. '
+        f"A value must be supplied before running the project.",
+    ):
+        make_problem(test_project)
+
+
+@pytest.mark.parametrize("test_project", ["standard_layers_project", "custom_xy_project", "domains_project"])
+def test_undefined_background(test_project, request):
+    """If the source field of a background defined in a contrast is empty, we should raise an error."""
+    test_project = request.getfixturevalue(test_project)
+    background = test_project.backgrounds[test_project.contrasts[0].background]
+    background.source = ""
+
+    with pytest.raises(
+        ValueError,
+        match=f"All backgrounds must have a source defined. For a {background.type} type "
+        f"background, the source must be defined in "
+        f'"{RATapi.project.values_defined_in[f"backgrounds.{background.type}.source"]}"',
+    ):
+        make_problem(test_project)
+
+
+@pytest.mark.parametrize("test_project", ["standard_layers_project", "custom_xy_project", "domains_project"])
+def test_undefined_resolution(test_project, request):
+    """If the source field of a resolution defined in a contrast is empty, we should raise an error."""
+    test_project = request.getfixturevalue(test_project)
+    resolution = test_project.resolutions[test_project.contrasts[0].resolution]
+    resolution.source = ""
+
+    with pytest.raises(
+        ValueError,
+        match=f"Constant resolutions must have a source defined. The source must be defined in "
+        f'"{RATapi.project.values_defined_in[f"resolutions.{resolution.type}.source"]}"',
+    ):
+        make_problem(test_project)
+
+
+@pytest.mark.parametrize("test_project", ["standard_layers_project", "domains_project"])
+@pytest.mark.parametrize("field", ["thickness", "SLD", "roughness"])
+def test_undefined_layers(test_project, field, request):
+    """If the thickness, SLD, or roughness fields of a layer defined in the project are empty, we should raise an
+    error."""
+    test_project = request.getfixturevalue(test_project)
+    setattr(test_project.layers[0], field, "")
+
+    with pytest.raises(
+        ValueError,
+        match=f"In the input project, the {field} field of layer {test_project.layers[0].name} "
+        f"does not have a value defined. A value must be supplied before running the project.",
+    ):
+        make_problem(test_project)
+
+
 def test_append_data_background():
     """Test that background data is correctly added to contrast data."""
     data = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
