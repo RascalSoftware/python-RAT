@@ -581,7 +581,7 @@ def test_undefined_contrast_fields(test_project, field, request):
 
     with pytest.raises(
         ValueError,
-        match=f"In the input project, the {field} of contrast "
+        match=f'In the input project, the "{field}" field of contrast '
         f'"{test_project.contrasts[0].name}" does not have a value defined. '
         f"A value must be supplied before running the project.",
     ):
@@ -629,7 +629,7 @@ def test_undefined_layers(test_project, field, request):
 
     with pytest.raises(
         ValueError,
-        match=f"In the input project, the {field} field of layer {test_project.layers[0].name} "
+        match=f'In the input project, the "{field}" field of layer {test_project.layers[0].name} '
         f"does not have a value defined. A value must be supplied before running the project.",
     ):
         make_problem(test_project)

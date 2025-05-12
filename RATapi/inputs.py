@@ -163,7 +163,7 @@ def make_problem(project: RATapi.Project) -> ProblemDefinition:
         for field in contrast_fields:
             if getattr(contrast, field) == "":
                 raise ValueError(
-                    f'In the input project, the {field} of contrast "{contrast.name}" does not have a '
+                    f'In the input project, the "{field}" field of contrast "{contrast.name}" does not have a '
                     f"value defined. A value must be supplied before running the project."
                 )
 
@@ -399,7 +399,7 @@ def get_layer_details(project: RATapi.Project) -> list[int]:
         for field in layer_fields:
             if getattr(layer, field) == "":
                 raise ValueError(
-                    f"In the input project, the {field} field of layer {layer.name} does not have a value "
+                    f'In the input project, the "{field}" field of layer {layer.name} does not have a value '
                     f"defined. A value must be supplied before running the project."
                 )
 
