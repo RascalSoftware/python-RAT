@@ -151,11 +151,23 @@ def make_problem(project: RATapi.Project) -> ProblemDefinition:
         The problem input used in the compiled RAT code.
 
     """
-    hydrate_id = {"bulk in": 1, "bulk out": 2}
     prior_id = {"uniform": 1, "gaussian": 2, "jeffreys": 3}
 
-    # Ensure backgrounds and resolutions have a source defined
+    # Ensure all contrast fields are properly defined
     for contrast in project.contrasts:
+        contrast_fields = ["data", "background", "bulk_in", "bulk_out", "scalefactor", "resolution"]
+
+        if project.calculation == Calculations.Domains:
+            contrast_fields.append("domain_ratio")
+
+        for field in contrast_fields:
+            if getattr(contrast, field) == "":
+                raise ValueError(
+                    f'In the input project, the "{field}" field of contrast "{contrast.name}" does not have a '
+                    f"value defined. A value must be supplied before running the project."
+                )
+
+        # Ensure backgrounds and resolutions have a source defined
         background = project.backgrounds[contrast.background]
         resolution = project.resolutions[contrast.resolution]
         if background.source == "":
@@ -191,22 +203,7 @@ def make_problem(project: RATapi.Project) -> ProblemDefinition:
         contrast_custom_files = [project.custom_files.index(contrast.model[0], True) for contrast in project.contrasts]
 
     # Get details of defined layers
-    layer_details = []
-    for layer in project.layers:
-        if project.absorption:
-            layer_params = [
-                project.parameters.index(getattr(layer, attribute), True)
-                for attribute in list(RATapi.models.AbsorptionLayer.model_fields.keys())[1:-2]
-            ]
-        else:
-            layer_params = [
-                project.parameters.index(getattr(layer, attribute), True)
-                for attribute in list(RATapi.models.Layer.model_fields.keys())[1:-2]
-            ]
-        layer_params.append(project.parameters.index(layer.hydration, True) if layer.hydration else float("NaN"))
-        layer_params.append(hydrate_id[layer.hydrate_with])
-
-        layer_details.append(layer_params)
+    layer_details = get_layer_details(project)
 
     contrast_background_params = []
     contrast_background_types = []
@@ -385,6 +382,35 @@ def make_problem(project: RATapi.Project) -> ProblemDefinition:
     check_indices(problem)
 
     return problem
+
+
+def get_layer_details(project: RATapi.Project) -> list[int]:
+    """Get parameter indices for all layers defined in the project."""
+    hydrate_id = {"bulk in": 1, "bulk out": 2}
+    layer_details = []
+
+    # Get the thickness, SLD, roughness fields from the appropriate model
+    if project.absorption:
+        layer_fields = list(RATapi.models.AbsorptionLayer.model_fields.keys())[1:-2]
+    else:
+        layer_fields = list(RATapi.models.Layer.model_fields.keys())[1:-2]
+
+    for layer in project.layers:
+        for field in layer_fields:
+            if getattr(layer, field) == "":
+                raise ValueError(
+                    f'In the input project, the "{field}" field of layer {layer.name} does not have a value '
+                    f"defined. A value must be supplied before running the project."
+                )
+
+        layer_params = [project.parameters.index(getattr(layer, attribute), True) for attribute in list(layer_fields)]
+
+        layer_params.append(project.parameters.index(layer.hydration, True) if layer.hydration else float("NaN"))
+        layer_params.append(hydrate_id[layer.hydrate_with])
+
+        layer_details.append(layer_params)
+
+    return layer_details
 
 
 def make_resample(project: RATapi.Project) -> list[int]:
