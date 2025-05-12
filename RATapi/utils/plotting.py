@@ -4,7 +4,6 @@ import copy
 from functools import partial, wraps
 from math import ceil, floor, sqrt
 from statistics import stdev
-from textwrap import fill
 from typing import Callable, Literal, Optional, Union
 
 import matplotlib
@@ -668,11 +667,15 @@ def plot_corner(
 
     num_params = len(params)
 
-    fig, axes = plt.subplots(num_params, num_params, figsize=(2 * num_params, 2 * num_params))
+    fig, axes = plt.subplots(num_params, num_params, figsize=(14, 10))
     # i is row, j is column
     for i, row_param in enumerate(params):
         for j, col_param in enumerate(params):
             current_axes: Axes = axes[i][j]
+            current_axes.tick_params(which="both", labelsize="medium")
+            current_axes.xaxis.offsetText.set_fontsize("small")
+            current_axes.yaxis.offsetText.set_fontsize("small")
+            current_axes.yaxis.offsetText.set_x(-1.5)
             if i == j:  # diagonal: histograms
                 plot_one_hist(results, param=row_param, smooth=smooth, axes=current_axes, **hist_kwargs)
             elif i > j:  # lower triangle: 2d histograms
@@ -689,8 +692,6 @@ def plot_corner(
             # make labels invisible as titles cover that
             current_axes.set_ylabel("")
             current_axes.set_xlabel("")
-
-    fig.tight_layout()
     if return_fig:
         return fig
     plt.show(block=block)
@@ -776,7 +777,7 @@ def plot_one_hist(
         color="white",
     )
 
-    axes.set_title(fill(results.fitNames[param], 20))  # use `fill` to wrap long titles
+    axes.set_title(results.fitNames[param], loc="left", fontsize="medium")
 
     if estimated_density:
         dx = bins[1] - bins[0]
@@ -899,7 +900,7 @@ def panel_plot_helper(plot_func: Callable, indices: list[int]) -> matplotlib.fig
     """
     nplots = len(indices)
     nrows, ncols = ceil(sqrt(nplots)), round(sqrt(nplots))
-    fig = plt.subplots(nrows, ncols, figsize=(2.5 * ncols, 2 * nrows))[0]
+    fig = plt.subplots(nrows, ncols, figsize=(14, 10))[0]
     axs = fig.get_axes()
 
     for plot_num, index in enumerate(indices):
