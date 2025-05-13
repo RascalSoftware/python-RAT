@@ -3,6 +3,9 @@
 We use the example for both a reflectivity calculation, and Bayesian analysis using the Dream algorithm.
 """
 
+import tempfile
+from pathlib import Path
+
 import numpy as np
 import pytest
 
@@ -203,3 +206,23 @@ def test_results_str(test_output_results, test_str, request) -> None:
     test_str = request.getfixturevalue(test_str)
 
     assert test_output_results.__str__() == test_str
+
+
+@pytest.mark.parametrize(
+    ["result_class", "test_results"],
+    [
+        (RATapi.Results, "reflectivity_calculation_results"),
+        (RATapi.BayesResults, "dream_results"),
+    ],
+)
+def test_save_load(result_class, test_results, request):
+    """Test that saving and loading an output object returns the same object."""
+    test_results = request.getfixturevalue(test_results)
+
+    with tempfile.TemporaryDirectory() as tmp:
+        # ignore relative path warnings
+        path = Path(tmp, "results.json")
+        test_results.save(path)
+        loaded_results = result_class.load(path)
+
+    check_results_equal(test_results, loaded_results)
