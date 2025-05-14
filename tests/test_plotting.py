@@ -1,7 +1,6 @@
 import os
 import pickle
 from math import ceil, sqrt
-from textwrap import fill
 from unittest.mock import MagicMock, patch
 
 import matplotlib.pyplot as plt
@@ -293,7 +292,7 @@ def test_hist(dream_results, param, hist_settings, est_dens):
 
     # assert title is as expected
     # also tests string to index conversion
-    assert ax.get_title() == fill(dream_results.fitNames[param] if isinstance(param, int) else param, 20)
+    assert ax.get_title(loc="left") == dream_results.fitNames[param] if isinstance(param, int) else param
 
     # assert range is default, unless given
     # this tests non-default hist_settings propagates correctly
@@ -377,8 +376,10 @@ def test_corner(dream_results, params):
                 assert current_axes.get_xbound() == axes[-1][j].get_xbound()
             elif i == j:
                 # check title is correct
-                assert current_axes.get_title() == fill(
-                    dream_results.fitNames[params[i]] if isinstance(params[i], int) else params[i], 20
+                assert (
+                    current_axes.get_title(loc="left") == dream_results.fitNames[params[i]]
+                    if isinstance(params[i], int)
+                    else params[i]
                 )
 
     plt.close(fig)
