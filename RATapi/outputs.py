@@ -258,7 +258,7 @@ class Results:
         filepath.write_text(json.dumps(json_dict))
 
     @classmethod
-    def load(cls, path: Union[str, Path]) -> "Results":
+    def load(cls, path: Union[str, Path]) -> Union["Results", "BayesResults"]:
         """Load a Results object from file.
 
         Parameters
@@ -272,20 +272,45 @@ class Results:
 
         results_dict = read_core_results_fields(results_dict)
 
-        return Results(
-            reflectivity=results_dict["reflectivity"],
-            simulation=results_dict["simulation"],
-            shiftedData=results_dict["shiftedData"],
-            backgrounds=results_dict["backgrounds"],
-            resolutions=results_dict["resolutions"],
-            sldProfiles=results_dict["sldProfiles"],
-            layers=results_dict["layers"],
-            resampledLayers=results_dict["resampledLayers"],
-            calculationResults=CalculationResults(**results_dict["calculationResults"]),
-            contrastParams=ContrastParams(**results_dict["contrastParams"]),
-            fitParams=np.array(results_dict["fitParams"]),
-            fitNames=results_dict["fitNames"],
-        )
+        if all(key in results_dict for key in bayes_results_subclasses):
+            results_dict = read_bayes_results_fields(results_dict)
+
+            return BayesResults(
+                reflectivity=results_dict["reflectivity"],
+                simulation=results_dict["simulation"],
+                shiftedData=results_dict["shiftedData"],
+                backgrounds=results_dict["backgrounds"],
+                resolutions=results_dict["resolutions"],
+                sldProfiles=results_dict["sldProfiles"],
+                layers=results_dict["layers"],
+                resampledLayers=results_dict["resampledLayers"],
+                calculationResults=CalculationResults(**results_dict["calculationResults"]),
+                contrastParams=ContrastParams(**results_dict["contrastParams"]),
+                fitParams=np.array(results_dict["fitParams"]),
+                fitNames=results_dict["fitNames"],
+                predictionIntervals=PredictionIntervals(**results_dict["predictionIntervals"]),
+                confidenceIntervals=ConfidenceIntervals(**results_dict["confidenceIntervals"]),
+                dreamParams=DreamParams(**results_dict["dreamParams"]),
+                dreamOutput=DreamOutput(**results_dict["dreamOutput"]),
+                nestedSamplerOutput=NestedSamplerOutput(**results_dict["nestedSamplerOutput"]),
+                chain=np.array(results_dict["chain"]),
+            )
+
+        else:
+            return Results(
+                reflectivity=results_dict["reflectivity"],
+                simulation=results_dict["simulation"],
+                shiftedData=results_dict["shiftedData"],
+                backgrounds=results_dict["backgrounds"],
+                resolutions=results_dict["resolutions"],
+                sldProfiles=results_dict["sldProfiles"],
+                layers=results_dict["layers"],
+                resampledLayers=results_dict["resampledLayers"],
+                calculationResults=CalculationResults(**results_dict["calculationResults"]),
+                contrastParams=ContrastParams(**results_dict["contrastParams"]),
+                fitParams=np.array(results_dict["fitParams"]),
+                fitNames=results_dict["fitNames"],
+            )
 
 
 @dataclass
@@ -548,63 +573,6 @@ class BayesResults(Results):
         json_dict["chain"] = self.chain.tolist()
         filepath.write_text(json.dumps(json_dict))
 
-    @classmethod
-    def load(cls, path: Union[str, Path]) -> "BayesResults":
-        """Load a BayesResults object from file.
-
-        Parameters
-        ----------
-        path : str or Path
-            The path to the results json file.
-        """
-        path = Path(path)
-        input_data = path.read_text()
-        results_dict = json.loads(input_data)
-
-        results_dict = read_core_results_fields(results_dict)
-
-        # Take each of the subclasses in a BayesResults instance and convert to numpy arrays where necessary
-        for subclass_name in bayes_results_subclasses:
-            subclass_dict = {}
-
-            for field in bayes_results_fields["param_fields"][subclass_name]:
-                subclass_dict[field] = results_dict[subclass_name][field]
-
-            for field in bayes_results_fields["list_fields"][subclass_name]:
-                subclass_dict[field] = [np.array(result_array) for result_array in results_dict[subclass_name][field]]
-
-            for field in bayes_results_fields["double_list_fields"][subclass_name]:
-                subclass_dict[field] = [
-                    [np.array(result_array) for result_array in inner_list]
-                    for inner_list in results_dict[subclass_name][field]
-                ]
-
-            for field in bayes_results_fields["array_fields"][subclass_name]:
-                subclass_dict[field] = np.array(results_dict[subclass_name][field])
-
-            results_dict[subclass_name] = subclass_dict
-
-        return BayesResults(
-            reflectivity=results_dict["reflectivity"],
-            simulation=results_dict["simulation"],
-            shiftedData=results_dict["shiftedData"],
-            backgrounds=results_dict["backgrounds"],
-            resolutions=results_dict["resolutions"],
-            sldProfiles=results_dict["sldProfiles"],
-            layers=results_dict["layers"],
-            resampledLayers=results_dict["resampledLayers"],
-            calculationResults=CalculationResults(**results_dict["calculationResults"]),
-            contrastParams=ContrastParams(**results_dict["contrastParams"]),
-            fitParams=np.array(results_dict["fitParams"]),
-            fitNames=results_dict["fitNames"],
-            predictionIntervals=PredictionIntervals(**results_dict["predictionIntervals"]),
-            confidenceIntervals=ConfidenceIntervals(**results_dict["confidenceIntervals"]),
-            dreamParams=DreamParams(**results_dict["dreamParams"]),
-            dreamOutput=DreamOutput(**results_dict["dreamOutput"]),
-            nestedSamplerOutput=NestedSamplerOutput(**results_dict["nestedSamplerOutput"]),
-            chain=np.array(results_dict["chain"]),
-        )
-
 
 def write_core_results_fields(results: Union[Results, BayesResults], json_dict: Optional[dict] = None) -> dict:
     """Modify the values of the fields that appear in both Results and BayesResults when saving to a json file."""
@@ -647,6 +615,31 @@ def read_core_results_fields(results_dict: dict) -> dict:
 
     for field in results_dict["contrastParams"]:
         results_dict["contrastParams"][field] = np.array(results_dict["contrastParams"][field])
+
+    return results_dict
+
+
+def read_bayes_results_fields(results_dict: dict) -> dict:
+    """Modify the values of the fields that appear only in BayesResults when loading a json file."""
+    for subclass_name in bayes_results_subclasses:
+        subclass_dict = {}
+
+        for field in bayes_results_fields["param_fields"][subclass_name]:
+            subclass_dict[field] = results_dict[subclass_name][field]
+
+        for field in bayes_results_fields["list_fields"][subclass_name]:
+            subclass_dict[field] = [np.array(result_array) for result_array in results_dict[subclass_name][field]]
+
+        for field in bayes_results_fields["double_list_fields"][subclass_name]:
+            subclass_dict[field] = [
+                [np.array(result_array) for result_array in inner_list]
+                for inner_list in results_dict[subclass_name][field]
+            ]
+
+        for field in bayes_results_fields["array_fields"][subclass_name]:
+            subclass_dict[field] = np.array(results_dict[subclass_name][field])
+
+        results_dict[subclass_name] = subclass_dict
 
     return results_dict
 

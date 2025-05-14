@@ -208,13 +208,8 @@ def test_results_str(test_output_results, test_str, request) -> None:
     assert test_output_results.__str__() == test_str
 
 
-@pytest.mark.parametrize(
-    ["result_class", "test_results"],
-    [
-        (RATapi.Results, "reflectivity_calculation_results"),
-        (RATapi.BayesResults, "dream_results"),
-    ],
-)
+@pytest.mark.parametrize("result_class", [RATapi.Results, RATapi.BayesResults])
+@pytest.mark.parametrize("test_results", ["reflectivity_calculation_results", "dream_results"])
 def test_save_load(result_class, test_results, request):
     """Test that saving and loading an output object returns the same object."""
     test_results = request.getfixturevalue(test_results)
