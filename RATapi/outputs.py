@@ -575,7 +575,20 @@ class BayesResults(Results):
 
 
 def write_core_results_fields(results: Union[Results, BayesResults], json_dict: Optional[dict] = None) -> dict:
-    """Modify the values of the fields that appear in both Results and BayesResults when saving to a json file."""
+    """Modify the values of the fields that appear in both Results and BayesResults when saving to a json file.
+
+    Parameters
+    ----------
+    results: Union[Results, BayesResults]
+        The results or BayesResults object we are writing to json.
+    json_dict: Optional[dict]
+        The dictionary containing the json output.
+
+    Returns
+    -------
+    json_dict: dict
+        The output json dict updated with the fields that appear in both Results and BayesResults.
+    """
     if json_dict is None:
         json_dict = {}
 
@@ -602,7 +615,19 @@ def write_core_results_fields(results: Union[Results, BayesResults], json_dict: 
 
 
 def read_core_results_fields(results_dict: dict) -> dict:
-    """Modify the values of the fields that appear in both Results and BayesResults when loading a json file."""
+    """Modify the values of the fields that appear in both Results and BayesResults when loading a json file.
+
+    Parameters
+    ----------
+    results_dict: Optional[dict]
+        The dictionary containing the json input.
+
+    Returns
+    -------
+    results_dict: dict
+        The input json dict with the fields that appear in both Results and BayesResults converted to numpy arrays
+        where necessary.
+    """
     for field in results_fields["list_fields"]:
         results_dict[field] = [np.array(result_array) for result_array in results_dict[field]]
 
@@ -620,7 +645,19 @@ def read_core_results_fields(results_dict: dict) -> dict:
 
 
 def read_bayes_results_fields(results_dict: dict) -> dict:
-    """Modify the values of the fields that appear only in BayesResults when loading a json file."""
+    """Modify the values of the fields that appear only in BayesResults when loading a json file.
+
+    Parameters
+    ----------
+    results_dict: Optional[dict]
+        The dictionary containing the json input.
+
+    Returns
+    -------
+    results_dict: dict
+        The input json dict with the fields that appear in both Results and BayesResults converted to numpy arrays
+        where necessary.
+    """
     for subclass_name in bayes_results_subclasses:
         subclass_dict = {}
 
