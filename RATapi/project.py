@@ -906,7 +906,6 @@ from numpy import array, empty, inf
         ----------
         filepath : str or Path
             The path to where the project file will be written.
-
         """
         filepath = Path(filepath).with_suffix(".json")
 

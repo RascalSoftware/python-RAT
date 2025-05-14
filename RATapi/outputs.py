@@ -1,12 +1,77 @@
 """Converts results from the compiled RAT code to python dataclasses."""
 
+import json
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Optional, Union
 
 import numpy as np
 
 import RATapi.rat_core
 from RATapi.utils.enums import Procedures
+
+bayes_results_subclasses = [
+    "predictionIntervals",
+    "confidenceIntervals",
+    "dreamParams",
+    "dreamOutput",
+    "nestedSamplerOutput",
+]
+
+bayes_results_fields = {
+    "param_fields": {
+        "predictionIntervals": [],
+        "confidenceIntervals": [],
+        "dreamParams": [
+            "nParams",
+            "nChains",
+            "nGenerations",
+            "parallel",
+            "CPU",
+            "jumpProbability",
+            "pUnitGamma",
+            "nCR",
+            "delta",
+            "steps",
+            "zeta",
+            "outlier",
+            "adaptPCR",
+            "thinning",
+            "epsilon",
+            "ABC",
+            "IO",
+            "storeOutput",
+        ],
+        "dreamOutput": ["runtime", "iteration"],
+        "nestedSamplerOutput": ["logZ", "logZErr"],
+    },
+    "list_fields": {
+        "predictionIntervals": ["reflectivity"],
+        "confidenceIntervals": [],
+        "dreamParams": [],
+        "dreamOutput": [],
+        "nestedSamplerOutput": [],
+    },
+    "double_list_fields": {
+        "predictionIntervals": ["sld"],
+        "confidenceIntervals": [],
+        "dreamParams": [],
+        "dreamOutput": [],
+        "nestedSamplerOutput": [],
+    },
+    "array_fields": {
+        "predictionIntervals": ["sampleChi"],
+        "confidenceIntervals": ["percentile65", "percentile95", "mean"],
+        "dreamParams": ["R"],
+        "dreamOutput": ["allChains", "outlierChains", "AR", "R_stat", "CR"],
+        "nestedSamplerOutput": ["nestSamples", "postSamples"],
+    },
+}
+
+results_fields = {
+    "list_fields": ["reflectivity", "simulation", "shiftedData", "backgrounds", "resolutions"],
+    "double_list_fields": ["sldProfiles", "layers", "resampledLayers"],
+}
 
 
 def get_field_string(field: str, value: Any, array_limit: int):
@@ -178,6 +243,74 @@ class Results:
         for key, value in self.__dict__.items():
             output += get_field_string(key, value, 100)
         return output
+
+    def save(self, filepath: Union[str, Path] = "./results.json"):
+        """Save the Results object to a JSON file.
+
+        Parameters
+        ----------
+        filepath : str or Path
+            The path to where the results file will be written.
+        """
+        filepath = Path(filepath).with_suffix(".json")
+        json_dict = write_core_results_fields(self)
+
+        filepath.write_text(json.dumps(json_dict))
+
+    @classmethod
+    def load(cls, path: Union[str, Path]) -> Union["Results", "BayesResults"]:
+        """Load a Results object from file.
+
+        Parameters
+        ----------
+        path : str or Path
+            The path to the results json file.
+        """
+        path = Path(path)
+        input_data = path.read_text()
+        results_dict = json.loads(input_data)
+
+        results_dict = read_core_results_fields(results_dict)
+
+        if all(key in results_dict for key in bayes_results_subclasses):
+            results_dict = read_bayes_results_fields(results_dict)
+
+            return BayesResults(
+                reflectivity=results_dict["reflectivity"],
+                simulation=results_dict["simulation"],
+                shiftedData=results_dict["shiftedData"],
+                backgrounds=results_dict["backgrounds"],
+                resolutions=results_dict["resolutions"],
+                sldProfiles=results_dict["sldProfiles"],
+                layers=results_dict["layers"],
+                resampledLayers=results_dict["resampledLayers"],
+                calculationResults=CalculationResults(**results_dict["calculationResults"]),
+                contrastParams=ContrastParams(**results_dict["contrastParams"]),
+                fitParams=np.array(results_dict["fitParams"]),
+                fitNames=results_dict["fitNames"],
+                predictionIntervals=PredictionIntervals(**results_dict["predictionIntervals"]),
+                confidenceIntervals=ConfidenceIntervals(**results_dict["confidenceIntervals"]),
+                dreamParams=DreamParams(**results_dict["dreamParams"]),
+                dreamOutput=DreamOutput(**results_dict["dreamOutput"]),
+                nestedSamplerOutput=NestedSamplerOutput(**results_dict["nestedSamplerOutput"]),
+                chain=np.array(results_dict["chain"]),
+            )
+
+        else:
+            return Results(
+                reflectivity=results_dict["reflectivity"],
+                simulation=results_dict["simulation"],
+                shiftedData=results_dict["shiftedData"],
+                backgrounds=results_dict["backgrounds"],
+                resolutions=results_dict["resolutions"],
+                sldProfiles=results_dict["sldProfiles"],
+                layers=results_dict["layers"],
+                resampledLayers=results_dict["resampledLayers"],
+                calculationResults=CalculationResults(**results_dict["calculationResults"]),
+                contrastParams=ContrastParams(**results_dict["contrastParams"]),
+                fitParams=np.array(results_dict["fitParams"]),
+                fitNames=results_dict["fitNames"],
+            )
 
 
 @dataclass
@@ -404,6 +537,148 @@ class BayesResults(Results):
     dreamOutput: DreamOutput
     nestedSamplerOutput: NestedSamplerOutput
     chain: np.ndarray
+
+    def save(self, filepath: Union[str, Path] = "./results.json"):
+        """Save the BayesResults object to a JSON file.
+
+        Parameters
+        ----------
+        filepath : str or Path
+            The path to where the results file will be written.
+        """
+        filepath = Path(filepath).with_suffix(".json")
+        json_dict = write_core_results_fields(self)
+
+        # Take each of the subclasses in a BayesResults instance and switch the numpy arrays to lists
+        for subclass_name in bayes_results_subclasses:
+            subclass = getattr(self, subclass_name)
+            subclass_dict = {}
+
+            for field in bayes_results_fields["param_fields"][subclass_name]:
+                subclass_dict[field] = getattr(subclass, field)
+
+            for field in bayes_results_fields["list_fields"][subclass_name]:
+                subclass_dict[field] = [result_array.tolist() for result_array in getattr(subclass, field)]
+
+            for field in bayes_results_fields["double_list_fields"][subclass_name]:
+                subclass_dict[field] = [
+                    [result_array.tolist() for result_array in inner_list] for inner_list in getattr(subclass, field)
+                ]
+
+            for field in bayes_results_fields["array_fields"][subclass_name]:
+                subclass_dict[field] = getattr(subclass, field).tolist()
+
+            json_dict[subclass_name] = subclass_dict
+
+        json_dict["chain"] = self.chain.tolist()
+        filepath.write_text(json.dumps(json_dict))
+
+
+def write_core_results_fields(results: Union[Results, BayesResults], json_dict: Optional[dict] = None) -> dict:
+    """Modify the values of the fields that appear in both Results and BayesResults when saving to a json file.
+
+    Parameters
+    ----------
+    results: Union[Results, BayesResults]
+        The results or BayesResults object we are writing to json.
+    json_dict: Optional[dict]
+        The dictionary containing the json output.
+
+    Returns
+    -------
+    json_dict: dict
+        The output json dict updated with the fields that appear in both Results and BayesResults.
+    """
+    if json_dict is None:
+        json_dict = {}
+
+    for field in results_fields["list_fields"]:
+        json_dict[field] = [result_array.tolist() for result_array in getattr(results, field)]
+
+    for field in results_fields["double_list_fields"]:
+        json_dict[field] = [
+            [result_array.tolist() for result_array in inner_list] for inner_list in getattr(results, field)
+        ]
+
+    json_dict["calculationResults"] = {}
+    json_dict["calculationResults"]["chiValues"] = results.calculationResults.chiValues.tolist()
+    json_dict["calculationResults"]["sumChi"] = results.calculationResults.sumChi
+
+    json_dict["contrastParams"] = {}
+    for field in results.contrastParams.__dict__:
+        json_dict["contrastParams"][field] = getattr(results.contrastParams, field).tolist()
+
+    json_dict["fitParams"] = results.fitParams.tolist()
+    json_dict["fitNames"] = results.fitNames
+
+    return json_dict
+
+
+def read_core_results_fields(results_dict: dict) -> dict:
+    """Modify the values of the fields that appear in both Results and BayesResults when loading a json file.
+
+    Parameters
+    ----------
+    results_dict: Optional[dict]
+        The dictionary containing the json input.
+
+    Returns
+    -------
+    results_dict: dict
+        The input json dict with the fields that appear in both Results and BayesResults converted to numpy arrays
+        where necessary.
+    """
+    for field in results_fields["list_fields"]:
+        results_dict[field] = [np.array(result_array) for result_array in results_dict[field]]
+
+    for field in results_fields["double_list_fields"]:
+        results_dict[field] = [
+            [np.array(result_array) for result_array in inner_list] for inner_list in results_dict[field]
+        ]
+
+    results_dict["calculationResults"]["chiValues"] = np.array(results_dict["calculationResults"]["chiValues"])
+
+    for field in results_dict["contrastParams"]:
+        results_dict["contrastParams"][field] = np.array(results_dict["contrastParams"][field])
+
+    return results_dict
+
+
+def read_bayes_results_fields(results_dict: dict) -> dict:
+    """Modify the values of the fields that appear only in BayesResults when loading a json file.
+
+    Parameters
+    ----------
+    results_dict: Optional[dict]
+        The dictionary containing the json input.
+
+    Returns
+    -------
+    results_dict: dict
+        The input json dict with the fields that appear in both Results and BayesResults converted to numpy arrays
+        where necessary.
+    """
+    for subclass_name in bayes_results_subclasses:
+        subclass_dict = {}
+
+        for field in bayes_results_fields["param_fields"][subclass_name]:
+            subclass_dict[field] = results_dict[subclass_name][field]
+
+        for field in bayes_results_fields["list_fields"][subclass_name]:
+            subclass_dict[field] = [np.array(result_array) for result_array in results_dict[subclass_name][field]]
+
+        for field in bayes_results_fields["double_list_fields"][subclass_name]:
+            subclass_dict[field] = [
+                [np.array(result_array) for result_array in inner_list]
+                for inner_list in results_dict[subclass_name][field]
+            ]
+
+        for field in bayes_results_fields["array_fields"][subclass_name]:
+            subclass_dict[field] = np.array(results_dict[subclass_name][field])
+
+        results_dict[subclass_name] = subclass_dict
+
+    return results_dict
 
 
 def make_results(

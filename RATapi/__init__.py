@@ -6,6 +6,7 @@ import RATapi.examples as examples
 from RATapi import events, models
 from RATapi.classlist import ClassList
 from RATapi.controls import Controls
+from RATapi.outputs import BayesResults, Results
 from RATapi.project import Project
 from RATapi.run import run
 from RATapi.utils import convert, plotting
@@ -13,4 +14,16 @@ from RATapi.utils import convert, plotting
 with suppress(ImportError):  # orsopy is an optional dependency
     from RATapi.utils import orso as orso
 
-__all__ = ["examples", "models", "events", "ClassList", "Controls", "Project", "run", "plotting", "convert"]
+__all__ = [
+    "examples",
+    "models",
+    "events",
+    "ClassList",
+    "Controls",
+    "BayesResults",
+    "Results",
+    "Project",
+    "run",
+    "plotting",
+    "convert",
+]
