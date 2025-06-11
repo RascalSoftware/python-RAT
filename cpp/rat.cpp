@@ -27,6 +27,87 @@ namespace py = pybind11;
 const int DEFAULT_DOMAIN = -1;
 const int DEFAULT_NREPEATS = 1;
 
+
+class MatlabEngine
+{
+    public:
+    std::unique_ptr<dylib> library;
+    std::string functionName;
+    
+    MatlabEngine()
+    {
+        this->functionName = "";
+        std::string filename = "matlabCaller" + std::string(dylib::extension);     
+        this->library = std::unique_ptr<dylib>(new dylib(std::getenv("RAT_PATH"), filename.c_str()));
+        if (!library)
+        {
+            std::cerr << "The matlab caller dynamic library failed to load" << std::endl;
+            return;
+        }  
+    };
+
+    ~MatlabEngine(){};
+    
+    void cd(std::string path)
+    {
+        auto cdFunc = library->get_function<void(std::string)>("cd");
+        cdFunc(path);  
+    };
+
+    void start()
+    {
+        auto startFunc = library->get_function<void(void)>("startMatlab");
+        startFunc();  
+    };
+    
+    void setFunction(std::string functionName)
+    {
+        this->functionName = functionName;  
+    };
+
+    py::list invoke(std::vector<double>& xdata, std::vector<double>& params)
+    {   
+        // try{
+        std::vector<double> output;
+            
+        //     auto func = library->get_function<void(std::vector<double>&, std::vector<double>&, std::vector<double>&)>(functionName);
+        //     func(xdata, params, output);
+            
+        return py::cast(output);
+
+        // }catch (const dylib::symbol_error &) {
+        //     throw std::runtime_error("failed to get dynamic library symbol for " + functionName);
+        // }        
+    };
+
+    py::tuple invoke(std::vector<double>& params, std::vector<double>& bulkIn, std::vector<double>& bulkOut, int contrast, int domain=DEFAULT_DOMAIN)
+    {   
+        try{
+            std::vector<double> tempOutput;
+            double *outputSize = new double[2]; 
+            double roughness = 0.0;
+            auto func = library->get_function<void(std::string, std::vector<double>&, std::vector<double>&, std::vector<double>&, 
+                                                   int, int, std::vector<double>&, double*, double*)>("callFunction");
+            func(functionName, params, bulkIn, bulkOut, contrast + 1, domain + 1, tempOutput, outputSize, &roughness);
+            
+            py::list output;
+            for (int32_T idx1{0}; idx1 < outputSize[0]; idx1++)
+            {
+                py::list rows;  
+                for (int32_T idx2{0}; idx2 < outputSize[1]; idx2++)
+                {
+                    rows.append(tempOutput[(int32_T)outputSize[1] * idx1 + idx2]);
+                }
+                output.append(rows);
+            }
+            return py::make_tuple(output, roughness);    
+
+        }catch (const dylib::symbol_error &) {
+            throw std::runtime_error("failed to get dynamic library symbol for " + functionName);
+        }        
+    };
+};
+
 class DylibEngine
 {
     public:
@@ -674,7 +755,20 @@ PYBIND11_MODULE(rat_core, m) {
                                       py::arg("domain") = DEFAULT_DOMAIN)
         .def("invoke", overload_cast_<std::vector<double>&, 
                                       std::vector<double>&>()(&DylibEngine::invoke), py::arg("xdata"), py::arg("param"));
-
+    
+    py::class_<MatlabEngine>(m, "MatlabEngine")
+        .def(py::init<>())
+        .def("start", &MatlabEngine::start)
+        .def("cd", &MatlabEngine::cd)
+        .def("setFunction", &MatlabEngine::setFunction)
+        .def("invoke", overload_cast_<std::vector<double>&, std::vector<double>&, 
+                                    std::vector<double>&, int, int>()(&MatlabEngine::invoke), 
+                                    py::arg("params"), py::arg("bulkIn"), 
+                                    py::arg("bulkOut"), py::arg("contrast"), 
+                                    py::arg("domain") = DEFAULT_DOMAIN)
+        .def("invoke", overload_cast_<std::vector<double>&, 
+                                    std::vector<double>&>()(&MatlabEngine::invoke), py::arg("xdata"), py::arg("param"));
+    
     py::class_<PredictionIntervals>(m, "PredictionIntervals", docsPredictionIntervals.c_str())
         .def(py::init<>())
         .def_readwrite("reflectivity", &PredictionIntervals::reflectivity)
