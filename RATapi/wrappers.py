@@ -25,7 +25,12 @@ def start_matlab():
 
     """
 
+    path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "matlab.txt")
+    # if pathlib(matlab_path).is_file()
+    with open(path) as path_file:
+        matlab_path = path_file.read()
     
+    os.environ["RAT_PATH"] = dir_path, "")
     os.environ["MATLAB_INSTALL_DIR"] += os.pathsep + "C:\\Program Files\\MATLAB\\R2023a\\bin\\win64"
     engine = RATapi.rat_core.MatlabEngine()
     engine.start()
