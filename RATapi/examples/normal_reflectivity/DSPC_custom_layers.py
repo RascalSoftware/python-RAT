@@ -5,6 +5,7 @@ import pathlib
 import numpy as np
 
 import RATapi as RAT
+import RATapi.wrappers
 
 
 def DSPC_custom_layers():
@@ -50,8 +51,8 @@ def DSPC_custom_layers():
     # Add the custom file to the project
     problem.custom_files.append(
         name="DSPC Model",
-        filename="custom_bilayer_DSPC.py",
-        language="python",
+        filename="customBilayerDSPC.m",
+        language="matlab",
         path=pathlib.Path(__file__).parent,
     )
 
@@ -126,5 +127,13 @@ def DSPC_custom_layers():
 
 
 if __name__ == "__main__":
+    import RATapi
+
+    RATapi.wrappers.get_matlab_engine().editFile((pathlib.Path(__file__).parent / "customBilayerDSPC.m").as_posix())
+
+    import time
+
+    time.sleep(20)
     problem, results = DSPC_custom_layers()
+
     RAT.plotting.plot_ref_sld(problem, results, True)

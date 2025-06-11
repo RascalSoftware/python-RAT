@@ -102,9 +102,12 @@ class BuildExt(build_ext):
 
         if self.inplace:
             obj_name = get_shared_object_name(libevent[0])
-            src = f"{build_py.build_lib}/{PACKAGE_NAME}/{obj_name}"
-            dest = f"{build_py.get_package_dir(PACKAGE_NAME)}/{obj_name}"
-            build_py.copy_file(src, dest)
+            build_py.copy_file(
+                f"{build_py.build_lib}/{PACKAGE_NAME}/{obj_name}",
+                f"{build_py.get_package_dir(PACKAGE_NAME)}/{obj_name}",
+            )
+
+            open(f"{build_py.get_package_dir(PACKAGE_NAME)}/matlab.txt", "w").close()
 
 
 class BuildClib(build_clib):
@@ -121,7 +124,7 @@ class BuildClib(build_clib):
 
         compiler_type = self.compiler.compiler_type
         if compiler_type == "msvc":
-            compile_args = ["/EHsc", "/LD"]
+            compile_args = ["/EHsc", "/LD", "-D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR"]
         else:
             compile_args = ["-std=c++11", "-fPIC"]
 
@@ -161,7 +164,7 @@ setup(
     long_description_content_type="text/markdown",
     packages=find_packages(),
     include_package_data=True,
-    package_data={"": [get_shared_object_name(libevent[0])], "RATapi.examples": ["data/*.dat"]},
+    package_data={"": ["matlab.txt", get_shared_object_name(libevent[0])], "RATapi.examples": ["data/*.dat"]},
     cmdclass={"build_clib": BuildClib, "build_ext": BuildExt},
     libraries=[libevent],
     ext_modules=ext_modules,
@@ -178,12 +181,6 @@ setup(
         ':python_version < "3.11"': ["StrEnum >= 0.4.15"],
         "Dev": ["pytest>=7.4.0", "pytest-cov>=4.1.0", "ruff>=0.4.10"],
         "Orso": ["orsopy>=1.2.1", "pint>=0.24.4"],
-        "Matlab_latest": ["matlabengine"],
-        "Matlab_2025a": ["matlabengine == 25.1.*"],
-        "Matlab_2024b": ["matlabengine == 24.2.2"],
-        "Matlab_2024a": ["matlabengine == 24.1.4"],
-        "Matlab_2023b": ["matlabengine == 23.2.3"],
-        "Matlab_2023a": ["matlabengine == 9.14.3"],
     },
     zip_safe=False,
 )

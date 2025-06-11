@@ -30,8 +30,8 @@ def domains_custom_layers():
     # Add the custom file
     problem.custom_files.append(
         name="Alloy domains",
-        filename="alloy_domains.py",
-        language="python",
+        filename="alloyDomains.m",
+        language="matlab",
         path=pathlib.Path(__file__).parent,
     )
 

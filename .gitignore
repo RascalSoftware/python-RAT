@@ -21,6 +21,7 @@ tmp/
 # Build
 _build
 docs/.buildinfo
+matlab.txt
 docs/*.inv
 *.rat.cpp
 *.so

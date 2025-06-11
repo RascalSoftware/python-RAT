@@ -22,10 +22,319 @@ setup_pybind11(cfg)
 #include "includes/defines.h"
 #include "includes/functions.h"
 
+
 namespace py = pybind11;
 
 const int DEFAULT_DOMAIN = -1;
 const int DEFAULT_NREPEATS = 1;
+
+typedef struct engine Engine;
+typedef struct mxArray_tag mxArray;
+typedef enum { mxREAL, mxCOMPLEX } mxComplexity;
+#define BUFSIZE 256
+
+class MatlabLoader
+{
+public:
+    
+    MatlabLoader(MatlabLoader const&) = delete;
+    MatlabLoader& operator=(MatlabLoader const&) = delete;
+    ~MatlabLoader() {}
+    
+    bool started = false;
+    std::unique_ptr<dylib> engLib;
+    std::unique_ptr<dylib> mxLib;
+    
+    Engine *matlabPtr = nullptr;
+    std::function<Engine*(const char *)> engOpen;
+    std::function<int(Engine *)> engClose;
+    std::function<int(Engine *, bool)> engSetVisible;
+    std::function<mxArray *(Engine *, const char *)> engGetVariable;
+    std::function<int(Engine *, const char *, const mxArray *)> engPutVariable;
+    std::function<int(Engine *, char *, int)> engOutputBuffer;
+    std::function<int(Engine *, const char *)> engEvalString;
+
+    std::function<double(const mxArray *)> mxGetScalar;
+    std::function<void *(const mxArray *)> mxGetData;
+    std::function<mxArray *(double)> mxCreateDoubleScalar;
+    std::function<mxArray *(mwSize, mwSize, mxComplexity)> mxCreateDoubleMatrix;
+    std::function<mxArray *(const char *)> mxCreateString;
+    std::function<double *(const mxArray *)> mxGetPr;
+    std::function<void(mxArray *)> mxDestroyArray;
+
+    void open() {
+        if (started)
+            return;
+        
+        std::string options = "";
+        #if !defined(_WIN32) && !defined(_WIN64)
+            options = "matlab -nosplash -nodesktop";
+        #endif
+
+        if (!(matlabPtr = engOpen(options.c_str()))) {
+            throw std::runtime_error("\nCan't start MATLAB engine\n");
+        }
+        started = true;
+        engSetVisible(matlabPtr, 0);
+    }
+    
+    std::unique_ptr<dylib> loadLibrary(const std::string& filename)
+    {
+        auto lib = std::unique_ptr<dylib>(new dylib(std::getenv("MATLAB_DLL_PATH"), filename.c_str()));
+        if (!lib)
+        {
+            throw std::runtime_error("The matlab engine dynamic library (" + filename + ") failed to load in path - " 
+                                     + std::getenv("MATLAB_DLL_PATH") + ".\n");
+        }
+        return lib;
+    };
+
+    void loadLibFunctions()
+    {   
+        engLib = loadLibrary("libeng" + std::string(dylib::extension));
+        mxLib = loadLibrary("libmx" + std::string(dylib::extension));
+        std::string funcName;
+        try {    
+            funcName = "engOpen";    
+            engOpen = engLib->get_function<Engine*(const char *)>(funcName);
+
+            funcName = "engClose";      
+            engClose = engLib->get_function<int(Engine *)>(funcName);
+
+            funcName = "engSetVisible";       
+            engSetVisible = engLib->get_function<int(Engine *, bool)>(funcName);
+            
+            funcName = "engGetVariable";
+            engGetVariable = engLib->get_function< mxArray *(Engine *, const char *)>(funcName);
+
+            funcName = "engPutVariable";        
+            engPutVariable = engLib->get_function<int(Engine *, const char *, const mxArray *)>(funcName);
+        
+            funcName = "engOutputBuffer";        
+            engOutputBuffer = engLib->get_function<int(Engine *, char *, int)>(funcName);
+
+            funcName = "engEvalString";        
+            engEvalString = engLib->get_function<int(Engine *, const char *)>(funcName);
+        
+            funcName = "mxGetScalar";        
+            mxGetScalar = mxLib->get_function<double(const mxArray *)>(funcName);
+
+            funcName = "mxGetData";        
+            mxGetData = mxLib->get_function<void *(const mxArray *)>(funcName);
+
+            funcName = "mxCreateDoubleScalar";        
+            mxCreateDoubleScalar = mxLib->get_function<mxArray *(double)>(funcName);
+
+            funcName = "mxCreateDoubleMatrix_800";        
+            mxCreateDoubleMatrix = mxLib->get_function<mxArray *(mwSize, mwSize, mxComplexity)>(funcName);
+
+            funcName = "mxCreateString";        
+            mxCreateString = mxLib->get_function<mxArray *(const char *)>(funcName);
+
+            funcName = "mxGetPr";        
+            mxGetPr = mxLib->get_function<double *(const mxArray *)>(funcName);
+
+            funcName = "mxDestroyArray";        
+            mxDestroyArray = mxLib->get_function<void(mxArray *)>(funcName);
+        }catch (const dylib::symbol_error &) {
+            throw std::runtime_error("failed to load MATLAB engine function: " + funcName);
+        }
+    };
+    
+    void close() {
+	    if (matlabPtr) {
+            engEvalString(matlabPtr, "fclose all");
+            engEvalString(matlabPtr, "clear all");
+            engClose(matlabPtr);
+        }
+        started = false;
+    }
+
+    static MatlabLoader* getInstance()
+    {
+        static MatlabLoader instance{};
+        return &instance;
+    }
+
+private:
+    explicit MatlabLoader() {}
+};
+
+class MatlabEngine
+{
+    public:
+    std::string functionName;
+    std::string currentDirectory;
+    bool dirChanged = false;
+    bool funChanged = false;
+    MatlabLoader* loader = nullptr;
+    
+    MatlabEngine()
+    {
+        loader = MatlabLoader::getInstance();
+        loader->loadLibFunctions();       
+    };
+    
+    void cd(std::string path){
+        this->currentDirectory = path;
+        dirChanged = true;
+    };
+
+    void close(){
+        MatlabLoader::getInstance()->close();
+    };
+
+    void setFunction(std::string functionName)
+    {
+        this->functionName = functionName;
+        funChanged = true;
+    };
+
+    void editFile(std::string path)
+    {
+        loader->open();
+        loader->engEvalString(loader->matlabPtr, ("edit " + path).c_str());
+    };
+
+    void initialize(int expOutputCount)
+    {
+        if (dirChanged){
+            std::string cdCmd = "cd('" + (currentDirectory + "')");
+            loader->engEvalString(loader->matlabPtr, cdCmd.c_str());
+            dirChanged = false;
+        }
+
+        if (funChanged){
+            std::string cdCmd = "nOutput = nargout('" + (functionName + "');");
+            loader->engEvalString(loader->matlabPtr, cdCmd.c_str());
+            mxArray *matOutput = loader->engGetVariable(loader->matlabPtr, "nOutput");
+            size_t nOutput = (size_t)loader->mxGetScalar(matOutput);
+            if (nOutput != expOutputCount)
+            {
+                throw std::runtime_error("The custom function " + functionName + " is expected to have " + 
+                                         std::to_string(expOutputCount) + " output but has " + std::to_string(nOutput) + " instead."); 
+            }           
+            funChanged = false;
+        }
+    }
+
+    py::list invoke(std::vector<double>& xdata, std::vector<double>& params)
+    {   
+        loader->open();
+        initialize(1);
+        
+        mxArray *XDATA = loader->mxCreateDoubleMatrix(1, xdata.size(), mxREAL);
+        memcpy(loader->mxGetPr(XDATA), &xdata[0], xdata.size()*sizeof(double));
+        loader->engPutVariable(loader->matlabPtr, "xdata", XDATA);
+        mxArray *PARAMS = loader->mxCreateDoubleMatrix(1, params.size(), mxREAL);
+        memcpy((void *)loader->mxGetPr(PARAMS), &params[0], params.size()*sizeof(double));
+        loader->engPutVariable(loader->matlabPtr, "params", PARAMS);
+        
+        std::string customCmd = "[output] = " + (functionName + "(xdata, params);");
+        
+        char buffer[BUFSIZE+1];
+        buffer[BUFSIZE] = '\0';
+        loader->engOutputBuffer(loader->matlabPtr, buffer, BUFSIZE);
+        loader->engEvalString(loader->matlabPtr, customCmd.c_str());
+        loader->engOutputBuffer(loader->matlabPtr, NULL, 0);
+        mxArray *matOutput = loader->engGetVariable(loader->matlabPtr, "output");
+        
+        if (matOutput == NULL)
+        {
+            throw std::runtime_error("ERROR: Results could not be extracted from MATLAB engine because:\n" + std::string(buffer));
+        }
+        loader->engEvalString(loader->matlabPtr, "[nCount] = numel(output);");
+        mxArray *matCount = loader->engGetVariable(loader->matlabPtr, "nCount");
+        size_t nCount = (size_t)loader->mxGetScalar(matCount);
+        double* temp = (double *)loader->mxGetData(matOutput);
+ 
+        py::list output;
+        for (mwSize idx{0}; idx < nCount; idx++)
+        {
+            output.append(temp[idx]);
+        }
+        loader->mxDestroyArray(matOutput);
+        loader->mxDestroyArray(matCount); 
+        loader->mxDestroyArray(PARAMS);
+        loader->mxDestroyArray(XDATA);
+        
+        return output;    
+    };
+
+    py::tuple invoke(std::vector<double>& params, std::vector<double>& bulkIn, std::vector<double>& bulkOut, int contrast, int domain=DEFAULT_DOMAIN)
+    {   
+        loader->open();
+        initialize(2);
+
+        dirChanged = false;
+        mxArray *PARAMS = loader->mxCreateDoubleMatrix(1,params.size(),mxREAL);
+        memcpy(loader->mxGetPr(PARAMS), &params[0], params.size()*sizeof(double));
+        loader->engPutVariable(loader->matlabPtr, "params", PARAMS);
+        mxArray *BULKIN = loader->mxCreateDoubleMatrix(1,bulkIn.size(),mxREAL);
+        memcpy((void *)loader->mxGetPr(BULKIN), &bulkIn[0], bulkIn.size()*sizeof(double));
+        loader->engPutVariable(loader->matlabPtr, "bulkIn", BULKIN);
+        mxArray *BULKOUT = loader->mxCreateDoubleMatrix(1,bulkOut.size(),mxREAL);
+        memcpy((void *)loader->mxGetPr(BULKOUT), &bulkOut[0], bulkOut.size()*sizeof(double));
+        loader->engPutVariable(loader->matlabPtr, "bulkOut", BULKOUT);
+        mxArray *CONTRAST = loader->mxCreateDoubleScalar(contrast + 1);
+        loader->engPutVariable(loader->matlabPtr, "contrast", CONTRAST);
+        std::string customCmd;
+        mxArray *DOMAIN_NUM = nullptr;
+        if (domain != -1){
+            DOMAIN_NUM = loader->mxCreateDoubleScalar(domain + 1);
+            loader->engPutVariable(loader->matlabPtr, "domain", DOMAIN_NUM);
+            customCmd = "[output, subRough] = " + (functionName + "(params, bulkIn, bulkOut, contrast, domain)");
+        }
+        else {
+            customCmd = "[output, subRough] = " + (functionName + "(params, bulkIn, bulkOut, contrast)");
+        }
+
+        char buffer[BUFSIZE+1];
+        buffer[BUFSIZE] = '\0';
+        loader->engEvalString(loader->matlabPtr, "clearvars output subRough");
+        loader->engOutputBuffer(loader->matlabPtr, buffer, BUFSIZE);
+        loader->engEvalString(loader->matlabPtr, customCmd.c_str());
+        mxArray *matOutput = loader->engGetVariable(loader->matlabPtr, "output");
+        loader->engOutputBuffer(loader->matlabPtr, NULL, 0);
+        mxArray *subRough = loader->engGetVariable(loader->matlabPtr, "subRough");
+        
+        if (matOutput == NULL || subRough == NULL)
+        {   
+            throw std::runtime_error("ERROR: Results could not be extracted from MATLAB engine because:\n" + std::string(buffer));
+        }
+        double roughness = (double)loader->mxGetScalar(subRough);
+        loader->engEvalString(loader->matlabPtr, "[nRow, nCol] = size(output)");
+        mxArray *matRow = loader->engGetVariable(loader->matlabPtr, "nRow");
+        mxArray *matCol = loader->engGetVariable(loader->matlabPtr, "nCol");
+        size_t nRow = (size_t)loader->mxGetScalar(matRow);
+        size_t nCol = (size_t)loader->mxGetScalar(matCol);
+        double* temp = (double *)loader->mxGetData(matOutput);
+ 
+        py::list output;
+        for (mwSize idx1{0}; idx1 < nRow; idx1++)
+        {
+            py::list rows; 
+            for (mwSize idx2{0}; idx2 < nCol; idx2++)
+            {
+                rows.append(temp[nRow * idx2 + idx1]);
+            }
+            output.append(rows);
+        }
+
+        loader->mxDestroyArray(matOutput);
+        loader->mxDestroyArray(subRough);
+        loader->mxDestroyArray(matRow); 
+        loader->mxDestroyArray(matCol);
+        loader->mxDestroyArray(PARAMS);
+        loader->mxDestroyArray(BULKIN);
+        loader->mxDestroyArray(BULKOUT);
+        loader->mxDestroyArray(CONTRAST);
+        if (DOMAIN_NUM)
+            loader->mxDestroyArray(DOMAIN_NUM);
+        
+        return py::make_tuple(output, roughness);   
+    };
+};
 
 class DylibEngine
 {
@@ -649,12 +958,14 @@ public:
     }
 };
 
+
 template <typename... Args>
 using overload_cast_ = pybind11::detail::overload_cast_impl<Args...>;
 
 PYBIND11_MODULE(rat_core, m) {
     static Module module;
-   
+    
+    
     py::class_<EventBridge>(m, "EventBridge")
         .def(py::init<py::function>())
         .def("register", &EventBridge::registerEvent)
@@ -674,7 +985,21 @@ PYBIND11_MODULE(rat_core, m) {
                                       py::arg("domain") = DEFAULT_DOMAIN)
         .def("invoke", overload_cast_<std::vector<double>&, 
                                       std::vector<double>&>()(&DylibEngine::invoke), py::arg("xdata"), py::arg("param"));
-
+    
+    py::class_<MatlabEngine>(m, "MatlabEngine")
+        .def(py::init<>())
+        .def("cd", &MatlabEngine::cd)
+        .def("close", &MatlabEngine::close)
+        .def("editFile", &MatlabEngine::editFile)
+        .def("setFunction", &MatlabEngine::setFunction)
+        .def("invoke", overload_cast_<std::vector<double>&, std::vector<double>&, 
+                                    std::vector<double>&, int, int>()(&MatlabEngine::invoke), 
+                                    py::arg("params"), py::arg("bulkIn"), 
+                                    py::arg("bulkOut"), py::arg("contrast"), 
+                                    py::arg("domain") = DEFAULT_DOMAIN)
+        .def("invoke", overload_cast_<std::vector<double>&, 
+                                    std::vector<double>&>()(&MatlabEngine::invoke), py::arg("xdata"), py::arg("param"));
+    
     py::class_<PredictionIntervals>(m, "PredictionIntervals", docsPredictionIntervals.c_str())
         .def(py::init<>())
         .def_readwrite("reflectivity", &PredictionIntervals::reflectivity)
