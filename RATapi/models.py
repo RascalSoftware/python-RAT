@@ -304,7 +304,13 @@ class CustomFile(RATModel):
     filename: str = ""
     function_name: str = ""
     language: Languages = Languages.Python
-    path: pathlib.Path = pathlib.Path(".")
+    path: pathlib.Path = pathlib.Path(".").resolve()
+
+    @field_validator("path")
+    @classmethod
+    def resolve_relative_paths(cls, path: pathlib.Path) -> pathlib.Path:
+        """Return the absolute path of the given path."""
+        return path.resolve()
 
     def model_post_init(self, __context: Any) -> None:
         """Autogenerate the function name from the filename if not set.
