@@ -67,17 +67,17 @@ class MatlabEngine
 
     py::list invoke(std::vector<double>& xdata, std::vector<double>& params)
     {   
-        // try{
-        std::vector<double> output;
-            
-        //     auto func = library->get_function<void(std::vector<double>&, std::vector<double>&, std::vector<double>&)>(functionName);
-        //     func(xdata, params, output);
-            
-        return py::cast(output);
+        try{
+            std::vector<double> output;
+                
+            auto func = library->get_function<void(std::string, std::vector<double>&, std::vector<double>&, std::vector<double>&)>("callFunction");
+            func(functionName, xdata, params, output);
+                
+            return py::cast(output);
 
-        // }catch (const dylib::symbol_error &) {
-        //     throw std::runtime_error("failed to get dynamic library symbol for " + functionName);
-        // }        
+        }catch (const dylib::symbol_error &) {
+            throw std::runtime_error("failed to run MATLAB function: " + functionName);
+        }    
     };
 
     py::tuple invoke(std::vector<double>& params, std::vector<double>& bulkIn, std::vector<double>& bulkOut, int contrast, int domain=DEFAULT_DOMAIN)
@@ -86,24 +86,24 @@ class MatlabEngine
             std::vector<double> tempOutput;
             double *outputSize = new double[2]; 
             double roughness = 0.0;
+            
             auto func = library->get_function<void(std::string, std::vector<double>&, std::vector<double>&, std::vector<double>&, 
                                                    int, int, std::vector<double>&, double*, double*)>("callFunction");
             func(functionName, params, bulkIn, bulkOut, contrast + 1, domain + 1, tempOutput, outputSize, &roughness);
-            
             py::list output;
             for (int32_T idx1{0}; idx1 < outputSize[0]; idx1++)
             {
                 py::list rows;  
                 for (int32_T idx2{0}; idx2 < outputSize[1]; idx2++)
                 {
-                    rows.append(tempOutput[(int32_T)outputSize[1] * idx1 + idx2]);
+                    rows.append(tempOutput[(int32_T)outputSize[0] * idx2 + idx1]);
                 }
                 output.append(rows);
             }
             return py::make_tuple(output, roughness);    
 
         }catch (const dylib::symbol_error &) {
-            throw std::runtime_error("failed to get dynamic library symbol for " + functionName);
+            throw std::runtime_error("failed to run MATLAB function: " + functionName);
         }        
     };
 };

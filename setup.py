@@ -104,9 +104,12 @@ class BuildExt(build_ext):
 
         if self.inplace:
             obj_name = get_shared_object_name(libevent[0])
-            src = f"{build_py.build_lib}/{PACKAGE_NAME}/{obj_name}"
-            dest = f"{build_py.get_package_dir(PACKAGE_NAME)}/{obj_name}"
-            build_py.copy_file(src, dest)
+            build_py.copy_file(f"{build_py.build_lib}/{PACKAGE_NAME}/{obj_name}", 
+                               f"{build_py.get_package_dir(PACKAGE_NAME)}/{obj_name}")
+
+            obj_name = get_shared_object_name(libmatlab[0])
+            build_py.copy_file(f"{build_py.build_lib}/{PACKAGE_NAME}/{obj_name}", 
+                               f"{build_py.get_package_dir(PACKAGE_NAME)}/{obj_name}")
 
 
 class BuildClib(build_clib):   
@@ -159,7 +162,10 @@ class BuildClib(build_clib):
             if self.matlab_install_dir:
                 link_libraries.extend(["libeng", "libmx"])
                 if platform.system() == "Windows":
-                    link_library_dirs.append(f"{self.matlab_install_dir}/extern/lib/win64/microsoft")
+                    link_library_dirs.append(f"{self.matlab_install_dir}/bin/win64")
+                elif platform.system() == "Linux":
+                    link_library_dirs.append(f"{self.matlab_install_dir}/bin//microsoft")
+
 
             self.compiler.link_shared_object(
                 objects,

@@ -1,6 +1,8 @@
 """Wrappers for the interface between RATapi and MATLAB custom files."""
 import os
 import pathlib
+import platform
+import shutil
 from typing import Callable
 
 import numpy as np
@@ -9,11 +11,36 @@ from numpy.typing import ArrayLike
 import RATapi.rat_core
 
 
-def find_matlab():
-    pass
+MATLAB_PATH_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)), "matlab.txt")
 
 
+def set_matlab_path(path):
+    if not path:
+        return 
+    
+    path = pathlib.Path(path)
+    if not path.is_dir():
+        path = path.parent
 
+    if path.stem != 'bin':
+        path = path / 'bin'
+
+    if platform.system() == "Windows": 
+        arch  = "win64"
+    elif  platform.system() == "Darwin":
+        arch = "maci64" if (path / "maci64").exists() else "maca64"
+    else: 
+        arch = "glnxa64"
+    
+    path = path / arch
+    if not path.exists():
+        raise FileNotFoundError(f"The expected MATLAB folders were in found at the path: {path}")
+    
+    with open(MATLAB_PATH_FILE, "w") as path_file:
+        path_file.write(path.as_posix())
+
+    return path.as_posix()
+    
 
 def start_matlab():
     """Start MATLAB asynchronously and returns a future to retrieve the engine later.
@@ -24,18 +51,23 @@ def start_matlab():
         A custom matlab engine wrapper.
 
     """
-
-    path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "matlab.txt")
-    # if pathlib(matlab_path).is_file()
-    with open(path) as path_file:
-        matlab_path = path_file.read()
+    try:
+        with open(MATLAB_PATH_FILE) as path_file:
+            matlab_path = path_file.read()
+    except FileNotFoundError:
+        matlab_path = ""
     
-    os.environ["RAT_PATH"] = dir_path, "")
-    os.environ["MATLAB_INSTALL_DIR"] += os.pathsep + "C:\\Program Files\\MATLAB\\R2023a\\bin\\win64"
-    engine = RATapi.rat_core.MatlabEngine()
-    engine.start()
+    if not matlab_path:
+        matlab_path = set_matlab_path(shutil.which("matlab"))
+        if matlab_path is None:
+            matlab_path = ""
+            
+    if matlab_path: 
+        os.environ["PATH"] += os.pathsep + matlab_path
+        engine = RATapi.rat_core.MatlabEngine()
+        engine.start()
     
-    return engine
+        return engine
 
 
 
@@ -50,6 +82,9 @@ class MatlabWrapper:
     engine = start_matlab()
     
     def __init__(self, filename) -> None:
+        if self.engine is None:
+            raise ValueError("MATLAB is not found. Please use `set_matlab_path` to set the location of your MATLAB installation") from None
+        
         path = pathlib.Path(filename)
         self.engine.cd(str(path.parent))
         self.engine.setFunction(path.stem)
