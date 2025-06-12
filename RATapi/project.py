@@ -868,7 +868,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", use_attribute
                     + f"'filename': '{item.filename}', "
                     + f"'function_name': '{item.function_name}', "
                     + f"'language': '{str(item.language)}', "
-                    + f"'path': '{str(item.path)}'"
+                    + f"'path': r'{str(item.path)}'"  # Raw string to ensure backslash is not interpreted as escape
                     + "}"
                 )
                 return item_str
