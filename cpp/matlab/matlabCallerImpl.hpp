@@ -5,6 +5,7 @@
 #include <vector>
 #include <iostream>
 #include <chrono>
+#include <cstring>
 
 using namespace std::chrono;
 
@@ -22,10 +23,6 @@ public:
         }
         engSetVisible(matlabPtr, 0);
     };
-
-    void startMatlab(){
-       // this->matlabFuture = startMATLABAsync();
-    };
     
     void cd(std::string path){
         this->currentDirectory = path;
@@ -34,8 +31,8 @@ public:
 
     void call(std::string functionName, std::vector<double>& xdata, std::vector<double>& params, std::vector<double>& output)
     {   
-        if (!this->matlabPtr)
-            this->setEngine();  
+        if (!matlabPtr)
+            setEngine();  
         
         if (dirChanged){
             std::string cdCmd =   "cd('" + (this->currentDirectory + "')");
@@ -70,8 +67,8 @@ public:
     void call(std::string functionName, std::vector<double>& params, std::vector<double>& bulkIn, 
               std::vector<double>& bulkOut, int contrast, int domain, std::vector<double>& output, double* outputSize, double* rough)
     {   
-        if (!this->matlabPtr)
-            this->setEngine();  
+        if (!matlabPtr)
+            setEngine();  
         
         if (dirChanged){
             std::string cdCmd =   "cd('" + (this->currentDirectory + "')");

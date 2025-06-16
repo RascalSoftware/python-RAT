@@ -1,6 +1,8 @@
 import os
 import platform
+import shutil
 import sys
+import warnings
 from glob import glob
 from pathlib import Path
 
@@ -108,14 +110,23 @@ class BuildExt(build_ext):
                                f"{build_py.get_package_dir(PACKAGE_NAME)}/{obj_name}")
 
             obj_name = get_shared_object_name(libmatlab[0])
-            build_py.copy_file(f"{build_py.build_lib}/{PACKAGE_NAME}/{obj_name}", 
-                               f"{build_py.get_package_dir(PACKAGE_NAME)}/{obj_name}")
-
+            matlab_dll_path = Path(build_py.build_lib) / PACKAGE_NAME / obj_name
+            if matlab_dll_path.exists():
+                build_py.copy_file(matlab_dll_path, 
+                                   f"{build_py.get_package_dir(PACKAGE_NAME)}/{obj_name}")
+                
+                open(f"{build_py.get_package_dir(PACKAGE_NAME)}/matlab.txt", 'w').close()
+                
 
 class BuildClib(build_clib):   
     def initialize_options(self):
         super().initialize_options()
-        self.matlab_install_dir = os.environ.get("MATLAB_INSTALL_DIR", "")
+        matlab_install_dir = os.environ.get("MATLAB_INSTALL_DIR")
+        if matlab_install_dir is None:
+            matlab_install_dir = shutil.which("matlab") 
+            if matlab_install_dir is not None:
+                matlab_install_dir = Path(matlab_install_dir).parent.parent.as_posix()
+        self.matlab_install_dir = matlab_install_dir
         build_py = self.get_finalized_command("build_py")
         self.build_clib = f"{build_py.build_lib}/{PACKAGE_NAME}"
 
@@ -137,12 +148,12 @@ class BuildClib(build_clib):
             link_libraries = []
             link_library_dirs = []
 
-            if lib_name == libmatlab[0] and not self.matlab_install_dir:
-                print("No MATLAB install dir was not given so the MATLAB integration cannot be built.")
+            if lib_name == libmatlab[0] and self.matlab_install_dir is None:
+                warnings.warn("No MATLAB install dir was not given so the MATLAB integration cannot be built.")
                 del libraries[index]
                 continue
 
-            if self.matlab_install_dir:
+            if lib_name == libmatlab[0] and self.matlab_install_dir is not None:
                 extra_include.append(f"{self.matlab_install_dir}/extern/include/")
             
             build_info["cflags"] = compile_args
@@ -159,12 +170,13 @@ class BuildClib(build_clib):
                 debug=self.debug,
             )
             language = self.compiler.detect_language(sources)
-            if self.matlab_install_dir:
-                link_libraries.extend(["libeng", "libmx"])
+            if lib_name == libmatlab[0] and self.matlab_install_dir is not None:
                 if platform.system() == "Windows":
-                    link_library_dirs.append(f"{self.matlab_install_dir}/bin/win64")
+                    link_libraries.extend(["libeng", "libmx"])
+                    link_library_dirs.append(f"{self.matlab_install_dir}/extern/lib/win64/microsoft")
                 elif platform.system() == "Linux":
-                    link_library_dirs.append(f"{self.matlab_install_dir}/bin//microsoft")
+                    link_libraries.extend(["eng", "mx"])
+                    link_library_dirs.append(f"{self.matlab_install_dir}/bin/glnxa64"))
 
 
             self.compiler.link_shared_object(
@@ -189,7 +201,7 @@ setup(
     long_description_content_type="text/markdown",
     packages=find_packages(),
     include_package_data=True,
-    package_data={"": [get_shared_object_name(libevent[0]), get_shared_object_name(libmatlab[0])], "RATapi.examples": ["data/*.dat"]},
+    package_data={"": ["matlab.txt", get_shared_object_name(libevent[0]), get_shared_object_name(libmatlab[0])], "RATapi.examples": ["data/*.dat"]},
     cmdclass={"build_clib": BuildClib,  "build_ext": BuildExt},
     libraries=[libevent, libmatlab],
     ext_modules=ext_modules,
@@ -206,12 +218,6 @@ setup(
         ':python_version < "3.11"': ["StrEnum >= 0.4.15"],
         "Dev": ["pytest>=7.4.0", "pytest-cov>=4.1.0", "ruff>=0.4.10"],
         "Orso": ["orsopy>=1.2.1", "pint>=0.24.4"],
-        "Matlab_latest": ["matlabengine"],
-        "Matlab_2025a": ["matlabengine == 25.1.*"],
-        "Matlab_2024b": ["matlabengine == 24.2.2"],
-        "Matlab_2024a": ["matlabengine == 24.1.4"],
-        "Matlab_2023b": ["matlabengine == 23.2.3"],
-        "Matlab_2023a": ["matlabengine == 9.14.3"],
     },
     zip_safe=False,
 )

@@ -2,7 +2,7 @@
 
 LIB_EXPORT void startMatlab()
 {
-    MatlabCaller::get_instance()->startMatlab();;
+    MatlabCaller::get_instance()->setEngine();;
 }
 
 LIB_EXPORT void cd(std::string path)
