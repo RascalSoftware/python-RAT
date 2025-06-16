@@ -1,5 +1,6 @@
 """Test the pydantic models."""
 
+import pathlib
 import re
 from typing import Callable
 
@@ -98,6 +99,13 @@ class TestModels:
             match=f"1 validation error for {model.__name__}\nnew_field\n  Extra inputs are not permitted",
         ):
             model(new_field=1, **model_params)
+
+
+def test_custom_file_path_is_absolute() -> None:
+    """If we use provide a relative path to the custom file model, it should be converted to an absolute path."""
+    relative_path = pathlib.Path("./relative_path")
+    custom_file = RATapi.models.CustomFile(path=relative_path)
+    assert custom_file.path.is_absolute()
 
 
 def test_data_eq() -> None:
