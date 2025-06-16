@@ -6858,7 +6858,7 @@ def r1_monolayer():
         ),
         custom_files=RATapi.ClassList(
             RATapi.models.CustomFile(
-                name="Model_IIb", filename="Model_IIb.m", function_name="Model_IIb", language="matlab", path=""
+                name="Model_IIb", filename="Model_IIb.m", function_name="Model_IIb", language="matlab"
             )
         ),
     )

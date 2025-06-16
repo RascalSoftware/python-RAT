@@ -868,7 +868,8 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", use_attribute
                     + f"'filename': '{item.filename}', "
                     + f"'function_name': '{item.function_name}', "
                     + f"'language': '{str(item.language)}', "
-                    + f"'path': r'{str(item.path)}'"  # Raw string to ensure backslash is not interpreted as escape
+                    # Raw string to ensure backslash is not interpreted as escape
+                    + f"'path': r'{str(try_relative_to(item.path, script_path.parent))}'"
                     + "}"
                 )
                 return item_str
@@ -932,7 +933,7 @@ from numpy import array, empty, inf
                         "name": item.name,
                         "filename": item.filename,
                         "language": item.language,
-                        "path": try_relative_to(item.path, filepath),
+                        "path": try_relative_to(item.path, filepath.parent),
                     }
 
                 json_dict["custom_files"] = [make_custom_file_dict(file) for file in attr]
@@ -968,7 +969,7 @@ from numpy import array, empty, inf
         # file paths are saved as relative to the project directory
         for file in model_dict["custom_files"]:
             if not Path(file["path"]).is_absolute():
-                file["path"] = Path(path, file["path"])
+                file["path"] = Path(path.parent, file["path"]).resolve()
 
         return cls.model_validate(model_dict)
 
@@ -1038,7 +1039,7 @@ def try_relative_to(path: Path, relative_to: Path) -> str:
         return str(path.relative_to(relative_to))
     else:
         warnings.warn(
-            "Could not save custom file path as relative to the project directory, "
+            "Could not write custom file path as relative to the project directory, "
             "which means that it may not work on other devices. If you would like to share your project, "
             "make sure your custom files are in a subfolder of the project save location.",
             stacklevel=2,

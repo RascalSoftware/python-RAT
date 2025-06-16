@@ -108,7 +108,7 @@ def absorption():
         name="DPPC absorption",
         filename="volume_thiol_bilayer.py",
         language="python",
-        path=pathlib.Path(__file__).parent.resolve(),
+        path=pathlib.Path(__file__).parent,
     )
 
     # Finally add the contrasts

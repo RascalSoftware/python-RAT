@@ -52,7 +52,7 @@ def DSPC_custom_layers():
         name="DSPC Model",
         filename="custom_bilayer_DSPC.py",
         language="python",
-        path=pathlib.Path(__file__).parent.resolve(),
+        path=pathlib.Path(__file__).parent,
     )
 
     # Also, add the relevant background parameters - one each for each contrast:

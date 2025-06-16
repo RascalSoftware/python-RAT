@@ -663,7 +663,7 @@ def test_append_data_background_error():
 
 
 def test_get_python_handle():
-    path = pathlib.Path(__file__).parent.resolve()
+    path = pathlib.Path(__file__).parent
     assert RATapi.inputs.get_python_handle("utils.py", "dummy_function", path).__code__ == dummy_function.__code__
 
 
