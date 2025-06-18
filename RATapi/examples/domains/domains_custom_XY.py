@@ -35,7 +35,7 @@ def domains_custom_XY():
         name="Domain Layer",
         filename="domains_XY_model.py",
         language="python",
-        path=pathlib.Path(__file__).parent.resolve(),
+        path=pathlib.Path(__file__).parent,
     )
 
     # Make contrasts

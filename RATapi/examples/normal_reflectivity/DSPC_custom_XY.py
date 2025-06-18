@@ -75,7 +75,7 @@ def DSPC_custom_XY():
         name="DSPC Model",
         filename="custom_XY_DSPC.py",
         language="python",
-        path=pathlib.Path(__file__).parent.resolve(),
+        path=pathlib.Path(__file__).parent,
     )
 
     # Also, add the relevant background parameters - one each for each contrast:

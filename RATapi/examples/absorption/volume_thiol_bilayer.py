@@ -133,7 +133,7 @@ def volume_thiol_bilayer(params, bulk_in, bulk_out, contrast):
 
     CW = [cwThick, bulk_out[contrast], 0, bilayerRough]
 
-    if contrast == 0 or contrast == 2:
+    if contrast == 1 or contrast == 3:
         output = [alloyUp, gold, SAMTAILS, SAMHEAD, CW, *BILAYER]
     else:
         output = [alloyDown, gold, SAMTAILS, SAMHEAD, CW, *BILAYER]

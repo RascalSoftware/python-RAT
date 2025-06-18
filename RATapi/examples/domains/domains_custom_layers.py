@@ -32,7 +32,7 @@ def domains_custom_layers():
         name="Alloy domains",
         filename="alloy_domains.py",
         language="python",
-        path=pathlib.Path(__file__).parent.resolve(),
+        path=pathlib.Path(__file__).parent,
     )
 
     # Make a contrast

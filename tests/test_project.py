@@ -1590,10 +1590,6 @@ def test_save_load(project, request):
             original_project.save(path)
         converted_project = RATapi.Project.load(path)
 
-    # resolve custom files in case the original project had unresolvable relative paths
-    for file in original_project.custom_files:
-        file.path = file.path.resolve()
-
     for field in RATapi.Project.model_fields:
         assert getattr(converted_project, field) == getattr(original_project, field)
 
@@ -1614,7 +1610,7 @@ def test_relative_paths_warning():
     relative_path = "/tmp/project/project_path/myproj.dat"
 
     with pytest.warns(
-        match="Could not save custom file path as relative to the project directory, "
+        match="Could not write custom file path as relative to the project directory, "
         "which means that it may not work on other devices. If you would like to share your project, "
         "make sure your custom files are in a subfolder of the project save location.",
     ):

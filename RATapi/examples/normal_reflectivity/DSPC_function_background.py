@@ -148,7 +148,7 @@ def DSPC_function_background():
         name="D2O Background Function",
         filename="background_function.py",
         language="python",
-        path=pathlib.Path(__file__).parent.resolve(),
+        path=pathlib.Path(__file__).parent,
     )
 
     problem.background_parameters.append(name="Fn Ao", min=5e-7, value=8e-6, max=5e-5)
