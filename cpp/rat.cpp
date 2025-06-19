@@ -126,7 +126,7 @@ class MatlabEngine
             funcName = "mxCreateDoubleScalar";        
             mxCreateDoubleScalar = mxLib->get_function<mxArray *(double)>(funcName);
 
-            funcName = "mxCreateDoubleMatrix";        
+            funcName = "mxCreateDoubleMatrix_800";        
             mxCreateDoubleMatrix = mxLib->get_function<mxArray *(mwSize, mwSize, mxComplexity)>(funcName);
 
             funcName = "mxCreateString";        

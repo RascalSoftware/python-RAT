@@ -69,6 +69,7 @@ def start_matlab():
         if matlab_path is None:
             matlab_path = ""
         else:
+            print(matlab_path)
             temp = pathlib.Path(matlab_path)
             if temp.is_symlink():
                 matlab_path = temp.readlink().as_posix()

@@ -127,4 +127,4 @@ def DSPC_custom_layers():
 
 if __name__ == "__main__":
     problem, results = DSPC_custom_layers()
-    RAT.plotting.plot_ref_sld(problem, results, True)
+    # RAT.plotting.plot_ref_sld(problem, results, True)
