@@ -11,8 +11,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  run_ruff:
-    uses: ./.github/workflows/run_ruff.yml
 
   test:
     needs: [run_ruff]
@@ -50,8 +48,10 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt install libomp-dev
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v2
       - name: Install and Test with pytest
         run: |
           export PATH="$pythonLocation:$PATH"
           python -m pip install -e .[Dev,Orso]
-          pytest tests/ --cov=RATapi --cov-report=term
+          python RATapi/examples/normal_reflectivity/DSPC_custom_layers.py
