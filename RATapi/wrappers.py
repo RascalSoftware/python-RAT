@@ -3,6 +3,7 @@ import os
 import pathlib
 import platform
 import shutil
+import subprocess
 from typing import Callable
 
 import numpy as np
@@ -14,33 +15,39 @@ import RATapi.rat_core
 MATLAB_PATH_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)), "matlab.txt")
 
 
-def set_matlab_path(path):
-    if not path:
+def set_matlab_path(matlab_path):
+    if not matlab_path:
         return 
     
-    path = pathlib.Path(path)
-    if not path.is_dir():
-        path = path.parent
+    if platform.system() == "Windows": 
+        process = subprocess.Popen(f'"{matlab_path}" -batch "comserver(\'register\')"')
+        process.wait()
+        
 
-    if path.stem != 'bin':
-        path = path / 'bin'
+    with open(MATLAB_PATH_FILE, "w") as path_file:
+        path_file.write(matlab_path)
 
+
+def get_matlab_paths(exe_path):
+    if not exe_path:
+        raise FileNotFoundError()
+    
+    bin_path = pathlib.Path(exe_path).parent
+    if bin_path.stem != 'bin':
+        raise FileNotFoundError()
+    
     if platform.system() == "Windows": 
         arch  = "win64"
     elif  platform.system() == "Darwin":
-        arch = "maci64" if (path / "maci64").exists() else "maca64"
+        arch = "maci64" if (bin_path / "maci64").exists() else "maca64"
     else: 
         arch = "glnxa64"
     
-    path = path / arch
-    if not path.exists():
-        raise FileNotFoundError(f"The expected MATLAB folders were in found at the path: {path}")
+    dll_path = bin_path / arch
+    if not dll_path.exists():
+        raise FileNotFoundError(f"The expected MATLAB folders were in found at the path: {dll_path}")
     
-    with open(MATLAB_PATH_FILE, "w") as path_file:
-        path_file.write(path.as_posix())
-
-    return path.as_posix()
-    
+    return f'{bin_path.as_posix()}/' , f'{dll_path.as_posix()}/'
 
 def start_matlab():
     """Start MATLAB asynchronously and returns a future to retrieve the engine later.
@@ -58,17 +65,23 @@ def start_matlab():
         matlab_path = ""
     
     if not matlab_path:
-        matlab_path = set_matlab_path(shutil.which("matlab"))
+        matlab_path = shutil.which("matlab")
         if matlab_path is None:
             matlab_path = ""
-            
-    if matlab_path: 
-        os.environ["PATH"] += os.pathsep + matlab_path
+        else:
+            temp = pathlib.Path(matlab_path)
+            if temp.is_symlink():
+                matlab_path = temp.readlink().as_posix()
+            set_matlab_path(matlab_path)
+    
+    if matlab_path:
+        bin_path, dll_path = get_matlab_paths(matlab_path)
+        os.environ["MATLAB_DLL_PATH"] = dll_path
+        os.environ["PATH"] = bin_path + os.pathsep + os.environ["PATH"]
+        os.environ["PATH"] = dll_path + os.pathsep + os.environ["PATH"]
         engine = RATapi.rat_core.MatlabEngine()
-        engine.start()
     
         return engine
-
 
 
 class MatlabWrapper:

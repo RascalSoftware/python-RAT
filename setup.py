@@ -18,7 +18,6 @@ with open("README.md") as f:
     LONG_DESCRIPTION = f.read()
 
 libevent = ("eventManager", {"sources": ["cpp/RAT/events/eventManager.cpp"], "include_dirs": ["cpp/RAT/events/"]})
-libmatlab = ("matlabCaller", {"sources": ["cpp/matlab/matlabCaller.cpp"], "include_dirs": ["cpp/matlab/"]})
 
 
 ext_modules = [
@@ -108,25 +107,13 @@ class BuildExt(build_ext):
             obj_name = get_shared_object_name(libevent[0])
             build_py.copy_file(f"{build_py.build_lib}/{PACKAGE_NAME}/{obj_name}", 
                                f"{build_py.get_package_dir(PACKAGE_NAME)}/{obj_name}")
-
-            obj_name = get_shared_object_name(libmatlab[0])
-            matlab_dll_path = Path(build_py.build_lib) / PACKAGE_NAME / obj_name
-            if matlab_dll_path.exists():
-                build_py.copy_file(matlab_dll_path, 
-                                   f"{build_py.get_package_dir(PACKAGE_NAME)}/{obj_name}")
                 
-                open(f"{build_py.get_package_dir(PACKAGE_NAME)}/matlab.txt", 'w').close()
+            open(f"{build_py.get_package_dir(PACKAGE_NAME)}/matlab.txt", 'w').close()
                 
 
 class BuildClib(build_clib):   
     def initialize_options(self):
         super().initialize_options()
-        matlab_install_dir = os.environ.get("MATLAB_INSTALL_DIR")
-        if matlab_install_dir is None:
-            matlab_install_dir = shutil.which("matlab") 
-            if matlab_install_dir is not None:
-                matlab_install_dir = Path(matlab_install_dir).parent.parent.as_posix()
-        self.matlab_install_dir = matlab_install_dir
         build_py = self.get_finalized_command("build_py")
         self.build_clib = f"{build_py.build_lib}/{PACKAGE_NAME}"
 
@@ -142,23 +129,10 @@ class BuildClib(build_clib):
         else:
             compile_args = ["-std=c++11", "-fPIC"]
 
-
-        for index, (lib_name, build_info) in enumerate(libraries):
-            extra_include = []
-            link_libraries = []
-            link_library_dirs = []
-
-            if lib_name == libmatlab[0] and self.matlab_install_dir is None:
-                warnings.warn("No MATLAB install dir was not given so the MATLAB integration cannot be built.")
-                del libraries[index]
-                continue
-
-            if lib_name == libmatlab[0] and self.matlab_install_dir is not None:
-                extra_include.append(f"{self.matlab_install_dir}/extern/include/")
-            
+        for lib_name, build_info in libraries:
             build_info["cflags"] = compile_args
             macros = build_info.get("macros")
-            include_dirs = build_info.get("include_dirs") + extra_include
+            include_dirs = build_info.get("include_dirs")
             cflags = build_info.get("cflags")
             sources = list(build_info.get("sources"))
             objects = self.compiler.compile(
@@ -170,22 +144,11 @@ class BuildClib(build_clib):
                 debug=self.debug,
             )
             language = self.compiler.detect_language(sources)
-            if lib_name == libmatlab[0] and self.matlab_install_dir is not None:
-                if platform.system() == "Windows":
-                    link_libraries.extend(["libeng", "libmx"])
-                    link_library_dirs.append(f"{self.matlab_install_dir}/extern/lib/win64/microsoft")
-                elif platform.system() == "Linux":
-                    link_libraries.extend(["eng", "mx"])
-                    link_library_dirs.append(f"{self.matlab_install_dir}/bin/glnxa64"))
-
-
             self.compiler.link_shared_object(
                 objects,
                 get_shared_object_name(lib_name),
                 output_dir=self.build_clib,
                 target_lang=language,
-                libraries=link_libraries, 
-                library_dirs=link_library_dirs,
             )
 
         super().build_libraries(libraries)
@@ -201,9 +164,9 @@ setup(
     long_description_content_type="text/markdown",
     packages=find_packages(),
     include_package_data=True,
-    package_data={"": ["matlab.txt", get_shared_object_name(libevent[0]), get_shared_object_name(libmatlab[0])], "RATapi.examples": ["data/*.dat"]},
+    package_data={"": ["matlab.txt", get_shared_object_name(libevent[0])], "RATapi.examples": ["data/*.dat"]},
     cmdclass={"build_clib": BuildClib,  "build_ext": BuildExt},
-    libraries=[libevent, libmatlab],
+    libraries=[libevent], 
     ext_modules=ext_modules,
     python_requires=">=3.10",
     install_requires=[

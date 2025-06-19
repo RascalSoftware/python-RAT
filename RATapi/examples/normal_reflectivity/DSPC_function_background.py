@@ -146,8 +146,8 @@ def DSPC_function_background():
 
     problem.custom_files.append(
         name="D2O Background Function",
-        filename="background_function.py",
-        language="python",
+        filename="backgroundFunction.m",
+        language="matlab",
         path=pathlib.Path(__file__).parent,
     )
 
