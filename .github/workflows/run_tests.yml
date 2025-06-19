@@ -13,7 +13,6 @@ concurrency:
 jobs:
 
   test:
-    needs: [run_ruff]
     strategy:
       fail-fast: false
       matrix:
