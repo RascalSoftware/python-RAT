@@ -29,11 +29,8 @@ jobs:
         uses: matlab-actions/setup-matlab@v2
         with:
           release: R2024a
-      - name: Run script
-        uses: matlab-actions/run-command@v2
-        with:
-          command: disp(matlabroot)
       - name: Install
         run: |
           export PATH="$pythonLocation:$PATH"
+          cd ..
           python -m pip install RATapi[MATLAB_2024a] 
