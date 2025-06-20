@@ -50,8 +50,8 @@ def DSPC_custom_layers():
     # Add the custom file to the project
     problem.custom_files.append(
         name="DSPC Model",
-        filename="custom_bilayer_DSPC.py",
-        language="python",
+        filename="customBilayerDSPC.m",
+        language="matlab",
         path=pathlib.Path(__file__).parent,
     )
 
@@ -127,4 +127,4 @@ def DSPC_custom_layers():
 
 if __name__ == "__main__":
     problem, results = DSPC_custom_layers()
-    RAT.plotting.plot_ref_sld(problem, results, True)
+    # RAT.plotting.plot_ref_sld(problem, results, True)

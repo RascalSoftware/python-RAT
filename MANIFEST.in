@@ -1,4 +1,4 @@
-include README.md
+include README.md matlab.txt
 recursive-include cpp *
 prune tests
 prune */__pycache__ 
