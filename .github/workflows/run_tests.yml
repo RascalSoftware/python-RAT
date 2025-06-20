@@ -25,33 +25,15 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4      
-        with:
-          submodules: true
-      - name: Set up Python version ${{ matrix.version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.version }}
-      - name: Install OMP (MacOS) 
-        if: runner.os == 'macOS'
-        run: |
-          brew install llvm libomp
-          echo "export CC=/usr/local/opt/llvm/bin/clang" >> ~/.bashrc
-          echo "export CXX=/usr/local/opt/llvm/bin/clang++" >> ~/.bashrc
-          echo "export CFLAGS=\"$CFLAGS -I/usr/local/opt/libomp/include\"" >> ~/.bashrc
-          echo "export CXXFLAGS=\"$CXXFLAGS -I/usr/local/opt/libomp/include\"" >> ~/.bashrc
-          echo "export LDFLAGS=\"$LDFLAGS -Wl,-rpath,/usr/local/opt/libomp/lib -L/usr/local/opt/libomp/lib -lomp\"" >> ~/.bashrc
-          source ~/.bashrc
-      - name: Install OMP (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt install libomp-dev
       - name: Set up MATLAB
         uses: matlab-actions/setup-matlab@v2
         with:
           release: R2024a
-      - name: Install and Test with pytest
+      - name: Run script
+        uses: matlab-actions/run-command@v2
+        with:
+          command: disp(matlabroot)
+      - name: Install
         run: |
           export PATH="$pythonLocation:$PATH"
           python -m pip install RATapi[MATLAB_2024a] 
