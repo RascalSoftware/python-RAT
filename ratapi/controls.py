@@ -20,7 +20,15 @@ from pydantic import (
 from ratapi.utils.custom_errors import custom_pydantic_validation_error
 from ratapi.utils.enums import BoundHandling, Display, Parallel, Procedures, Strategies
 
-common_fields = ["procedure", "parallel", "calcSldDuringFit", "resampleMinAngle", "resampleNPoints", "display"]
+common_fields = [
+    "procedure",
+    "parallel",
+    "calcSldDuringFit",
+    "numSimulationPoints",
+    "resampleMinAngle",
+    "resampleNPoints",
+    "display",
+]
 update_fields = ["updateFreq", "updatePlotFreq"]
 fields = {
     "calculate": common_fields,
@@ -52,6 +60,9 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid", use_attribut
 
     calcSldDuringFit: bool = False
     """Whether SLD will be calculated during fit (for live plotting etc.)"""
+
+    numSimulationPoints: int = Field(500, ge=2)
+    """The number of points used for reflectivity simulations where no data is supplied."""
 
     resampleMinAngle: float = Field(0.9, le=1, gt=0)
     """The upper threshold on the angle between three sampled points for resampling, in units of radians over pi."""

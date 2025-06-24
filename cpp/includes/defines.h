@@ -590,6 +590,8 @@ procedure : str
     Which procedure RAT should execute. Can be 'calculate', 'simplex', 'de', 'ns', or 'dream'.
 calcSldDuringFit : bool
     Whether SLD will be calculated during fit (for live plotting etc.)
+numSimulationPoints : int
+    The number of points used for a reflectivity simulation where no data is present.
 resampleMinAngle : float
     The upper threshold on the angle between three sampled points for resampling, in units of radians over pi.
 resampleNPoints : int
@@ -663,6 +665,7 @@ struct Control {
     real_T propScale {};
     real_T nsTolerance {};
     boolean_T calcSldDuringFit {};
+    real_T numSimulationPoints {};
     real_T resampleMinAngle {};
     real_T resampleNPoints {};
     real_T updateFreq {};
