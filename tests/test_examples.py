@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-import RATapi.examples as examples
+import ratapi.examples as examples
 
 
 @pytest.mark.parametrize(

@@ -6,11 +6,11 @@ import pickle
 import numpy as np
 import pytest
 
-import RATapi
-import RATapi.wrappers
-from RATapi.inputs import FileHandles, check_indices, make_controls, make_input, make_problem
-from RATapi.rat_core import Checks, Control, NameStore, ProblemDefinition
-from RATapi.utils.enums import (
+import ratapi
+import ratapi.wrappers
+from ratapi.inputs import FileHandles, check_indices, make_controls, make_input, make_problem
+from ratapi.rat_core import Checks, Control, NameStore, ProblemDefinition
+from ratapi.utils.enums import (
     BackgroundActions,
     BoundHandling,
     Calculations,
@@ -26,8 +26,8 @@ from tests.utils import dummy_function
 @pytest.fixture
 def standard_layers_project():
     """Add parameters to the default project for a normal calculation."""
-    test_project = RATapi.Project(
-        data=RATapi.ClassList([RATapi.models.Data(name="Test Data", data=np.array([[1.0, 1.0, 1.0]]))]),
+    test_project = ratapi.Project(
+        data=ratapi.ClassList([ratapi.models.Data(name="Test Data", data=np.array([[1.0, 1.0, 1.0]]))]),
     )
     test_project.parameters.append(name="Test Thickness")
     test_project.parameters.append(name="Test SLD")
@@ -60,9 +60,9 @@ def standard_layers_project():
 @pytest.fixture
 def domains_project():
     """Add parameters to the default project for a domains calculation."""
-    test_project = RATapi.Project(
+    test_project = ratapi.Project(
         calculation=Calculations.Domains,
-        data=RATapi.ClassList([RATapi.models.Data(name="Test Data", data=np.array([[1.0, 1.0, 1.0]]))]),
+        data=ratapi.ClassList([ratapi.models.Data(name="Test Data", data=np.array([[1.0, 1.0, 1.0]]))]),
     )
     test_project.parameters.append(name="Test Thickness")
     test_project.parameters.append(name="Test SLD")
@@ -93,7 +93,7 @@ def domains_project():
 @pytest.fixture
 def custom_xy_project():
     """Add parameters to the default project for a normal calculation and use the custom xy model."""
-    test_project = RATapi.Project(model=LayerModels.CustomXY)
+    test_project = ratapi.Project(model=LayerModels.CustomXY)
     test_project.parameters.append(name="Test Thickness")
     test_project.parameters.append(name="Test SLD")
     test_project.parameters.append(name="Test Roughness")
@@ -343,7 +343,7 @@ def custom_xy_problem(test_names, test_checks):
         [1, 0.0, np.inf],
     ]
     problem.customFiles = FileHandles(
-        [RATapi.models.CustomFile(name="Test Custom File", filename="cpp_test.dll", language="cpp")]
+        [ratapi.models.CustomFile(name="Test Custom File", filename="cpp_test.dll", language="cpp")]
     )
     problem.names = test_names
     problem.checks = test_checks
@@ -455,7 +455,7 @@ def test_make_input(test_project, test_problem, test_controls, request) -> None:
     test_problem = request.getfixturevalue(test_problem)
     test_controls = request.getfixturevalue(test_controls)
 
-    problem, controls = make_input(test_project, RATapi.Controls())
+    problem, controls = make_input(test_project, ratapi.Controls())
 
     problem = pickle.loads(pickle.dumps(problem))
     check_problem_equal(problem, test_problem)
@@ -599,7 +599,7 @@ def test_undefined_background(test_project, request):
         ValueError,
         match=f"All backgrounds must have a source defined. For a {background.type} type "
         f"background, the source must be defined in "
-        f'"{RATapi.project.values_defined_in[f"backgrounds.{background.type}.source"]}"',
+        f'"{ratapi.project.values_defined_in[f"backgrounds.{background.type}.source"]}"',
     ):
         make_problem(test_project)
 
@@ -614,7 +614,7 @@ def test_undefined_resolution(test_project, request):
     with pytest.raises(
         ValueError,
         match=f"Constant resolutions must have a source defined. The source must be defined in "
-        f'"{RATapi.project.values_defined_in[f"resolutions.{resolution.type}.source"]}"',
+        f'"{ratapi.project.values_defined_in[f"resolutions.{resolution.type}.source"]}"',
     ):
         make_problem(test_project)
 
@@ -640,7 +640,7 @@ def test_append_data_background():
     data = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     background = np.array([[1, 10, 11], [4, 12, 13], [7, 14, 15]])
 
-    result = RATapi.inputs.append_data_background(data, background)
+    result = ratapi.inputs.append_data_background(data, background)
     np.testing.assert_allclose(result, np.array([[1, 2, 3, 0, 10, 11], [4, 5, 6, 0, 12, 13], [7, 8, 9, 0, 14, 15]]))
 
 
@@ -649,7 +649,7 @@ def test_append_data_background_res():
     data = np.array([[1, 2, 3, 4], [4, 5, 6, 6], [7, 8, 9, 72]])
     background = np.array([[1, 10, 11], [4, 12, 13], [7, 14, 15]])
 
-    result = RATapi.inputs.append_data_background(data, background)
+    result = ratapi.inputs.append_data_background(data, background)
     np.testing.assert_allclose(result, np.array([[1, 2, 3, 4, 10, 11], [4, 5, 6, 6, 12, 13], [7, 8, 9, 72, 14, 15]]))
 
 
@@ -659,19 +659,19 @@ def test_append_data_background_error():
     background = np.array([[56, 10, 11], [41, 12, 13], [7, 14, 15]])
 
     with pytest.raises(ValueError, match=("The q-values of the data and background must be equal.")):
-        RATapi.inputs.append_data_background(data, background)
+        ratapi.inputs.append_data_background(data, background)
 
 
 def test_get_python_handle():
     path = pathlib.Path(__file__).parent
-    assert RATapi.inputs.get_python_handle("utils.py", "dummy_function", path).__code__ == dummy_function.__code__
+    assert ratapi.inputs.get_python_handle("utils.py", "dummy_function", path).__code__ == dummy_function.__code__
 
 
 def test_make_controls(standard_layers_controls) -> None:
     """The controls object should contain the full set of controls parameters, with the appropriate set defined by the
     input controls.
     """
-    controls = make_controls(RATapi.Controls())
+    controls = make_controls(ratapi.Controls())
     check_controls_equal(controls, standard_layers_controls)
 
 

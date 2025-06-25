@@ -2,8 +2,8 @@ import pathlib
 
 import pytest
 
-import RATapi as RAT
-from RATapi.utils.plotting import plot_ref_sld
+import ratapi as RAT
+from ratapi.utils.plotting import plot_ref_sld
 
 PROJECT_PATH = pathlib.Path(__file__).parents[0] / "test_data"
 

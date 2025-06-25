@@ -8,8 +8,8 @@ from typing import Any, Union
 import pydantic
 import pytest
 
-from RATapi.controls import Controls, fields
-from RATapi.utils.enums import BoundHandling, Display, Parallel, Procedures, Strategies
+from ratapi.controls import Controls, fields
+from ratapi.utils.enums import BoundHandling, Display, Parallel, Procedures, Strategies
 
 
 @pytest.fixture

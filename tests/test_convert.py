@@ -7,8 +7,8 @@ import tempfile
 
 import pytest
 
-import RATapi
-from RATapi.utils.convert import project_to_r1, r1_to_project
+import ratapi
+from ratapi.utils.convert import project_to_r1, r1_to_project
 
 TEST_DIR_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_data")
 
@@ -19,10 +19,10 @@ def dspc_bilayer():
     with some changes to make it compatible with R1.
 
     """
-    project, _ = RATapi.examples.DSPC_standard_layers()
+    project, _ = ratapi.examples.DSPC_standard_layers()
 
     # change parameters to standardise arguments not in R1
-    for class_list in RATapi.project.parameter_class_lists:
+    for class_list in ratapi.project.parameter_class_lists:
         params = getattr(project, class_list)
         for param in params:
             param.prior_type = "uniform"
@@ -65,7 +65,7 @@ def test_r1_to_project(file, project, path_type, request):
 
     # assert statements have to be more careful due to R1 missing features
     # e.g. R1 doesn't support background parameter names, mu, sigma...
-    for class_list in RATapi.project.class_lists:
+    for class_list in ratapi.project.class_lists:
         assert getattr(output_project, class_list) == getattr(expected_project, class_list)
 
 
@@ -91,11 +91,11 @@ def test_r1_involution(project, request, monkeypatch):
         """Load the generated R1 struct instead of reading a file."""
         return {"problem": r1_struct}
 
-    monkeypatch.setattr("RATapi.utils.convert.loadmat", mock_load, raising=True)
+    monkeypatch.setattr("ratapi.utils.convert.loadmat", mock_load, raising=True)
 
     converted_project = r1_to_project(project)
 
-    for class_list in RATapi.project.class_lists:
+    for class_list in ratapi.project.class_lists:
         assert getattr(converted_project, class_list) == getattr(original_project, class_list)
 
 

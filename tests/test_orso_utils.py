@@ -1,4 +1,4 @@
-"""Tests for the RATapi.utils.orso module."""
+"""Tests for the ratapi.utils.orso module."""
 
 import os
 from io import StringIO
@@ -8,9 +8,9 @@ import numpy as np
 import pytest
 from orsopy.fileio.model_language import SampleModel
 
-from RATapi.examples.bayes_benchmark.bayes_benchmark import get_project
-from RATapi.project import Project
-from RATapi.utils.orso import ORSOProject, orso_model_to_rat
+from ratapi.examples.bayes_benchmark.bayes_benchmark import get_project
+from ratapi.project import Project
+from ratapi.utils.orso import ORSOProject, orso_model_to_rat
 
 TEST_DIR_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_data")
 

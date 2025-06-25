@@ -12,8 +12,8 @@ import pydantic
 import pytest
 from typing_extensions import get_args, get_origin
 
-import RATapi
-from RATapi.utils.enums import Calculations, LayerModels, TypeOptions
+import ratapi
+from ratapi.utils.enums import Calculations, LayerModels, TypeOptions
 
 layer_params = {"thickness": "Test Thickness", "SLD": "Test SLD", "roughness": "Test Roughness"}
 absorption_layer_params = {
@@ -24,28 +24,28 @@ absorption_layer_params = {
 }
 
 model_classes = {
-    "parameters": RATapi.models.Parameter,
-    "bulk_in": RATapi.models.Parameter,
-    "bulk_out": RATapi.models.Parameter,
-    "scalefactors": RATapi.models.Parameter,
-    "domain_ratios": RATapi.models.Parameter,
-    "background_parameters": RATapi.models.Parameter,
-    "resolution_parameters": RATapi.models.Parameter,
-    "backgrounds": RATapi.models.Background,
-    "resolutions": RATapi.models.Resolution,
-    "custom_files": RATapi.models.CustomFile,
-    "data": RATapi.models.Data,
-    "layers": RATapi.models.Layer,
-    "domain_contrasts": RATapi.models.DomainContrast,
-    "contrasts": RATapi.models.Contrast,
+    "parameters": ratapi.models.Parameter,
+    "bulk_in": ratapi.models.Parameter,
+    "bulk_out": ratapi.models.Parameter,
+    "scalefactors": ratapi.models.Parameter,
+    "domain_ratios": ratapi.models.Parameter,
+    "background_parameters": ratapi.models.Parameter,
+    "resolution_parameters": ratapi.models.Parameter,
+    "backgrounds": ratapi.models.Background,
+    "resolutions": ratapi.models.Resolution,
+    "custom_files": ratapi.models.CustomFile,
+    "data": ratapi.models.Data,
+    "layers": ratapi.models.Layer,
+    "domain_contrasts": ratapi.models.DomainContrast,
+    "contrasts": ratapi.models.Contrast,
 }
 
 
 @pytest.fixture
 def test_project():
     """Add parameters to the default project, so each ClassList can be tested properly."""
-    test_project = RATapi.Project(
-        data=RATapi.ClassList([RATapi.models.Data(name="Simulation", data=np.array([[1.0, 1.0, 1.0]]))]),
+    test_project = ratapi.Project(
+        data=ratapi.ClassList([ratapi.models.Data(name="Simulation", data=np.array([[1.0, 1.0, 1.0]]))]),
     )
     test_project.parameters.append(name="Test Thickness")
     test_project.parameters.append(name="Test SLD")
@@ -141,8 +141,8 @@ def test_classlists(test_project) -> None:
     """The ClassLists in the "Project" model should contain instances of the models given by the dictionary
     "model_in_classlist".
     """
-    for model in (fields := RATapi.Project.model_fields):
-        if get_origin(fields[model].annotation) == RATapi.ClassList:
+    for model in (fields := ratapi.Project.model_fields):
+        if get_origin(fields[model].annotation) == ratapi.ClassList:
             class_list = getattr(test_project, model)
             assert class_list._class_handle == get_args(fields[model].annotation)[0]
 
@@ -151,7 +151,7 @@ def test_classlists_specific_cases() -> None:
     """The ClassLists in the "Project" model should contain instances of specific models given various non-default
     options.
     """
-    project = RATapi.Project(calculation=Calculations.Domains, absorption=True)
+    project = ratapi.Project(calculation=Calculations.Domains, absorption=True)
     assert project.layers._class_handle.__name__ == "AbsorptionLayer"
     assert project.contrasts._class_handle.__name__ == "ContrastWithRatio"
 
@@ -159,15 +159,15 @@ def test_classlists_specific_cases() -> None:
 @pytest.mark.parametrize(
     ["input_model", "model_params"],
     [
-        (RATapi.models.Background, {}),
-        (RATapi.models.Contrast, {}),
-        (RATapi.models.ContrastWithRatio, {}),
-        (RATapi.models.CustomFile, {}),
-        (RATapi.models.Data, {}),
-        (RATapi.models.DomainContrast, {}),
-        (RATapi.models.Layer, layer_params),
-        (RATapi.models.AbsorptionLayer, absorption_layer_params),
-        (RATapi.models.Resolution, {}),
+        (ratapi.models.Background, {}),
+        (ratapi.models.Contrast, {}),
+        (ratapi.models.ContrastWithRatio, {}),
+        (ratapi.models.CustomFile, {}),
+        (ratapi.models.Data, {}),
+        (ratapi.models.DomainContrast, {}),
+        (ratapi.models.Layer, layer_params),
+        (ratapi.models.AbsorptionLayer, absorption_layer_params),
+        (ratapi.models.Resolution, {}),
     ],
 )
 def test_initialise_wrong_classes(input_model: Callable, model_params: dict) -> None:
@@ -178,14 +178,14 @@ def test_initialise_wrong_classes(input_model: Callable, model_params: dict) -> 
         "Value error, This ClassList only supports elements of type Parameter. In the input list:\n"
         f"    index 0 is of type {input_model.__name__}",
     ):
-        RATapi.Project(parameters=RATapi.ClassList(input_model(**model_params)))
+        ratapi.Project(parameters=ratapi.ClassList(input_model(**model_params)))
 
 
 @pytest.mark.parametrize(
     ["input_model", "model_params", "absorption", "actual_model_name"],
     [
-        (RATapi.models.Layer, layer_params, True, "AbsorptionLayer"),
-        (RATapi.models.AbsorptionLayer, absorption_layer_params, False, "Layer"),
+        (ratapi.models.Layer, layer_params, True, "AbsorptionLayer"),
+        (ratapi.models.AbsorptionLayer, absorption_layer_params, False, "Layer"),
     ],
 )
 def test_initialise_wrong_layers(
@@ -203,18 +203,18 @@ def test_initialise_wrong_layers(
         f'"The layers attribute contains {input_model.__name__}s, but the absorption parameter is '
         f'{absorption}. The attribute should be a ClassList of {actual_model_name} instead."',
     ):
-        RATapi.Project(absorption=absorption, layers=RATapi.ClassList(input_model(**model_params)))
+        ratapi.Project(absorption=absorption, layers=ratapi.ClassList(input_model(**model_params)))
 
 
 @pytest.mark.parametrize(
     ["input_model", "calculation", "actual_model_name"],
     [
-        (RATapi.models.Contrast, Calculations.Domains, "ContrastWithRatio"),
-        (RATapi.models.ContrastWithRatio, Calculations.Normal, "Contrast"),
+        (ratapi.models.Contrast, Calculations.Domains, "ContrastWithRatio"),
+        (ratapi.models.ContrastWithRatio, Calculations.Normal, "Contrast"),
     ],
 )
 def test_initialise_wrong_contrasts(
-    input_model: RATapi.models.RATModel, calculation: Calculations, actual_model_name: str
+    input_model: ratapi.models.RATModel, calculation: Calculations, actual_model_name: str
 ) -> None:
     """If the "Project" model is initialised with the incorrect contrast model given the value of calculation, we
     should raise a ValidationError.
@@ -226,16 +226,16 @@ def test_initialise_wrong_contrasts(
         f'  Value error, "The contrasts attribute contains contrasts {word} ratio, '
         f'but the calculation is {calculation}"',
     ):
-        RATapi.Project(calculation=calculation, contrasts=RATapi.ClassList(input_model()))
+        ratapi.Project(calculation=calculation, contrasts=ratapi.ClassList(input_model()))
 
 
 @pytest.mark.parametrize(
     "calculation, model",
-    [(Calculations.Domains, RATapi.models.ContrastWithRatio), (Calculations.Normal, RATapi.models.Contrast)],
+    [(Calculations.Domains, ratapi.models.ContrastWithRatio), (Calculations.Normal, ratapi.models.Contrast)],
 )
-def test_initialise_ambiguous_contrasts(calculation: Calculations, model: RATapi.models.RATModel):
+def test_initialise_ambiguous_contrasts(calculation: Calculations, model: ratapi.models.RATModel):
     """If a sequence of dictionaries is passed to 'contrasts', convert them to the correct model for the calculation."""
-    proj = RATapi.Project(calculation=calculation, contrasts=RATapi.ClassList([{"name": "Contrast 1"}]))
+    proj = ratapi.Project(calculation=calculation, contrasts=ratapi.ClassList([{"name": "Contrast 1"}]))
     assert proj.contrasts._class_handle == model
 
 
@@ -243,14 +243,14 @@ def test_initialise_without_substrate_roughness() -> None:
     """If the "Project" model is initialised without "Substrate Roughness" as a parameter, add it as a protected
     parameter to the front of the "parameters" ClassList.
     """
-    project = RATapi.Project(parameters=RATapi.ClassList(RATapi.models.Parameter(name="Test Parameter")))
-    assert project.parameters[0] == RATapi.models.ProtectedParameter(
+    project = ratapi.Project(parameters=ratapi.ClassList(ratapi.models.Parameter(name="Test Parameter")))
+    assert project.parameters[0] == ratapi.models.ProtectedParameter(
         name="Substrate Roughness",
         min=1.0,
         value=3.0,
         max=5.0,
         fit=True,
-        prior_type=RATapi.models.Priors.Uniform,
+        prior_type=ratapi.models.Priors.Uniform,
         mu=0.0,
         sigma=np.inf,
     )
@@ -259,38 +259,38 @@ def test_initialise_without_substrate_roughness() -> None:
 @pytest.mark.parametrize(
     "input_parameter",
     [
-        RATapi.models.Parameter(name="Substrate Roughness"),
-        RATapi.models.Parameter(name="SUBSTRATE ROUGHNESS"),
-        RATapi.models.Parameter(name="substrate roughness"),
+        ratapi.models.Parameter(name="Substrate Roughness"),
+        ratapi.models.Parameter(name="SUBSTRATE ROUGHNESS"),
+        ratapi.models.Parameter(name="substrate roughness"),
     ],
 )
-def test_initialise_without_protected_substrate_roughness(input_parameter: RATapi.models.Parameter) -> None:
+def test_initialise_without_protected_substrate_roughness(input_parameter: ratapi.models.Parameter) -> None:
     """If the "Project" model is initialised without "Substrate Roughness" as a protected parameter, add it to the
     front of the "parameters" ClassList.
     """
-    project = RATapi.Project(parameters=RATapi.ClassList(input_parameter))
-    assert project.parameters[0] == RATapi.models.ProtectedParameter(name=input_parameter.name)
+    project = ratapi.Project(parameters=ratapi.ClassList(input_parameter))
+    assert project.parameters[0] == ratapi.models.ProtectedParameter(name=input_parameter.name)
 
 
 def test_initialise_without_simulation() -> None:
     """If the "Project" model is initialised without "Simulation" in the "data" ClassList, add it to the front of the
     "data" ClassList.
     """
-    project = RATapi.Project(parameters=RATapi.ClassList(RATapi.models.Parameter(name="Test Parameter")))
-    assert project.data[0] == RATapi.models.Data(name="Simulation", simulation_range=[0.005, 0.7])
+    project = ratapi.Project(parameters=ratapi.ClassList(ratapi.models.Parameter(name="Test Parameter")))
+    assert project.data[0] == ratapi.models.Data(name="Simulation", simulation_range=[0.005, 0.7])
 
 
 @pytest.mark.parametrize(
     ["field", "model_type", "wrong_input_model", "model_params"],
     [
-        ("backgrounds", "Background", RATapi.models.Resolution, {}),
-        ("contrasts", "Contrast", RATapi.models.Layer, layer_params),
-        ("domain_contrasts", "DomainContrast", RATapi.models.Parameter, {}),
-        ("custom_files", "CustomFile", RATapi.models.Data, {}),
-        ("data", "Data", RATapi.models.Contrast, {}),
-        ("layers", "Layer", RATapi.models.DomainContrast, {}),
-        ("parameters", "Parameter", RATapi.models.CustomFile, {}),
-        ("resolutions", "Resolution", RATapi.models.Background, {}),
+        ("backgrounds", "Background", ratapi.models.Resolution, {}),
+        ("contrasts", "Contrast", ratapi.models.Layer, layer_params),
+        ("domain_contrasts", "DomainContrast", ratapi.models.Parameter, {}),
+        ("custom_files", "CustomFile", ratapi.models.Data, {}),
+        ("data", "Data", ratapi.models.Contrast, {}),
+        ("layers", "Layer", ratapi.models.DomainContrast, {}),
+        ("parameters", "Parameter", ratapi.models.CustomFile, {}),
+        ("resolutions", "Resolution", ratapi.models.Background, {}),
     ],
 )
 def test_assign_wrong_classes(
@@ -312,14 +312,14 @@ def test_assign_wrong_classes(
             f"    index 0 is of type {wrong_input_model.__name__}"
         ),
     ):
-        setattr(test_project, field, RATapi.ClassList(wrong_input_model(**model_params)))
+        setattr(test_project, field, ratapi.ClassList(wrong_input_model(**model_params)))
 
 
 @pytest.mark.parametrize(
     ["wrong_input_model", "model_params", "absorption", "actual_model_name"],
     [
-        (RATapi.models.Layer, layer_params, True, "AbsorptionLayer"),
-        (RATapi.models.AbsorptionLayer, absorption_layer_params, False, "Layer"),
+        (ratapi.models.Layer, layer_params, True, "AbsorptionLayer"),
+        (ratapi.models.AbsorptionLayer, absorption_layer_params, False, "Layer"),
     ],
 )
 def test_assign_wrong_layers(
@@ -329,26 +329,26 @@ def test_assign_wrong_layers(
     actual_model_name: str,
 ) -> None:
     """If we assign incorrect classes to the "Project" model, we should raise a ValidationError."""
-    project = RATapi.Project(absorption=absorption)
+    project = ratapi.Project(absorption=absorption)
     with pytest.raises(
         pydantic.ValidationError,
         match=f"1 validation error for Project\nlayers\n  Value error, "
         f'"The layers attribute contains {wrong_input_model.__name__}s, but the absorption parameter is '
         f'{absorption}. The attribute should be a ClassList of {actual_model_name} instead."',
     ):
-        project.layers = RATapi.ClassList(wrong_input_model(**model_params))
+        project.layers = ratapi.ClassList(wrong_input_model(**model_params))
 
 
 @pytest.mark.parametrize(
     ["wrong_input_model", "calculation", "actual_model_name"],
     [
-        (RATapi.models.Contrast, Calculations.Domains, "ContrastWithRatio"),
-        (RATapi.models.ContrastWithRatio, Calculations.Normal, "Contrast"),
+        (ratapi.models.Contrast, Calculations.Domains, "ContrastWithRatio"),
+        (ratapi.models.ContrastWithRatio, Calculations.Normal, "Contrast"),
     ],
 )
 def test_assign_wrong_contrasts(wrong_input_model: Callable, calculation: Calculations, actual_model_name: str) -> None:
     """If we assign incorrect classes to the "Project" model, we should raise a ValidationError."""
-    project = RATapi.Project(calculation=calculation)
+    project = ratapi.Project(calculation=calculation)
     word = "without" if calculation == Calculations.Domains else "with"
     with pytest.raises(
         pydantic.ValidationError,
@@ -356,7 +356,7 @@ def test_assign_wrong_contrasts(wrong_input_model: Callable, calculation: Calcul
         f'  Value error, "The contrasts attribute contains contrasts {word} ratio, but the calculation is '
         f'{calculation}"',
     ):
-        project.contrasts = RATapi.ClassList(wrong_input_model())
+        project.contrasts = ratapi.ClassList(wrong_input_model())
 
 
 @pytest.mark.parametrize(
@@ -395,7 +395,7 @@ def test_wrapped_routines(test_project) -> None:
         "extend",
         "set_fields",
     ]
-    for class_list in RATapi.project.class_lists:
+    for class_list in ratapi.project.class_lists:
         attribute = getattr(test_project, class_list)
         for methodName in wrapped_methods:
             assert hasattr(getattr(attribute, methodName), "__wrapped__")
@@ -422,7 +422,7 @@ def test_set_domain_contrasts(project_parameters: dict) -> None:
     """If we are not running a domains calculation with standard layers, the "domain_contrasts" field of the model
     should always be empty.
     """
-    project = RATapi.Project(**project_parameters)
+    project = ratapi.Project(**project_parameters)
     assert project.domain_contrasts == []
     project.domain_contrasts.append(name="New Domain Contrast")
     assert project.domain_contrasts == []
@@ -437,7 +437,7 @@ def test_set_domain_contrasts(project_parameters: dict) -> None:
 )
 def test_set_layers(project_parameters: dict) -> None:
     """If we are not using a standard layers model, the "layers" field of the model should always be empty."""
-    project = RATapi.Project(**project_parameters)
+    project = ratapi.Project(**project_parameters)
     assert project.layers == []
     project.layers.append(name="New Layer", thickness="Test Thickness", SLD="Test SLD", roughness="Test Roughness")
     assert project.layers == []
@@ -446,8 +446,8 @@ def test_set_layers(project_parameters: dict) -> None:
 @pytest.mark.parametrize(
     ["input_calculation", "input_contrast", "new_calculation", "new_contrast_model", "num_domain_ratios"],
     [
-        (Calculations.Normal, RATapi.models.Contrast, Calculations.Domains, "ContrastWithRatio", 1),
-        (Calculations.Domains, RATapi.models.ContrastWithRatio, Calculations.Normal, "Contrast", 0),
+        (Calculations.Normal, ratapi.models.Contrast, Calculations.Domains, "ContrastWithRatio", 1),
+        (Calculations.Domains, ratapi.models.ContrastWithRatio, Calculations.Normal, "Contrast", 0),
     ],
 )
 def test_set_calculation(
@@ -460,7 +460,7 @@ def test_set_calculation(
     """When changing the value of the calculation option, the "contrasts" ClassList should switch to using the
     appropriate Contrast model.
     """
-    project = RATapi.Project(calculation=input_calculation, contrasts=RATapi.ClassList(input_contrast()))
+    project = ratapi.Project(calculation=input_calculation, contrasts=ratapi.ClassList(input_contrast()))
     project.calculation = new_calculation
 
     assert project.calculation is new_calculation
@@ -525,13 +525,13 @@ def test_check_contrast_model_length(
     """If we are not running a domains calculation with standard layers, the "domain_contrasts" field of the model
     should always be empty.
     """
-    test_domain_ratios = RATapi.ClassList(RATapi.models.Parameter(name="Test Domain Ratio"))
-    test_contrasts = RATapi.ClassList(RATapi.models.ContrastWithRatio(model=test_contrast_model))
+    test_domain_ratios = ratapi.ClassList(ratapi.models.Parameter(name="Test Domain Ratio"))
+    test_contrasts = ratapi.ClassList(ratapi.models.ContrastWithRatio(model=test_contrast_model))
     with pytest.raises(
         pydantic.ValidationError,
         match=f"1 validation error for Project\n  Value error, {error_message}",
     ):
-        RATapi.Project(
+        ratapi.Project(
             calculation=Calculations.Domains,
             model=input_model,
             domain_ratios=test_domain_ratios,
@@ -542,8 +542,8 @@ def test_check_contrast_model_length(
 @pytest.mark.parametrize(
     ["input_layer", "model_params", "input_absorption", "new_layer_model"],
     [
-        (RATapi.models.Layer, layer_params, False, "AbsorptionLayer"),
-        (RATapi.models.AbsorptionLayer, absorption_layer_params, True, "Layer"),
+        (ratapi.models.Layer, layer_params, False, "AbsorptionLayer"),
+        (ratapi.models.AbsorptionLayer, absorption_layer_params, True, "Layer"),
     ],
 )
 def test_set_absorption(
@@ -555,16 +555,16 @@ def test_set_absorption(
     """When changing the value of the absorption option, the "layers" ClassList should switch to using the appropriate
     Layer model.
     """
-    project = RATapi.Project(
+    project = ratapi.Project(
         absorption=input_absorption,
-        parameters=RATapi.ClassList(
+        parameters=ratapi.ClassList(
             [
-                RATapi.models.Parameter(name="Test Thickness"),
-                RATapi.models.Parameter(name="Test SLD"),
-                RATapi.models.Parameter(name="Test Roughness"),
+                ratapi.models.Parameter(name="Test Thickness"),
+                ratapi.models.Parameter(name="Test SLD"),
+                ratapi.models.Parameter(name="Test Roughness"),
             ],
         ),
-        layers=RATapi.ClassList(input_layer(**model_params)),
+        layers=ratapi.ClassList(input_layer(**model_params)),
     )
     project.absorption = not input_absorption
 
@@ -584,7 +584,7 @@ def test_set_absorption(
 )
 def test_check_protected_parameters(delete_operation) -> None:
     """If we try to remove a protected parameter, we should raise an error."""
-    project = RATapi.Project()
+    project = ratapi.Project()
 
     with pytest.raises(
         pydantic.ValidationError,
@@ -617,16 +617,16 @@ def test_rename_models(test_project, model: str, fields: list[str]) -> None:
     in the project.
     """
     if model == "data":
-        test_project.backgrounds[0] = RATapi.models.Background(type="data", source="Simulation")
+        test_project.backgrounds[0] = ratapi.models.Background(type="data", source="Simulation")
     if model == "custom_files":
-        test_project.backgrounds[0] = RATapi.models.Background(type="function", source="Test Custom File")
+        test_project.backgrounds[0] = ratapi.models.Background(type="function", source="Test Custom File")
         # workaround until function resolutions are added
-        # test_project.resolutions[0] = RATapi.models.Resolution(type="function", source="Test Custom File")
-        test_project.resolution_parameters.append(RATapi.models.Parameter(name="New Name"))
-        test_project.resolutions[0] = RATapi.models.Resolution(type="constant", source="New Name")
+        # test_project.resolutions[0] = ratapi.models.Resolution(type="function", source="Test Custom File")
+        test_project.resolution_parameters.append(ratapi.models.Parameter(name="New Name"))
+        test_project.resolutions[0] = ratapi.models.Resolution(type="constant", source="New Name")
 
     getattr(test_project, model).set_fields(-1, name="New Name")
-    model_name_lists = RATapi.project.model_names_used_in[model]
+    model_name_lists = ratapi.project.model_names_used_in[model]
     for model_name_list, field in zip(model_name_lists, fields):
         attribute = model_name_list.attribute
         assert getattr(getattr(test_project, attribute)[-1], field) == "New Name"
@@ -645,7 +645,7 @@ def test_allowed_backgrounds(background_type, expected_field) -> None:
     If the source field of the Background model is set to a value that is not specified in the appropriate ClassList,
     we should raise a ValidationError.
     """
-    test_background = RATapi.models.Background(type=background_type, source="undefined")
+    test_background = ratapi.models.Background(type=background_type, source="undefined")
     with pytest.raises(
         pydantic.ValidationError,
         match=re.escape(
@@ -654,7 +654,7 @@ def test_allowed_backgrounds(background_type, expected_field) -> None:
             f'before including it in "backgrounds".'
         ),
     ):
-        RATapi.Project(backgrounds=RATapi.ClassList(test_background))
+        ratapi.Project(backgrounds=ratapi.ClassList(test_background))
 
 
 @pytest.mark.parametrize(
@@ -669,7 +669,7 @@ def test_allowed_layers(field: str) -> None:
     """If the "thickness", "SLD", or "roughness" fields of the Layer model are set to values that are not specified in
     the parameters, we should raise a ValidationError.
     """
-    test_layer = RATapi.models.Layer(**{**layer_params, field: "undefined"})
+    test_layer = ratapi.models.Layer(**{**layer_params, field: "undefined"})
 
     with pytest.raises(
         pydantic.ValidationError,
@@ -679,16 +679,16 @@ def test_allowed_layers(field: str) -> None:
             f'before including it in "layers".'
         ),
     ):
-        RATapi.Project(
+        ratapi.Project(
             absorption=False,
-            parameters=RATapi.ClassList(
+            parameters=ratapi.ClassList(
                 [
-                    RATapi.models.Parameter(name="Test Thickness"),
-                    RATapi.models.Parameter(name="Test SLD"),
-                    RATapi.models.Parameter(name="Test Roughness"),
+                    ratapi.models.Parameter(name="Test Thickness"),
+                    ratapi.models.Parameter(name="Test SLD"),
+                    ratapi.models.Parameter(name="Test Roughness"),
                 ],
             ),
-            layers=RATapi.ClassList(test_layer),
+            layers=ratapi.ClassList(test_layer),
         )
 
 
@@ -705,7 +705,7 @@ def test_allowed_absorption_layers(field: str) -> None:
     """If the "thickness", "SLD_real", "SLD_imaginary", or "roughness" fields of the AbsorptionLayer model are set to
     values that are not specified in the parameters, we should raise a ValidationError.
     """
-    test_layer = RATapi.models.AbsorptionLayer(**{**absorption_layer_params, field: "undefined"})
+    test_layer = ratapi.models.AbsorptionLayer(**{**absorption_layer_params, field: "undefined"})
 
     with pytest.raises(
         pydantic.ValidationError,
@@ -715,16 +715,16 @@ def test_allowed_absorption_layers(field: str) -> None:
             f'in "layers".'
         ),
     ):
-        RATapi.Project(
+        ratapi.Project(
             absorption=True,
-            parameters=RATapi.ClassList(
+            parameters=ratapi.ClassList(
                 [
-                    RATapi.models.Parameter(name="Test Thickness"),
-                    RATapi.models.Parameter(name="Test SLD"),
-                    RATapi.models.Parameter(name="Test Roughness"),
+                    ratapi.models.Parameter(name="Test Thickness"),
+                    ratapi.models.Parameter(name="Test SLD"),
+                    ratapi.models.Parameter(name="Test Roughness"),
                 ],
             ),
-            layers=RATapi.ClassList(test_layer),
+            layers=ratapi.ClassList(test_layer),
         )
 
 
@@ -740,7 +740,7 @@ def test_allowed_resolutions(resolution_type, expected_field) -> None:
     """If the "value" fields of the Resolution model are set to values that are not specified in the resolution
     parameters, we should raise a ValidationError.
     """
-    test_resolution = RATapi.models.Resolution(type=resolution_type, source="undefined")
+    test_resolution = ratapi.models.Resolution(type=resolution_type, source="undefined")
     with pytest.raises(
         pydantic.ValidationError,
         match=re.escape(
@@ -749,7 +749,7 @@ def test_allowed_resolutions(resolution_type, expected_field) -> None:
             f'before including it in "resolutions".'
         ),
     ):
-        RATapi.Project(resolutions=RATapi.ClassList(test_resolution))
+        ratapi.Project(resolutions=ratapi.ClassList(test_resolution))
 
 
 @pytest.mark.parametrize(
@@ -767,7 +767,7 @@ def test_allowed_contrasts(field: str, model_name: str) -> None:
     """If the fields of the Contrast model are set to values not specified in the other respective models of the
     project, we should raise a ValidationError.
     """
-    test_contrast = RATapi.models.Contrast(**{field: "undefined"})
+    test_contrast = ratapi.models.Contrast(**{field: "undefined"})
     with pytest.raises(
         pydantic.ValidationError,
         match=re.escape(
@@ -776,7 +776,7 @@ def test_allowed_contrasts(field: str, model_name: str) -> None:
             f'including it in "contrasts".'
         ),
     ):
-        RATapi.Project(calculation=Calculations.Normal, contrasts=RATapi.ClassList(test_contrast))
+        ratapi.Project(calculation=Calculations.Normal, contrasts=ratapi.ClassList(test_contrast))
 
 
 @pytest.mark.parametrize(
@@ -795,7 +795,7 @@ def test_allowed_contrasts_with_ratio(field: str, model_name: str) -> None:
     """If the fields of the ContrastWithRatio model are set to values not specified in the other respective models of
     the project, we should raise a ValidationError.
     """
-    test_contrast = RATapi.models.ContrastWithRatio(**{field: "undefined"})
+    test_contrast = ratapi.models.ContrastWithRatio(**{field: "undefined"})
     with pytest.raises(
         pydantic.ValidationError,
         match=re.escape(
@@ -804,7 +804,7 @@ def test_allowed_contrasts_with_ratio(field: str, model_name: str) -> None:
             f'including it in "contrasts".'
         ),
     ):
-        RATapi.Project(calculation=Calculations.Domains, contrasts=RATapi.ClassList(test_contrast))
+        ratapi.Project(calculation=Calculations.Domains, contrasts=ratapi.ClassList(test_contrast))
 
 
 @pytest.mark.parametrize(
@@ -813,37 +813,37 @@ def test_allowed_contrasts_with_ratio(field: str, model_name: str) -> None:
         (
             Calculations.Domains,
             LayerModels.StandardLayers,
-            RATapi.models.ContrastWithRatio(name="Test Contrast", model=["undefined", "undefined"]),
+            ratapi.models.ContrastWithRatio(name="Test Contrast", model=["undefined", "undefined"]),
             "domain_contrasts",
         ),
         (
             Calculations.Domains,
             LayerModels.CustomLayers,
-            RATapi.models.ContrastWithRatio(name="Test Contrast", model=["undefined"]),
+            ratapi.models.ContrastWithRatio(name="Test Contrast", model=["undefined"]),
             "custom_files",
         ),
         (
             Calculations.Domains,
             LayerModels.CustomXY,
-            RATapi.models.ContrastWithRatio(name="Test Contrast", model=["undefined"]),
+            ratapi.models.ContrastWithRatio(name="Test Contrast", model=["undefined"]),
             "custom_files",
         ),
         (
             Calculations.Normal,
             LayerModels.StandardLayers,
-            RATapi.models.Contrast(name="Test Contrast", model=["undefined", "undefined", "undefined"]),
+            ratapi.models.Contrast(name="Test Contrast", model=["undefined", "undefined", "undefined"]),
             "layers",
         ),
         (
             Calculations.Normal,
             LayerModels.CustomLayers,
-            RATapi.models.Contrast(name="Test Contrast", model=["undefined"]),
+            ratapi.models.Contrast(name="Test Contrast", model=["undefined"]),
             "custom_files",
         ),
         (
             Calculations.Normal,
             LayerModels.CustomXY,
-            RATapi.models.Contrast(name="Test Contrast", model=["undefined"]),
+            ratapi.models.Contrast(name="Test Contrast", model=["undefined"]),
             "custom_files",
         ),
     ],
@@ -851,7 +851,7 @@ def test_allowed_contrasts_with_ratio(field: str, model_name: str) -> None:
 def test_allowed_contrast_models(
     input_calc: Calculations,
     input_model: LayerModels,
-    test_contrast: "RATapi.models",
+    test_contrast: "ratapi.models",
     field_name: str,
 ) -> None:
     """If any value in the model field of the contrasts is set to a value not specified in the appropriate part of the
@@ -866,14 +866,14 @@ def test_allowed_contrast_models(
             f'"{field_name}". Please add all required values to "{field_name}" before including them in "contrasts".'
         ),
     ):
-        RATapi.Project(calculation=input_calc, model=input_model, contrasts=RATapi.ClassList(test_contrast))
+        ratapi.Project(calculation=input_calc, model=input_model, contrasts=ratapi.ClassList(test_contrast))
 
 
 def test_allowed_domain_contrast_models() -> None:
     """If any value in the model field of the domain_contrasts is set to a value not specified in the "layers" field of
     the project, we should raise a ValidationError.
     """
-    test_contrast = RATapi.models.DomainContrast(name="Test Domain Contrast", model=["undefined"])
+    test_contrast = ratapi.models.DomainContrast(name="Test Domain Contrast", model=["undefined"])
     with pytest.raises(
         pydantic.ValidationError,
         match=re.escape(
@@ -882,12 +882,12 @@ def test_allowed_domain_contrast_models() -> None:
             'including them in "domain_contrasts".'
         ),
     ):
-        RATapi.Project(calculation=Calculations.Domains, domain_contrasts=RATapi.ClassList(test_contrast))
+        ratapi.Project(calculation=Calculations.Domains, domain_contrasts=ratapi.ClassList(test_contrast))
 
 
 def test_str(default_project_str: str) -> None:
     """We should be able to print the "Project" model as a formatted list of the fields."""
-    assert str(RATapi.Project()) == default_project_str
+    assert str(ratapi.Project()) == default_project_str
 
 
 def test_get_all_names(test_project) -> None:
@@ -933,8 +933,8 @@ def test_get_all_protected_parameters(test_project) -> None:
 def test_check_allowed_values(test_value: str) -> None:
     """We should not raise an error if string values are defined and on the list of allowed values."""
     allowed_values = ["Substrate Roughness"]
-    project = RATapi.Project.model_construct(
-        layers=RATapi.ClassList(RATapi.models.Layer(**dict(layer_params, roughness=test_value)))
+    project = ratapi.Project.model_construct(
+        layers=ratapi.ClassList(ratapi.models.Layer(**dict(layer_params, roughness=test_value)))
     )
     assert project.check_allowed_values("layers", ["roughness"], allowed_values, allowed_values) is None
 
@@ -947,8 +947,8 @@ def test_check_allowed_values(test_value: str) -> None:
 )
 def test_check_allowed_values_not_on_list(test_value: str) -> None:
     """If string values are defined and are not included on the list of allowed values we should raise a ValueError."""
-    project = RATapi.Project.model_construct(
-        layers=RATapi.ClassList(RATapi.models.Layer(**dict(layer_params, roughness=test_value)))
+    project = ratapi.Project.model_construct(
+        layers=ratapi.ClassList(ratapi.models.Layer(**dict(layer_params, roughness=test_value)))
     )
     allowed_values = ["Substrate Roughness"]
     with pytest.raises(
@@ -970,9 +970,9 @@ def test_check_allowed_values_not_on_list(test_value: str) -> None:
 )
 def test_check_allowed_background_resolution_values_constant(test_value: str) -> None:
     """We should not raise an error if string values are defined and on the appropriate list of allowed values."""
-    project = RATapi.Project.model_construct(
-        background_parameters=RATapi.ClassList(RATapi.models.Parameter(name="Background Param 1")),
-        backgrounds=RATapi.ClassList(RATapi.models.Background(type=TypeOptions.Constant, source=test_value)),
+    project = ratapi.Project.model_construct(
+        background_parameters=ratapi.ClassList(ratapi.models.Parameter(name="Background Param 1")),
+        backgrounds=ratapi.ClassList(ratapi.models.Background(type=TypeOptions.Constant, source=test_value)),
     )
     assert project.check_allowed_source("backgrounds") is None
 
@@ -986,8 +986,8 @@ def test_check_allowed_background_resolution_values_constant(test_value: str) ->
 )
 def test_check_allowed_background_resolution_values_data(test_value: str) -> None:
     """We should not raise an error if string values are defined and on the appropriate list of allowed values."""
-    project = RATapi.Project.model_construct(
-        backgrounds=RATapi.ClassList(RATapi.models.Background(type=TypeOptions.Data, source=test_value))
+    project = ratapi.Project.model_construct(
+        backgrounds=ratapi.ClassList(ratapi.models.Background(type=TypeOptions.Data, source=test_value))
     )
     assert project.check_allowed_source("backgrounds") is None
 
@@ -1000,8 +1000,8 @@ def test_check_allowed_background_resolution_values_not_on_constant_list(test_va
     """If string values are defined and are not included on the correct list of allowed values we should raise a
     ValueError.
     """
-    project = RATapi.Project.model_construct(
-        backgrounds=RATapi.ClassList(RATapi.models.Background(type=TypeOptions.Constant, source=test_value))
+    project = ratapi.Project.model_construct(
+        backgrounds=ratapi.ClassList(ratapi.models.Background(type=TypeOptions.Constant, source=test_value))
     )
     with pytest.raises(
         ValueError,
@@ -1027,8 +1027,8 @@ def test_check_allowed_background_resolution_values_on_data_list(test_value: str
     """If string values are defined and are not included on the correct list of allowed values we should raise a
     ValueError.
     """
-    project = RATapi.Project.model_construct(
-        backgrounds=RATapi.ClassList(RATapi.models.Background(type=TypeOptions.Data, source=test_value))
+    project = ratapi.Project.model_construct(
+        backgrounds=ratapi.ClassList(ratapi.models.Background(type=TypeOptions.Data, source=test_value))
     )
     with pytest.raises(
         ValueError,
@@ -1051,8 +1051,8 @@ def test_check_contrast_model_allowed_values(test_values: list[str]) -> None:
     """We should not raise an error if values are defined in a non-empty list and all are on the list of allowed
     values.
     """
-    project = RATapi.Project.model_construct(
-        contrasts=RATapi.ClassList(RATapi.models.Contrast(name="Test Contrast", model=test_values)),
+    project = ratapi.Project.model_construct(
+        contrasts=ratapi.ClassList(ratapi.models.Contrast(name="Test Contrast", model=test_values)),
     )
     assert project.check_contrast_model_allowed_values("contrasts", ["Test Layer"], ["Test Layer"], "layers") is None
 
@@ -1069,8 +1069,8 @@ def test_check_allowed_contrast_model_not_on_list(test_values: list[str]) -> Non
     """If string values are defined in a non-empty list and any of them are not included on the list of allowed values
     we should raise a ValueError.
     """
-    project = RATapi.Project.model_construct(
-        contrasts=RATapi.ClassList(RATapi.models.Contrast(name="Test Contrast", model=test_values)),
+    project = ratapi.Project.model_construct(
+        contrasts=ratapi.ClassList(ratapi.models.Contrast(name="Test Contrast", model=test_values)),
     )
     allowed_values = ["Test Layer"]
     missing_values = list(set(test_values) - set(allowed_values))
@@ -1097,8 +1097,8 @@ def test_check_allowed_contrast_model_removed_from_list(test_values: list[str]) 
     """If string values are defined in a non-empty list and any of them have been removed from the list of allowed
     values we should raise a ValueError.
     """
-    project = RATapi.Project.model_construct(
-        contrasts=RATapi.ClassList(RATapi.models.Contrast(name="Test Contrast", model=test_values)),
+    project = ratapi.Project.model_construct(
+        contrasts=ratapi.ClassList(ratapi.models.Contrast(name="Test Contrast", model=test_values)),
     )
     previous_values = ["Test Layer", "Undefined Param 1", "Undefined Param 2"]
     allowed_values = ["Test Layer"]
@@ -1129,7 +1129,7 @@ def test_get_contrast_model_field(input_calc: Calculations, input_model: LayerMo
     """Each combination of calculation and model determines the field where the values of "model" field of "contrasts"
     are defined.
     """
-    project = RATapi.Project(calculation=input_calc, model=input_model)
+    project = ratapi.Project(calculation=input_calc, model=input_model)
     assert project.get_contrast_model_field() == expected_field_name
 
 
@@ -1158,7 +1158,7 @@ def test_write_script(project, request, temp_dir, input_filename: str) -> None:
     exec(script_path.read_text(), globals(), local_dict)
     new_project = local_dict["problem"]
 
-    for class_list in RATapi.project.class_lists:
+    for class_list in ratapi.project.class_lists:
         assert getattr(new_project, class_list) == getattr(test_project, class_list)
 
 
@@ -1205,8 +1205,8 @@ def test_wrap_set(test_project, class_list: str, model_type: str, field: str) ->
         pydantic.ValidationError,
         match=re.escape(
             f'1 validation error for Project\n  Value error, The value "undefined" used in the "{field}" field of '
-            f'{class_list}[{index}] must be defined in "{RATapi.project.values_defined_in[class_list_str]}". Please '
-            f'add "undefined" to "{RATapi.project.values_defined_in[class_list_str]}" before including it in '
+            f'{class_list}[{index}] must be defined in "{ratapi.project.values_defined_in[class_list_str]}". Please '
+            f'add "undefined" to "{ratapi.project.values_defined_in[class_list_str]}" before including it in '
             f'"{class_list}".'
         ),
     ):
@@ -1236,7 +1236,7 @@ def test_wrap_del(test_project, class_list: str, parameter: str, field: str) -> 
     orig_class_list = copy.deepcopy(test_attribute)
     index = test_attribute.index(parameter)
 
-    sub_attribute_name = RATapi.project.model_names_used_in[class_list][0].attribute
+    sub_attribute_name = ratapi.project.model_names_used_in[class_list][0].attribute
     sub_attribute = getattr(test_project, sub_attribute_name)
     sub_index = [i for i, _ in enumerate(sub_attribute) if getattr(sub_attribute[i], field) == parameter][0]
 
@@ -1283,8 +1283,8 @@ def test_wrap_iadd(test_project, class_list: str, model_type: str, field: str, m
         match=re.escape(
             f'1 validation error for Project\n  Value error, The value "undefined" used in the "{field}" '
             f"field of {class_list}[{len(test_attribute)}] must be defined in "
-            f'"{RATapi.project.values_defined_in[class_list_str]}". Please add "undefined" to '
-            f'"{RATapi.project.values_defined_in[class_list_str]}" before including it in "{class_list}".'
+            f'"{ratapi.project.values_defined_in[class_list_str]}". Please add "undefined" to '
+            f'"{ratapi.project.values_defined_in[class_list_str]}" before including it in "{class_list}".'
         ),
     ):
         test_attribute += [input_model(**{**model_params, field: "undefined"})]
@@ -1323,8 +1323,8 @@ def test_wrap_append(test_project, class_list: str, model_type: str, field: str,
         match=re.escape(
             f'1 validation error for Project\n  Value error, The value "undefined" used in the "{field}" '
             f"field of {class_list}[{len(test_attribute)}] must be defined in "
-            f'"{RATapi.project.values_defined_in[class_list_str]}". Please add "undefined" to '
-            f'"{RATapi.project.values_defined_in[class_list_str]}" before including it in "{class_list}".'
+            f'"{ratapi.project.values_defined_in[class_list_str]}". Please add "undefined" to '
+            f'"{ratapi.project.values_defined_in[class_list_str]}" before including it in "{class_list}".'
         ),
     ):
         test_attribute.append(input_model(**{**model_params, field: "undefined"}))
@@ -1363,8 +1363,8 @@ def test_wrap_insert(test_project, class_list: str, model_type: str, field: str,
         match=re.escape(
             f'1 validation error for Project\n  Value error, The value "undefined" used in the "{field}" '
             f"field of {class_list}[{index}] must be defined in "
-            f'"{RATapi.project.values_defined_in[class_list_str]}". Please add "undefined" to '
-            f'"{RATapi.project.values_defined_in[class_list_str]}" before including it in "{class_list}".'
+            f'"{ratapi.project.values_defined_in[class_list_str]}". Please add "undefined" to '
+            f'"{ratapi.project.values_defined_in[class_list_str]}" before including it in "{class_list}".'
         ),
     ):
         test_attribute.insert(index, input_model(**{**model_params, field: "undefined"}))
@@ -1430,7 +1430,7 @@ def test_wrap_pop(test_project, class_list: str, parameter: str, field: str) -> 
     orig_class_list = copy.deepcopy(test_attribute)
     index = test_attribute.index(parameter)
 
-    sub_attribute_name = RATapi.project.model_names_used_in[class_list][0].attribute
+    sub_attribute_name = ratapi.project.model_names_used_in[class_list][0].attribute
     sub_attribute = getattr(test_project, sub_attribute_name)
     sub_index = [i for i, _ in enumerate(sub_attribute) if getattr(sub_attribute[i], field) == parameter][0]
 
@@ -1467,7 +1467,7 @@ def test_wrap_remove(test_project, class_list: str, parameter: str, field: str) 
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
 
-    sub_attribute_name = RATapi.project.model_names_used_in[class_list][0].attribute
+    sub_attribute_name = ratapi.project.model_names_used_in[class_list][0].attribute
     sub_attribute = getattr(test_project, sub_attribute_name)
     sub_index = [i for i, _ in enumerate(sub_attribute) if getattr(sub_attribute[i], field) == parameter][0]
 
@@ -1504,7 +1504,7 @@ def test_wrap_clear(test_project, class_list: str, parameter: str, field: str) -
     test_attribute = getattr(test_project, class_list)
     orig_class_list = copy.deepcopy(test_attribute)
 
-    sub_attribute_name = RATapi.project.model_names_used_in[class_list][0].attribute
+    sub_attribute_name = ratapi.project.model_names_used_in[class_list][0].attribute
     sub_attribute = getattr(test_project, sub_attribute_name)
     sub_index = [i for i, _ in enumerate(sub_attribute) if getattr(sub_attribute[i], field) == parameter][0]
 
@@ -1551,8 +1551,8 @@ def test_wrap_extend(test_project, class_list: str, model_type: str, field: str,
         match=re.escape(
             f'1 validation error for Project\n  Value error, The value "undefined" used in the "{field}" '
             f"field of {class_list}[{len(test_attribute)}] must be defined in "
-            f'"{RATapi.project.values_defined_in[class_list_str]}". Please add "undefined" to '
-            f'"{RATapi.project.values_defined_in[class_list_str]}" before including it in "{class_list}".'
+            f'"{ratapi.project.values_defined_in[class_list_str]}". Please add "undefined" to '
+            f'"{ratapi.project.values_defined_in[class_list_str]}" before including it in "{class_list}".'
         ),
     ):
         test_attribute.extend([input_model(**{**model_params, field: "undefined"})])
@@ -1588,9 +1588,9 @@ def test_save_load(project, request):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             original_project.save(path)
-        converted_project = RATapi.Project.load(path)
+        converted_project = ratapi.Project.load(path)
 
-    for field in RATapi.Project.model_fields:
+    for field in ratapi.Project.model_fields:
         assert getattr(converted_project, field) == getattr(original_project, field)
 
 
@@ -1600,7 +1600,7 @@ def test_relative_paths():
     with tempfile.TemporaryDirectory() as tmp:
         data_path = Path(tmp, "data/myfile.dat")
 
-        assert Path(RATapi.project.try_relative_to(data_path, tmp)) == Path("data/myfile.dat")
+        assert Path(ratapi.project.try_relative_to(data_path, tmp)) == Path("data/myfile.dat")
 
 
 def test_relative_paths_warning():
@@ -1615,6 +1615,6 @@ def test_relative_paths_warning():
         "make sure your custom files are in a subfolder of the project save location.",
     ):
         assert (
-            Path(RATapi.project.try_relative_to(data_path, relative_path))
+            Path(ratapi.project.try_relative_to(data_path, relative_path))
             == Path("/tmp/project/data/mydata.dat").resolve()
         )

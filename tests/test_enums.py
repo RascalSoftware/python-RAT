@@ -4,7 +4,7 @@ from typing import Callable
 
 import pytest
 
-from RATapi.utils.enums import (
+from ratapi.utils.enums import (
     BackgroundActions,
     BoundHandling,
     Calculations,

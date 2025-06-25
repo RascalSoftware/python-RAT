@@ -9,9 +9,9 @@ import pytest
 from matplotlib.collections import PolyCollection, QuadMesh
 from matplotlib.patches import Rectangle
 
-import RATapi.utils.plotting as RATplot
-from RATapi.events import notify
-from RATapi.rat_core import EventTypes, PlotEventData
+import ratapi.utils.plotting as RATplot
+from ratapi.events import notify
+from ratapi.rat_core import EventTypes, PlotEventData
 
 TEST_DIR_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_data")
 
@@ -132,7 +132,7 @@ def test_ref_sld_bayes(fig, bayes_fig, bayes):
         assert any(isinstance(comp, PolyCollection) for comp in components)
 
 
-@patch("RATapi.utils.plotting.makeSLDProfile")
+@patch("ratapi.utils.plotting.makeSLDProfile")
 def test_sld_profile_function_call(mock: MagicMock) -> None:
     """Tests the makeSLDProfile function called with
     correct args.
@@ -156,7 +156,7 @@ def test_sld_profile_function_call(mock: MagicMock) -> None:
     assert mock.call_args_list[2].args[4] == 1
 
 
-@patch("RATapi.utils.plotting.makeSLDProfile")
+@patch("ratapi.utils.plotting.makeSLDProfile")
 def test_live_plot(mock: MagicMock) -> None:
     plot_data = data()
 
@@ -183,7 +183,7 @@ def test_live_plot(mock: MagicMock) -> None:
     assert mock.call_args_list[2].args[4] == 1
 
 
-@patch("RATapi.utils.plotting.plot_ref_sld_helper")
+@patch("ratapi.utils.plotting.plot_ref_sld_helper")
 def test_plot_ref_sld(mock: MagicMock, input_project, reflectivity_calculation_results) -> None:
     RATplot.plot_ref_sld(input_project, reflectivity_calculation_results)
     mock.assert_called_once()
@@ -216,7 +216,7 @@ def test_ref_sld_subplot_correction():
     assert len(ref_sld_fig.axes) == 2
 
 
-@patch("RATapi.utils.plotting.plot_ref_sld_helper")
+@patch("ratapi.utils.plotting.plot_ref_sld_helper")
 def test_plot_ref_sld_bayes_validation(mock, input_project, reflectivity_calculation_results, dream_results):
     """Test that plot_ref_sld correctly throws errors for bad Bayesian input."""
     RATplot.plot_ref_sld(input_project, dream_results)
@@ -388,7 +388,7 @@ def test_corner(dream_results, params):
 @pytest.mark.parametrize(
     "params", [None, [2, 3], [1, 5, "D2O"], ["Bilayer Heads Thickness", "Bilayer Heads Hydration", "D2O"]]
 )
-@patch("RATapi.plotting.panel_plot_helper")
+@patch("ratapi.plotting.panel_plot_helper")
 def test_hist_panel(mock_panel_helper: MagicMock, params, dream_results):
     """Test chain panel name-to-index (panel helper has already been tested)"""
     fig = RATplot.plot_hists(dream_results, params, return_fig=True)
@@ -412,7 +412,7 @@ def test_hist_panel(mock_panel_helper: MagicMock, params, dream_results):
         ({"default": "normal", 1: "kernel"}, "DEFAULT_WITH_1CHANGE_DICT"),
     ],
 )
-@patch("RATapi.plotting.plot_one_hist")
+@patch("ratapi.plotting.plot_one_hist")
 def test_standardise_est_dens(mock_plot_hist: MagicMock, input, expected_dict, dream_results):
     """Test estimated density is correctly standardised."""
     _ = RATplot.plot_hists(dream_results, estimated_density=input, return_fig=True)
@@ -445,7 +445,7 @@ def test_est_dens_error(dream_results, input):
 @pytest.mark.parametrize(
     "params", [None, [2, 3], [1, 5, "D2O"], ["Bilayer Heads Thickness", "Bilayer Heads Hydration", "D2O"]]
 )
-@patch("RATapi.plotting.panel_plot_helper")
+@patch("ratapi.plotting.panel_plot_helper")
 def test_chain_panel(mock_panel_helper: MagicMock, params, dream_results):
     """Test chain panel name-to-index (panel helper has already been tested)"""
     # return fig just to avoid plt.show() being called
@@ -458,9 +458,9 @@ def test_chain_panel(mock_panel_helper: MagicMock, params, dream_results):
         assert param == (dream_results.fitNames.index(param) if isinstance(param, str) else param)
 
 
-@patch("RATapi.plotting.plot_ref_sld")
-@patch("RATapi.plotting.plot_hists")
-@patch("RATapi.plotting.plot_corner")
+@patch("ratapi.plotting.plot_ref_sld")
+@patch("ratapi.plotting.plot_hists")
+@patch("ratapi.plotting.plot_corner")
 def test_bayes_calls(
     mock_corner: MagicMock, mock_hists: MagicMock, mock_ref_sld: MagicMock, input_project, dream_results
 ):
@@ -486,7 +486,7 @@ def test_extract_plot_data(data) -> None:
     assert len(plot_data["sld"]) == len(data.shiftedData)
 
 
-@patch("RATapi.utils.plotting.plot_ref_sld_helper")
+@patch("ratapi.utils.plotting.plot_ref_sld_helper")
 def test_blit_plot(plot_helper, fig: plt.figure) -> None:
     plot_helper.return_value = fig
     event_data = data()

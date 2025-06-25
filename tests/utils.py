@@ -1,6 +1,6 @@
 import numpy as np
 
-import RATapi.outputs
+import ratapi.outputs
 
 
 class InputAttributes:
@@ -39,19 +39,19 @@ def check_results_equal(actual_results, expected_results) -> None:
     ]
 
     assert (
-        isinstance(actual_results, RATapi.outputs.Results) and isinstance(expected_results, RATapi.outputs.Results)
+        isinstance(actual_results, ratapi.outputs.Results) and isinstance(expected_results, ratapi.outputs.Results)
     ) or (
-        isinstance(actual_results, RATapi.outputs.BayesResults)
-        and isinstance(expected_results, RATapi.outputs.BayesResults)
+        isinstance(actual_results, ratapi.outputs.BayesResults)
+        and isinstance(expected_results, ratapi.outputs.BayesResults)
     )
 
     # The first set of fields are either 1D or 2D python lists containing numpy arrays.
     # Hence, we need to compare them element-wise.
-    for list_field in RATapi.outputs.results_fields["list_fields"]:
+    for list_field in ratapi.outputs.results_fields["list_fields"]:
         for a, b in zip(getattr(actual_results, list_field), getattr(expected_results, list_field)):
             assert (a == b).all()
 
-    for list_field in RATapi.outputs.results_fields["double_list_fields"]:
+    for list_field in ratapi.outputs.results_fields["double_list_fields"]:
         actual_list = getattr(actual_results, list_field)
         expected_list = getattr(expected_results, list_field)
         assert len(actual_list) == len(expected_list)
@@ -70,8 +70,8 @@ def check_results_equal(actual_results, expected_results) -> None:
     for field in contrast_param_fields:
         assert (getattr(actual_results.contrastParams, field) == getattr(expected_results.contrastParams, field)).all()
 
-    if isinstance(actual_results, RATapi.outputs.BayesResults) and isinstance(
-        expected_results, RATapi.outputs.BayesResults
+    if isinstance(actual_results, ratapi.outputs.BayesResults) and isinstance(
+        expected_results, ratapi.outputs.BayesResults
     ):
         check_bayes_fields_equal(actual_results, expected_results)
 
@@ -82,18 +82,18 @@ def check_bayes_fields_equal(actual_results, expected_results) -> None:
     We focus here on the fields and subclasses specific to the Bayesian optimisation.
     """
     # The BayesResults object consists of a number of subclasses, each containing fields of differing formats.
-    for subclass in RATapi.outputs.bayes_results_subclasses:
+    for subclass in ratapi.outputs.bayes_results_subclasses:
         actual_subclass = getattr(actual_results, subclass)
         expected_subclass = getattr(expected_results, subclass)
 
-        for field in RATapi.outputs.bayes_results_fields["param_fields"][subclass]:
+        for field in ratapi.outputs.bayes_results_fields["param_fields"][subclass]:
             assert getattr(actual_subclass, field) == getattr(expected_subclass, field)
 
-        for field in RATapi.outputs.bayes_results_fields["list_fields"][subclass]:
+        for field in ratapi.outputs.bayes_results_fields["list_fields"][subclass]:
             for a, b in zip(getattr(actual_subclass, field), getattr(expected_subclass, field)):
                 assert (a == b).all()
 
-        for field in RATapi.outputs.bayes_results_fields["double_list_fields"][subclass]:
+        for field in ratapi.outputs.bayes_results_fields["double_list_fields"][subclass]:
             actual_list = getattr(actual_subclass, field)
             expected_list = getattr(expected_subclass, field)
             assert len(actual_list) == len(expected_list)
@@ -102,7 +102,7 @@ def check_bayes_fields_equal(actual_results, expected_results) -> None:
                     assert (a == b).all()
 
         # Need to account for the arrays that are initialised as "NaN" in the compiled code
-        for array in RATapi.outputs.bayes_results_fields["array_fields"][subclass]:
+        for array in ratapi.outputs.bayes_results_fields["array_fields"][subclass]:
             actual_array = getattr(actual_subclass, array)
             expected_array = getattr(expected_subclass, array)
             for i in range(len(actual_array)):
