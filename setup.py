@@ -9,7 +9,7 @@ from setuptools.command.build_clib import build_clib
 from setuptools.command.build_ext import build_ext
 
 __version__ = "0.0.0.dev6"
-PACKAGE_NAME = "RATapi"
+PACKAGE_NAME = "ratapi"
 
 with open("README.md") as f:
     LONG_DESCRIPTION = f.read()
@@ -19,7 +19,7 @@ libevent = ("eventManager", {"sources": ["cpp/RAT/events/eventManager.cpp"], "in
 
 ext_modules = [
     Extension(
-        "RATapi.rat_core",
+        "ratapi.rat_core",
         sources=["cpp/rat.cpp", *glob("cpp/RAT/*.c*")],
         include_dirs=[
             # Path to pybind11 headers
@@ -121,7 +121,7 @@ class BuildClib(build_clib):
 
         compiler_type = self.compiler.compiler_type
         if compiler_type == "msvc":
-            compile_args = ["/EHsc", "/LD"]
+            compile_args = ["/EHsc", "/LD", "-D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR"]
         else:
             compile_args = ["-std=c++11", "-fPIC"]
 
@@ -161,7 +161,7 @@ setup(
     long_description_content_type="text/markdown",
     packages=find_packages(),
     include_package_data=True,
-    package_data={"": [get_shared_object_name(libevent[0])], "RATapi.examples": ["data/*.dat"]},
+    package_data={"": [get_shared_object_name(libevent[0])], "ratapi.examples": ["data/*.dat"]},
     cmdclass={"build_clib": BuildClib, "build_ext": BuildExt},
     libraries=[libevent],
     ext_modules=ext_modules,

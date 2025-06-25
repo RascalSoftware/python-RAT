@@ -54,4 +54,4 @@ jobs:
         run: |
           export PATH="$pythonLocation:$PATH"
           python -m pip install -e .[Dev,Orso]
-          pytest tests/ --cov=RATapi --cov-report=term
+          pytest tests/ --cov=ratapi --cov-report=term

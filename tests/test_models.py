@@ -8,24 +8,24 @@ import numpy as np
 import pydantic
 import pytest
 
-import RATapi.models
+import ratapi.models
 
 
 @pytest.mark.parametrize(
     ["model", "model_name", "model_params"],
     [
-        (RATapi.models.Background, "Background", {}),
-        (RATapi.models.Contrast, "Contrast", {}),
-        (RATapi.models.CustomFile, "Custom File", {}),
-        (RATapi.models.Data, "Data", {}),
-        (RATapi.models.DomainContrast, "Domain Contrast", {}),
+        (ratapi.models.Background, "Background", {}),
+        (ratapi.models.Contrast, "Contrast", {}),
+        (ratapi.models.CustomFile, "Custom File", {}),
+        (ratapi.models.Data, "Data", {}),
+        (ratapi.models.DomainContrast, "Domain Contrast", {}),
         (
-            RATapi.models.Layer,
+            ratapi.models.Layer,
             "Layer",
             {"thickness": "Test Thickness", "SLD": "Test SLD", "roughness": "Test Roughness"},
         ),
-        (RATapi.models.Parameter, "Parameter", {}),
-        (RATapi.models.Resolution, "Resolution", {}),
+        (ratapi.models.Parameter, "Parameter", {}),
+        (ratapi.models.Resolution, "Resolution", {}),
     ],
 )
 def test_default_names(model: Callable, model_name: str, model_params: dict) -> None:
@@ -46,15 +46,15 @@ def test_default_names(model: Callable, model_name: str, model_params: dict) -> 
 @pytest.mark.parametrize(
     ["model", "model_params"],
     [
-        (RATapi.models.Background, {}),
-        (RATapi.models.Contrast, {}),
-        (RATapi.models.ContrastWithRatio, {}),
-        (RATapi.models.CustomFile, {}),
-        (RATapi.models.Data, {}),
-        (RATapi.models.DomainContrast, {}),
-        (RATapi.models.Layer, {"thickness": "Test Thickness", "SLD": "Test SLD", "roughness": "Test Roughness"}),
+        (ratapi.models.Background, {}),
+        (ratapi.models.Contrast, {}),
+        (ratapi.models.ContrastWithRatio, {}),
+        (ratapi.models.CustomFile, {}),
+        (ratapi.models.Data, {}),
+        (ratapi.models.DomainContrast, {}),
+        (ratapi.models.Layer, {"thickness": "Test Thickness", "SLD": "Test SLD", "roughness": "Test Roughness"}),
         (
-            RATapi.models.AbsorptionLayer,
+            ratapi.models.AbsorptionLayer,
             {
                 "thickness": "Test Thickness",
                 "SLD_real": "Test SLD",
@@ -62,8 +62,8 @@ def test_default_names(model: Callable, model_name: str, model_params: dict) -> 
                 "roughness": "Test Roughness",
             },
         ),
-        (RATapi.models.Parameter, {}),
-        (RATapi.models.Resolution, {}),
+        (ratapi.models.Parameter, {}),
+        (ratapi.models.Resolution, {}),
     ],
 )
 class TestModels:
@@ -104,7 +104,7 @@ class TestModels:
 def test_custom_file_path_is_absolute() -> None:
     """If we use provide a relative path to the custom file model, it should be converted to an absolute path."""
     relative_path = pathlib.Path("./relative_path")
-    custom_file = RATapi.models.CustomFile(path=relative_path)
+    custom_file = ratapi.models.CustomFile(path=relative_path)
     assert custom_file.path.is_absolute()
 
 
@@ -112,7 +112,7 @@ def test_data_eq() -> None:
     """If we use the Data.__eq__ method with an object that is not a pydantic BaseModel, we should return
     "NotImplemented".
     """
-    assert RATapi.models.Data().__eq__("data") == NotImplemented
+    assert ratapi.models.Data().__eq__("data") == NotImplemented
 
 
 @pytest.mark.parametrize(
@@ -125,7 +125,7 @@ def test_data_dimension(input_data: np.ndarray[float]) -> None:
     """The "data" field of the "Data" model should be a two-dimensional numpy array with at least three values in the
     second dimension.
     """
-    test_data = RATapi.models.Data(data=input_data)
+    test_data = ratapi.models.Data(data=input_data)
     assert (test_data.data == input_data).all()
 
 
@@ -144,7 +144,7 @@ def test_data_too_few_dimensions(input_data: np.ndarray[float]) -> None:
         pydantic.ValidationError,
         match='1 validation error for Data\ndata\n  Value error, "data" must have at least two dimensions',
     ):
-        RATapi.models.Data(data=input_data)
+        ratapi.models.Data(data=input_data)
 
 
 @pytest.mark.parametrize(
@@ -163,7 +163,7 @@ def test_data_too_few_values(input_data: np.ndarray[float]) -> None:
         pydantic.ValidationError,
         match='1 validation error for Data\ndata\n  Value error, "data" must have at least three columns',
     ):
-        RATapi.models.Data(data=input_data)
+        ratapi.models.Data(data=input_data)
 
 
 @pytest.mark.parametrize(
@@ -174,8 +174,8 @@ def test_data_too_few_values(input_data: np.ndarray[float]) -> None:
 )
 def test_data_ranges(input_range: list[float]) -> None:
     """The "data_range" and "simulation_range" fields of the "Data" model should contain exactly two values."""
-    assert RATapi.models.Data(data_range=input_range).data_range == input_range
-    assert RATapi.models.Data(simulation_range=input_range).simulation_range == input_range
+    assert ratapi.models.Data(data_range=input_range).data_range == input_range
+    assert ratapi.models.Data(simulation_range=input_range).simulation_range == input_range
 
 
 @pytest.mark.parametrize(
@@ -196,7 +196,7 @@ def test_two_values_in_data_range(input_range: list[float]) -> None:
         f"at {'least' if len(input_range) < 2 else 'most'} 2 items "
         f"after validation, not {len(input_range)}",
     ):
-        RATapi.models.Data(data_range=input_range)
+        ratapi.models.Data(data_range=input_range)
 
 
 @pytest.mark.parametrize(
@@ -217,7 +217,7 @@ def test_two_values_in_simulation_range(input_range: list[float]) -> None:
         f"have at {'least' if len(input_range) < 2 else 'most'} 2 items "
         f"after validation, not {len(input_range)}",
     ):
-        RATapi.models.Data(simulation_range=input_range)
+        ratapi.models.Data(simulation_range=input_range)
 
 
 @pytest.mark.parametrize(
@@ -236,14 +236,14 @@ def test_min_max_in_range(field: str) -> None:
         match=f"1 validation error for Data\n{field}\n  Value error, {field} "
         f'"min" value is greater than the "max" value',
     ):
-        RATapi.models.Data(**{field: [1.0, 0.0]})
+        ratapi.models.Data(**{field: [1.0, 0.0]})
 
 
 def test_default_ranges() -> None:
     """If "data" is specified but either the "data_range" or "simulation_range" fields are not, we set the ranges to
     the minimum and maximum values of the first column of the data.
     """
-    test_data = RATapi.models.Data(data=np.array([[1.0, 0.0, 0.0], [3.0, 0.0, 0.0]]))
+    test_data = ratapi.models.Data(data=np.array([[1.0, 0.0, 0.0], [3.0, 0.0, 0.0]]))
     assert test_data.data_range == [1.0, 3.0]
     assert test_data.simulation_range == [1.0, 3.0]
 
@@ -268,7 +268,7 @@ def test_data_range(test_range) -> None:
             f"the min/max values of the data: [1.0, 3.0]",
         ),
     ):
-        RATapi.models.Data(data=np.array([[1.0, 0.0, 0.0], [3.0, 0.0, 0.0]]), data_range=test_range)
+        ratapi.models.Data(data=np.array([[1.0, 0.0, 0.0], [3.0, 0.0, 0.0]]), data_range=test_range)
 
 
 @pytest.mark.parametrize(
@@ -292,7 +292,7 @@ def test_simulation_range(test_range) -> None:
             f"[1.0, 3.0]",
         ),
     ):
-        RATapi.models.Data(data=np.array([[1.0, 0.0, 0.0], [3.0, 0.0, 0.0]]), simulation_range=test_range)
+        ratapi.models.Data(data=np.array([[1.0, 0.0, 0.0], [3.0, 0.0, 0.0]]), simulation_range=test_range)
 
 
 @pytest.mark.parametrize(
@@ -313,7 +313,7 @@ def test_parameter_range(minimum: float, value: float, maximum: float) -> None:
         f"{float(value)} is not within the defined range: "
         f"{float(minimum)} <= value <= {float(maximum)}",
     ):
-        RATapi.models.Parameter(min=minimum, value=value, max=maximum)
+        ratapi.models.Parameter(min=minimum, value=value, max=maximum)
 
 
 def test_layer_bad_imaginary_SLD():
@@ -326,7 +326,7 @@ def test_layer_bad_imaginary_SLD():
             " Use the AbsorptionLayer class instead."
         ),
     ):
-        RATapi.models.Layer(name="My Layer", SLD_imaginary="bad sld")
+        ratapi.models.Layer(name="My Layer", SLD_imaginary="bad sld")
 
 
 def test_contrast_bad_ratio():
@@ -339,14 +339,14 @@ def test_contrast_bad_ratio():
             " Use the ContrastWithRatio class instead."
         ),
     ):
-        RATapi.models.Contrast(name="My Contrast", domain_ratio="bad ratio")
+        ratapi.models.Contrast(name="My Contrast", domain_ratio="bad ratio")
 
 
 @pytest.mark.parametrize(
     ["model", "type", "values"],
     [
-        (RATapi.models.Background, "function", ["val1", "val2", "val3", "val4", "val5"]),
-        (RATapi.models.Resolution, "constant", ["", "", "", "", ""]),
+        (ratapi.models.Background, "function", ["val1", "val2", "val3", "val4", "val5"]),
+        (ratapi.models.Resolution, "constant", ["", "", "", "", ""]),
     ],
 )
 def test_type_change_clear(model, type, values):
@@ -371,10 +371,10 @@ def test_type_change_clear(model, type, values):
 @pytest.mark.parametrize(
     ["model", "signal_type", "values"],
     [
-        (RATapi.models.Background, "constant", ["value_1", "value_2", "value_3", "value_4", "value_5"]),
-        (RATapi.models.Background, "data", ["value_2", "value_3", "value_4", "value_5"]),
-        (RATapi.models.Resolution, "constant", ["value_1", "value_2", "value_3", "value_4", "value_5"]),
-        (RATapi.models.Resolution, "data", ["value_1", "value_2", "value_3", "value_4", "value_5"]),
+        (ratapi.models.Background, "constant", ["value_1", "value_2", "value_3", "value_4", "value_5"]),
+        (ratapi.models.Background, "data", ["value_2", "value_3", "value_4", "value_5"]),
+        (ratapi.models.Resolution, "constant", ["value_1", "value_2", "value_3", "value_4", "value_5"]),
+        (ratapi.models.Resolution, "data", ["value_1", "value_2", "value_3", "value_4", "value_5"]),
     ],
 )
 def test_unsupported_parameters_error(model, signal_type, values):

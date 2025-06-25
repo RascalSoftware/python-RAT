@@ -5,10 +5,10 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-import RATapi
-import RATapi.classlist
-import RATapi.outputs
-import RATapi.rat_core
+import ratapi
+import ratapi.classlist
+import ratapi.outputs
+import ratapi.rat_core
 
 
 @pytest.fixture
@@ -23,7 +23,7 @@ def input_project():
     """A cut-down version of the input Project object for a reflectivity calculation set out in
     "DSPC_standard_layers.py".
     """
-    project = RATapi.Project(
+    project = ratapi.Project(
         name="original_dspc_bilayer",
         calculation="normal",
         model="standard layers",
@@ -269,7 +269,7 @@ def input_project():
 @pytest.fixture
 def reflectivity_calculation_output_results():
     """The C++ results object for a reflectivity calculation of the project set out in "DSPC_standard_layers.py"."""
-    results = RATapi.rat_core.OutputResult()
+    results = ratapi.rat_core.OutputResult()
     results.reflectivity = [
         np.array(
             [
@@ -867,10 +867,10 @@ def reflectivity_calculation_output_results():
         ],
     ]
     results.resampledLayers = [[np.array([[0.0, 0.0, 0.0]])], [np.array([[0.0, 0.0, 0.0]])]]
-    results.calculationResults = RATapi.rat_core.Calculation()
+    results.calculationResults = ratapi.rat_core.Calculation()
     results.calculationResults.chiValues = np.array([202.83057377, 1641.4024969])
     results.calculationResults.sumChi = 1844.2330706690975
-    results.contrastParams = RATapi.rat_core.ContrastParams()
+    results.contrastParams = ratapi.rat_core.ContrastParams()
     results.contrastParams.scalefactors = np.array([0.1, 0.15])
     results.contrastParams.bulkIn = np.array([2.073e-06, 2.073e-06])
     results.contrastParams.bulkOut = np.array([5.98e-06, 2.21e-06])
@@ -925,7 +925,7 @@ def reflectivity_calculation_output_results():
 @pytest.fixture
 def reflectivity_calculation_results():
     """The python results object for a reflectivity calculation of the project set out in "DSPC_standard_layers.py"."""
-    return RATapi.outputs.Results(
+    return ratapi.outputs.Results(
         reflectivity=[
             np.array(
                 [
@@ -1523,11 +1523,11 @@ def reflectivity_calculation_results():
             ],
         ],
         resampledLayers=[[np.array([[0.0, 0.0, 0.0]])], [np.array([[0.0, 0.0, 0.0]])]],
-        calculationResults=RATapi.outputs.CalculationResults(
+        calculationResults=ratapi.outputs.CalculationResults(
             chiValues=np.array([202.83057377, 1641.4024969]),
             sumChi=1844.2330706690975,
         ),
-        contrastParams=RATapi.outputs.ContrastParams(
+        contrastParams=ratapi.outputs.ContrastParams(
             scalefactors=np.array([0.1, 0.15]),
             bulkIn=np.array([2.073e-06, 2.073e-06]),
             bulkOut=np.array([5.98e-06, 2.21e-06]),
@@ -1586,7 +1586,7 @@ def dream_output_results():
     This optimisation used the parameters: nSamples=1, nChains=1. However, the calculationResults, contrastParams,
     and fitParams are taken from an optimisation with the parameters: nSamples=50000, nChains=10.
     """
-    results = RATapi.rat_core.OutputResult()
+    results = ratapi.rat_core.OutputResult()
     results.reflectivity = [
         np.array(
             [
@@ -2192,10 +2192,10 @@ def dream_output_results():
         ],
     ]
     results.resampledLayers = [[np.array([[0.0, 0.0, 0.0]])], [np.array([[0.0, 0.0, 0.0]])]]
-    results.calculationResults = RATapi.rat_core.Calculation()
+    results.calculationResults = ratapi.rat_core.Calculation()
     results.calculationResults.chiValues = (np.array([4.6077885, 7.00028098]),)
     results.calculationResults.sumChi = 11.608069475997699
-    results.contrastParams = RATapi.rat_core.ContrastParams()
+    results.contrastParams = ratapi.rat_core.ContrastParams()
     results.contrastParams.scalefactors = np.array([0.1, 0.15])
     results.contrastParams.bulkIn = np.array([2.073e-06, 2.073e-06])
     results.contrastParams.bulkOut = np.array([6.01489149e-06, 1.59371685e-06])
@@ -2253,8 +2253,8 @@ def dream_bayes():
 
     This optimisation used the parameters: nSamples=1, nChains=1.
     """
-    bayes = RATapi.rat_core.OutputBayesResult()
-    bayes.predictionIntervals = RATapi.rat_core.PredictionIntervals()
+    bayes = ratapi.rat_core.OutputBayesResult()
+    bayes.predictionIntervals = ratapi.rat_core.PredictionIntervals()
     bayes.predictionIntervals.reflectivity = [
         np.array(
             [
@@ -3821,7 +3821,7 @@ def dream_bayes():
             1.46133559e16,
         ],
     )
-    bayes.confidenceIntervals = RATapi.rat_core.ConfidenceIntervals()
+    bayes.confidenceIntervals = ratapi.rat_core.ConfidenceIntervals()
     bayes.confidenceIntervals.percentile65 = np.array(
         [
             [
@@ -3934,7 +3934,7 @@ def dream_bayes():
             ],
         ],
     )
-    bayes.dreamParams = RATapi.rat_core.DreamParams()
+    bayes.dreamParams = ratapi.rat_core.DreamParams()
     bayes.dreamParams.nParams = 18.0
     bayes.dreamParams.nChains = 1.0
     bayes.dreamParams.nGenerations = 1.0
@@ -3954,7 +3954,7 @@ def dream_bayes():
     bayes.dreamParams.IO = 0
     bayes.dreamParams.storeOutput = 0
     bayes.dreamParams.R = np.array([[0.0]])
-    bayes.dreamOutput = RATapi.rat_core.DreamOutput()
+    bayes.dreamOutput = ratapi.rat_core.DreamOutput()
     bayes.dreamOutput.allChains = np.array(
         [
             [
@@ -4011,7 +4011,7 @@ def dream_bayes():
         ],
     )
     bayes.dreamOutput.CR = np.array([[1.00000000, 0.33333333, 0.33333333, 0.33333333]])
-    bayes.nestedSamplerOutput = RATapi.rat_core.NestedSamplerOutput()
+    bayes.nestedSamplerOutput = ratapi.rat_core.NestedSamplerOutput()
     bayes.nestedSamplerOutput.logZ = 0.0
     bayes.nestedSamplerOutput.nestSamples = np.array([[0.0, 0.0]])
     bayes.nestedSamplerOutput.postSamples = np.array([[0.0, 0.0]])
@@ -4070,7 +4070,7 @@ def dream_results():
     This optimisation used the parameters: nSamples=1, nChains=1. However, the calculationResults, contrastParams,
     and fitParams are taken from an optimisation with the parameters: nSamples=50000, nChains=10.
     """
-    return RATapi.outputs.BayesResults(
+    return ratapi.outputs.BayesResults(
         reflectivity=[
             np.array(
                 [
@@ -4676,11 +4676,11 @@ def dream_results():
             ],
         ],
         resampledLayers=[[np.array([[0.0, 0.0, 0.0]])], [np.array([[0.0, 0.0, 0.0]])]],
-        calculationResults=RATapi.outputs.CalculationResults(
+        calculationResults=ratapi.outputs.CalculationResults(
             chiValues=np.array([4.6077885, 7.00028098]),
             sumChi=11.608069475997699,
         ),
-        contrastParams=RATapi.outputs.ContrastParams(
+        contrastParams=ratapi.outputs.ContrastParams(
             scalefactors=np.array([0.1, 0.15]),
             bulkIn=np.array([2.073e-06, 2.073e-06]),
             bulkOut=np.array([6.01489149e-06, 1.59371685e-06]),
@@ -4729,7 +4729,7 @@ def dream_results():
             "D2O",
             "SMW",
         ],
-        predictionIntervals=RATapi.outputs.PredictionIntervals(
+        predictionIntervals=ratapi.outputs.PredictionIntervals(
             reflectivity=[
                 np.array(
                     [
@@ -6297,7 +6297,7 @@ def dream_results():
                 ],
             ),
         ),
-        confidenceIntervals=RATapi.outputs.ConfidenceIntervals(
+        confidenceIntervals=ratapi.outputs.ConfidenceIntervals(
             percentile65=np.array(
                 [
                     [
@@ -6411,7 +6411,7 @@ def dream_results():
                 ],
             ),
         ),
-        dreamParams=RATapi.outputs.DreamParams(
+        dreamParams=ratapi.outputs.DreamParams(
             nParams=18.0,
             nChains=1.0,
             nGenerations=1.0,
@@ -6432,7 +6432,7 @@ def dream_results():
             storeOutput=False,
             R=np.array([[0.0]]),
         ),
-        dreamOutput=RATapi.outputs.DreamOutput(
+        dreamOutput=ratapi.outputs.DreamOutput(
             allChains=np.array(
                 [
                     [
@@ -6490,7 +6490,7 @@ def dream_results():
             ),
             CR=np.array([[1.0, 0.33333333, 0.33333333, 0.33333333]]),
         ),
-        nestedSamplerOutput=RATapi.outputs.NestedSamplerOutput(
+        nestedSamplerOutput=ratapi.outputs.NestedSamplerOutput(
             logZ=0.0,
             logZErr=0.0,
             nestSamples=np.array([[0.0, 0.0]]),
@@ -6546,14 +6546,14 @@ def dream_results():
 @pytest.fixture
 def r1_default_project():
     """The Project corresponding to the data in R1defaultProject.mat."""
-    project = RATapi.Project(
+    project = ratapi.Project(
         name="defaultProject",
         calculation="normal",
         model="standard layers",
         geometry="air/substrate",
         absorption=False,
-        parameters=RATapi.ClassList(
-            RATapi.models.Parameter(
+        parameters=ratapi.ClassList(
+            ratapi.models.Parameter(
                 name="Substrate Roughness",
                 min=3.0,
                 value=4.844363132849221,
@@ -6564,8 +6564,8 @@ def r1_default_project():
                 sigma=np.inf,
             )
         ),
-        bulk_in=RATapi.ClassList(
-            RATapi.models.Parameter(
+        bulk_in=ratapi.ClassList(
+            ratapi.models.Parameter(
                 name="Air",
                 min=0.0,
                 value=0.0,
@@ -6576,8 +6576,8 @@ def r1_default_project():
                 sigma=np.inf,
             )
         ),
-        bulk_out=RATapi.ClassList(
-            RATapi.models.Parameter(
+        bulk_out=ratapi.ClassList(
+            ratapi.models.Parameter(
                 name="D2O",
                 min=6.3e-06,
                 value=6.35e-06,
@@ -6588,8 +6588,8 @@ def r1_default_project():
                 sigma=np.inf,
             )
         ),
-        scalefactors=RATapi.ClassList(
-            RATapi.models.Parameter(
+        scalefactors=ratapi.ClassList(
+            ratapi.models.Parameter(
                 name="Scalefactor 1",
                 min=0.009999999776482582,
                 value=0.10141560336360426,
@@ -6600,11 +6600,11 @@ def r1_default_project():
                 sigma=np.inf,
             )
         ),
-        backgrounds=RATapi.ClassList(
-            RATapi.models.Background(name="Background 1", type="constant", source="Background parameter 1")
+        backgrounds=ratapi.ClassList(
+            ratapi.models.Background(name="Background 1", type="constant", source="Background parameter 1")
         ),
-        background_parameters=RATapi.ClassList(
-            RATapi.models.Parameter(
+        background_parameters=ratapi.ClassList(
+            ratapi.models.Parameter(
                 name="Background parameter 1",
                 min=5e-08,
                 value=3.069003361230152e-06,
@@ -6615,11 +6615,11 @@ def r1_default_project():
                 sigma=np.inf,
             )
         ),
-        resolutions=RATapi.ClassList(
-            RATapi.models.Resolution(name="Resolution 1", type="constant", source="Resolution parameter 1")
+        resolutions=ratapi.ClassList(
+            ratapi.models.Resolution(name="Resolution 1", type="constant", source="Resolution parameter 1")
         ),
-        resolution_parameters=RATapi.ClassList(
-            RATapi.models.Parameter(
+        resolution_parameters=ratapi.ClassList(
+            ratapi.models.Parameter(
                 name="Resolution parameter 1",
                 min=0.01,
                 value=0.03,
@@ -6711,15 +6711,15 @@ def r1_default_project():
 @pytest.fixture
 def r1_monolayer():
     """The Project file corresponding to the data in R1monolayerVolumeModel.mat."""
-    project = RATapi.Project(
+    project = ratapi.Project(
         name="monolayerVolumeModel",
         calculation="normal",
         model="custom layers",
         geometry="air/substrate",
         absorption=False,
-        parameters=RATapi.ClassList(
+        parameters=ratapi.ClassList(
             [
-                RATapi.models.Parameter(
+                ratapi.models.Parameter(
                     name="Substrate Roughness",
                     min=1.0,
                     value=2.9979642781948908,
@@ -6729,7 +6729,7 @@ def r1_monolayer():
                     mu=0.0,
                     sigma=np.inf,
                 ),
-                RATapi.models.Parameter(
+                ratapi.models.Parameter(
                     name="Area per molecule",
                     min=47.0,
                     value=53.052680457664785,
@@ -6739,7 +6739,7 @@ def r1_monolayer():
                     mu=0.0,
                     sigma=np.inf,
                 ),
-                RATapi.models.Parameter(
+                ratapi.models.Parameter(
                     name="Head Thickness",
                     min=7.0,
                     value=12.276333836779942,
@@ -6749,7 +6749,7 @@ def r1_monolayer():
                     mu=0.0,
                     sigma=np.inf,
                 ),
-                RATapi.models.Parameter(
+                ratapi.models.Parameter(
                     name="Theta",
                     min=0.0,
                     value=28.870541049836262,
@@ -6761,8 +6761,8 @@ def r1_monolayer():
                 ),
             ]
         ),
-        bulk_in=RATapi.ClassList(
-            RATapi.models.Parameter(
+        bulk_in=ratapi.ClassList(
+            ratapi.models.Parameter(
                 name="Air",
                 min=0.0,
                 value=0.0,
@@ -6774,9 +6774,9 @@ def r1_monolayer():
             )
         ),
         bulk_out=(
-            RATapi.ClassList(
+            ratapi.ClassList(
                 [
-                    RATapi.models.Parameter(
+                    ratapi.models.Parameter(
                         name="D2O",
                         min=6.3e-06,
                         value=6.35e-06,
@@ -6786,7 +6786,7 @@ def r1_monolayer():
                         mu=0.0,
                         sigma=np.inf,
                     ),
-                    RATapi.models.Parameter(
+                    ratapi.models.Parameter(
                         name="ACMW",
                         min=-5e-07,
                         value=0.0,
@@ -6799,8 +6799,8 @@ def r1_monolayer():
                 ]
             )
         ),
-        scalefactors=RATapi.ClassList(
-            RATapi.models.Parameter(
+        scalefactors=ratapi.ClassList(
+            ratapi.models.Parameter(
                 name="Scalefactor 1",
                 min=0.1,
                 value=0.2272676786810902,
@@ -6811,15 +6811,15 @@ def r1_monolayer():
                 sigma=np.inf,
             )
         ),
-        backgrounds=RATapi.ClassList(
+        backgrounds=ratapi.ClassList(
             [
-                RATapi.models.Background(name="Background  D2O", type="constant", source="Background parameter 1"),
-                RATapi.models.Background(name="Background ACMW", type="constant", source="Background parameter 2"),
+                ratapi.models.Background(name="Background  D2O", type="constant", source="Background parameter 1"),
+                ratapi.models.Background(name="Background ACMW", type="constant", source="Background parameter 2"),
             ]
         ),
-        background_parameters=RATapi.ClassList(
+        background_parameters=ratapi.ClassList(
             [
-                RATapi.models.Parameter(
+                ratapi.models.Parameter(
                     name="Background parameter 1",
                     min=1e-07,
                     value=2.2653463958223856e-06,
@@ -6829,7 +6829,7 @@ def r1_monolayer():
                     mu=0.0,
                     sigma=np.inf,
                 ),
-                RATapi.models.Parameter(
+                ratapi.models.Parameter(
                     name="Background parameter 2",
                     min=1e-07,
                     value=5.7431759430575025e-06,
@@ -6841,11 +6841,11 @@ def r1_monolayer():
                 ),
             ]
         ),
-        resolutions=RATapi.ClassList(
-            RATapi.models.Resolution(name="Resolution 1", type="constant", source="Resolution parameter 1")
+        resolutions=ratapi.ClassList(
+            ratapi.models.Resolution(name="Resolution 1", type="constant", source="Resolution parameter 1")
         ),
-        resolution_parameters=RATapi.ClassList(
-            RATapi.models.Parameter(
+        resolution_parameters=ratapi.ClassList(
+            ratapi.models.Parameter(
                 name="Resolution parameter 1",
                 min=0.01,
                 value=0.03,
@@ -6856,8 +6856,8 @@ def r1_monolayer():
                 sigma=np.inf,
             )
         ),
-        custom_files=RATapi.ClassList(
-            RATapi.models.CustomFile(
+        custom_files=ratapi.ClassList(
+            ratapi.models.CustomFile(
                 name="Model_IIb", filename="Model_IIb.m", function_name="Model_IIb", language="matlab"
             )
         ),
@@ -7376,14 +7376,14 @@ def r1_monolayer():
 @pytest.fixture
 def r1_monolayer_8_contrasts():
     """The Project equivalent of the R1 Monolayer_8_contrasts RasCAL-1 project."""
-    return RATapi.Project(
+    return ratapi.Project(
         name="20nM_data",
         calculation="normal",
         model="standard layers",
         geometry="air/substrate",
         absorption=False,
         parameters=[
-            RATapi.models.ProtectedParameter(
+            ratapi.models.ProtectedParameter(
                 name="Substrate Roughness",
                 min=3.0,
                 value=6.990825828311747,
@@ -7393,7 +7393,7 @@ def r1_monolayer_8_contrasts():
                 mu=0.0,
                 sigma=np.inf,
             ),
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="Tails thick",
                 min=12.0,
                 value=18.769067940891517,
@@ -7403,7 +7403,7 @@ def r1_monolayer_8_contrasts():
                 mu=0.0,
                 sigma=np.inf,
             ),
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="Deuterated tails SLD",
                 min=5e-06,
                 value=6.935587727961928e-06,
@@ -7413,7 +7413,7 @@ def r1_monolayer_8_contrasts():
                 mu=0.0,
                 sigma=np.inf,
             ),
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="Tails roughness",
                 min=3.0,
                 value=3.0000000000074776,
@@ -7423,7 +7423,7 @@ def r1_monolayer_8_contrasts():
                 mu=0.0,
                 sigma=np.inf,
             ),
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="Hydrogenated tails SLD",
                 min=-6e-07,
                 value=-2.1907853109709215e-07,
@@ -7433,7 +7433,7 @@ def r1_monolayer_8_contrasts():
                 mu=0.0,
                 sigma=np.inf,
             ),
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="Head thickness",
                 min=7.0,
                 value=7.000000000117902,
@@ -7443,7 +7443,7 @@ def r1_monolayer_8_contrasts():
                 mu=0.0,
                 sigma=np.inf,
             ),
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="Deuterated head SLD",
                 min=3e-06,
                 value=5.855129143529369e-06,
@@ -7453,7 +7453,7 @@ def r1_monolayer_8_contrasts():
                 mu=0.0,
                 sigma=np.inf,
             ),
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="Head roughness",
                 min=3.0,
                 value=3.0000000000000258,
@@ -7463,7 +7463,7 @@ def r1_monolayer_8_contrasts():
                 mu=0.0,
                 sigma=np.inf,
             ),
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="Hydrogenated head SLD",
                 min=1e-06,
                 value=1.8079398141440577e-06,
@@ -7473,7 +7473,7 @@ def r1_monolayer_8_contrasts():
                 mu=0.0,
                 sigma=np.inf,
             ),
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="Head hydration",
                 min=0.0,
                 value=9.33740417574095,
@@ -7485,7 +7485,7 @@ def r1_monolayer_8_contrasts():
             ),
         ],
         bulk_in=[
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="Air",
                 min=0.0,
                 value=0.0,
@@ -7497,7 +7497,7 @@ def r1_monolayer_8_contrasts():
             )
         ],
         bulk_out=[
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="D2O",
                 min=6.3e-06,
                 value=6.349999999999999e-06,
@@ -7507,7 +7507,7 @@ def r1_monolayer_8_contrasts():
                 mu=0.0,
                 sigma=np.inf,
             ),
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="ACMW",
                 min=-5e-07,
                 value=3.492898018624419e-08,
@@ -7519,7 +7519,7 @@ def r1_monolayer_8_contrasts():
             ),
         ],
         scalefactors=[
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="Scalefactor 1",
                 min=0.1,
                 value=0.23251357931599084,
@@ -7532,7 +7532,7 @@ def r1_monolayer_8_contrasts():
         ],
         domain_ratios=[],
         background_parameters=[
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="Background parameter 1",
                 min=1e-07,
                 value=2.889465920816701e-06,
@@ -7542,7 +7542,7 @@ def r1_monolayer_8_contrasts():
                 mu=0.0,
                 sigma=np.inf,
             ),
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="Background parameter 2",
                 min=1e-07,
                 value=5.172884539063037e-06,
@@ -7554,19 +7554,19 @@ def r1_monolayer_8_contrasts():
             ),
         ],
         backgrounds=[
-            RATapi.models.Background(
+            ratapi.models.Background(
                 name="Background  D2O",
                 type="constant",
                 source="Background parameter 1",
             ),
-            RATapi.models.Background(
+            ratapi.models.Background(
                 name="Background ACMW",
                 type="constant",
                 source="Background parameter 2",
             ),
         ],
         resolution_parameters=[
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="Resolution parameter 1",
                 min=0.01,
                 value=0.029999999999999964,
@@ -7578,7 +7578,7 @@ def r1_monolayer_8_contrasts():
             )
         ],
         resolutions=[
-            RATapi.models.Resolution(
+            ratapi.models.Resolution(
                 name="Resolution 1",
                 type="constant",
                 source="Resolution parameter 1",
@@ -7586,7 +7586,7 @@ def r1_monolayer_8_contrasts():
         ],
         custom_files=[],
         data=[
-            RATapi.models.Data(
+            ratapi.models.Data(
                 name="d70acmw20",
                 data=np.array(
                     [
@@ -7646,7 +7646,7 @@ def r1_monolayer_8_contrasts():
                 data_range=[0.051793, 0.58877],
                 simulation_range=[0.051793, 0.58877],
             ),
-            RATapi.models.Data(
+            ratapi.models.Data(
                 name="d70d2o20",
                 data=np.array(
                     [
@@ -7706,7 +7706,7 @@ def r1_monolayer_8_contrasts():
                 data_range=[0.051793, 0.58877],
                 simulation_range=[0.051793, 0.58877],
             ),
-            RATapi.models.Data(
+            ratapi.models.Data(
                 name="d13acmw20",
                 data=np.array(
                     [
@@ -7766,7 +7766,7 @@ def r1_monolayer_8_contrasts():
                 data_range=[0.051793, 0.58877],
                 simulation_range=[0.051793, 0.58877],
             ),
-            RATapi.models.Data(
+            ratapi.models.Data(
                 name="d13d2o20",
                 data=np.array(
                     [
@@ -7826,7 +7826,7 @@ def r1_monolayer_8_contrasts():
                 data_range=[0.051793, 0.58877],
                 simulation_range=[0.051793, 0.58877],
             ),
-            RATapi.models.Data(
+            ratapi.models.Data(
                 name="d83acmw20",
                 data=np.array(
                     [
@@ -7886,7 +7886,7 @@ def r1_monolayer_8_contrasts():
                 data_range=[0.051793, 0.58877],
                 simulation_range=[0.051793, 0.58877],
             ),
-            RATapi.models.Data(
+            ratapi.models.Data(
                 name="d83d2o20",
                 data=np.array(
                     [
@@ -7946,7 +7946,7 @@ def r1_monolayer_8_contrasts():
                 data_range=[0.051793, 0.58877],
                 simulation_range=[0.051793, 0.58877],
             ),
-            RATapi.models.Data(
+            ratapi.models.Data(
                 name="hd2o20",
                 data=np.array(
                     [
@@ -8008,7 +8008,7 @@ def r1_monolayer_8_contrasts():
             ),
         ],
         layers=[
-            RATapi.models.Layer(
+            ratapi.models.Layer(
                 name="Deuterated tails",
                 thickness="Tails thick",
                 SLD="Deuterated tails SLD",
@@ -8016,7 +8016,7 @@ def r1_monolayer_8_contrasts():
                 hydration="",
                 hydrate_with="bulk out",
             ),
-            RATapi.models.Layer(
+            ratapi.models.Layer(
                 name="Hydrogenated tails",
                 thickness="Tails thick",
                 SLD="Hydrogenated tails SLD",
@@ -8024,7 +8024,7 @@ def r1_monolayer_8_contrasts():
                 hydration="",
                 hydrate_with="bulk out",
             ),
-            RATapi.models.Layer(
+            ratapi.models.Layer(
                 name="Deuterated heads",
                 thickness="Head thickness",
                 SLD="Deuterated head SLD",
@@ -8032,7 +8032,7 @@ def r1_monolayer_8_contrasts():
                 hydration="Head hydration",
                 hydrate_with="bulk out",
             ),
-            RATapi.models.Layer(
+            ratapi.models.Layer(
                 name="Hydrogenated heads",
                 thickness="Head thickness",
                 SLD="Hydrogenated head SLD",
@@ -8043,7 +8043,7 @@ def r1_monolayer_8_contrasts():
         ],
         domain_contrasts=[],
         contrasts=[
-            RATapi.models.Contrast(
+            ratapi.models.Contrast(
                 name="d70, acmw",
                 data="d70acmw20",
                 background="Background ACMW",
@@ -8055,7 +8055,7 @@ def r1_monolayer_8_contrasts():
                 resample=False,
                 model=["Deuterated tails", "Hydrogenated heads"],
             ),
-            RATapi.models.Contrast(
+            ratapi.models.Contrast(
                 name="d70 d2o",
                 data="d70d2o20",
                 background="Background  D2O",
@@ -8067,7 +8067,7 @@ def r1_monolayer_8_contrasts():
                 resample=False,
                 model=["Deuterated tails", "Hydrogenated heads"],
             ),
-            RATapi.models.Contrast(
+            ratapi.models.Contrast(
                 name="d13 acmw",
                 data="d13acmw20",
                 background="Background ACMW",
@@ -8079,7 +8079,7 @@ def r1_monolayer_8_contrasts():
                 resample=False,
                 model=["Hydrogenated tails", "Deuterated heads"],
             ),
-            RATapi.models.Contrast(
+            ratapi.models.Contrast(
                 name="d13 d2o",
                 data="d13d2o20",
                 background="Background  D2O",
@@ -8091,7 +8091,7 @@ def r1_monolayer_8_contrasts():
                 resample=False,
                 model=["Hydrogenated tails", "Deuterated heads"],
             ),
-            RATapi.models.Contrast(
+            ratapi.models.Contrast(
                 name="d83 acmw",
                 data="d83acmw20",
                 background="Background ACMW",
@@ -8103,7 +8103,7 @@ def r1_monolayer_8_contrasts():
                 resample=False,
                 model=["Deuterated tails", "Deuterated heads"],
             ),
-            RATapi.models.Contrast(
+            ratapi.models.Contrast(
                 name="d83 d2o",
                 data="d83d2o20",
                 background="Background  D2O",
@@ -8115,7 +8115,7 @@ def r1_monolayer_8_contrasts():
                 resample=False,
                 model=["Deuterated tails", "Deuterated heads"],
             ),
-            RATapi.models.Contrast(
+            ratapi.models.Contrast(
                 name="fully h, D2O",
                 data="hd2o20",
                 background="Background  D2O",
@@ -8137,14 +8137,14 @@ def r1_orso_polymer():
     # the test data is BIG (400 lines) so it's easier to just load it in
     orso_poly_data = np.loadtxt(Path(__file__).parent / "test_data/orso_poly.dat")
 
-    return RATapi.Project(
+    return ratapi.Project(
         name="orsoPolymerExample",
         calculation="normal",
         model="standard layers",
         geometry="air/substrate",
         absorption=False,
         parameters=[
-            RATapi.models.ProtectedParameter(
+            ratapi.models.ProtectedParameter(
                 name="Substrate Roughness",
                 min=3.0,
                 value=4.844363132849221,
@@ -8156,7 +8156,7 @@ def r1_orso_polymer():
             )
         ],
         bulk_in=[
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="Air",
                 min=0.0,
                 value=0.0,
@@ -8168,7 +8168,7 @@ def r1_orso_polymer():
             )
         ],
         bulk_out=[
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="D2O",
                 min=6.3e-06,
                 value=6.35e-06,
@@ -8180,7 +8180,7 @@ def r1_orso_polymer():
             )
         ],
         scalefactors=[
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="Scalefactor 1",
                 min=0.05,
                 value=0.10141560336360426,
@@ -8193,7 +8193,7 @@ def r1_orso_polymer():
         ],
         domain_ratios=[],
         background_parameters=[
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="Background parameter 1",
                 min=5e-08,
                 value=3.069003361230152e-06,
@@ -8205,14 +8205,14 @@ def r1_orso_polymer():
             )
         ],
         backgrounds=[
-            RATapi.models.Background(
+            ratapi.models.Background(
                 name="Background 1",
                 type="constant",
                 source="Background parameter 1",
             )
         ],
         resolution_parameters=[
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="Resolution parameter 1",
                 min=0.01,
                 value=0.03,
@@ -8224,7 +8224,7 @@ def r1_orso_polymer():
             )
         ],
         resolutions=[
-            RATapi.models.Resolution(
+            ratapi.models.Resolution(
                 name="Resolution 1",
                 type="constant",
                 source="Resolution parameter 1",
@@ -8232,7 +8232,7 @@ def r1_orso_polymer():
         ],
         custom_files=[],
         data=[
-            RATapi.models.Data(
+            ratapi.models.Data(
                 name="polymerData",
                 data=orso_poly_data,
                 data_range=[0.0080602, 0.46555],
@@ -8242,7 +8242,7 @@ def r1_orso_polymer():
         layers=[],
         domain_contrasts=[],
         contrasts=[
-            RATapi.models.Contrast(
+            ratapi.models.Contrast(
                 name="Chain-d, acmw",
                 data="polymerData",
                 background="Background 1",
@@ -8263,14 +8263,14 @@ def r1_motofit_bench_mark():
     """The project from the R1motofitBenchMark RasCAL-1 project file."""
     moto_data = np.loadtxt(Path(__file__).parent / "test_data/moto.dat")
 
-    return RATapi.Project(
+    return ratapi.Project(
         name="motofitBenchMark",
         calculation="normal",
         model="standard layers",
         geometry="air/substrate",
         absorption=False,
         parameters=[
-            RATapi.models.ProtectedParameter(
+            ratapi.models.ProtectedParameter(
                 name="Substrate Roughness",
                 min=1.0,
                 value=3.0,
@@ -8280,7 +8280,7 @@ def r1_motofit_bench_mark():
                 mu=0.0,
                 sigma=np.inf,
             ),
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="sub rough",
                 min=3.0,
                 value=3.9949146424129665,
@@ -8290,7 +8290,7 @@ def r1_motofit_bench_mark():
                 mu=0.0,
                 sigma=np.inf,
             ),
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="Thick",
                 min=0.0,
                 value=33.2791896400743,
@@ -8300,7 +8300,7 @@ def r1_motofit_bench_mark():
                 mu=0.0,
                 sigma=np.inf,
             ),
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="SLD 1",
                 min=0.0,
                 value=1.074484187182878e-06,
@@ -8310,7 +8310,7 @@ def r1_motofit_bench_mark():
                 mu=0.0,
                 sigma=np.inf,
             ),
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="SLD 2",
                 min=9e-06,
                 value=1.0658506835478824e-05,
@@ -8320,7 +8320,7 @@ def r1_motofit_bench_mark():
                 mu=0.0,
                 sigma=np.inf,
             ),
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="Thick2",
                 min=100.0,
                 value=498.6676783112137,
@@ -8330,7 +8330,7 @@ def r1_motofit_bench_mark():
                 mu=0.0,
                 sigma=np.inf,
             ),
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="Rough 1",
                 min=2.0,
                 value=4.563688983733924,
@@ -8340,7 +8340,7 @@ def r1_motofit_bench_mark():
                 mu=0.0,
                 sigma=np.inf,
             ),
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="Rough 2",
                 min=2.0,
                 value=4.410704485333302,
@@ -8352,7 +8352,7 @@ def r1_motofit_bench_mark():
             ),
         ],
         bulk_in=[
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="Air",
                 min=0.0,
                 value=0.0,
@@ -8364,7 +8364,7 @@ def r1_motofit_bench_mark():
             )
         ],
         bulk_out=[
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="D2O",
                 min=2e-05,
                 value=2.01e-05,
@@ -8376,7 +8376,7 @@ def r1_motofit_bench_mark():
             )
         ],
         scalefactors=[
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="Scalefactor 1",
                 min=0.99,
                 value=0.9999894027309877,
@@ -8389,7 +8389,7 @@ def r1_motofit_bench_mark():
         ],
         domain_ratios=[],
         background_parameters=[
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="Background parameter 1",
                 min=5e-08,
                 value=1.306895319301746e-07,
@@ -8401,14 +8401,14 @@ def r1_motofit_bench_mark():
             )
         ],
         backgrounds=[
-            RATapi.models.Background(
+            ratapi.models.Background(
                 name="Background 1",
                 type="constant",
                 source="Background parameter 1",
             )
         ],
         resolution_parameters=[
-            RATapi.models.Parameter(
+            ratapi.models.Parameter(
                 name="Resolution parameter 1",
                 min=0.0,
                 value=0.0,
@@ -8420,7 +8420,7 @@ def r1_motofit_bench_mark():
             )
         ],
         resolutions=[
-            RATapi.models.Resolution(
+            ratapi.models.Resolution(
                 name="Resolution 1",
                 type="constant",
                 source="Resolution parameter 1",
@@ -8428,7 +8428,7 @@ def r1_motofit_bench_mark():
         ],
         custom_files=[],
         data=[
-            RATapi.models.Data(
+            ratapi.models.Data(
                 name="mFitBench",
                 data=moto_data,
                 data_range=[0.02, 0.59188],
@@ -8436,7 +8436,7 @@ def r1_motofit_bench_mark():
             )
         ],
         layers=[
-            RATapi.models.Layer(
+            ratapi.models.Layer(
                 name="New Layer 0",
                 thickness="Thick",
                 SLD="SLD 1",
@@ -8444,7 +8444,7 @@ def r1_motofit_bench_mark():
                 hydration="",
                 hydrate_with="bulk out",
             ),
-            RATapi.models.Layer(
+            ratapi.models.Layer(
                 name="New Layer 1",
                 thickness="Thick2",
                 SLD="SLD 2",
@@ -8455,7 +8455,7 @@ def r1_motofit_bench_mark():
         ],
         domain_contrasts=[],
         contrasts=[
-            RATapi.models.Contrast(
+            ratapi.models.Contrast(
                 name="Chain-d, acmw",
                 data="mFitBench",
                 background="Background 1",
@@ -8474,47 +8474,47 @@ def r1_motofit_bench_mark():
 @pytest.fixture
 def dspc_standard_layers():
     """The project from the DSPC Standard Layers example."""
-    project, _ = RATapi.examples.DSPC_standard_layers()
+    project, _ = ratapi.examples.DSPC_standard_layers()
     return project
 
 
 @pytest.fixture
 def dspc_custom_layers():
     """The project from the DSPC Custom Layers example."""
-    project, _ = RATapi.examples.DSPC_custom_layers()
+    project, _ = ratapi.examples.DSPC_custom_layers()
     return project
 
 
 @pytest.fixture
 def dspc_custom_xy():
     """The project from the DSPC Custom XY example."""
-    project, _ = RATapi.examples.DSPC_custom_XY()
+    project, _ = ratapi.examples.DSPC_custom_XY()
     return project
 
 
 @pytest.fixture
 def domains_standard_layers():
     """The project from the domains Standard Layers example."""
-    project, _ = RATapi.examples.domains_standard_layers()
+    project, _ = ratapi.examples.domains_standard_layers()
     return project
 
 
 @pytest.fixture
 def domains_custom_layers():
     """The project from the domains Custom Layers example."""
-    project, _ = RATapi.examples.domains_custom_layers()
+    project, _ = ratapi.examples.domains_custom_layers()
     return project
 
 
 @pytest.fixture
 def domains_custom_xy():
     """The project from the domains Custom XY example."""
-    project, _ = RATapi.examples.domains_custom_XY()
+    project, _ = ratapi.examples.domains_custom_XY()
     return project
 
 
 @pytest.fixture
 def absorption():
     """The project from the absorption example."""
-    project, _ = RATapi.examples.absorption()
+    project, _ = ratapi.examples.absorption()
     return project

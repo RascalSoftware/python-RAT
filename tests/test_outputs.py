@@ -9,10 +9,10 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-import RATapi
-import RATapi.outputs
-import RATapi.rat_core
-from RATapi.utils.enums import Procedures
+import ratapi
+import ratapi.outputs
+import ratapi.rat_core
+from ratapi.utils.enums import Procedures
 from tests.utils import check_results_equal
 
 
@@ -167,7 +167,7 @@ def test_get_field_string(test_value, array_limit, expected_field_string) -> Non
     """For the string representation of output classes, we represent multidimensional and large arrays by their shape,
     with other variables printed normally.
     """
-    field_string = RATapi.outputs.get_field_string("test_field", test_value, array_limit)
+    field_string = ratapi.outputs.get_field_string("test_field", test_value, array_limit)
 
     assert field_string == expected_field_string
 
@@ -186,7 +186,7 @@ def test_make_results(test_procedure, test_output_results, test_bayes, test_resu
         test_bayes = request.getfixturevalue(test_bayes)
 
     test_results = request.getfixturevalue(test_results)
-    results = RATapi.outputs.make_results(test_procedure, test_output_results, test_bayes)
+    results = ratapi.outputs.make_results(test_procedure, test_output_results, test_bayes)
 
     check_results_equal(test_results, results)
 
@@ -208,7 +208,7 @@ def test_results_str(test_output_results, test_str, request) -> None:
     assert test_output_results.__str__() == test_str
 
 
-@pytest.mark.parametrize("result_class", [RATapi.Results, RATapi.BayesResults])
+@pytest.mark.parametrize("result_class", [ratapi.Results, ratapi.BayesResults])
 @pytest.mark.parametrize("test_results", ["reflectivity_calculation_results", "dream_results"])
 def test_save_load(result_class, test_results, request):
     """Test that saving and loading an output object returns the same object."""

@@ -2,8 +2,8 @@ import pathlib
 
 import numpy as np
 
-import RATapi as RAT
-from RATapi.utils.enums import BackgroundActions
+import ratapi as RAT
+from ratapi.utils.enums import BackgroundActions
 
 DATA_PATH = pathlib.Path(__file__).parents[0] / "ORSO_data"
 sld_values = np.loadtxt(DATA_PATH / "test_3_sld.dat")

@@ -10,12 +10,12 @@ from unittest import mock
 import numpy as np
 import pytest
 
-import RATapi
-import RATapi.outputs
-import RATapi.rat_core
-from RATapi.events import EventTypes, ProgressEventData, notify
-from RATapi.run import ProgressBar, TextOutput
-from RATapi.utils.enums import Calculations, Geometries, LayerModels, Procedures
+import ratapi
+import ratapi.outputs
+import ratapi.rat_core
+from ratapi.events import EventTypes, ProgressEventData, notify
+from ratapi.run import ProgressBar, TextOutput
+from ratapi.utils.enums import Calculations, Geometries, LayerModels, Procedures
 from tests.utils import check_results_equal
 
 
@@ -24,7 +24,7 @@ def reflectivity_calculation_problem():
     """The output C++ ProblemDefinition object for a reflectivity calculation of the project set out in
     "DSPC_standard_layers.py".
     """
-    problem = RATapi.rat_core.ProblemDefinition()
+    problem = ratapi.rat_core.ProblemDefinition()
     problem.TF = Calculations.Normal
     problem.modelType = LayerModels.StandardLayers
     problem.geometry = Geometries.SubstrateLiquid
@@ -185,7 +185,7 @@ def dream_problem():
 
     This optimisation used the parameters: nSamples=50000, nChains=10.
     """
-    problem = RATapi.rat_core.ProblemDefinition()
+    problem = ratapi.rat_core.ProblemDefinition()
     problem.TF = Calculations.Normal
     problem.modelType = LayerModels.StandardLayers
     problem.geometry = Geometries.SubstrateLiquid
@@ -362,12 +362,12 @@ def test_run(test_procedure, test_output_problem, test_output_results, test_baye
     test_results = request.getfixturevalue(test_results)
 
     with mock.patch.object(
-        RATapi.rat_core,
+        ratapi.rat_core,
         "RATMain",
         mock.MagicMock(return_value=(test_output_problem, test_output_results, test_bayes)),
     ):
         # Use default project as we patch RATMain to give the desired outputs
-        project, results = RATapi.run(input_project, RATapi.Controls(procedure=test_procedure))
+        project, results = ratapi.run(input_project, ratapi.Controls(procedure=test_procedure))
 
     check_results_equal(test_results, results)
 

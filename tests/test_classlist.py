@@ -10,7 +10,7 @@ from typing import Any, Union
 import prettytable
 import pytest
 
-from RATapi.classlist import ClassList
+from ratapi.classlist import ClassList
 from tests.utils import InputAttributes, SubInputAttributes
 
 

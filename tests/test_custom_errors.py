@@ -5,7 +5,7 @@ import re
 import pytest
 from pydantic import ValidationError, create_model
 
-import RATapi.utils.custom_errors
+import ratapi.utils.custom_errors
 
 
 @pytest.fixture
@@ -43,7 +43,7 @@ def test_custom_pydantic_validation_error(
     try:
         TestModel(int_field="string", str_field=5)
     except ValidationError as exc:
-        custom_error_list = RATapi.utils.custom_errors.custom_pydantic_validation_error(exc.errors(), custom_errors)
+        custom_error_list = ratapi.utils.custom_errors.custom_pydantic_validation_error(exc.errors(), custom_errors)
 
     with pytest.raises(ValidationError, match=re.escape(expected_error_message)):
         raise ValidationError.from_exception_data("TestModel", custom_error_list)
