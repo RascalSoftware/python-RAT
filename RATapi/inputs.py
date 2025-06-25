@@ -8,7 +8,6 @@ from typing import Callable, Union
 import numpy as np
 
 import RATapi
-import RATapi.controls
 import RATapi.wrappers
 from RATapi.rat_core import Checks, Control, NameStore, ProblemDefinition
 from RATapi.utils.enums import Calculations, Languages, LayerModels, TypeOptions
@@ -81,9 +80,9 @@ class FileHandles:
         if custom_file["language"] == Languages.Python:
             file_handle = get_python_handle(custom_file["filename"], custom_file["function_name"], custom_file["path"])
         elif custom_file["language"] == Languages.Matlab:
-            file_handle = RATapi.wrappers.MatlabWrapper(full_path).getHandle()
+            file_handle = RATapi.wrappers.MatlabWrapper(full_path).get_handle()
         elif custom_file["language"] == Languages.Cpp:
-            file_handle = RATapi.wrappers.DylibWrapper(full_path, custom_file["function_name"]).getHandle()
+            file_handle = RATapi.wrappers.DylibWrapper(full_path, custom_file["function_name"]).get_handle()
 
         return file_handle
 
