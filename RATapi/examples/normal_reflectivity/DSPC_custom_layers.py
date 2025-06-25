@@ -127,13 +127,5 @@ def DSPC_custom_layers():
 
 
 if __name__ == "__main__":
-    import RATapi
-
-    RATapi.wrappers.get_matlab_engine().editFile((pathlib.Path(__file__).parent / "customBilayerDSPC.m").as_posix())
-
-    import time
-
-    time.sleep(20)
     problem, results = DSPC_custom_layers()
-
     RAT.plotting.plot_ref_sld(problem, results, True)

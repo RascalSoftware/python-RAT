@@ -143,6 +143,7 @@ public:
     
     void close() {
 	    if (matlabPtr) {
+            engEvalString(matlabPtr, "closeNoPrompt(matlab.desktop.editor.getAll);");
             engEvalString(matlabPtr, "fclose all");
             engEvalString(matlabPtr, "clear all");
             engClose(matlabPtr);
@@ -193,6 +194,7 @@ class MatlabEngine
     void editFile(std::string path)
     {
         loader->open();
+        loader->engEvalString(loader->matlabPtr, "dbclear all"); 
         loader->engEvalString(loader->matlabPtr, ("edit " + path).c_str());
     };
 
@@ -212,8 +214,10 @@ class MatlabEngine
             if (nOutput != expOutputCount)
             {
                 throw std::runtime_error("The custom function " + functionName + " is expected to have " + 
-                                         std::to_string(expOutputCount) + " output but has " + std::to_string(nOutput) + " instead."); 
-            }           
+                                         std::to_string(expOutputCount) + " output but has " + std::to_string(nOutput) + " instead.");
+            }
+            loader->engEvalString(loader->matlabPtr, "closeNoPrompt(matlab.desktop.editor.getAll);");
+            loader->engEvalString(loader->matlabPtr, "dbclear all");          
             funChanged = false;
         }
     }
