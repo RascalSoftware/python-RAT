@@ -68,24 +68,25 @@ public:
         
         std::string options = "";
         #if !defined(_WIN32) && !defined(_WIN64)
-            options = "matlab -nosplash -nodesktop";
+            options = "matlab -nosplash -nodesktop";  py::print("open - Line:", 1); 
         #endif
 
         if (!(matlabPtr = engOpen(options.c_str()))) {
             throw std::runtime_error("\nCan't start MATLAB engine\n");
         }
-        started = true;
-        engSetVisible(matlabPtr, 0);
+        started = true;  py::print("open - Line:", 2); 
+        engSetVisible(matlabPtr, 0);  py::print("open - Line:", 3); 
     }
     
     std::unique_ptr<dylib> loadLibrary(const std::string& filename)
     {
-        auto lib = std::unique_ptr<dylib>(new dylib(std::getenv("MATLAB_DLL_PATH"), filename.c_str()));
+        auto lib = std::unique_ptr<dylib>(new dylib(std::getenv("MATLAB_DLL_PATH"), filename.c_str()));  py::print("open - Line:", 4); 
         if (!lib)
         {
             throw std::runtime_error("The matlab engine dynamic library (" + filename + ") failed to load in path - " 
-                                     + std::getenv("MATLAB_DLL_PATH") + ".\n");
+                                     + std::getenv("MATLAB_DLL_PATH") + ".\n");  
         }
+        py::print("open - Line:", 5); 
         return lib;
     };
 
@@ -201,24 +202,24 @@ class MatlabEngine
     void initialize(int expOutputCount)
     {
         if (dirChanged){
-            std::string cdCmd = "cd('" + (currentDirectory + "')");
-            loader->engEvalString(loader->matlabPtr, cdCmd.c_str());
-            dirChanged = false;
+            std::string cdCmd = "cd('" + (currentDirectory + "')"); py::print("initialize - Line:", 1); 
+            loader->engEvalString(loader->matlabPtr, cdCmd.c_str()); py::print("initialize - Line:", 2); 
+            dirChanged = false; py::print("initialize - Line:", 3);
         }
 
         if (funChanged){
-            std::string cdCmd = "nOutput = nargout('" + (functionName + "');");
-            loader->engEvalString(loader->matlabPtr, cdCmd.c_str());
-            mxArray *matOutput = loader->engGetVariable(loader->matlabPtr, "nOutput");
-            size_t nOutput = (size_t)loader->mxGetScalar(matOutput);
+            std::string cdCmd = "nOutput = nargout('" + (functionName + "');"); py::print("initialize - Line:", 4); 
+            loader->engEvalString(loader->matlabPtr, cdCmd.c_str()); py::print("initialize - Line:", 5);
+            mxArray *matOutput = loader->engGetVariable(loader->matlabPtr, "nOutput"); py::print("initialize - Line:", 6); 
+            size_t nOutput = (size_t)loader->mxGetScalar(matOutput); py::print("initialize - Line:", 7); 
             if (nOutput != expOutputCount)
             {
                 throw std::runtime_error("The custom function " + functionName + " is expected to have " + 
-                                         std::to_string(expOutputCount) + " output but has " + std::to_string(nOutput) + " instead.");
+                                         std::to_string(expOutputCount) + " output but has " + std::to_string(nOutput) + " instead."); py::print("initialize - Line:", 8); 
             }
-            loader->engEvalString(loader->matlabPtr, "closeNoPrompt(matlab.desktop.editor.getAll);");
-            loader->engEvalString(loader->matlabPtr, "dbclear all");          
-            funChanged = false;
+            loader->engEvalString(loader->matlabPtr, "closeNoPrompt(matlab.desktop.editor.getAll);"); py::print("initialize - Line:", 9); 
+            loader->engEvalString(loader->matlabPtr, "dbclear all"); py::print("initialize - Line:", 10); 
+            funChanged = false; py::print("initialize - Line:", 11); 
         }
     }
 
@@ -267,76 +268,76 @@ class MatlabEngine
 
     py::tuple invoke(std::vector<double>& params, std::vector<double>& bulkIn, std::vector<double>& bulkOut, int contrast, int domain=DEFAULT_DOMAIN)
     {   
-        loader->open();
-        initialize(2);
+        loader->open(); py::print("invoke - Line:", 1);
+        initialize(2); py::print("invoke - Line:", 2);
 
-        dirChanged = false;
-        mxArray *PARAMS = loader->mxCreateDoubleMatrix(1,params.size(),mxREAL);
-        memcpy(loader->mxGetPr(PARAMS), &params[0], params.size()*sizeof(double));
-        loader->engPutVariable(loader->matlabPtr, "params", PARAMS);
-        mxArray *BULKIN = loader->mxCreateDoubleMatrix(1,bulkIn.size(),mxREAL);
-        memcpy((void *)loader->mxGetPr(BULKIN), &bulkIn[0], bulkIn.size()*sizeof(double));
-        loader->engPutVariable(loader->matlabPtr, "bulkIn", BULKIN);
-        mxArray *BULKOUT = loader->mxCreateDoubleMatrix(1,bulkOut.size(),mxREAL);
-        memcpy((void *)loader->mxGetPr(BULKOUT), &bulkOut[0], bulkOut.size()*sizeof(double));
-        loader->engPutVariable(loader->matlabPtr, "bulkOut", BULKOUT);
-        mxArray *CONTRAST = loader->mxCreateDoubleScalar(contrast + 1);
-        loader->engPutVariable(loader->matlabPtr, "contrast", CONTRAST);
-        std::string customCmd;
-        mxArray *DOMAIN_NUM = nullptr;
+        dirChanged = false; py::print("invoke - Line:", 1);
+        mxArray *PARAMS = loader->mxCreateDoubleMatrix(1,params.size(),mxREAL); py::print("invoke - Line:", 3);
+        memcpy(loader->mxGetPr(PARAMS), &params[0], params.size()*sizeof(double)); py::print("invoke - Line:", 4);
+        loader->engPutVariable(loader->matlabPtr, "params", PARAMS); py::print("invoke - Line:", 5);
+        mxArray *BULKIN = loader->mxCreateDoubleMatrix(1,bulkIn.size(),mxREAL); py::print("invoke - Line:", 6);
+        memcpy((void *)loader->mxGetPr(BULKIN), &bulkIn[0], bulkIn.size()*sizeof(double)); py::print("invoke - Line:", 7);
+        loader->engPutVariable(loader->matlabPtr, "bulkIn", BULKIN); py::print("invoke - Line:", 8);
+        mxArray *BULKOUT = loader->mxCreateDoubleMatrix(1,bulkOut.size(),mxREAL); py::print("invoke - Line:", 9);
+        memcpy((void *)loader->mxGetPr(BULKOUT), &bulkOut[0], bulkOut.size()*sizeof(double)); py::print("invoke - Line:", 10);
+        loader->engPutVariable(loader->matlabPtr, "bulkOut", BULKOUT); py::print("invoke - Line:", 11);
+        mxArray *CONTRAST = loader->mxCreateDoubleScalar(contrast + 1); py::print("invoke - Line:", 12);
+        loader->engPutVariable(loader->matlabPtr, "contrast", CONTRAST); py::print("invoke - Line:", 13);
+        std::string customCmd; py::print("invoke - Line:", 14);
+        mxArray *DOMAIN_NUM = nullptr; py::print("invoke - Line:", 15);
         if (domain != -1){
-            DOMAIN_NUM = loader->mxCreateDoubleScalar(domain + 1);
-            loader->engPutVariable(loader->matlabPtr, "domain", DOMAIN_NUM);
-            customCmd = "[output, subRough] = " + (functionName + "(params, bulkIn, bulkOut, contrast, domain)");
+            DOMAIN_NUM = loader->mxCreateDoubleScalar(domain + 1); py::print("invoke - Line:", 16);
+            loader->engPutVariable(loader->matlabPtr, "domain", DOMAIN_NUM); py::print("invoke - Line:", 17);
+            customCmd = "[output, subRough] = " + (functionName + "(params, bulkIn, bulkOut, contrast, domain)"); py::print("invoke - Line:", 18);
         }
         else {
-            customCmd = "[output, subRough] = " + (functionName + "(params, bulkIn, bulkOut, contrast)");
+            customCmd = "[output, subRough] = " + (functionName + "(params, bulkIn, bulkOut, contrast)"); py::print("invoke - Line:", 19);
         }
 
-        char buffer[BUFSIZE+1];
-        buffer[BUFSIZE] = '\0';
-        loader->engEvalString(loader->matlabPtr, "clearvars output subRough");
-        loader->engOutputBuffer(loader->matlabPtr, buffer, BUFSIZE);
-        loader->engEvalString(loader->matlabPtr, customCmd.c_str());
-        mxArray *matOutput = loader->engGetVariable(loader->matlabPtr, "output");
-        loader->engOutputBuffer(loader->matlabPtr, NULL, 0);
-        mxArray *subRough = loader->engGetVariable(loader->matlabPtr, "subRough");
+        char buffer[BUFSIZE+1]; py::print("invoke - Line:", 20);
+        buffer[BUFSIZE] = '\0'; py::print("invoke - Line:", 21);
+        loader->engEvalString(loader->matlabPtr, "clearvars output subRough"); py::print("invoke - Line:", 22);
+        loader->engOutputBuffer(loader->matlabPtr, buffer, BUFSIZE); py::print("invoke - Line:", 23);
+        loader->engEvalString(loader->matlabPtr, customCmd.c_str()); py::print("invoke - Line:", 24);
+        mxArray *matOutput = loader->engGetVariable(loader->matlabPtr, "output"); py::print("invoke - Line:", 25);
+        loader->engOutputBuffer(loader->matlabPtr, NULL, 0); py::print("invoke - Line:", 26);
+        mxArray *subRough = loader->engGetVariable(loader->matlabPtr, "subRough"); py::print("invoke - Line:", 27);
         
         if (matOutput == NULL || subRough == NULL)
         {   
-            throw std::runtime_error("ERROR: Results could not be extracted from MATLAB engine because:\n" + std::string(buffer));
+            throw std::runtime_error("ERROR: Results could not be extracted from MATLAB engine because:\n" + std::string(buffer)); py::print("invoke - Line:", 28);
         }
-        double roughness = (double)loader->mxGetScalar(subRough);
-        loader->engEvalString(loader->matlabPtr, "[nRow, nCol] = size(output)");
-        mxArray *matRow = loader->engGetVariable(loader->matlabPtr, "nRow");
-        mxArray *matCol = loader->engGetVariable(loader->matlabPtr, "nCol");
-        size_t nRow = (size_t)loader->mxGetScalar(matRow);
-        size_t nCol = (size_t)loader->mxGetScalar(matCol);
-        double* temp = (double *)loader->mxGetData(matOutput);
+        double roughness = (double)loader->mxGetScalar(subRough); py::print("invoke - Line:", 29);
+        loader->engEvalString(loader->matlabPtr, "[nRow, nCol] = size(output)"); py::print("invoke - Line:", 30);
+        mxArray *matRow = loader->engGetVariable(loader->matlabPtr, "nRow"); py::print("invoke - Line:", 31);
+        mxArray *matCol = loader->engGetVariable(loader->matlabPtr, "nCol"); py::print("invoke - Line:", 32);
+        size_t nRow = (size_t)loader->mxGetScalar(matRow); py::print("invoke - Line:", 33);
+        size_t nCol = (size_t)loader->mxGetScalar(matCol); py::print("invoke - Line:", 34);
+        double* temp = (double *)loader->mxGetData(matOutput); py::print("invoke - Line:", 35);
  
-        py::list output;
+        py::list output; py::print("invoke - Line:", 36);
         for (mwSize idx1{0}; idx1 < nRow; idx1++)
         {
-            py::list rows; 
+            py::list rows; py::print("invoke - Line:", 37); 
             for (mwSize idx2{0}; idx2 < nCol; idx2++)
             {
-                rows.append(temp[nRow * idx2 + idx1]);
+                rows.append(temp[nRow * idx2 + idx1]); py::print("invoke - Line:", 38);
             }
-            output.append(rows);
+            output.append(rows); py::print("invoke - Line:", 39);
         }
 
-        loader->mxDestroyArray(matOutput);
-        loader->mxDestroyArray(subRough);
-        loader->mxDestroyArray(matRow); 
-        loader->mxDestroyArray(matCol);
-        loader->mxDestroyArray(PARAMS);
-        loader->mxDestroyArray(BULKIN);
-        loader->mxDestroyArray(BULKOUT);
-        loader->mxDestroyArray(CONTRAST);
+        loader->mxDestroyArray(matOutput); py::print("invoke - Line:", 40);
+        loader->mxDestroyArray(subRough); py::print("invoke - Line:", 41);
+        loader->mxDestroyArray(matRow); py::print("invoke - Line:", 42); 
+        loader->mxDestroyArray(matCol); py::print("invoke - Line:", 43);
+        loader->mxDestroyArray(PARAMS); py::print("invoke - Line:", 44);
+        loader->mxDestroyArray(BULKIN); py::print("invoke - Line:", 45);
+        loader->mxDestroyArray(BULKOUT); py::print("invoke - Line:", 46);
+        loader->mxDestroyArray(CONTRAST); py::print("invoke - Line:", 47);
         if (DOMAIN_NUM)
-            loader->mxDestroyArray(DOMAIN_NUM);
+            loader->mxDestroyArray(DOMAIN_NUM); py::print("invoke - Line:", 48);
         
-        return py::make_tuple(output, roughness);   
+        return py::make_tuple(output, roughness); py::print("invoke - Line:", 49);   
     };
 };
 
