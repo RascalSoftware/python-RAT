@@ -1,4 +1,4 @@
-"""Wrappers for the interface between RATapi and MATLAB custom files."""
+"""Wrappers for the interface between ratapi and MATLAB custom files."""
 
 import os
 import pathlib
@@ -8,7 +8,7 @@ from typing import Callable
 import numpy as np
 from numpy.typing import ArrayLike
 
-import RATapi.rat_core
+import ratapi.rat_core
 
 
 def start_matlab():
