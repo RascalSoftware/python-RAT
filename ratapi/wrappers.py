@@ -1,5 +1,6 @@
-"""Wrappers for the interface between ratapi and MATLAB custom files."""
+"""Wrappers for the interface between RATapi and MATLAB custom files."""
 
+import os
 import pathlib
 from contextlib import suppress
 from typing import Callable
@@ -7,7 +8,7 @@ from typing import Callable
 import numpy as np
 from numpy.typing import ArrayLike
 
-import ratapi.rat_core
+import RATapi.rat_core
 
 
 def start_matlab():
@@ -20,10 +21,10 @@ def start_matlab():
 
     """
     future = None
-    with suppress(ImportError):
-        import matlab.engine
-
-        future = matlab.engine.start_matlab(background=True)
+    if os.environ.get("DELAY_MATLAB_START", '0') == '0':
+        with suppress(ImportError):
+            import matlab.engine
+            future = matlab.engine.start_matlab(background=True)
 
     return future
 
@@ -86,6 +87,22 @@ class MatlabWrapper:
         return handle
 
 
+def use_shared_matlab(name, custom_error=""):
+    """Start MATLAB asynchronously and returns a future to retrieve the engine later.
+
+    Returns
+    -------
+    future : matlab.engine.futureresult.FutureResult
+        A future used to get the actual matlab engine.
+
+    """
+    with suppress(ImportError):
+        import matlab.engine
+
+        MatlabWrapper.loader = matlab.engine.connect_matlab(name, background=True)
+        return MatlabWrapper.loader
+
+
 class DylibWrapper:
     """Creates a python callback for a function in dynamic library.
 
@@ -99,7 +116,7 @@ class DylibWrapper:
     """
 
     def __init__(self, filename, function_name) -> None:
-        self.engine = ratapi.rat_core.DylibEngine(filename, function_name)
+        self.engine = RATapi.rat_core.DylibEngine(filename, function_name)
 
     def getHandle(self) -> Callable[[ArrayLike, ArrayLike, ArrayLike, int, int], tuple[ArrayLike, float]]:
         """Return a wrapper for the custom dynamic library function.
