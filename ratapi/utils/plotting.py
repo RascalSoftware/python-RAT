@@ -1058,7 +1058,7 @@ def plot_hists(
             i,
             smooth=smooth,
             sigma=sigma,
-            estimated_density=estimated_density.get(i, None),
+            estimated_density=estimated_density.get(i),
             axes=ax,
             **hist_settings,
         ),
