@@ -21,9 +21,10 @@ def start_matlab():
 
     """
     future = None
-    if os.environ.get("DELAY_MATLAB_START", '0') == '0':
+    if os.environ.get("DELAY_MATLAB_START", "0") == "0":
         with suppress(ImportError):
             import matlab.engine
+
             future = matlab.engine.start_matlab(background=True)
 
     return future
@@ -97,7 +98,7 @@ def use_shared_matlab(name, custom_error_message):
         The name of shared MATLAB engine instance
     custom_error_message : str
         The custom error message in case of failed connection
-    
+
     Returns
     -------
     future : matlab.engine.futureresult.FutureResult
