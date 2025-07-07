@@ -8,7 +8,6 @@ from typing import Callable, Union
 import numpy as np
 
 import ratapi
-import ratapi.controls
 import ratapi.wrappers
 from ratapi.rat_core import Checks, Control, NameStore, ProblemDefinition
 from ratapi.utils.enums import Calculations, Languages, LayerModels, TypeOptions

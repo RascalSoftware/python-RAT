@@ -1,5 +1,6 @@
 """Wrappers for the interface between ratapi and MATLAB custom files."""
 
+import os
 import pathlib
 from contextlib import suppress
 from typing import Callable
@@ -20,10 +21,11 @@ def start_matlab():
 
     """
     future = None
-    with suppress(ImportError):
-        import matlab.engine
+    if os.environ.get("DELAY_MATLAB_START", "0") == "0":
+        with suppress(ImportError):
+            import matlab.engine
 
-        future = matlab.engine.start_matlab(background=True)
+            future = matlab.engine.start_matlab(background=True)
 
     return future
 
@@ -39,10 +41,11 @@ class MatlabWrapper:
     """
 
     loader = start_matlab()
+    loader_error_message = "matlabengine is required to use MatlabWrapper"
 
     def __init__(self, filename: str) -> None:
         if self.loader is None:
-            raise ImportError("matlabengine is required to use MatlabWrapper") from None
+            raise ImportError(self.loader_error_message) from None
 
         self.engine = self.loader.result()
         path = pathlib.Path(filename)
@@ -84,6 +87,30 @@ class MatlabWrapper:
                 return np.array(output, "float").tolist(), float(sub_rough)
 
         return handle
+
+
+def use_shared_matlab(name, custom_error_message):
+    """Connect asynchronously to shared MATLAB engine instance with the given name.
+
+    Parameters
+    ----------
+    name : str
+        The name of shared MATLAB engine instance
+    custom_error_message : str
+        The custom error message in case of failed connection
+
+    Returns
+    -------
+    future : matlab.engine.futureresult.FutureResult
+        A future used to get the actual matlab engine.
+
+    """
+    with suppress(ImportError):
+        import matlab.engine
+
+        MatlabWrapper.loader = matlab.engine.connect_matlab(name, background=True)
+        MatlabWrapper.loader_error_message = custom_error_message
+        return MatlabWrapper.loader
 
 
 class DylibWrapper:
