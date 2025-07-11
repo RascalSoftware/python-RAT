@@ -8,7 +8,7 @@ from setuptools import Extension, find_packages, setup
 from setuptools.command.build_clib import build_clib
 from setuptools.command.build_ext import build_ext
 
-__version__ = "0.0.0.dev6"
+__version__ = "0.0.0.dev7"
 PACKAGE_NAME = "ratapi"
 
 with open("README.md") as f:
@@ -159,7 +159,7 @@ setup(
     description="Python extension for the Reflectivity Analysis Toolbox (RAT)",
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
-    packages=find_packages(),
+    packages=find_packages(exclude=("tests",)),
     include_package_data=True,
     package_data={"": [get_shared_object_name(libevent[0])], "ratapi.examples": ["data/*.dat"]},
     cmdclass={"build_clib": BuildClib, "build_ext": BuildExt},
