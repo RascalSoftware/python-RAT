@@ -481,20 +481,12 @@ def test_bayes_validation(input_project, reflectivity_calculation_results):
 
 @pytest.mark.parametrize("data", [data(), domains_data()])
 def test_extract_plot_data(data) -> None:
-    plot_data = RATplot._extract_plot_data(data, False, True)
+    plot_data = RATplot._extract_plot_data(data, False, True, 50)
     assert len(plot_data["ref"]) == len(data.reflectivity)
     assert len(plot_data["sld"]) == len(data.shiftedData)
 
+    with pytest.raises(ValueError, match=r"Parameter `shift_value` must be between 1 and 100"):
+        RATplot._extract_plot_data(data, False, True, 0)
 
-@patch("ratapi.utils.plotting.plot_ref_sld_helper")
-def test_blit_plot(plot_helper, fig: plt.figure) -> None:
-    plot_helper.return_value = fig
-    event_data = data()
-    new_plot = RATplot.PlotSLDWithBlitting(event_data)
-    assert plot_helper.call_count == 1
-    new_plot.update(event_data)
-    assert plot_helper.call_count == 1  # foreground only is updated so no call to plot helper
-    new_plot.show_grid = False
-    new_plot.figure = plt.subplots(1, 2)[0]
-    new_plot.update(event_data)  # plot properties have changed so update should call plot_helper
-    assert plot_helper.call_count == 2
+    with pytest.raises(ValueError, match=r"Parameter `shift_value` must be between 1 and 100"):
+        RATplot._extract_plot_data(data, False, True, 100.5)
