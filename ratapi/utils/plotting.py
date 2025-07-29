@@ -34,7 +34,7 @@ def _extract_plot_data(event_data: PlotEventData, q4: bool, show_error_bar: bool
     show_error_bar : bool, default: True
         Controls whether the error bars are shown
     shift_value : float
-        A value between 1 and 100 that controls the spacing between the reflectivity plots for each contrasts
+        A value between 1 and 100 that controls the spacing between the reflectivity plots for each of the contrasts
 
     Returns
     -------
@@ -130,7 +130,7 @@ def plot_ref_sld_helper(
     show_legend : bool, default: True
         Controls whether the legend is shown
     shift_value : float, default: 100
-        A value between 1 and 100 that controls the spacing between the reflectivity plots for each contrasts
+        A value between 1 and 100 that controls the spacing between the reflectivity plots for each of the contrasts
     animated : bool, default: False
         Controls whether the animated property of foreground plot elements should be set.
 
@@ -276,7 +276,7 @@ def plot_ref_sld(
     show_legend : bool, default: True
             Controls whether the legend is shown
     shift_value : float, default: 100
-        A value between 1 and 100 that controls the spacing between the reflectivity plots for each contrasts
+        A value between 1 and 100 that controls the spacing between the reflectivity plots for each of the contrasts
 
     Returns
     -------
