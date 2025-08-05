@@ -250,7 +250,7 @@ def bayes_benchmark_3d(grid_size: int) -> (RAT.outputs.BayesResults, Calculation
     scale_param = problem.scalefactors[0]
     scalefactor = np.linspace(scale_param.min, scale_param.max, grid_size)
 
-    controls = RAT.Controls(procedure="calculate", calcSldDuringFit=True, display="off")
+    controls = RAT.Controls(procedure="calculate", display="off")
 
     def calculate_posterior(roughness_index: int, background_index: int, scalefactor_index: int) -> float:
         """Calculate the posterior for an item in the roughness, background, and scalefactor vectors.

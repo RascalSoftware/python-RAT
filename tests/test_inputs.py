@@ -359,7 +359,6 @@ def standard_layers_controls():
     controls = Control()
     controls.procedure = Procedures.Calculate
     controls.parallel = Parallel.Single
-    controls.calcSldDuringFit = False
     controls.numSimulationPoints = 500
     controls.resampleMinAngle = 0.9
     controls.resampleNPoints = 50
@@ -398,7 +397,6 @@ def custom_xy_controls():
     controls = Control()
     controls.procedure = Procedures.Calculate
     controls.parallel = Parallel.Single
-    controls.calcSldDuringFit = False
     controls.numSimulationPoints = 500
     controls.resampleMinAngle = 0.9
     controls.resampleNPoints = 50.0
@@ -757,7 +755,6 @@ def check_controls_equal(actual_controls, expected_controls) -> None:
     controls_fields = [
         "procedure",
         "parallel",
-        "calcSldDuringFit",
         "numSimulationPoints",
         "resampleMinAngle",
         "resampleNPoints",

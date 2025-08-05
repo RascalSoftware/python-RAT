@@ -23,7 +23,6 @@ from ratapi.utils.enums import BoundHandling, Display, Parallel, Procedures, Str
 common_fields = [
     "procedure",
     "parallel",
-    "calcSldDuringFit",
     "numSimulationPoints",
     "resampleMinAngle",
     "resampleNPoints",
@@ -57,9 +56,6 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid", use_attribut
 
     parallel: Parallel = Parallel.Single
     """How the calculation should be parallelised. Can be 'single', 'contrasts' or 'points'."""
-
-    calcSldDuringFit: bool = False
-    """Whether SLD will be calculated during fit (for live plotting etc.)"""
 
     numSimulationPoints: int = Field(500, ge=2)
     """The number of points used for reflectivity simulations where no data is supplied."""

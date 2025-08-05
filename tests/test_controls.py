@@ -60,7 +60,6 @@ class TestCalculate:
             "+---------------------+-----------+\n"
             "|      procedure      | calculate |\n"
             "|       parallel      |   single  |\n"
-            "|   calcSldDuringFit  |   False   |\n"
             "| numSimulationPoints |    500    |\n"
             "|   resampleMinAngle  |    0.9    |\n"
             "|   resampleNPoints   |     50    |\n"
@@ -74,7 +73,6 @@ class TestCalculate:
         "control_property, value",
         [
             ("parallel", Parallel.Single),
-            ("calcSldDuringFit", False),
             ("numSimulationPoints", 500),
             ("resampleMinAngle", 0.9),
             ("resampleNPoints", 50),
@@ -90,7 +88,6 @@ class TestCalculate:
         "control_property, value",
         [
             ("parallel", Parallel.Points),
-            ("calcSldDuringFit", True),
             ("numSimulationPoints", 10),
             ("resampleMinAngle", 0.2),
             ("resampleNPoints", 1),
@@ -186,14 +183,6 @@ class TestCalculate:
         with pytest.raises(pydantic.ValidationError, match="Input should be 'single', 'points' or 'contrasts'"):
             self.calculate.parallel = value
 
-    @pytest.mark.parametrize("value", [5.0, 12])
-    def test_calculate_calcSldDuringFit_validation(self, value: Union[int, float]) -> None:
-        """Tests the calcSldDuringFit setter validation in Calculate class."""
-        with pytest.raises(
-            pydantic.ValidationError, match="Input should be a valid boolean, unable to interpret input"
-        ):
-            self.calculate.calcSldDuringFit = value
-
     @pytest.mark.parametrize("value", ["test", "iterate", True, 1, 3.0])
     def test_calculate_display_validation(self, value: Any) -> None:
         """Tests the display setter validation in Calculate class."""
@@ -220,7 +209,6 @@ class TestSimplex:
             "+---------------------+---------+\n"
             "|      procedure      | simplex |\n"
             "|       parallel      |  single |\n"
-            "|   calcSldDuringFit  |  False  |\n"
             "| numSimulationPoints |   500   |\n"
             "|   resampleMinAngle  |   0.9   |\n"
             "|   resampleNPoints   |    50   |\n"
@@ -240,7 +228,6 @@ class TestSimplex:
         "control_property, value",
         [
             ("parallel", Parallel.Single),
-            ("calcSldDuringFit", False),
             ("numSimulationPoints", 500),
             ("resampleMinAngle", 0.9),
             ("resampleNPoints", 50),
@@ -262,7 +249,6 @@ class TestSimplex:
         "control_property, value",
         [
             ("parallel", Parallel.Points),
-            ("calcSldDuringFit", True),
             ("numSimulationPoints", 10),
             ("resampleMinAngle", 0.2),
             ("resampleNPoints", 1),
@@ -380,7 +366,6 @@ class TestDE:
             "+----------------------+---------------+\n"
             "|      procedure       |       de      |\n"
             "|       parallel       |     single    |\n"
-            "|   calcSldDuringFit   |     False     |\n"
             "| numSimulationPoints  |      500      |\n"
             "|   resampleMinAngle   |      0.9      |\n"
             "|   resampleNPoints    |       50      |\n"
@@ -402,7 +387,6 @@ class TestDE:
         "control_property, value",
         [
             ("parallel", Parallel.Single),
-            ("calcSldDuringFit", False),
             ("numSimulationPoints", 500),
             ("resampleMinAngle", 0.9),
             ("resampleNPoints", 50),
@@ -424,7 +408,6 @@ class TestDE:
         "control_property, value",
         [
             ("parallel", Parallel.Points),
-            ("calcSldDuringFit", True),
             ("numSimulationPoints", 10),
             ("resampleMinAngle", 0.2),
             ("resampleNPoints", 1),
@@ -556,7 +539,6 @@ class TestNS:
             "+---------------------+--------+\n"
             "|      procedure      |   ns   |\n"
             "|       parallel      | single |\n"
-            "|   calcSldDuringFit  | False  |\n"
             "| numSimulationPoints |  500   |\n"
             "|   resampleMinAngle  |  0.9   |\n"
             "|   resampleNPoints   |   50   |\n"
@@ -574,7 +556,6 @@ class TestNS:
         "control_property, value",
         [
             ("parallel", Parallel.Single),
-            ("calcSldDuringFit", False),
             ("numSimulationPoints", 500),
             ("resampleMinAngle", 0.9),
             ("resampleNPoints", 50),
@@ -594,7 +575,6 @@ class TestNS:
         "control_property, value",
         [
             ("parallel", Parallel.Points),
-            ("calcSldDuringFit", True),
             ("numSimulationPoints", 10),
             ("resampleMinAngle", 0.2),
             ("resampleNPoints", 1),
@@ -725,7 +705,6 @@ class TestDream:
             "+---------------------+---------+\n"
             "|      procedure      |  dream  |\n"
             "|       parallel      |  single |\n"
-            "|   calcSldDuringFit  |  False  |\n"
             "| numSimulationPoints |   500   |\n"
             "|   resampleMinAngle  |   0.9   |\n"
             "|   resampleNPoints   |    50   |\n"
@@ -745,7 +724,6 @@ class TestDream:
         "control_property, value",
         [
             ("parallel", Parallel.Single),
-            ("calcSldDuringFit", False),
             ("numSimulationPoints", 500),
             ("resampleMinAngle", 0.9),
             ("resampleNPoints", 50),
@@ -767,7 +745,6 @@ class TestDream:
         "control_property, value",
         [
             ("parallel", Parallel.Points),
-            ("calcSldDuringFit", True),
             ("numSimulationPoints", 10),
             ("resampleMinAngle", 0.2),
             ("resampleNPoints", 1),
