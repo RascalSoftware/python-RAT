@@ -583,7 +583,6 @@ def make_controls(input_controls: ratapi.Controls) -> Control:
     controls.boundHandling = input_controls.boundHandling
     controls.adaptPCR = input_controls.adaptPCR
 
-    controls.calcSLD = False
     controls.IPCFilePath = input_controls._IPCFilePath
 
     return controls

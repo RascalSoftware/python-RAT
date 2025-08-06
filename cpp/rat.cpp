@@ -332,7 +332,7 @@ RAT::Controls createControlsStruct(const Control& control)
     control_struct.resampleNPoints = control.resampleNPoints;
     stringToRatBoundedArray(control.boundHandling, control_struct.boundHandling.data, control_struct.boundHandling.size);
     control_struct.adaptPCR = control.adaptPCR;
-    control_struct.calcSLD = control.calcSLD;
+    control_struct.calcSLD = false;
     stringToRatBoundedArray(control.IPCFilePath, control_struct.IPCFilePath.data, control_struct.IPCFilePath.size);
 
     return control_struct;
