@@ -73,22 +73,22 @@ class Strategies(RATEnum):
     """The base vector is random."""
 
     LocalToBest = "local to best"
-    """The base vector is a combination of one randomly-selected local solution 
+    """The base vector is a combination of one randomly-selected local solution
     and the best solution of the previous iteration."""
 
     BestWithJitter = "best jitter"
     """The base vector is the best solution of the previous iteration, with a small random perturbation applied."""
 
     RandomWithPerVectorDither = "vector dither"
-    """The base vector is random, with a random scaling factor applied to each mutant. 
+    """The base vector is random, with a random scaling factor applied to each mutant.
     This scaling factor is different for each mutant."""
 
     RandomWithPerGenerationDither = "generation dither"
-    """The base vector is random, with a random scaling factor applied to each mutant. 
+    """The base vector is random, with a random scaling factor applied to each mutant.
     This scaling factor is the same for every mutant, and randomised every generation."""
 
     RandomEitherOrAlgorithm = "either or"
-    """The base vector is randomly chosen from either a pure random mutation, 
+    """The base vector is randomly chosen from either a pure random mutation,
     or a pure recombination of parent parameter values."""
 
     @classmethod

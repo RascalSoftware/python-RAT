@@ -588,8 +588,6 @@ parallel : str
     How the calculation should be parallelised (This uses the Parallel Computing Toolbox). Can be 'single', 'contrasts' or 'points'.
 procedure : str
     Which procedure RAT should execute. Can be 'calculate', 'simplex', 'de', 'ns', or 'dream'.
-calcSldDuringFit : bool
-    Whether SLD will be calculated during fit (for live plotting etc.)
 numSimulationPoints : int
     The number of points used for a reflectivity simulation where no data is present.
 resampleMinAngle : float
@@ -664,7 +662,6 @@ struct Control {
     real_T nMCMC {};
     real_T propScale {};
     real_T nsTolerance {};
-    boolean_T calcSldDuringFit {};
     real_T numSimulationPoints {};
     real_T resampleMinAngle {};
     real_T resampleNPoints {};

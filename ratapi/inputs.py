@@ -552,7 +552,6 @@ def make_controls(input_controls: ratapi.Controls) -> Control:
 
     controls.procedure = input_controls.procedure
     controls.parallel = input_controls.parallel
-    controls.calcSldDuringFit = input_controls.calcSldDuringFit
     controls.numSimulationPoints = input_controls.numSimulationPoints
     controls.resampleMinAngle = input_controls.resampleMinAngle
     controls.resampleNPoints = input_controls.resampleNPoints
@@ -583,8 +582,6 @@ def make_controls(input_controls: ratapi.Controls) -> Control:
     controls.pUnitGamma = input_controls.pUnitGamma
     controls.boundHandling = input_controls.boundHandling
     controls.adaptPCR = input_controls.adaptPCR
-    # IPC
-    controls.IPCFilePath = ""
 
     controls.IPCFilePath = input_controls._IPCFilePath
 

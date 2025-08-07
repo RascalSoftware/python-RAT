@@ -317,7 +317,6 @@ RAT::Controls createControlsStruct(const Control& control)
     control_struct.nMCMC = control.nMCMC;
     control_struct.propScale = control.propScale;
     control_struct.nsTolerance = control.nsTolerance;
-    control_struct.calcSldDuringFit = control.calcSldDuringFit;
     control_struct.numSimulationPoints = control.numSimulationPoints;
     control_struct.updateFreq = control.updateFreq;
     control_struct.updatePlotFreq = control.updatePlotFreq;
@@ -333,6 +332,7 @@ RAT::Controls createControlsStruct(const Control& control)
     control_struct.resampleNPoints = control.resampleNPoints;
     stringToRatBoundedArray(control.boundHandling, control_struct.boundHandling.data, control_struct.boundHandling.size);
     control_struct.adaptPCR = control.adaptPCR;
+    control_struct.calcSLD = false;
     stringToRatBoundedArray(control.IPCFilePath, control_struct.IPCFilePath.data, control_struct.IPCFilePath.size);
 
     return control_struct;
@@ -910,7 +910,6 @@ PYBIND11_MODULE(rat_core, m) {
         .def_readwrite("nMCMC", &Control::nMCMC)
         .def_readwrite("propScale", &Control::propScale)
         .def_readwrite("nsTolerance", &Control::nsTolerance)
-        .def_readwrite("calcSldDuringFit", &Control::calcSldDuringFit)
         .def_readwrite("numSimulationPoints", &Control::numSimulationPoints)
         .def_readwrite("resampleMinAngle", &Control::resampleMinAngle)
         .def_readwrite("resampleNPoints", &Control::resampleNPoints)
@@ -929,12 +928,12 @@ PYBIND11_MODULE(rat_core, m) {
                 return py::make_tuple(ctrl.parallel, ctrl.procedure, ctrl.display, ctrl.xTolerance, ctrl.funcTolerance, 
                                       ctrl.maxFuncEvals, ctrl.maxIterations, ctrl.populationSize, ctrl.fWeight, ctrl.crossoverProbability, 
                                       ctrl.targetValue, ctrl.numGenerations, ctrl.strategy, ctrl.nLive, ctrl.nMCMC, ctrl.propScale, 
-                                      ctrl.nsTolerance, ctrl.calcSldDuringFit, ctrl.numSimulationPoints, ctrl.resampleMinAngle, ctrl.resampleNPoints,
-                                      ctrl.updateFreq, ctrl.updatePlotFreq, ctrl.nSamples, ctrl.nChains, ctrl.jumpProbability, ctrl.pUnitGamma, 
-                                      ctrl.boundHandling, ctrl.adaptPCR, ctrl.IPCFilePath);
+                                      ctrl.nsTolerance, ctrl.numSimulationPoints, ctrl.resampleMinAngle, ctrl.resampleNPoints,
+                                      ctrl.updateFreq, ctrl.updatePlotFreq, ctrl.nSamples, ctrl.nChains, ctrl.jumpProbability,
+                                      ctrl.pUnitGamma, ctrl.boundHandling, ctrl.adaptPCR, ctrl.IPCFilePath);
             },
             [](py::tuple t) { // __setstate__
-                if (t.size() != 30)
+                if (t.size() != 29)
                     throw std::runtime_error("Encountered invalid state unpickling ProblemDefinition object!");
 
                 /* Create a new C++ instance */
@@ -957,19 +956,18 @@ PYBIND11_MODULE(rat_core, m) {
                 ctrl.nMCMC = t[14].cast<real_T>();
                 ctrl.propScale = t[15].cast<real_T>();
                 ctrl.nsTolerance = t[16].cast<real_T>();
-                ctrl.calcSldDuringFit = t[17].cast<boolean_T>();
-                ctrl.numSimulationPoints = t[18].cast<real_T>();
-                ctrl.resampleMinAngle = t[19].cast<real_T>();
-                ctrl.resampleNPoints = t[20].cast<real_T>();
-                ctrl.updateFreq = t[21].cast<real_T>();
-                ctrl.updatePlotFreq = t[22].cast<real_T>();
-                ctrl.nSamples = t[23].cast<real_T>();
-                ctrl.nChains = t[24].cast<real_T>();
-                ctrl.jumpProbability = t[25].cast<real_T>();
-                ctrl.pUnitGamma = t[26].cast<real_T>();
-                ctrl.boundHandling = t[27].cast<std::string>();
-                ctrl.adaptPCR = t[28].cast<boolean_T>();
-                ctrl.IPCFilePath = t[29].cast<std::string>();
+                ctrl.numSimulationPoints = t[17].cast<real_T>();
+                ctrl.resampleMinAngle = t[18].cast<real_T>();
+                ctrl.resampleNPoints = t[19].cast<real_T>();
+                ctrl.updateFreq = t[20].cast<real_T>();
+                ctrl.updatePlotFreq = t[21].cast<real_T>();
+                ctrl.nSamples = t[22].cast<real_T>();
+                ctrl.nChains = t[23].cast<real_T>();
+                ctrl.jumpProbability = t[24].cast<real_T>();
+                ctrl.pUnitGamma = t[25].cast<real_T>();
+                ctrl.boundHandling = t[26].cast<std::string>();
+                ctrl.adaptPCR = t[27].cast<boolean_T>();
+                ctrl.IPCFilePath = t[28].cast<std::string>();
 
                 return ctrl;
             }));
