@@ -921,7 +921,6 @@ PYBIND11_MODULE(rat_core, m) {
         .def_readwrite("pUnitGamma", &Control::pUnitGamma)
         .def_readwrite("boundHandling", &Control::boundHandling)
         .def_readwrite("adaptPCR", &Control::adaptPCR)
-        .def_readwrite("calcSLD", &Control::calcSLD)
         .def_readwrite("IPCFilePath", &Control::IPCFilePath)
         .def(py::pickle(
             [](const Control &ctrl) { // __getstate__
@@ -931,10 +930,10 @@ PYBIND11_MODULE(rat_core, m) {
                                       ctrl.targetValue, ctrl.numGenerations, ctrl.strategy, ctrl.nLive, ctrl.nMCMC, ctrl.propScale, 
                                       ctrl.nsTolerance, ctrl.numSimulationPoints, ctrl.resampleMinAngle, ctrl.resampleNPoints,
                                       ctrl.updateFreq, ctrl.updatePlotFreq, ctrl.nSamples, ctrl.nChains, ctrl.jumpProbability,
-                                      ctrl.pUnitGamma, ctrl.boundHandling, ctrl.adaptPCR, ctrl.calcSLD, ctrl.IPCFilePath);
+                                      ctrl.pUnitGamma, ctrl.boundHandling, ctrl.adaptPCR, ctrl.IPCFilePath);
             },
             [](py::tuple t) { // __setstate__
-                if (t.size() != 30)
+                if (t.size() != 29)
                     throw std::runtime_error("Encountered invalid state unpickling ProblemDefinition object!");
 
                 /* Create a new C++ instance */
@@ -968,8 +967,7 @@ PYBIND11_MODULE(rat_core, m) {
                 ctrl.pUnitGamma = t[25].cast<real_T>();
                 ctrl.boundHandling = t[26].cast<std::string>();
                 ctrl.adaptPCR = t[27].cast<boolean_T>();
-                ctrl.calcSLD = t[28].cast<boolean_T>();
-                ctrl.IPCFilePath = t[29].cast<std::string>();
+                ctrl.IPCFilePath = t[28].cast<std::string>();
 
                 return ctrl;
             }));

@@ -642,8 +642,6 @@ boundHandling : str
     [DREAM] How steps past the space boundaries should be handled. Can be 'off', 'reflect', 'bound', or 'fold'.
 adaptPCR : bool
     [DREAM] Whether the crossover probability for differential evolution should be adapted during the run.
-calcSLD : bool
-    Whether SLD will be calculated (for live plotting etc.)
 )";
 
 struct Control {
@@ -675,7 +673,6 @@ struct Control {
     real_T pUnitGamma {};
     std::string boundHandling {};
     boolean_T adaptPCR;
-    boolean_T calcSLD {};
     std::string IPCFilePath {};
 };
 
