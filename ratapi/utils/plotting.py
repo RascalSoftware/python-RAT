@@ -167,7 +167,7 @@ def plot_ref_sld_helper(
         # Plot confidence intervals if required
         if confidence_intervals is not None:
             # Calculate the divisor
-            div = 1 if i == 0 and not q4 else 2 ** (4 * (i + 1))
+            div = 1 if i == 0 and not q4 else 10 ** ((i / 100) * shift_value)
             ref_min, ref_max = confidence_intervals["reflectivity"][i]
             mult = (1 if not q4 else plot_data["ref"][i][0] ** 4) / div
             ref_plot.fill_between(plot_data["ref"][i][0], ref_min * mult, ref_max * mult, alpha=0.6, color="grey")
