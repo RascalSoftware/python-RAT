@@ -163,6 +163,8 @@ class Contrast(RATModel):
         The name of the instrument resolution for this contrast.
     resample : bool
         Whether adaptive resampling should be used for interface microslicing.
+    repeat_layers : int
+        For standard layers, the number of times the set of layers defined in the model should be repeated.
     model : list[str]
         If this is a standard layers model, this should be a list of layer names
         that make up the slab model for this contrast.
@@ -180,6 +182,7 @@ class Contrast(RATModel):
     scalefactor: str = ""
     resolution: str = ""
     resample: bool = False
+    repeat_layers: int = Field(default=1, gt=0)
     model: list[str] = []
 
     @model_validator(mode="before")
@@ -208,6 +211,7 @@ class Contrast(RATModel):
                 self.scalefactor,
                 self.resolution,
                 self.resample,
+                self.repeat_layers,
                 model_entry,
             ]
         )
@@ -238,6 +242,8 @@ class ContrastWithRatio(RATModel):
         The name of the instrument resolution for this contrast.
     resample : bool
         Whether adaptive resampling should be used for interface microslicing.
+    repeat_layers : int
+        For standard layers, the number of times the set of layers defined in the model should be repeated.
     domain_ratio : str
         The name of the domain ratio parameter describing how the first domain should be weighted
         relative to the second.
@@ -258,6 +264,7 @@ class ContrastWithRatio(RATModel):
     scalefactor: str = ""
     resolution: str = ""
     resample: bool = False
+    repeat_layers: int = Field(default=1, gt=0)
     domain_ratio: str = ""
     model: list[str] = []
 
@@ -276,6 +283,8 @@ class ContrastWithRatio(RATModel):
                 self.scalefactor,
                 self.resolution,
                 self.resample,
+                self.repeat_layers,
+                self.domain_ratio,
                 model_entry,
             ]
         )

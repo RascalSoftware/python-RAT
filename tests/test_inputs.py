@@ -306,7 +306,7 @@ def custom_xy_problem(test_names, test_checks):
     problem.contrastResolutionTypes = ["constant"]
     problem.contrastCustomFiles = [1]
     problem.contrastDomainRatios = [0]
-    problem.resample = [False]
+    problem.resample = [True]
     problem.dataPresent = [0]
     problem.data = [np.empty([0, 6])]
     problem.dataLimits = [[0.0, 0.0]]

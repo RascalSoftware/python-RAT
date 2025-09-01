@@ -302,7 +302,7 @@ def make_problem(project: ratapi.Project) -> ProblemDefinition:
     problem.numberOfContrasts = len(project.contrasts)
     problem.geometry = project.geometry
     problem.useImaginary = project.absorption
-    problem.repeatLayers = [1] * len(project.contrasts)
+    problem.repeatLayers = [contrast.repeat_layers for contrast in project.contrasts]
     problem.contrastBackgroundParams = contrast_background_params
     problem.contrastBackgroundTypes = contrast_background_types
     problem.contrastBackgroundActions = [contrast.background_action for contrast in project.contrasts]
