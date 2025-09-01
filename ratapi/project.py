@@ -361,8 +361,8 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", use_attribute
         """Set up the Class to protect against disallowed modification.
 
         We initialise the class handle in the ClassLists for empty data fields, set protected parameters, get names of
-        all defined parameters, determine the contents of the "model" field in contrasts,
-        and wrap ClassList routines to control revalidation.
+        all defined parameters, determine the contents of the "model" field in contrasts, and wrap ClassList routines
+        to control revalidation.
         """
         # Ensure all ClassLists have the correct _class_handle defined
         for field in (fields := Project.model_fields):
@@ -452,6 +452,19 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", use_attribute
         """If we are not using a standard layers model, ensure the layers component of the model is empty."""
         if self.model != LayerModels.StandardLayers:
             self.layers.data = []
+        return self
+
+    @model_validator(mode="after")
+    def set_resample(self) -> "Project":
+        """If we are using a custom XY model, warn that the resample setting for each contrast must always be True."""
+        if self.model == LayerModels.CustomXY:
+            for contrast in self.contrasts:
+                if "resample" in contrast.model_fields_set and contrast.resample is False:
+                    warnings.warn(
+                        'For a custom XY calculation, "resample" must be True for each contrast - resetting to True.',
+                        stacklevel=2,
+                    )
+                contrast.resample = True
         return self
 
     @model_validator(mode="after")
