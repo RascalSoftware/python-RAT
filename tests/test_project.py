@@ -446,6 +446,29 @@ def test_set_layers(project_parameters: dict) -> None:
 @pytest.mark.parametrize(
     "project_parameters",
     [
+        (
+            {
+                "model": LayerModels.CustomLayers,
+                "contrasts": [ratapi.models.Contrast(name="Test Contrast", repeat_layers=2)],
+            }
+        ),
+        ({"model": LayerModels.CustomXY, "contrasts": [ratapi.models.Contrast(name="Test Contrast", repeat_layers=2)]}),
+    ],
+)
+def test_set_repeat_layers(project_parameters: dict) -> None:
+    """If we are using a custom layers of custom XY model, the "resample" field of all the contrasts should always
+    be 1."""
+    with pytest.warns(
+        match='For a custom layers or custom XY calculation, the "repeat_layers" setting for each '
+        "contrast is not valid - resetting to 1."
+    ):
+        project = ratapi.Project(**project_parameters)
+    assert all(contrast.repeat_layers == 1 for contrast in project.contrasts)
+
+
+@pytest.mark.parametrize(
+    "project_parameters",
+    [
         ({"model": LayerModels.CustomXY, "contrasts": [ratapi.models.Contrast(name="Test Contrast")]}),
     ],
 )

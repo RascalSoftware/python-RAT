@@ -455,6 +455,20 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", use_attribute
         return self
 
     @model_validator(mode="after")
+    def set_repeat_layers(self) -> "Project":
+        """If we are not using a standard layers model, warn that the repeat layers setting is not valid."""
+        if self.model != LayerModels.StandardLayers:
+            for contrast in self.contrasts:
+                if "repeat_layers" in contrast.model_fields_set and contrast.repeat_layers != 1:
+                    warnings.warn(
+                        'For a custom layers or custom XY calculation, the "repeat_layers" setting for each '
+                        "contrast is not valid - resetting to 1.",
+                        stacklevel=2,
+                    )
+                contrast.repeat_layers = 1
+        return self
+
+    @model_validator(mode="after")
     def set_resample(self) -> "Project":
         """If we are using a custom XY model, warn that the resample setting for each contrast must always be True."""
         if self.model == LayerModels.CustomXY:
