@@ -36,6 +36,7 @@ def prist():
     ],
 )
 @pytest.mark.parametrize("absorption", [True, False])
+@pytest.mark.skip(reason="orsopy database website (https://slddb.esss.dk/slddb/) is not available")
 def test_orso_model_to_rat(model, absorption):
     """Test that orso_model_to_rat gives the expected parameters, layers and model."""
 
@@ -72,6 +73,7 @@ def test_orso_model_to_rat(model, absorption):
         "prist5_10K_m_025.Rqz.ort",
     ],
 )
+@pytest.mark.skip(reason="orsopy database website (https://slddb.esss.dk/slddb/) is not available")
 def test_load_ort_data(test_data):
     """Test that .ort data is loaded correctly."""
     # manually get the test data for comparison
@@ -104,6 +106,7 @@ def test_load_ort_data(test_data):
         ["prist5_10K_m_025.Rqz.ort", "prist.json"],
     ],
 )
+@pytest.mark.skip(reason="orsopy database website (https://slddb.esss.dk/slddb/) is not available")
 def test_load_ort_project(test_data, expected_data):
     """Test that a project with model data is loaded correctly."""
     ort_data = ORSOProject(Path(TEST_DIR_PATH, test_data))
