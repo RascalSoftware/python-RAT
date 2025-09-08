@@ -233,19 +233,16 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid", use_attribut
             os.remove(self._IPCFilePath)
         return None
 
-    def save(self, path: Union[str, Path], filename: str = "controls"):
+    def save(self, filepath: Union[str, Path] = "./controls.json"):
         """Save a controls object to a JSON file.
 
         Parameters
         ----------
-        path : str or Path
-            The directory in which the controls object will be written.
-        filename : str
-            The name for the JSON file containing the controls object.
-
+        filepath : str or Path
+            The path to where the controls file will be written.
         """
-        file = Path(path, f"{filename.removesuffix('.json')}.json")
-        file.write_text(self.model_dump_json())
+        filepath = Path(filepath).with_suffix(".json")
+        filepath.write_text(self.model_dump_json())
 
     @classmethod
     def load(cls, path: Union[str, Path]) -> "Controls":

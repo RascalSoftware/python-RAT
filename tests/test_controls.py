@@ -2,6 +2,7 @@
 
 import contextlib
 import os
+from pathlib import Path
 import tempfile
 from typing import Any, Union
 
@@ -44,6 +45,28 @@ def test_extra_property_error() -> None:
     with pytest.raises(pydantic.ValidationError, match="Object has no attribute 'test'"):
         controls.test = 1
 
+@pytest.mark.parametrize(
+    "inputs",
+    [
+        {"parallel": Parallel.Contrasts, "resampleMinAngle":  0.66},
+        {"procedure": 'simplex'},
+        {"procedure": 'dream', "nSamples": 504, "nChains": 1200},
+        {"procedure": 'de', "crossoverProbability": 0.45, "strategy": Strategies.RandomEitherOrAlgorithm},
+        {"procedure": 'ns', "nMCMC": 4, "propScale": 0.6},
+    ],
+)
+def test_save_load(inputs):
+    """Test that saving and loading controls returns the same controls."""
+
+    original_controls = Controls(**inputs)
+    with tempfile.TemporaryDirectory() as tmp:
+        # ignore relative path warnings
+        path = Path(tmp, "controls.json")
+        original_controls.save(path)
+        converted_controls = Controls.load(path)
+
+    for field in Controls.model_fields:
+        assert getattr(converted_controls, field) == getattr(original_controls, field)
 
 class TestCalculate:
     """Tests the Calculate class."""
