@@ -35,8 +35,8 @@ jobs:
         if: matrix.platform == 'macos-13'
         run: |
           brew install llvm@20 libomp
-          echo "export CC=/usr/local/opt/llvm/bin/clang" >> ~/.bashrc
-          echo "export CXX=/usr/local/opt/llvm/bin/clang++" >> ~/.bashrc
+          echo "export CC=/usr/local/opt/llvm@20/bin/clang" >> ~/.bashrc
+          echo "export CXX=/usr/local/opt/llvm@20/bin/clang++" >> ~/.bashrc
           echo "export CFLAGS=\"$CFLAGS -I/usr/local/opt/libomp/include\"" >> ~/.bashrc
           echo "export CXXFLAGS=\"$CXXFLAGS -I/usr/local/opt/libomp/include\"" >> ~/.bashrc
           echo "export LDFLAGS=\"$LDFLAGS -Wl,-rpath,/usr/local/opt/libomp/lib -L/usr/local/opt/libomp/lib -lomp\"" >> ~/.bashrc
@@ -45,8 +45,8 @@ jobs:
         if: matrix.platform == 'macos-14'
         run: |
           brew install llvm@20 libomp
-          echo "export CC=/opt/homebrew/opt/llvm/bin/clang" >> ~/.bashrc
-          echo "export CXX=/opt/homebrew/opt/llvm/bin/clang++" >> ~/.bashrc
+          echo "export CC=/opt/homebrew/opt/llvm@20/bin/clang" >> ~/.bashrc
+          echo "export CXX=/opt/homebrew/opt/llvm@20/bin/clang++" >> ~/.bashrc
           echo "export CFLAGS=\"$CFLAGS -I/opt/homebrew/opt/libomp/include\"" >> ~/.bashrc
           echo "export CXXFLAGS=\"$CXXFLAGS -I/opt/homebrew/opt/libomp/include\"" >> ~/.bashrc
           echo "export LDFLAGS=\"$LDFLAGS -Wl,-rpath,/opt/homebrew/opt/libomp/lib -L/opt/homebrew/opt/libomp/lib -lomp\"" >> ~/.bashrc
