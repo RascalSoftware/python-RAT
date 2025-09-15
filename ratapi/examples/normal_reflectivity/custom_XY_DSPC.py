@@ -1,8 +1,7 @@
 """A custom XY model for a supported DSPC bilayer."""
 
-import math
-
 import numpy as np
+from scipy.special import erf
 
 
 def custom_XY_DSPC(params, bulk_in, bulk_out, contrast):
@@ -114,7 +113,7 @@ def custom_XY_DSPC(params, bulk_in, bulk_out, contrast):
     totSLD = sldSilicon + sldOxide + sldHeadL + sldTails + sldHeadR + sldWat
 
     # Make the SLD array for output
-    SLD = [[a, b] for (a, b) in zip(z, totSLD)]
+    SLD = np.column_stack((z, totSLD))
 
     return SLD, subRough
 
@@ -132,8 +131,8 @@ def layer(z, prevLaySurf, thickness, height, Sigma_L, Sigma_R):
     a = (z - left) / ((2**0.5) * Sigma_L)
     b = (z - right) / ((2**0.5) * Sigma_R)
 
-    erf_a = np.array([math.erf(value) for value in a])
-    erf_b = np.array([math.erf(value) for value in b])
+    erf_a = erf(a)
+    erf_b = erf(b)
 
     VF = np.array((height / 2) * (erf_a - erf_b))
 

@@ -652,6 +652,7 @@ def plot_corner(
     return_fig: bool = False,
     hist_kwargs: Union[dict, None] = None,
     hist2d_kwargs: Union[dict, None] = None,
+    progress_callback: Union[Callable[[int, int], None], None] = None,
 ):
     """Create a corner plot from a Bayesian analysis.
 
@@ -697,29 +698,32 @@ def plot_corner(
         hist2d_kwargs = {}
 
     num_params = len(params)
+    total_count = num_params + (num_params**2 - num_params) // 2
 
     if fig is None:
-        fig, axes = plt.subplots(num_params, num_params, figsize=(11, 10))
+        fig, axes = plt.subplots(num_params, num_params, figsize=(11, 10), subplot_kw={"visible": False})
     else:
         fig.clf()
-        axes = fig.subplots(num_params, num_params)
+        axes = fig.subplots(num_params, num_params, subplot_kw={"visible": False})
 
     # i is row, j is column
-    for i, row_param in enumerate(params):
-        for j, col_param in enumerate(params):
-            current_axes: Axes = axes[i][j]
+    current_count = 0
+    for i in range(num_params):
+        for j in range(i + 1):
+            row_param = params[i]
+            col_param = params[j]
+            current_axes: Axes = axes if isinstance(axes, matplotlib.axes.Axes) else axes[i][j]
             current_axes.tick_params(which="both", labelsize="medium")
             current_axes.xaxis.offsetText.set_fontsize("small")
             current_axes.yaxis.offsetText.set_fontsize("small")
-
+            current_axes.set_visible(True)
             if i == j:  # diagonal: histograms
                 plot_one_hist(results, param=row_param, smooth=smooth, axes=current_axes, **hist_kwargs)
             elif i > j:  # lower triangle: 2d histograms
                 plot_contour(
                     results, x_param=col_param, y_param=row_param, smooth=smooth, axes=current_axes, **hist2d_kwargs
                 )
-            elif i < j:  # upper triangle: no plot
-                current_axes.set_visible(False)
+
             # remove label if on inside of corner plot
             if j != 0:
                 current_axes.get_yaxis().set_visible(False)
@@ -732,6 +736,9 @@ def plot_corner(
             current_axes.yaxis.offset_text_position = "center"
             current_axes.set_ylabel("")
             current_axes.set_xlabel("")
+            if progress_callback is not None:
+                current_count += 1
+                progress_callback(current_count, total_count)
     if return_fig:
         return fig
     plt.show(block=block)
@@ -1153,7 +1160,7 @@ def plot_chain(
 
     """
     chain = results.chain
-    nsimulations, nplots = chain.shape
+    nsimulations, _ = chain.shape
     # skip is to evenly distribute points plotted
     # all points will be plotted if maxpoints < nsimulations
     skip = max(floor(nsimulations / maxpoints), 1)
