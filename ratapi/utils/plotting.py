@@ -677,6 +677,9 @@ def plot_corner(
     hist2d_kwargs : dict
         Extra keyword arguments to pass to the 2d histograms.
         Default is {'density': True, 'bins': 25}
+    progress_callback: Union[Callable[[int, int], None], None]
+        Callback function for providing progress during plot creation
+        First argument is current completed sub plot and second is total number of sub plots
 
     Returns
     -------

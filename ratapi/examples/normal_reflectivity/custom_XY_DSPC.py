@@ -1,5 +1,7 @@
 """A custom XY model for a supported DSPC bilayer."""
 
+from math import sqrt
+
 import numpy as np
 from scipy.special import erf
 
@@ -128,12 +130,9 @@ def layer(z, prevLaySurf, thickness, height, Sigma_L, Sigma_R):
     right = prevLaySurf + thickness
 
     # Make our heaviside
-    a = (z - left) / ((2**0.5) * Sigma_L)
-    b = (z - right) / ((2**0.5) * Sigma_R)
+    erf_left = erf((z - left) / (sqrt(2) * Sigma_L))
+    erf_right = erf((z - right) / (sqrt(2) * Sigma_R))
 
-    erf_a = erf(a)
-    erf_b = erf(b)
-
-    VF = np.array((height / 2) * (erf_a - erf_b))
+    VF = np.array((0.5 * height) * (erf_left - erf_right))
 
     return VF, right
