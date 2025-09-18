@@ -61,7 +61,7 @@ class BuildExt(build_ext):
     """A custom build extension for adding compiler-specific options."""
 
     c_opts = {
-        "msvc": ["/O2", "/EHsc"],
+        "msvc": ["/O2", "/EHsc", "/openmp"],
         "unix": ["-O2", "-fopenmp", "-std=c++11"],
     }
     l_opts = {

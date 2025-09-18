@@ -94,7 +94,7 @@ def _extract_plot_data(event_data: PlotEventData, q4: bool, show_error_bar: bool
 
 def plot_ref_sld_helper(
     data: PlotEventData,
-    fig: Optional[matplotlib.pyplot.figure] = None,
+    fig: matplotlib.pyplot.figure,
     delay: bool = True,
     confidence_intervals: Union[dict, None] = None,
     linear_x: bool = False,
@@ -112,8 +112,8 @@ def plot_ref_sld_helper(
     data : PlotEventData
         The plot event data that contains all the information
         to generate the ref and sld plots
-    fig : matplotlib.pyplot.figure, optional
-        The figure class that has two subplots
+    fig : matplotlib.pyplot.figure
+        The figure object that has two subplots
     delay : bool, default: True
         Controls whether to delay 0.005s after plot is created
     confidence_intervals : dict or None, default None
@@ -134,19 +134,13 @@ def plot_ref_sld_helper(
     animated : bool, default: False
         Controls whether the animated property of foreground plot elements should be set.
 
-    Returns
-    -------
-    fig : matplotlib.pyplot.figure
-        The figure class that has two subplots
-
     """
     preserve_zoom = False
 
-    if fig is None:
-        fig = plt.subplots(1, 2)[0]
-    elif len(fig.axes) != 2:
+    if len(fig.axes) != 2:
         fig.clf()
         fig.subplots(1, 2)
+
     fig.subplots_adjust(wspace=0.3)
 
     ref_plot: plt.Axes = fig.axes[0]
@@ -233,13 +227,12 @@ def plot_ref_sld_helper(
     if delay:
         plt.pause(0.005)
 
-    return fig
-
 
 def plot_ref_sld(
     project: ratapi.Project,
     results: Union[ratapi.outputs.Results, ratapi.outputs.BayesResults],
     block: bool = False,
+    fig: Optional[matplotlib.pyplot.figure] = None,
     return_fig: bool = False,
     bayes: Literal[65, 95, None] = None,
     linear_x: bool = False,
@@ -259,6 +252,8 @@ def plot_ref_sld(
               The result from the calculation
     block : bool, default: False
             Indicates the plot should block until it is closed
+    fig : matplotlib.pyplot.figure, optional
+        The figure object that has two subplots
     return_fig : bool, default False
         If True, return the figure instead of displaying it.
     bayes : 65, 95 or None, default None
@@ -336,11 +331,15 @@ def plot_ref_sld(
     else:
         confidence_intervals = None
 
-    figure = plt.subplots(1, 2)[0]
+    if fig is None:
+        fig = plt.subplots(1, 2)[0]
+    elif len(fig.axes) != 2:
+        fig.clf()
+        fig.subplots(1, 2)
 
     plot_ref_sld_helper(
         data,
-        figure,
+        fig,
         confidence_intervals=confidence_intervals,
         linear_x=linear_x,
         q4=q4,
@@ -351,7 +350,7 @@ def plot_ref_sld(
     )
 
     if return_fig:
-        return figure
+        return fig
 
     plt.show(block=block)
 
@@ -486,7 +485,7 @@ class BlittingSupport:
         """
         if self.figure is not None:
             self.figure.clf()
-        self.figure = ratapi.plotting.plot_ref_sld_helper(
+        plot_ref_sld_helper(
             data,
             self.figure,
             linear_x=self.linear_x,
@@ -520,7 +519,7 @@ class BlittingSupport:
         """
         self.set_animated(True)
         self.figure.canvas.restore_region(self.bg)
-        plot_data = ratapi.plotting._extract_plot_data(data, self.q4, self.show_error_bar, self.shift_value)
+        plot_data = _extract_plot_data(data, self.q4, self.show_error_bar, self.shift_value)
 
         offset = 2 if self.show_error_bar else 1
         for i in range(
@@ -649,9 +648,11 @@ def plot_corner(
     params: Union[list[Union[int, str]], None] = None,
     smooth: bool = True,
     block: bool = False,
+    fig: Optional[matplotlib.pyplot.figure] = None,
     return_fig: bool = False,
     hist_kwargs: Union[dict, None] = None,
     hist2d_kwargs: Union[dict, None] = None,
+    progress_callback: Union[Callable[[int, int], None], None] = None,
 ):
     """Create a corner plot from a Bayesian analysis.
 
@@ -666,6 +667,8 @@ def plot_corner(
         Whether to apply Gaussian smoothing to the corner plot.
     block : bool, default False
         Whether Python should block until the plot is closed.
+    fig : matplotlib.pyplot.figure, optional
+        The figure object to use for plot.
     return_fig: bool, default False
         If True, return the figure as an object instead of showing it.
     hist_kwargs : dict
@@ -674,6 +677,9 @@ def plot_corner(
     hist2d_kwargs : dict
         Extra keyword arguments to pass to the 2d histograms.
         Default is {'density': True, 'bins': 25}
+    progress_callback: Union[Callable[[int, int], None], None]
+        Callback function for providing progress during plot creation
+        First argument is current completed sub plot and second is total number of sub plots
 
     Returns
     -------
@@ -695,24 +701,32 @@ def plot_corner(
         hist2d_kwargs = {}
 
     num_params = len(params)
+    total_count = num_params + (num_params**2 - num_params) // 2
 
-    fig, axes = plt.subplots(num_params, num_params, figsize=(11, 10))
+    if fig is None:
+        fig, axes = plt.subplots(num_params, num_params, figsize=(11, 10), subplot_kw={"visible": False})
+    else:
+        fig.clf()
+        axes = fig.subplots(num_params, num_params, subplot_kw={"visible": False})
+
     # i is row, j is column
-    for i, row_param in enumerate(params):
-        for j, col_param in enumerate(params):
-            current_axes: Axes = axes[i][j]
+    current_count = 0
+    for i in range(num_params):
+        for j in range(i + 1):
+            row_param = params[i]
+            col_param = params[j]
+            current_axes: Axes = axes if isinstance(axes, matplotlib.axes.Axes) else axes[i][j]
             current_axes.tick_params(which="both", labelsize="medium")
             current_axes.xaxis.offsetText.set_fontsize("small")
             current_axes.yaxis.offsetText.set_fontsize("small")
-
+            current_axes.set_visible(True)
             if i == j:  # diagonal: histograms
                 plot_one_hist(results, param=row_param, smooth=smooth, axes=current_axes, **hist_kwargs)
             elif i > j:  # lower triangle: 2d histograms
                 plot_contour(
                     results, x_param=col_param, y_param=row_param, smooth=smooth, axes=current_axes, **hist2d_kwargs
                 )
-            elif i < j:  # upper triangle: no plot
-                current_axes.set_visible(False)
+
             # remove label if on inside of corner plot
             if j != 0:
                 current_axes.get_yaxis().set_visible(False)
@@ -725,6 +739,9 @@ def plot_corner(
             current_axes.yaxis.offset_text_position = "center"
             current_axes.set_ylabel("")
             current_axes.set_xlabel("")
+            if progress_callback is not None:
+                current_count += 1
+                progress_callback(current_count, total_count)
     if return_fig:
         return fig
     plt.show(block=block)
@@ -956,7 +973,9 @@ def plot_contour(
         plt.show(block=block)
 
 
-def panel_plot_helper(plot_func: Callable, indices: list[int]) -> matplotlib.figure.Figure:
+def panel_plot_helper(
+    plot_func: Callable, indices: list[int], fig: Optional[matplotlib.pyplot.figure] = None
+) -> matplotlib.figure.Figure:
     """Generate a panel-based plot from a single plot function.
 
     Parameters
@@ -965,6 +984,8 @@ def panel_plot_helper(plot_func: Callable, indices: list[int]) -> matplotlib.fig
         A function which plots one parameter on an Axes object, given its index.
     indices : list[int]
         The list of indices to pass into ``plot_func``.
+    fig : matplotlib.pyplot.figure, optional
+        The figure object to use for plot.
 
     Returns
     -------
@@ -974,10 +995,18 @@ def panel_plot_helper(plot_func: Callable, indices: list[int]) -> matplotlib.fig
     """
     nplots = len(indices)
     nrows, ncols = ceil(sqrt(nplots)), round(sqrt(nplots))
-    fig = plt.subplots(nrows, ncols, figsize=(11, 10))[0]
+
+    if fig is None:
+        fig = plt.subplots(nrows, ncols, figsize=(11, 10))[0]
+    else:
+        fig.clf()
+        fig.subplots(nrows, ncols)
     axs = fig.get_axes()
 
     for plot_num, index in enumerate(indices):
+        axs[plot_num].tick_params(which="both", labelsize="medium")
+        axs[plot_num].xaxis.offsetText.set_fontsize("small")
+        axs[plot_num].yaxis.offsetText.set_fontsize("small")
         plot_func(axs[plot_num], index)
 
     # blank unused plots
@@ -998,6 +1027,7 @@ def plot_hists(
         dict[Literal["normal", "lognor", "kernel", None]], Literal["normal", "lognor", "kernel", None]
     ] = None,
     block: bool = False,
+    fig: Optional[matplotlib.pyplot.figure] = None,
     return_fig: bool = False,
     **hist_settings,
 ):
@@ -1031,6 +1061,8 @@ def plot_hists(
         e.g. to apply 'normal' to all unset parameters, set `estimated_density = {'default': 'normal'}`.
     block : bool, default False
         Whether Python should block until the plot is closed.
+    fig : matplotlib.pyplot.figure, optional
+        The figure object to use for plot.
     return_fig: bool, default False
         If True, return the figure as an object instead of showing it.
     hist_settings :
@@ -1090,6 +1122,7 @@ def plot_hists(
             **hist_settings,
         ),
         params,
+        fig,
     )
     if return_fig:
         return fig
@@ -1102,6 +1135,7 @@ def plot_chain(
     params: Union[list[Union[int, str]], None] = None,
     maxpoints: int = 15000,
     block: bool = False,
+    fig: Optional[matplotlib.pyplot.figure] = None,
     return_fig: bool = False,
 ):
     """Plot the MCMC chain for each parameter of a Bayesian analysis.
@@ -1117,6 +1151,8 @@ def plot_chain(
         The maximum number of points to plot for each parameter.
     block : bool, default False
         Whether Python should block until the plot is closed.
+    fig : matplotlib.pyplot.figure, optional
+        The figure object to use for plot.
     return_fig: bool, default False
         If True, return the figure as an object instead of showing it.
 
@@ -1127,7 +1163,7 @@ def plot_chain(
 
     """
     chain = results.chain
-    nsimulations, nplots = chain.shape
+    nsimulations, _ = chain.shape
     # skip is to evenly distribute points plotted
     # all points will be plotted if maxpoints < nsimulations
     skip = max(floor(nsimulations / maxpoints), 1)
@@ -1142,9 +1178,9 @@ def plot_chain(
 
     def plot_one_chain(axes: Axes, i: int):
         axes.plot(range(0, nsimulations, skip), chain[:, i][0:nsimulations:skip])
-        axes.set_title(results.fitNames[i])
+        axes.set_title(results.fitNames[i], fontsize="small")
 
-    fig = panel_plot_helper(plot_one_chain, params)
+    fig = panel_plot_helper(plot_one_chain, params, fig=fig)
     if return_fig:
         return fig
     plt.show(block=block)

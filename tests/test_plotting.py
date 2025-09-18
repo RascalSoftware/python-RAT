@@ -50,7 +50,8 @@ def fig(request) -> plt.figure:
     """Creates the fixture for the tests."""
     plt.close("all")
     figure = plt.subplots(1, 2)[0]
-    return RATplot.plot_ref_sld_helper(fig=figure, data=domains_data() if request.param else data())
+    RATplot.plot_ref_sld_helper(fig=figure, data=domains_data() if request.param else data())
+    return figure
 
 
 @pytest.fixture
@@ -68,7 +69,8 @@ def bayes_fig(request) -> plt.figure:
             for sld in dat.sldProfiles
         ],
     }
-    return RATplot.plot_ref_sld_helper(data=dat, fig=figure, confidence_intervals=confidence_intervals)
+    RATplot.plot_ref_sld_helper(data=dat, fig=figure, confidence_intervals=confidence_intervals)
+    return figure
 
 
 @pytest.mark.parametrize("fig", [False, True], indirect=True)
@@ -120,8 +122,7 @@ def test_ref_sld_color_formatting(fig: plt.figure) -> None:
         assert sld_plot.get_lines()[i].get_color() == sld_plot.get_lines()[i + 1].get_color()
 
 
-@pytest.mark.parametrize("bayes", [65, 95])
-def test_ref_sld_bayes(fig, bayes_fig, bayes):
+def test_ref_sld_bayes(fig, bayes_fig):
     """Test that shading is correctly added to the figure when confidence intervals are supplied."""
     # the shading is of type PolyCollection
     for axes in fig.axes:
@@ -137,7 +138,7 @@ def test_sld_profile_function_call(mock: MagicMock) -> None:
     """Tests the makeSLDProfile function called with
     correct args.
     """
-    RATplot.plot_ref_sld_helper(data())
+    RATplot.plot_ref_sld_helper(data(), plt.subplots(1, 2)[0])
 
     assert mock.call_count == 3
     assert mock.call_args_list[0].args[0] == 2.07e-06
@@ -211,9 +212,9 @@ def test_plot_ref_sld(mock: MagicMock, input_project, reflectivity_calculation_r
 def test_ref_sld_subplot_correction():
     """Test that if an incorrect number of subplots is corrected in the figure helper."""
     fig = plt.subplots(1, 3)[0]
-    ref_sld_fig = RATplot.plot_ref_sld_helper(data=data(), fig=fig)
-    assert ref_sld_fig.axes[0].get_subplotspec().get_gridspec().get_geometry() == (1, 2)
-    assert len(ref_sld_fig.axes) == 2
+    RATplot.plot_ref_sld_helper(data=data(), fig=fig)
+    assert fig.axes[0].get_subplotspec().get_gridspec().get_geometry() == (1, 2)
+    assert len(fig.axes) == 2
 
 
 @patch("ratapi.utils.plotting.plot_ref_sld_helper")
