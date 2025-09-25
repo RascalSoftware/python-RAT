@@ -4,7 +4,6 @@ import warnings
 from collections.abc import Iterable
 from os import PathLike
 from pathlib import Path
-from typing import Union
 
 from numpy import array, empty
 from scipy.io.matlab import MatlabOpaque, loadmat
@@ -15,7 +14,7 @@ from ratapi.models import Background, Contrast, CustomFile, Data, Layer, Paramet
 from ratapi.utils.enums import Geometries, Languages, LayerModels
 
 
-def r1_to_project(filename: Union[str, PathLike]) -> Project:
+def r1_to_project(filename: str | PathLike) -> Project:
     """Read a RasCAL1 project struct as a Python `Project`.
 
     Parameters
@@ -43,7 +42,7 @@ def r1_to_project(filename: Union[str, PathLike]) -> Project:
         layer_model = LayerModels.CustomXY
     layer_model = LayerModels(layer_model)
 
-    def zip_if_several(*params) -> Union[tuple, list[tuple]]:
+    def zip_if_several(*params) -> tuple | list[tuple]:
         """Zips parameters if necessary, but can handle single-item parameters.
 
         Examples
@@ -64,7 +63,7 @@ def r1_to_project(filename: Union[str, PathLike]) -> Project:
 
         """
         if all(isinstance(param, Iterable) and not isinstance(param, str) for param in params):
-            return zip(*params)
+            return zip(*params, strict=False)
         return [params]
 
     def read_param(names, constrs, values, fits):
@@ -319,8 +318,8 @@ def r1_to_project(filename: Union[str, PathLike]) -> Project:
 
 
 def project_to_r1(
-    project: Project, filename: Union[str, PathLike] = "RAT_project", return_struct: bool = False
-) -> Union[dict, None]:
+    project: Project, filename: str | PathLike = "RAT_project", return_struct: bool = False
+) -> dict | None:
     """Convert a RAT Project to a RasCAL1 project struct.
 
     Parameters

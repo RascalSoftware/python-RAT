@@ -1,13 +1,11 @@
 """Defines routines for custom error handling in RAT."""
 
-from typing import Optional
-
 import pydantic_core
 
 
 def custom_pydantic_validation_error(
     error_list: list[pydantic_core.ErrorDetails],
-    custom_error_msgs: Optional[dict[str, str]] = None,
+    custom_error_msgs: dict[str, str] | None = None,
 ) -> list[pydantic_core.ErrorDetails]:
     """Give Pydantic errors a better custom message with extraneous information removed.
 

@@ -5,7 +5,7 @@ import contextlib
 import importlib
 import warnings
 from collections.abc import Sequence
-from typing import Any, Generic, TypeVar, Union
+from typing import Any, Generic, TypeVar
 
 import numpy as np
 import prettytable
@@ -38,7 +38,7 @@ class ClassList(collections.UserList, Generic[T]):
 
     """
 
-    def __init__(self, init_list: Union[Sequence[T], T] = None, name_field: str = "name") -> None:
+    def __init__(self, init_list: Sequence[T] | T = None, name_field: str = "name") -> None:
         self.name_field = name_field
 
         # Set input as list if necessary
@@ -114,7 +114,7 @@ class ClassList(collections.UserList, Generic[T]):
                 output = str(self.data)
         return output
 
-    def __getitem__(self, index: Union[int, slice, str, T]) -> T:
+    def __getitem__(self, index: int | slice | str | T) -> T:
         """Get an item by its index, name, a slice, or the object itself."""
         if isinstance(index, (int, slice)):
             return self.data[index]
@@ -262,12 +262,12 @@ class ClassList(collections.UserList, Generic[T]):
             self._validate_name_field(kwargs)
             self.data.insert(index, self._class_handle(**kwargs))
 
-    def remove(self, item: Union[T, str]) -> None:
+    def remove(self, item: T | str) -> None:
         """Remove an object from the ClassList using either the object itself or its ``name_field`` value."""
         item = self._get_item_from_name_field(item)
         self.data.remove(item)
 
-    def count(self, item: Union[T, str]) -> int:
+    def count(self, item: T | str) -> int:
         """Return the number of times an object appears in the ClassList.
 
         This method can use either the object itself or its ``name_field`` value.
@@ -276,7 +276,7 @@ class ClassList(collections.UserList, Generic[T]):
         item = self._get_item_from_name_field(item)
         return self.data.count(item)
 
-    def index(self, item: Union[T, str], offset: bool = False, *args) -> int:
+    def index(self, item: T | str, offset: bool = False, *args) -> int:
         """Return the index of a particular object in the ClassList.
 
         This method can use either the object itself or its ``name_field`` value.
@@ -309,7 +309,7 @@ class ClassList(collections.UserList, Generic[T]):
             ]
         )
 
-    def set_fields(self, index: Union[int, slice, str, T], **kwargs) -> None:
+    def set_fields(self, index: int | slice | str | T, **kwargs) -> None:
         """Assign the values of an existing object's attributes using keyword arguments."""
         self._validate_name_field(kwargs)
         pydantic_object = False
@@ -519,7 +519,7 @@ class ClassList(collections.UserList, Generic[T]):
                 f"In the input list:\n{newline.join(error for error in error_list)}\n"
             )
 
-    def _get_item_from_name_field(self, value: Union[T, str]) -> Union[T, str]:
+    def _get_item_from_name_field(self, value: T | str) -> T | str:
         """Return the object with the given value of the ``name_field`` attribute in the ClassList.
 
         Parameters
@@ -577,11 +577,12 @@ class ClassList(collections.UserList, Generic[T]):
     @classmethod
     def __get_pydantic_core_schema__(cls, source: Any, handler):
         # import here so that the ClassList can be instantiated and used without Pydantic installed
+        from typing import get_args, get_origin
+
         from pydantic import ValidatorFunctionWrapHandler
         from pydantic.types import (
             core_schema,  # import core_schema through here rather than making pydantic_core a dependency
         )
-        from typing_extensions import get_args, get_origin
 
         # if annotated with a class, get the item type of that class
         origin = get_origin(source)

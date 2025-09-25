@@ -736,11 +736,12 @@ def check_problem_equal(actual_problem, expected_problem) -> None:
 
     # Data field is a numpy array
     assert [
-        actual_data == expected_data for (actual_data, expected_data) in zip(actual_problem.data, expected_problem.data)
+        actual_data == expected_data
+        for (actual_data, expected_data) in zip(actual_problem.data, expected_problem.data, strict=False)
     ]
 
     # Need to account for "NaN" entries in layersDetails and contrastCustomFiles field
-    for actual_layer, expected_layer in zip(actual_problem.layersDetails, expected_problem.layersDetails):
+    for actual_layer, expected_layer in zip(actual_problem.layersDetails, expected_problem.layersDetails, strict=False):
         assert (actual_layer == expected_layer) or ["NaN" if np.isnan(el) else el for el in actual_layer] == [
             "NaN" if np.isnan(el) else el for el in expected_layer
         ]

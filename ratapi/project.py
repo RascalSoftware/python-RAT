@@ -5,10 +5,11 @@ import copy
 import functools
 import json
 import warnings
+from collections.abc import Callable
 from enum import Enum
 from pathlib import Path
 from textwrap import indent
-from typing import Annotated, Any, Callable, Union
+from typing import Annotated, Any, get_args, get_origin
 
 import numpy as np
 from pydantic import (
@@ -21,7 +22,6 @@ from pydantic import (
     field_validator,
     model_validator,
 )
-from typing_extensions import get_args, get_origin
 
 import ratapi.models
 from ratapi.classlist import ClassList
@@ -248,10 +248,10 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", use_attribute
     data: ClassList[ratapi.models.Data] = ClassList()
     """Experimental data for a model."""
 
-    layers: Union[
-        Annotated[ClassList[ratapi.models.Layer], Tag("no_abs")],
-        Annotated[ClassList[ratapi.models.AbsorptionLayer], Tag("abs")],
-    ] = Field(
+    layers: (
+        Annotated[ClassList[ratapi.models.Layer], Tag("no_abs")]
+        | Annotated[ClassList[ratapi.models.AbsorptionLayer], Tag("abs")]
+    ) = Field(
         default=ClassList(),
         discriminator=Discriminator(
             discriminate_layers,
@@ -265,10 +265,10 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", use_attribute
     domain_contrasts: ClassList[ratapi.models.DomainContrast] = ClassList()
     """The groups of layers required by each domain in a domains model."""
 
-    contrasts: Union[
-        Annotated[ClassList[ratapi.models.Contrast], Tag("no_ratio")],
-        Annotated[ClassList[ratapi.models.ContrastWithRatio], Tag("ratio")],
-    ] = Field(
+    contrasts: (
+        Annotated[ClassList[ratapi.models.Contrast], Tag("no_ratio")]
+        | Annotated[ClassList[ratapi.models.ContrastWithRatio], Tag("ratio")]
+    ) = Field(
         default=ClassList(),
         discriminator=Discriminator(
             discriminate_contrasts,
@@ -577,7 +577,7 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", use_attribute
             old_names = self._all_names[class_list]
             new_names = getattr(self, class_list).get_names()
             if len(old_names) == len(new_names):
-                name_diff = [(old, new) for (old, new) in zip(old_names, new_names) if old != new]
+                name_diff = [(old, new) for (old, new) in zip(old_names, new_names, strict=False) if old != new]
                 for old_name, new_name in name_diff:
                     for field in fields_to_update:
                         project_field = getattr(self, field.attribute)
@@ -927,7 +927,7 @@ from numpy import array, empty, inf
             + "\n)"
         )
 
-    def save(self, filepath: Union[str, Path] = "./project.json"):
+    def save(self, filepath: str | Path = "./project.json"):
         """Save a project to a JSON file.
 
         Parameters
@@ -973,7 +973,7 @@ from numpy import array, empty, inf
         filepath.write_text(json.dumps(json_dict))
 
     @classmethod
-    def load(cls, path: Union[str, Path]) -> "Project":
+    def load(cls, path: str | Path) -> "Project":
         """Load a project from file.
 
         Parameters

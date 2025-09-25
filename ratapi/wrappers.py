@@ -2,8 +2,8 @@
 
 import os
 import pathlib
+from collections.abc import Callable
 from contextlib import suppress
-from typing import Callable
 
 import numpy as np
 from numpy.typing import ArrayLike

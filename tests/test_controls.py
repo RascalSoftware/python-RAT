@@ -4,7 +4,7 @@ import contextlib
 import os
 import tempfile
 from pathlib import Path
-from typing import Any, Union
+from typing import Any
 
 import pydantic
 import pytest
@@ -366,7 +366,7 @@ class TestSimplex:
             ("maxIterations", -50),
         ],
     )
-    def test_simplex_property_errors(self, control_property: str, value: Union[float, int]) -> None:
+    def test_simplex_property_errors(self, control_property: str, value: float | int) -> None:
         """Tests the property errors of Simplex class."""
         with pytest.raises(pydantic.ValidationError, match="Input should be greater than 0"):
             setattr(self.simplex, control_property, value)
@@ -538,7 +538,7 @@ class TestDE:
     def test_de_targetValue_numGenerations_populationSize_error(
         self,
         control_property: str,
-        value: Union[int, float],
+        value: int | float,
     ) -> None:
         """Tests the targetValue, numGenerations, populationSize setter error in DE class."""
         with pytest.raises(pydantic.ValidationError, match="Input should be greater than or equal to 1"):
@@ -693,7 +693,7 @@ class TestNS:
             ("nLive", -500, 1),
         ],
     )
-    def test_ns_setter_error(self, control_property: str, value: Union[int, float], bound: int) -> None:
+    def test_ns_setter_error(self, control_property: str, value: int | float, bound: int) -> None:
         """Tests the nMCMC, nsTolerance, nLive setter error in NS class."""
         with pytest.raises(pydantic.ValidationError, match=f"Input should be greater than or equal to {bound}"):
             setattr(self.ns, control_property, value)

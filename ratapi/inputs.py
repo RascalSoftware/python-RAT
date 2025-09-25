@@ -3,7 +3,7 @@
 import importlib
 import os
 import pathlib
-from typing import Callable, Union
+from collections.abc import Callable
 
 import numpy as np
 
@@ -23,7 +23,7 @@ parameter_field = {
 }
 
 
-def get_python_handle(file_name: str, function_name: str, path: Union[str, pathlib.Path] = "") -> Callable:
+def get_python_handle(file_name: str, function_name: str, path: str | pathlib.Path = "") -> Callable:
     """Get the function handle from a function defined in a python module located anywhere within the filesystem.
 
     Parameters

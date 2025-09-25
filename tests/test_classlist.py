@@ -5,7 +5,7 @@ import re
 import warnings
 from collections import deque
 from collections.abc import Iterable, Sequence
-from typing import Any, Union
+from typing import Any
 
 import prettytable
 import pytest
@@ -611,7 +611,7 @@ def test_insert_kwargs_same_name(two_name_class_list: ClassList, new_values: dic
         (InputAttributes(name="Bob")),
     ],
 )
-def test_remove(two_name_class_list: ClassList, remove_value: Union[object, str]) -> None:
+def test_remove(two_name_class_list: ClassList, remove_value: object | str) -> None:
     """We should be able to remove an object either by the value of the name_field or by specifying the object
     itself.
     """
@@ -626,7 +626,7 @@ def test_remove(two_name_class_list: ClassList, remove_value: Union[object, str]
         (InputAttributes(name="Eve")),
     ],
 )
-def test_remove_not_present(two_name_class_list: ClassList, remove_value: Union[object, str]) -> None:
+def test_remove_not_present(two_name_class_list: ClassList, remove_value: object | str) -> None:
     """If we remove an object not included in the ClassList we should raise a ValueError."""
     with pytest.raises(ValueError, match=re.escape("list.remove(x): x not in list")):
         two_name_class_list.remove(remove_value)
@@ -641,7 +641,7 @@ def test_remove_not_present(two_name_class_list: ClassList, remove_value: Union[
         (InputAttributes(name="Eve"), 0),
     ],
 )
-def test_count(two_name_class_list: ClassList, count_value: Union[object, str], expected_count: int) -> None:
+def test_count(two_name_class_list: ClassList, count_value: object | str, expected_count: int) -> None:
     """We should be able to determine the number of times an object is in the ClassList using either the object itself
     or its name_field value.
     """
@@ -655,7 +655,7 @@ def test_count(two_name_class_list: ClassList, count_value: Union[object, str], 
         (InputAttributes(name="Bob"), 1),
     ],
 )
-def test_index(two_name_class_list: ClassList, index_value: Union[object, str], expected_index: int) -> None:
+def test_index(two_name_class_list: ClassList, index_value: object | str, expected_index: int) -> None:
     """We should be able to find the index of an object in the ClassList either by its name_field value or by
     specifying the object itself.
     """
@@ -671,7 +671,7 @@ def test_index(two_name_class_list: ClassList, index_value: Union[object, str], 
 )
 def test_index_offset(
     two_name_class_list: ClassList,
-    index_value: Union[object, str],
+    index_value: object | str,
     offset: int,
     expected_index: int,
 ) -> None:
@@ -688,7 +688,7 @@ def test_index_offset(
         (InputAttributes(name="Eve")),
     ],
 )
-def test_index_not_present(two_name_class_list: ClassList, index_value: Union[object, str]) -> None:
+def test_index_not_present(two_name_class_list: ClassList, index_value: object | str) -> None:
     """If we try to find the index of an object not included in the ClassList we should raise a ValueError."""
     # with pytest.raises(ValueError, match=f"'{index_value}' is not in list") as e:
     with pytest.raises(ValueError):
@@ -741,7 +741,7 @@ def test_extend_empty_classlist(extended_list: Sequence, one_name_class_list: Cl
     ],
 )
 def test_set_fields(
-    two_name_class_list: ClassList, index: Union[int, str], new_values: dict[str, Any], expected_classlist: ClassList
+    two_name_class_list: ClassList, index: int | str, new_values: dict[str, Any], expected_classlist: ClassList
 ) -> None:
     """We should be able to set field values in an element of a ClassList using keyword arguments."""
     class_list = two_name_class_list
@@ -963,7 +963,7 @@ def test__check_classes_different_classes(input_list: Sequence) -> None:
 def test__get_item_from_name_field(
     two_name_class_list: ClassList,
     value: str,
-    expected_output: Union[object, str],
+    expected_output: object | str,
 ) -> None:
     """When we input the name_field value of an object defined in the ClassList, we should return the object.
     If the value is not the name_field of an object defined in the ClassList, we should return the value.
@@ -1044,7 +1044,7 @@ class TestPydantic:
         submodels_list = [{"i": 3, "s": "hello", "f": 3.0}, {"i": 4, "s": "hi", "f": 3.14}]
 
         model = NestedModel(submodels=submodels_list)
-        for submodel, exp_dict in zip(model.submodels, submodels_list):
+        for submodel, exp_dict in zip(model.submodels, submodels_list, strict=False):
             for key, value in exp_dict.items():
                 assert getattr(submodel, key) == value
 

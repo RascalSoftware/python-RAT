@@ -48,7 +48,7 @@ def check_results_equal(actual_results, expected_results) -> None:
     # The first set of fields are either 1D or 2D python lists containing numpy arrays.
     # Hence, we need to compare them element-wise.
     for list_field in ratapi.outputs.results_fields["list_fields"]:
-        for a, b in zip(getattr(actual_results, list_field), getattr(expected_results, list_field)):
+        for a, b in zip(getattr(actual_results, list_field), getattr(expected_results, list_field), strict=False):
             assert (a == b).all()
 
     for list_field in ratapi.outputs.results_fields["double_list_fields"]:
@@ -56,7 +56,7 @@ def check_results_equal(actual_results, expected_results) -> None:
         expected_list = getattr(expected_results, list_field)
         assert len(actual_list) == len(expected_list)
         for i in range(len(actual_list)):
-            for a, b in zip(actual_list[i], expected_list[i]):
+            for a, b in zip(actual_list[i], expected_list[i], strict=False):
                 assert (a == b).all()
 
     # Compare the final fields
@@ -90,7 +90,7 @@ def check_bayes_fields_equal(actual_results, expected_results) -> None:
             assert getattr(actual_subclass, field) == getattr(expected_subclass, field)
 
         for field in ratapi.outputs.bayes_results_fields["list_fields"][subclass]:
-            for a, b in zip(getattr(actual_subclass, field), getattr(expected_subclass, field)):
+            for a, b in zip(getattr(actual_subclass, field), getattr(expected_subclass, field), strict=False):
                 assert (a == b).all()
 
         for field in ratapi.outputs.bayes_results_fields["double_list_fields"][subclass]:
@@ -98,7 +98,7 @@ def check_bayes_fields_equal(actual_results, expected_results) -> None:
             expected_list = getattr(expected_subclass, field)
             assert len(actual_list) == len(expected_list)
             for i in range(len(actual_list)):
-                for a, b in zip(actual_list[i], expected_list[i]):
+                for a, b in zip(actual_list[i], expected_list[i], strict=False):
                     assert (a == b).all()
 
         # Need to account for the arrays that are initialised as "NaN" in the compiled code
