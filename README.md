@@ -12,11 +12,11 @@ To install in local directory:
 
 matlabengine is an optional dependency only required for Matlab custom functions. The version of matlabengine should match the version of Matlab installed on the machine. This can be installed as shown below:
 
-    pip install -e .[Matlab-2023a]
+    pip install -e .[matlab-2023a]
 
 Development dependencies can be installed as shown below
 
-    pip install -e .[Dev]    
+    pip install -e .[dev]
 
 To build wheel:
 

@@ -16,7 +16,6 @@ dependencies = [
     "matplotlib>=3.8.3",
     "numpy>=1.20",
     "prettytable>=3.9.0",
-    "pybind11>=2.4",
     "pydantic>=2.7.2",
     "scipy>=1.13.1",
     "strenum>=0.4.15 ; python_full_version < '3.11'",
@@ -24,22 +23,22 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.4.10"
+]
 orso = [
     "orsopy>=1.2.1",
     "pint>=0.24.4"
 ]
-
-[dependency-groups]
-dev = [
-  {include-group = "lint"},
-  {include-group = "test"}
-]
-lint = [
-  "ruff>=0.4.10"
-]
-test = [
-  "pytest>=7.4.0", "pytest-cov>=4.1.0"
-]
+matlab_latest = ["matlabengine"]
+matlab_2025b = ["matlabengine == 25.2.*"]
+matlab_2025a = ["matlabengine == 25.1.2"]
+matlab_2024b = ["matlabengine == 24.2.2"]
+matlab_2024a = ["matlabengine == 24.1.4"]
+matlab_2023b = ["matlabengine == 23.2.3"]
+matlab_2023a = ["matlabengine == 9.14.3"]
 
 [tool.ruff]
 line-length = 120
