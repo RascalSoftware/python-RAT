@@ -15,6 +15,7 @@ jobs:
     env:
       CIBW_SKIP: 'pp*'
       CIBW_ARCHS: 'auto64'
+      CIBW_MANYLINUX_X86_64_IMAGE: 'manylinux_2_28'
       CIBW_PROJECT_REQUIRES_PYTHON: '>=3.10'
       CIBW_TEST_REQUIRES: 'pytest'
     defaults:
