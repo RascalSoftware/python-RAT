@@ -1,7 +1,5 @@
 """The Enum values used in the parameters of various ratapi classes and functions."""
 
-from typing import Union
-
 try:
     from enum import StrEnum
 except ImportError:
@@ -92,7 +90,7 @@ class Strategies(RATEnum):
     or a pure recombination of parent parameter values."""
 
     @classmethod
-    def _missing_(cls, value: Union[int, str]):
+    def _missing_(cls, value: int | str):
         # legacy compatibility with strategies being 1-indexed ints under the hood
         if isinstance(value, int):
             if value < 1 or value > 6:

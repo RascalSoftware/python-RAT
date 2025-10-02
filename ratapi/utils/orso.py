@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from itertools import count
 from pathlib import Path
 from textwrap import shorten
-from typing import Union
 
 import orsopy
 import prettytable
@@ -26,7 +25,7 @@ class ORSOProject:
 
     """
 
-    def __init__(self, filepath: Union[str, Path], absorption: bool = False):
+    def __init__(self, filepath: str | Path, absorption: bool = False):
         ort_data = load_orso(filepath)
         datasets = [Data(name=dataset.info.data_source.sample.name, data=dataset.data) for dataset in ort_data]
         # orso datasets in the same file can have repeated names!
@@ -75,7 +74,7 @@ class ORSOSample:
     bulk_in: Parameter
     bulk_out: Parameter
     parameters: ClassList[Parameter]
-    layers: Union[ClassList[Layer], ClassList[AbsorptionLayer]]
+    layers: ClassList[Layer] | ClassList[AbsorptionLayer]
     model: list[str]
 
     def __str__(self):
@@ -94,8 +93,8 @@ class ORSOSample:
 
 
 def orso_model_to_rat(
-    model: Union[orsopy.fileio.model_language.SampleModel, str], absorption: bool = False
-) -> Union[ORSOSample, None]:
+    model: orsopy.fileio.model_language.SampleModel | str, absorption: bool = False
+) -> ORSOSample | None:
     """Get information from an ORSO SampleModel object.
 
     Parameters

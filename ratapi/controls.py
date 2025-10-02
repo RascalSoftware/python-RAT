@@ -5,7 +5,6 @@ import os
 import tempfile
 import warnings
 from pathlib import Path
-from typing import Union
 
 import prettytable
 from pydantic import (
@@ -233,7 +232,7 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid", use_attribut
             os.remove(self._IPCFilePath)
         return None
 
-    def save(self, filepath: Union[str, Path] = "./controls.json"):
+    def save(self, filepath: str | Path = "./controls.json"):
         """Save a controls object to a JSON file.
 
         Parameters
@@ -245,7 +244,7 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid", use_attribut
         filepath.write_text(self.model_dump_json())
 
     @classmethod
-    def load(cls, path: Union[str, Path]) -> "Controls":
+    def load(cls, path: str | Path) -> "Controls":
         """Load a controls object from file.
 
         Parameters

@@ -3,7 +3,7 @@
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Union
 
 import numpy as np
 
@@ -244,7 +244,7 @@ class Results:
             output += get_field_string(key, value, 100)
         return output
 
-    def save(self, filepath: Union[str, Path] = "./results.json"):
+    def save(self, filepath: str | Path = "./results.json"):
         """Save the Results object to a JSON file.
 
         Parameters
@@ -258,7 +258,7 @@ class Results:
         filepath.write_text(json.dumps(json_dict))
 
     @classmethod
-    def load(cls, path: Union[str, Path]) -> Union["Results", "BayesResults"]:
+    def load(cls, path: str | Path) -> Union["Results", "BayesResults"]:
         """Load a Results object from file.
 
         Parameters
@@ -538,7 +538,7 @@ class BayesResults(Results):
     nestedSamplerOutput: NestedSamplerOutput
     chain: np.ndarray
 
-    def save(self, filepath: Union[str, Path] = "./results.json"):
+    def save(self, filepath: str | Path = "./results.json"):
         """Save the BayesResults object to a JSON file.
 
         Parameters
@@ -574,7 +574,7 @@ class BayesResults(Results):
         filepath.write_text(json.dumps(json_dict))
 
 
-def write_core_results_fields(results: Union[Results, BayesResults], json_dict: Optional[dict] = None) -> dict:
+def write_core_results_fields(results: Results | BayesResults, json_dict: dict | None = None) -> dict:
     """Modify the values of the fields that appear in both Results and BayesResults when saving to a json file.
 
     Parameters
@@ -684,8 +684,8 @@ def read_bayes_results_fields(results_dict: dict) -> dict:
 def make_results(
     procedure: Procedures,
     output_results: ratapi.rat_core.OutputResult,
-    bayes_results: Optional[ratapi.rat_core.OutputBayesResult] = None,
-) -> Union[Results, BayesResults]:
+    bayes_results: ratapi.rat_core.OutputBayesResult | None = None,
+) -> Results | BayesResults:
     """Initialise a python Results or BayesResults object using the outputs from a RAT calculation.
 
     Parameters

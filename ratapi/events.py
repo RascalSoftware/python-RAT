@@ -1,12 +1,12 @@
 """Hooks for connecting to run callback events."""
 
 import os
-from typing import Callable, Union
+from collections.abc import Callable
 
 from ratapi.rat_core import EventBridge, EventTypes, PlotEventData, ProgressEventData
 
 
-def notify(event_type: EventTypes, data: Union[str, PlotEventData, ProgressEventData]) -> None:
+def notify(event_type: EventTypes, data: str | PlotEventData | ProgressEventData) -> None:
     """Call registered callbacks with data when event type has been triggered.
 
     Parameters
@@ -22,7 +22,7 @@ def notify(event_type: EventTypes, data: Union[str, PlotEventData, ProgressEvent
         callback(data)
 
 
-def get_event_callback(event_type: EventTypes) -> list[Callable[[Union[str, PlotEventData, ProgressEventData]], None]]:
+def get_event_callback(event_type: EventTypes) -> list[Callable[[str | PlotEventData | ProgressEventData], None]]:
     """Return all callbacks registered for the given event type.
 
     Parameters
@@ -39,7 +39,7 @@ def get_event_callback(event_type: EventTypes) -> list[Callable[[Union[str, Plot
     return list(__event_callbacks[event_type])
 
 
-def register(event_type: EventTypes, callback: Callable[[Union[str, PlotEventData, ProgressEventData]], None]) -> None:
+def register(event_type: EventTypes, callback: Callable[[str | PlotEventData | ProgressEventData], None]) -> None:
     """Register a new callback for the event type.
 
     Parameters

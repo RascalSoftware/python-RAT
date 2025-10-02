@@ -95,7 +95,7 @@ def test_load_ort_data(test_data):
     actual_data = ORSOProject(Path(TEST_DIR_PATH, test_data)).data
 
     assert len(actual_data) == len(expected_data)
-    for actual_dataset, expected_dataset in zip(actual_data, expected_data):
+    for actual_dataset, expected_dataset in zip(actual_data, expected_data, strict=False):
         np.testing.assert_array_equal(actual_dataset.data, expected_dataset)
 
 
@@ -118,5 +118,5 @@ def test_load_ort_project(test_data, expected_data):
     assert sample.parameters == exp_project.parameters[1:]
     assert sample.layers == exp_project.layers
 
-    for data, exp_data in zip(ort_data.data, exp_project.data[1:]):
+    for data, exp_data in zip(ort_data.data, exp_project.data[1:], strict=False):
         np.testing.assert_array_equal(data.data, exp_data.data)

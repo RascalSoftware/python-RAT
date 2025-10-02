@@ -2,12 +2,14 @@
 
 import copy
 import types
+from collections.abc import Callable
 from functools import partial, wraps
 from math import ceil, floor, sqrt
 from statistics import stdev
-from typing import Callable, Literal, Optional, Union
+from typing import Literal
 
 import matplotlib
+import matplotlib.figure
 import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
 import numpy as np
@@ -47,7 +49,9 @@ def _extract_plot_data(event_data: PlotEventData, q4: bool, show_error_bar: bool
     if shift_value < 1 or shift_value > 100:
         raise ValueError("Parameter `shift_value` must be between 1 and 100")
 
-    for i, (r, data, sld) in enumerate(zip(event_data.reflectivity, event_data.shiftedData, event_data.sldProfiles)):
+    for i, (r, data, sld) in enumerate(
+        zip(event_data.reflectivity, event_data.shiftedData, event_data.sldProfiles, strict=False)
+    ):
         # Calculate the divisor
         div = 1 if i == 0 and not q4 else 10 ** ((i / 100) * shift_value)
         q4_data = 1 if not q4 or not event_data.dataPresent[i] else data[:, 0] ** 4
@@ -94,9 +98,9 @@ def _extract_plot_data(event_data: PlotEventData, q4: bool, show_error_bar: bool
 
 def plot_ref_sld_helper(
     data: PlotEventData,
-    fig: matplotlib.pyplot.figure,
+    fig: matplotlib.figure.Figure,
     delay: bool = True,
-    confidence_intervals: Union[dict, None] = None,
+    confidence_intervals: dict | None = None,
     linear_x: bool = False,
     q4: bool = False,
     show_error_bar: bool = True,
@@ -112,7 +116,7 @@ def plot_ref_sld_helper(
     data : PlotEventData
         The plot event data that contains all the information
         to generate the ref and sld plots
-    fig : matplotlib.pyplot.figure
+    fig : matplotlib.figure.Figure
         The figure object that has two subplots
     delay : bool, default: True
         Controls whether to delay 0.005s after plot is created
@@ -230,9 +234,9 @@ def plot_ref_sld_helper(
 
 def plot_ref_sld(
     project: ratapi.Project,
-    results: Union[ratapi.outputs.Results, ratapi.outputs.BayesResults],
+    results: ratapi.outputs.Results | ratapi.outputs.BayesResults,
     block: bool = False,
-    fig: Optional[matplotlib.pyplot.figure] = None,
+    fig: matplotlib.figure.Figure | None = None,
     return_fig: bool = False,
     bayes: Literal[65, 95, None] = None,
     linear_x: bool = False,
@@ -241,7 +245,7 @@ def plot_ref_sld(
     show_grid: bool = False,
     show_legend: bool = True,
     shift_value: float = 100,
-) -> Union[plt.Figure, None]:
+) -> plt.Figure | None:
     """Plot the reflectivity and SLD profiles.
 
     Parameters
@@ -252,7 +256,7 @@ def plot_ref_sld(
               The result from the calculation
     block : bool, default: False
             Indicates the plot should block until it is closed
-    fig : matplotlib.pyplot.figure, optional
+    fig : matplotlib.figure.Figure, optional
         The figure object that has two subplots
     return_fig : bool, default False
         If True, return the figure instead of displaying it.
@@ -319,10 +323,12 @@ def plot_ref_sld(
                 ],
             }
             # For a shaded plot, use the mean values from predictionIntervals
-            for reflectivity, mean_reflectivity in zip(data.reflectivity, results.predictionIntervals.reflectivity):
+            for reflectivity, mean_reflectivity in zip(
+                data.reflectivity, results.predictionIntervals.reflectivity, strict=False
+            ):
                 reflectivity[:, 1] = mean_reflectivity[2]
-            for sldProfile, mean_sld_profile in zip(data.sldProfiles, results.predictionIntervals.sld):
-                for sld, mean_sld in zip(sldProfile, mean_sld_profile):
+            for sldProfile, mean_sld_profile in zip(data.sldProfiles, results.predictionIntervals.sld, strict=False):
+                for sld, mean_sld in zip(sldProfile, mean_sld_profile, strict=False):
                     sld[:, 1] = mean_sld[2]
         else:
             raise ValueError(
@@ -366,7 +372,7 @@ class BlittingSupport:
     data : PlotEventData
         The plot event data that contains all the information
         to generate the ref and sld plots
-    fig : matplotlib.pyplot.figure, optional
+    fig : matplotlib.figure.Figure, optional
         The figure class that has two subplots
     linear_x : bool, default: False
         Controls whether the x-axis on reflectivity plot uses the linear scale
@@ -471,7 +477,9 @@ class BlittingSupport:
         y_error_top = y_base + y_error
         y_error_bottom = y_base - y_error
 
-        new_segments_y = [np.array([[x, yt], [x, yb]]) for x, yt, yb in zip(x_base, y_error_top, y_error_bottom)]
+        new_segments_y = [
+            np.array([[x, yt], [x, yb]]) for x, yt, yb in zip(x_base, y_error_top, y_error_bottom, strict=False)
+        ]
         bars_y.set_segments(new_segments_y)
 
     def update_plot(self, data):
@@ -628,7 +636,7 @@ def assert_bayesian(name: str):
     return decorator
 
 
-def name_to_index(param: Union[str, int], names: list[str]):
+def name_to_index(param: str | int, names: list[str]):
     """Convert parameter names to indices."""
     if isinstance(param, str):
         if param not in names:
@@ -645,14 +653,14 @@ def name_to_index(param: Union[str, int], names: list[str]):
 @assert_bayesian("Corner")
 def plot_corner(
     results: ratapi.outputs.BayesResults,
-    params: Union[list[Union[int, str]], None] = None,
+    params: list[int | str] | None = None,
     smooth: bool = True,
     block: bool = False,
-    fig: Optional[matplotlib.pyplot.figure] = None,
+    fig: matplotlib.figure.Figure | None = None,
     return_fig: bool = False,
-    hist_kwargs: Union[dict, None] = None,
-    hist2d_kwargs: Union[dict, None] = None,
-    progress_callback: Union[Callable[[int, int], None], None] = None,
+    hist_kwargs: dict | None = None,
+    hist2d_kwargs: dict | None = None,
+    progress_callback: Callable[[int, int], None] | None = None,
 ):
     """Create a corner plot from a Bayesian analysis.
 
@@ -667,7 +675,7 @@ def plot_corner(
         Whether to apply Gaussian smoothing to the corner plot.
     block : bool, default False
         Whether Python should block until the plot is closed.
-    fig : matplotlib.pyplot.figure, optional
+    fig : matplotlib.figure.Figure, optional
         The figure object to use for plot.
     return_fig: bool, default False
         If True, return the figure as an object instead of showing it.
@@ -750,11 +758,11 @@ def plot_corner(
 @assert_bayesian("Histogram")
 def plot_one_hist(
     results: ratapi.outputs.BayesResults,
-    param: Union[int, str],
+    param: int | str,
     smooth: bool = True,
-    sigma: Union[float, None] = None,
+    sigma: float | None = None,
     estimated_density: Literal["normal", "lognor", "kernel", None] = None,
-    axes: Union[Axes, None] = None,
+    axes: Axes | None = None,
     block: bool = False,
     return_fig: bool = False,
     **hist_settings,
@@ -901,11 +909,11 @@ def _y_update_offset_text_position(axis, _bboxes, bboxes2):
 @assert_bayesian("Contour")
 def plot_contour(
     results: ratapi.outputs.BayesResults,
-    x_param: Union[int, str],
-    y_param: Union[int, str],
+    x_param: int | str,
+    y_param: int | str,
     smooth: bool = True,
-    sigma: Union[tuple[float], None] = None,
-    axes: Union[Axes, None] = None,
+    sigma: tuple[float] | None = None,
+    axes: Axes | None = None,
     block: bool = False,
     return_fig: bool = False,
     **hist2d_settings,
@@ -974,7 +982,7 @@ def plot_contour(
 
 
 def panel_plot_helper(
-    plot_func: Callable, indices: list[int], fig: Optional[matplotlib.pyplot.figure] = None
+    plot_func: Callable, indices: list[int], fig: matplotlib.figure.Figure | None = None
 ) -> matplotlib.figure.Figure:
     """Generate a panel-based plot from a single plot function.
 
@@ -984,7 +992,7 @@ def panel_plot_helper(
         A function which plots one parameter on an Axes object, given its index.
     indices : list[int]
         The list of indices to pass into ``plot_func``.
-    fig : matplotlib.pyplot.figure, optional
+    fig : matplotlib.figure.Figure, optional
         The figure object to use for plot.
 
     Returns
@@ -1020,14 +1028,13 @@ def panel_plot_helper(
 @assert_bayesian("Histogram")
 def plot_hists(
     results: ratapi.outputs.BayesResults,
-    params: Union[list[Union[int, str]], None] = None,
+    params: list[int | str] | None = None,
     smooth: bool = True,
-    sigma: Union[float, None] = None,
-    estimated_density: Union[
-        dict[Literal["normal", "lognor", "kernel", None]], Literal["normal", "lognor", "kernel", None]
-    ] = None,
+    sigma: float | None = None,
+    estimated_density: dict[Literal["normal", "lognor", "kernel", None]]
+    | Literal["normal", "lognor", "kernel", None] = None,
     block: bool = False,
-    fig: Optional[matplotlib.pyplot.figure] = None,
+    fig: matplotlib.figure.Figure | None = None,
     return_fig: bool = False,
     **hist_settings,
 ):
@@ -1061,7 +1068,7 @@ def plot_hists(
         e.g. to apply 'normal' to all unset parameters, set `estimated_density = {'default': 'normal'}`.
     block : bool, default False
         Whether Python should block until the plot is closed.
-    fig : matplotlib.pyplot.figure, optional
+    fig : matplotlib.figure.Figure, optional
         The figure object to use for plot.
     return_fig: bool, default False
         If True, return the figure as an object instead of showing it.
@@ -1085,7 +1092,7 @@ def plot_hists(
 
     if estimated_density is not None:
 
-        def validate_dens_type(dens_type: Union[str, None], param: str):
+        def validate_dens_type(dens_type: str | None, param: str):
             """Check estimated density is a supported type."""
             if dens_type not in [None, "normal", "lognor", "kernel"]:
                 raise ValueError(
@@ -1132,10 +1139,10 @@ def plot_hists(
 @assert_bayesian("Chain")
 def plot_chain(
     results: ratapi.outputs.BayesResults,
-    params: Union[list[Union[int, str]], None] = None,
+    params: list[int | str] | None = None,
     maxpoints: int = 15000,
     block: bool = False,
-    fig: Optional[matplotlib.pyplot.figure] = None,
+    fig: matplotlib.figure.Figure | None = None,
     return_fig: bool = False,
 ):
     """Plot the MCMC chain for each parameter of a Bayesian analysis.
@@ -1151,7 +1158,7 @@ def plot_chain(
         The maximum number of points to plot for each parameter.
     block : bool, default False
         Whether Python should block until the plot is closed.
-    fig : matplotlib.pyplot.figure, optional
+    fig : matplotlib.figure.Figure, optional
         The figure object to use for plot.
     return_fig: bool, default False
         If True, return the figure as an object instead of showing it.

@@ -4,13 +4,13 @@ import copy
 import re
 import tempfile
 import warnings
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
+from typing import get_args, get_origin
 
 import numpy as np
 import pydantic
 import pytest
-from typing_extensions import get_args, get_origin
 
 import ratapi
 from ratapi.utils.enums import Calculations, LayerModels, TypeOptions
@@ -667,7 +667,7 @@ def test_rename_models(test_project, model: str, fields: list[str]) -> None:
 
     getattr(test_project, model).set_fields(-1, name="New Name")
     model_name_lists = ratapi.project.model_names_used_in[model]
-    for model_name_list, field in zip(model_name_lists, fields):
+    for model_name_list, field in zip(model_name_lists, fields, strict=False):
         attribute = model_name_list.attribute
         assert getattr(getattr(test_project, attribute)[-1], field) == "New Name"
 

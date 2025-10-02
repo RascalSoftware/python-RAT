@@ -40,3 +40,6 @@ dist/*
 
 # Jupyter notebook checkpoints
 .ipynb_checkpoints/*
+
+# Lock file for uv env
+uv.lock
