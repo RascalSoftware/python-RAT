@@ -574,7 +574,7 @@ class BayesResults(Results):
         filepath.write_text(json.dumps(json_dict))
 
 
-def write_core_results_fields(results: Union[Results, BayesResults], json_dict: dict | None = None) -> dict:  # noqa: UP007
+def write_core_results_fields(results: Results | BayesResults, json_dict: dict | None = None) -> dict:
     """Modify the values of the fields that appear in both Results and BayesResults when saving to a json file.
 
     Parameters
