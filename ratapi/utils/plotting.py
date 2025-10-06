@@ -1016,16 +1016,14 @@ def panel_plot_helper(
         fig.clf()
         fig.subplots(nrows, ncols, subplot_kw={"visible": False})
     axs = fig.get_axes()
-    current_plot = 0
-    for plot_num, index in enumerate(indices):
-        axs[plot_num].tick_params(which="both", labelsize="medium")
-        axs[plot_num].xaxis.offsetText.set_fontsize("small")
-        axs[plot_num].yaxis.offsetText.set_fontsize("small")
-        axs[plot_num].set_visible(True)
-        plot_func(axs[plot_num], index)
+    for index, plot_num in enumerate(indices):
+        axs[index].tick_params(which="both", labelsize="medium")
+        axs[index].xaxis.offsetText.set_fontsize("small")
+        axs[index].yaxis.offsetText.set_fontsize("small")
+        axs[index].set_visible(True)
+        plot_func(axs[index], plot_num)
         if progress_callback is not None:
-            current_plot += 1
-            progress_callback(current_plot, nplots)
+            progress_callback(index, nplots)
 
     fig.tight_layout()
     return fig
