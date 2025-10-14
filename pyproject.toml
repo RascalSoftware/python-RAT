@@ -22,6 +22,10 @@ dependencies = [
     "tqdm>=4.66.5",
 ]
 
+[project.urls]
+Documentation = "https://rascalsoftware.github.io/RAT/"
+Repository = "https://github.com/RascalSoftware/python-RAT"
+
 [project.optional-dependencies]
 dev = [
     "pytest>=7.4.0",
