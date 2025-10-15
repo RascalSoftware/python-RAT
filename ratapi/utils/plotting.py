@@ -198,15 +198,14 @@ def plot_ref_sld_helper(
                 sld_min, sld_max = confidence_intervals["sld"][i][j]
                 sld_plot.fill_between(plot_data["sld"][i][j][0], sld_min, sld_max, alpha=0.6, color="grey")
 
-        if plot_data["sld_resample"] and plot_data["sld_resample"][i]:
-            for j in range(len(plot_data["sld_resample"][i])):
-                sld_plot.plot(
-                    plot_data["sld_resample"][i][j][0],
-                    plot_data["sld_resample"][i][j][1],
-                    color=color,
-                    linewidth=1,
-                    animated=animated,
-                )
+        for j in range(len(plot_data["sld_resample"][i])):
+            sld_plot.plot(
+                plot_data["sld_resample"][i][j][0],
+                plot_data["sld_resample"][i][j][1],
+                color=color,
+                linewidth=1,
+                animated=animated,
+            )
 
     # Format the axis
     ref_plot.set_yscale("log")
@@ -544,11 +543,10 @@ class BlittingSupport:
                 self.figure.axes[1].draw_artist(self.figure.axes[1].lines[i])
                 i += 1
 
-            if plot_data["sld_resample"] and plot_data["sld_resample"][j]:
-                for resampled in plot_data["sld_resample"][j]:
-                    self.figure.axes[1].lines[i].set_data(resampled[0], resampled[1])
-                    self.figure.axes[1].draw_artist(self.figure.axes[1].lines[i])
-                    i += 1
+            for resampled in plot_data["sld_resample"][j]:
+                self.figure.axes[1].lines[i].set_data(resampled[0], resampled[1])
+                self.figure.axes[1].draw_artist(self.figure.axes[1].lines[i])
+                i += 1
 
         for i, container in enumerate(self.figure.axes[0].containers):
             self.adjust_error_bar(
