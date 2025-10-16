@@ -76,9 +76,9 @@ def _extract_plot_data(event_data: PlotEventData, q4: bool, show_error_bar: bool
         for j in range(len(sld)):
             results["sld"][-1].append([sld[j][:, 0], sld[j][:, 1]])
 
+        results["sld_resample"].append([])
         if event_data.resample[i] == 1 or event_data.modelType == "custom xy":
             layers = event_data.resampledLayers[i][0]
-            results["sld_resample"].append([])
             for j in range(len(event_data.resampledLayers[i])):
                 layer = event_data.resampledLayers[i][j]
                 if layers.shape[1] == 4:
@@ -198,15 +198,14 @@ def plot_ref_sld_helper(
                 sld_min, sld_max = confidence_intervals["sld"][i][j]
                 sld_plot.fill_between(plot_data["sld"][i][j][0], sld_min, sld_max, alpha=0.6, color="grey")
 
-        if plot_data["sld_resample"]:
-            for j in range(len(plot_data["sld_resample"][i])):
-                sld_plot.plot(
-                    plot_data["sld_resample"][i][j][0],
-                    plot_data["sld_resample"][i][j][1],
-                    color=color,
-                    linewidth=1,
-                    animated=animated,
-                )
+        for j in range(len(plot_data["sld_resample"][i])):
+            sld_plot.plot(
+                plot_data["sld_resample"][i][j][0],
+                plot_data["sld_resample"][i][j][1],
+                color=color,
+                linewidth=1,
+                animated=animated,
+            )
 
     # Format the axis
     ref_plot.set_yscale("log")
@@ -544,11 +543,10 @@ class BlittingSupport:
                 self.figure.axes[1].draw_artist(self.figure.axes[1].lines[i])
                 i += 1
 
-            if plot_data["sld_resample"]:
-                for resampled in plot_data["sld_resample"][j]:
-                    self.figure.axes[1].lines[i].set_data(resampled[0], resampled[1])
-                    self.figure.axes[1].draw_artist(self.figure.axes[1].lines[i])
-                    i += 1
+            for resampled in plot_data["sld_resample"][j]:
+                self.figure.axes[1].lines[i].set_data(resampled[0], resampled[1])
+                self.figure.axes[1].draw_artist(self.figure.axes[1].lines[i])
+                i += 1
 
         for i, container in enumerate(self.figure.axes[0].containers):
             self.adjust_error_bar(

@@ -151,12 +151,6 @@ class BuildClib(build_clib):
 
 setup(
     name=PACKAGE_NAME,
-    author="",
-    author_email="",
-    url="https://github.com/RascalSoftware/python-RAT",
-    description="Python extension for the Reflectivity Analysis Toolbox (RAT)",
-    long_description=LONG_DESCRIPTION,
-    long_description_content_type="text/markdown",
     packages=find_packages(exclude=("tests",)),
     include_package_data=True,
     package_data={"": [get_shared_object_name(libevent[0])], "ratapi.examples": ["data/*.dat"]},
