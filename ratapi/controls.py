@@ -206,7 +206,7 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid", use_attribut
     def initialise_IPC(self):
         """Set up the inter-process communication file."""
         IPC_obj, self._IPCFilePath = tempfile.mkstemp()
-        os.write(IPC_obj, b"0")
+        os.write(IPC_obj, b"\x00")
         os.close(IPC_obj)
         return None
 
@@ -221,7 +221,7 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid", use_attribut
         """
         if os.path.isfile(self._IPCFilePath):
             with open(self._IPCFilePath, "wb") as f:
-                f.write(b"1")
+                f.write(b"\x01")
         else:
             warnings.warn("An IPC file was not initialised.", UserWarning, stacklevel=2)
         return None
@@ -230,6 +230,7 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid", use_attribut
         """Delete the inter-process communication file."""
         with contextlib.suppress(FileNotFoundError):
             os.remove(self._IPCFilePath)
+        self._IPCFilePath = ""
         return None
 
     def save(self, filepath: str | Path = "./controls.json"):
