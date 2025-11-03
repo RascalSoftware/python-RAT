@@ -492,6 +492,8 @@ class BlittingSupport:
         """
         if self.figure is not None:
             self.figure.clf()
+        
+        self.figure.tight_layout()
         plot_ref_sld_helper(
             data,
             self.figure,
@@ -502,7 +504,6 @@ class BlittingSupport:
             show_legend=self.show_legend,
             animated=True,
         )
-        self.figure.tight_layout(pad=1)
         self.figure.canvas.draw()
         self.bg = self.figure.canvas.copy_from_bbox(self.figure.bbox)
         for line in self.figure.axes[0].lines:
