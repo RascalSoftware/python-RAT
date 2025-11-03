@@ -492,7 +492,7 @@ class BlittingSupport:
         """
         if self.figure is not None:
             self.figure.clf()
-        
+
         self.figure.tight_layout()
         plot_ref_sld_helper(
             data,

@@ -291,7 +291,14 @@ def r1_to_project(filename: str | PathLike) -> Project:
         if Path(custom_filepath).suffix != ".m":
             custom_filepath += ".m"
         model_name = Path(custom_filepath).stem
-        custom_file = ClassList([CustomFile(name=model_name, filename=custom_filepath, language=Languages.Matlab)])
+        # Assume the custom file is in the same directory as the mat file
+        custom_file = ClassList(
+            [
+                CustomFile(
+                    name=model_name, filename=custom_filepath, language=Languages.Matlab, path=Path(filename).parent
+                )
+            ]
+        )
         layers = ClassList()
         for contrast in contrasts:
             contrast.model = [model_name]

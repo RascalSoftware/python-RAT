@@ -6858,7 +6858,11 @@ def r1_monolayer():
         ),
         custom_files=ratapi.ClassList(
             ratapi.models.CustomFile(
-                name="Model_IIb", filename="Model_IIb.m", function_name="Model_IIb", language="matlab"
+                name="Model_IIb",
+                filename="Model_IIb.m",
+                function_name="Model_IIb",
+                language="matlab",
+                path=Path(__file__).parent / "test_data",
             )
         ),
     )
