@@ -93,7 +93,7 @@ def test_r1_involution(project, request, monkeypatch):
 
     monkeypatch.setattr("ratapi.utils.convert.loadmat", mock_load, raising=True)
 
-    converted_project = r1_to_project(project)
+    converted_project = r1_to_project(pathlib.Path(__file__).parent / "test_data" / project)
 
     for class_list in ratapi.project.class_lists:
         assert getattr(converted_project, class_list) == getattr(original_project, class_list)

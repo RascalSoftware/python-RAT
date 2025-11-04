@@ -891,7 +891,7 @@ def test_initialise_IPC() -> None:
     assert test_controls._IPCFilePath != ""
     with open(test_controls._IPCFilePath, "rb") as f:
         file_content = f.read()
-    assert file_content == b"0"
+    assert file_content == b"\x00"
     os.remove(test_controls._IPCFilePath)
 
 
@@ -900,7 +900,7 @@ def test_sendStopEvent(IPC_controls) -> None:
     IPC_controls.sendStopEvent()
     with open(IPC_controls._IPCFilePath, "rb") as f:
         file_content = f.read()
-    assert file_content == b"1"
+    assert file_content == b"\x01"
 
 
 def test_sendStopEvent_empty_file() -> None:
