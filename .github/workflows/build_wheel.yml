@@ -11,13 +11,14 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        platform: [windows-latest, ubuntu-latest, macos-15-intel, macos-latest]
+        platform: [windows-latest, ubuntu-latest, macos-15-intel, macos-14]
     env:
       CIBW_SKIP: 'pp*'
       CIBW_ARCHS: 'auto64'
       CIBW_MANYLINUX_X86_64_IMAGE: 'manylinux_2_28'
       CIBW_PROJECT_REQUIRES_PYTHON: '>=3.10'
       CIBW_TEST_REQUIRES: 'pytest'
+      MACOSX_DEPLOYMENT_TARGET: '14.0'
     defaults:
       run:
         shell: bash -l {0}
@@ -28,7 +29,7 @@ jobs:
       - uses: actions/checkout@v4      
         with:
           submodules: true
-      - name: Set up Python version ${{ matrix.version }}
+      - name: Set up Python version
         uses: actions/setup-python@v4
         with:
           python-version: "3.x"
@@ -43,7 +44,7 @@ jobs:
           echo "export LDFLAGS=\"$LDFLAGS -Wl,-rpath,/usr/local/opt/libomp/lib -L/usr/local/opt/libomp/lib -lomp\"" >> ~/.bashrc
           source ~/.bashrc
       - name: Install OMP (MacOS M1) 
-        if: matrix.platform == 'macos-latest'
+        if: matrix.platform == 'macos-14'
         run: |
           brew install llvm@20 libomp
           echo "export CC=/opt/homebrew/opt/llvm@20/bin/clang" >> ~/.bashrc
@@ -66,7 +67,7 @@ jobs:
           export PATH="$pythonLocation:$PATH"
           CIBW_TEST_COMMAND='cd ${pwd}/tmp && python -m pytest tests'
           echo "CIBW_TEST_COMMAND=${CIBW_TEST_COMMAND}" >> $GITHUB_ENV
-          python -m pip install cibuildwheel==2.16.5
+          python -m pip install cibuildwheel==2.23.3
           python -m cibuildwheel --output-dir ./wheelhouse 
       - uses: actions/upload-artifact@v4
         with:
