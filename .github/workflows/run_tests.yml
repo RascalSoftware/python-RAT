@@ -28,11 +28,11 @@ jobs:
     runs-on: ${{ matrix.platform}}
 
     steps:
-      - uses: actions/checkout@v4      
+      - uses: actions/checkout@v5      
         with:
           submodules: true
       - name: Set up Python version ${{ matrix.version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.version }}
       - name: Install OMP (MacOS Intel) 
