@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [windows-2022, ubuntu-latest, macos-13, macos-14]
+        platform: [windows-latest, ubuntu-latest, macos-15-intel, macos-latest]
         version: ["3.10", "3.13"]
     defaults:
       run:
@@ -28,15 +28,15 @@ jobs:
     runs-on: ${{ matrix.platform}}
 
     steps:
-      - uses: actions/checkout@v4      
+      - uses: actions/checkout@v5      
         with:
           submodules: true
       - name: Set up Python version ${{ matrix.version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.version }}
       - name: Install OMP (MacOS Intel) 
-        if: matrix.platform == 'macos-13'
+        if: matrix.platform == 'macos-15-intel'
         run: |
           brew install llvm@20 libomp
           echo "export CC=/usr/local/opt/llvm@20/bin/clang" >> ~/.bashrc
@@ -46,7 +46,7 @@ jobs:
           echo "export LDFLAGS=\"$LDFLAGS -Wl,-rpath,/usr/local/opt/libomp/lib -L/usr/local/opt/libomp/lib -lomp\"" >> ~/.bashrc
           source ~/.bashrc
       - name: Install OMP (MacOS M1) 
-        if: matrix.platform == 'macos-14'
+        if: matrix.platform == 'macos-latest'
         run: |
           brew install llvm@20 libomp
           echo "export CC=/opt/homebrew/opt/llvm@20/bin/clang" >> ~/.bashrc
