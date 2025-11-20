@@ -6547,6 +6547,18 @@ def dream_results():
 
 
 @pytest.fixture
+def nested_sampler_results(dream_results):
+    results = dream_results
+    results.nestedSamplerOutput = ratapi.outputs.NestedSamplerOutput(
+        logZ=-28.99992503667041,
+        logZErr=0.3391187711291207,
+        nestSamples=np.ones((100, 9)),
+        postSamples=np.ones((100, 10)),
+    )
+    return results
+
+
+@pytest.fixture
 def r1_default_project():
     """The Project corresponding to the data in R1defaultProject.mat."""
     project = ratapi.Project(

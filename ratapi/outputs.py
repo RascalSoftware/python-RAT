@@ -538,6 +538,19 @@ class BayesResults(Results):
     nestedSamplerOutput: NestedSamplerOutput
     chain: np.ndarray
 
+    def from_procedure(self) -> Procedures:
+        """Return the procedure that created the result.
+
+        Returns
+        -------
+        procedure: Procedures
+            The procedure that created the result.
+        """
+        samples = self.nestedSamplerOutput.nestSamples
+        if samples.shape == (1, 2) and not np.any(samples):
+            return Procedures.DREAM
+        return Procedures.NS
+
     def save(self, filepath: str | Path = "./results.json"):
         """Save the BayesResults object to a JSON file.
 
