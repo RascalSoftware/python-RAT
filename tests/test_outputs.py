@@ -192,6 +192,19 @@ def test_make_results(test_procedure, test_output_results, test_bayes, test_resu
 
 
 @pytest.mark.parametrize(
+    ["test_procedure", "test_results"],
+    [
+        (Procedures.NS, "nested_sampler_results"),
+        (Procedures.DREAM, "dream_results"),
+    ],
+)
+def test_results_procedure(test_procedure, test_results, request) -> None:
+    """Test that bayes results object return correct procedure."""
+    test_output_results = request.getfixturevalue(test_results)
+    assert test_output_results.from_procedure() == test_procedure
+
+
+@pytest.mark.parametrize(
     ["test_output_results", "test_str"],
     [
         ("reflectivity_calculation_results", "reflectivity_calculation_str"),
