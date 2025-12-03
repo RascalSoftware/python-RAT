@@ -175,7 +175,7 @@ def standard_layers_problem(test_names, test_checks):
     problem.numberOfContrasts = 1
     problem.numberOfLayers = 1
     problem.repeatLayers = [1]
-    problem.layersDetails = [[2, 3, 4, float("NaN"), 2]]
+    problem.layersDetails = [[2, 3, 4, float("NaN"), 1]]
     problem.contrastLayers = [[1]]
     problem.numberOfDomainContrasts = 0
     problem.domainContrastLayers = []
@@ -243,7 +243,7 @@ def domains_problem(test_names, test_checks):
     problem.numberOfContrasts = 1
     problem.numberOfLayers = 1
     problem.repeatLayers = [1]
-    problem.layersDetails = [[2, 3, 4, float("NaN"), 2]]
+    problem.layersDetails = [[2, 3, 4, float("NaN"), 1]]
     problem.contrastLayers = [[2, 1]]
     problem.numberOfDomainContrasts = 2
     problem.domainContrastLayers = [[1], [1]]

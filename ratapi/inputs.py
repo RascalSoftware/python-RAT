@@ -385,7 +385,7 @@ def make_problem(project: ratapi.Project) -> ProblemDefinition:
 
 def get_layer_details(project: ratapi.Project) -> list[int]:
     """Get parameter indices for all layers defined in the project."""
-    hydrate_id = {"bulk in": 1, "bulk out": 2}
+    hydrate_id = {"bulk in": 0, "bulk out": 1}
     layer_details = []
 
     # Get the thickness, SLD, roughness fields from the appropriate model
