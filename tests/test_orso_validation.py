@@ -1,46 +1,84 @@
+import os
 import pathlib
+import tempfile
 
+import numpy as np
 import pytest
 
 import ratapi as RAT
-from ratapi.utils.plotting import plot_ref_sld
 
-PROJECT_PATH = pathlib.Path(__file__).parents[0] / "test_data"
+TEST_FUNC = """import pathlib
+import numpy as np
 
 
-@pytest.fixture(scope="module")
-def orso_project():
-    """Load a project with all the ORSO validation data included."""
-    return RAT.Project.load(pathlib.Path(PROJECT_PATH, "orso_validation.json"))
+def run_func(params, bulk_in, bulk_out, contrast):
+    layers = np.loadtxt("{layers_file_path}")
+
+    # Change the units to Å
+    layers[:, 1:3] = layers[:, 1:3] * 1e-6
+
+    # Returns layers only, bulk in and bulk out added to project
+    return layers[1:-1, :], params[0]
+"""
 
 
 @pytest.mark.parametrize(
-    ["test_index", "substrate_roughness", "layer_model"],
-    [
-        (0, 5.0, ["Test 0 Layer 1", "Test 0 Layer 2"]),
-        (1, 0.0, ["Test 1 Layer 1", "Test 1 Layer 2"] * 10),
-        (2, 3.0, ["Test 2 Layer 1"]),
-        (3, 0.0, [f"Test 3 Layer {i}" for i in range(2001)]),
-        (6, 3.0, ["Test 6 Layer 1"]),
-        (7, 3.0, ["Test 7 Layer 1"]),
-    ],
+    "layer_index",
+    [0, 1, 2, 3, 6, 7],
 )
-def test_orso_validation(orso_project, substrate_roughness, test_index, layer_model):
-    orso_project.parameters.set_fields("Substrate Roughness", value=substrate_roughness)
+def test_orso_validation(layer_index):
+    data_path = pathlib.Path(__file__).parent / "test_data" / "ORSO"
 
-    orso_project.contrasts.set_fields(
-        "ORSO Contrast",
-        data=f"Data {test_index}",
-        bulk_in=f"Bulk In {test_index}",
-        bulk_out=f"Bulk Out {test_index}",
-        model=layer_model,
-    )
+    problem = RAT.Project(name="test", model="custom layers", absorption=True)
+    problem.scalefactors.set_fields(0, min=1, value=1, max=1)
+    problem.background_parameters.set_fields(0, min=0, value=0, max=0)
+    problem.resolution_parameters.set_fields(0, min=0, value=0, max=0)
 
-    controls = RAT.Controls(procedure="calculate")
-    output_project, results = RAT.run(orso_project, controls)
+    # Write a custom file that reads the ORSO layers.
+    filename = data_path / f"test{layer_index}.layers"
+    with tempfile.NamedTemporaryFile("w+", suffix=".py", delete=False) as f:
+        f.write(TEST_FUNC.format(layers_file_path=filename.as_posix()))
+        f.flush()
 
-    plot_ref_sld(output_project, results)
+        layers = np.loadtxt(filename)
+        sub_rough = layers[-1, -1]
 
-    total_error = sum((results.reflectivity[0][:, 1] - results.shiftedData[0][:, 1]) ** 2)
+        # Change the units to Å
+        bulk_in = layers[0, 1] * 1e-6
+        bulk_out = layers[-1, 1] * 1e-6
 
-    assert total_error < 1e-10
+        problem.parameters.set_fields(0, min=sub_rough, value=sub_rough, max=sub_rough)
+        problem.bulk_in.set_fields(0, name="Bulk In", min=bulk_in, value=bulk_in, max=bulk_in, fit=False)
+        problem.bulk_out.set_fields(0, name="Bulk Out", min=bulk_out, value=bulk_out, max=bulk_out, fit=False)
+
+        data = np.loadtxt(data_path / f"test_{layer_index}.dat")
+        problem.data.append(name="Data", data=data)
+
+        problem.custom_files.append(
+            name="Model",
+            filename=pathlib.Path(f.name).name,
+            language="python",
+            path=pathlib.Path(f.name).parent,
+            function_name="run_func",
+        )
+
+        problem.contrasts.append(
+            name="ORSO Contrast",
+            background="Background 1",
+            background_action="add",
+            resolution="Resolution 1",
+            scalefactor="Scalefactor 1",
+            bulk_out="Bulk Out",
+            bulk_in="Bulk In",
+            data="Data",
+            resample=False,
+            model=["Model"],
+        )
+
+        controls = RAT.Controls()
+        problem, results = RAT.run(problem, controls)
+        total_error = sum((results.reflectivity[0][:, 1] - results.shiftedData[0][:, 1]) ** 2)
+
+        assert total_error < 1e-10
+        f.close()
+        os.remove(f.name)
