@@ -23,9 +23,12 @@ def start_matlab():
     future = None
     if os.environ.get("DELAY_MATLAB_START", "0") == "0":
         with suppress(ImportError):
+            import atexit
+
             import matlab.engine
 
             future = matlab.engine.start_matlab(background=True)
+            atexit.register(lambda: future.result())
 
     return future
 
