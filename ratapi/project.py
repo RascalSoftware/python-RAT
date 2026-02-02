@@ -1062,7 +1062,9 @@ def try_relative_to(path: Path, relative_to: Path) -> str:
     """
     path = Path(path)
     relative_to = Path(relative_to)
-    if path.is_relative_to(relative_to):
+    if not path.is_absolute():
+        return str(path)
+    elif path.is_relative_to(relative_to):
         return str(path.relative_to(relative_to))
     else:
         warnings.warn(
