@@ -23,6 +23,9 @@ def volume_thiol_bilayer(params, bulk_in, bulk_out, contrast):
 
     The second output parameter should be the substrate roughness.
     """
+    # Note - The first contrast number is 1 (not 0) so be careful if you use
+    # this variable for array indexing.
+
     subRough = params[0]
     alloyThick = params[1]
     alloySLDUp = params[2]
@@ -92,11 +95,11 @@ def volume_thiol_bilayer(params, bulk_in, bulk_out, contrast):
 
     # Correct head SLD based on hydration
     thiolHeadHydr = thiolHeadHydr / 100
-    sldHead = sldHead * (1 - thiolHeadHydr) + (thiolHeadHydr * bulk_out[contrast])
+    sldHead = sldHead * (1 - thiolHeadHydr) + (thiolHeadHydr * bulk_out[contrast - 1])
 
     # Now correct both the SLDs for the coverage parameter
-    sldTail = (thiolCoverage * sldTail) + ((1 - thiolCoverage) * bulk_out[contrast])
-    sldHead = (thiolCoverage * sldHead) + ((1 - thiolCoverage) * bulk_out[contrast])
+    sldTail = (thiolCoverage * sldTail) + ((1 - thiolCoverage) * bulk_out[contrast - 1])
+    sldHead = (thiolCoverage * sldHead) + ((1 - thiolCoverage) * bulk_out[contrast - 1])
 
     SAMTAILS = [thickTail, sldTail, 0, goldRough]
     SAMHEAD = [thickHead, sldHead, 0, goldRough]
@@ -113,7 +116,7 @@ def volume_thiol_bilayer(params, bulk_in, bulk_out, contrast):
     sldHead = sumbHead / vHead
     thickHead = vHead / bilayerAPM
     bilHeadHydr = bilHeadHydr / 100
-    sldHead = sldHead * (1 - bilHeadHydr) + (bilHeadHydr * bulk_out[contrast])
+    sldHead = sldHead * (1 - bilHeadHydr) + (bilHeadHydr * bulk_out[contrast - 1])
 
     sldTail = sumbTail / vTail
     thickTail = vTail / bilayerAPM
@@ -121,9 +124,9 @@ def volume_thiol_bilayer(params, bulk_in, bulk_out, contrast):
     sldMe = sumbMe / vMe
     thickMe = vMe / bilayerAPM
 
-    sldTail = (bilayerCoverage * sldTail) + ((1 - bilayerCoverage) * bulk_out[contrast])
-    sldHead = (bilayerCoverage * sldHead) + ((1 - bilayerCoverage) * bulk_out[contrast])
-    sldMe = (bilayerCoverage * sldMe) + ((1 - bilayerCoverage) * bulk_out[contrast])
+    sldTail = (bilayerCoverage * sldTail) + ((1 - bilayerCoverage) * bulk_out[contrast - 1])
+    sldHead = (bilayerCoverage * sldHead) + ((1 - bilayerCoverage) * bulk_out[contrast - 1])
+    sldMe = (bilayerCoverage * sldMe) + ((1 - bilayerCoverage) * bulk_out[contrast - 1])
 
     BILTAILS = [thickTail, sldTail, 0, bilayerRough]
     BILHEAD = [thickHead, sldHead, 0, bilayerRough]
@@ -131,9 +134,9 @@ def volume_thiol_bilayer(params, bulk_in, bulk_out, contrast):
 
     BILAYER = [BILHEAD, BILTAILS, BILME, BILME, BILTAILS, BILHEAD]
 
-    CW = [cwThick, bulk_out[contrast], 0, bilayerRough]
+    CW = [cwThick, bulk_out[contrast - 1], 0, bilayerRough]
 
-    if contrast == 1 or contrast == 3:
+    if contrast == 2 or contrast == 4:
         output = [alloyUp, gold, SAMTAILS, SAMHEAD, CW, *BILAYER]
     else:
         output = [alloyDown, gold, SAMTAILS, SAMHEAD, CW, *BILAYER]

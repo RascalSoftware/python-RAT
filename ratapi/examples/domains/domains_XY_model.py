@@ -8,6 +8,9 @@ from scipy.special import erf
 
 def domains_XY_model(params, bulk_in, bulk_out, contrast, domain):
     """Calculate the SLD profile for a domains custom XY model."""
+    # Note - The first contrast number is 1 (not 0) so be careful if you use
+    # this variable for array indexing. Same applies to the domain number.
+
     # Split up the parameters for convenience
     subRough = params[0]
     oxideThick = params[1]
@@ -37,13 +40,13 @@ def domains_XY_model(params, bulk_in, bulk_out, contrast, domain):
     oxSLD = vfOxide * 3.41e-6
 
     # Layer SLD depends on whether we are calculating the domain or not
-    if domain == 0:
+    if domain == 1:
         laySLD = vfLayer * layerSLD
     else:
         laySLD = vfLayer * domainSLD
 
     # ... and finally the water SLD.
-    waterSLD = vfWater * bulk_out[contrast]
+    waterSLD = vfWater * bulk_out[contrast - 1]
 
     # Make the total SLD by just adding them all up
     totalSLD = siSLD + oxSLD + laySLD + waterSLD

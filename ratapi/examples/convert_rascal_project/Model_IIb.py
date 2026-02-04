@@ -5,6 +5,9 @@ from math import cos, radians
 
 def Model_IIb(params, bulk_in, bulk_out, contrast):
     """Calculate layer parameters for a monolayer volume model at two deuterations."""
+    # Note - The first contrast number is 1 (not 0) so be careful if you use
+    # this variable for array indexing. Same applies to the domain number.
+
     # converted from matlab file Model_IIb.m
 
     Roughness, APM, thickHead, theta = params
@@ -49,7 +52,7 @@ def Model_IIb(params, bulk_in, bulk_out, contrast):
     vTail = 2 * (16 * vCH2) + 2 * (vCH3)
 
     # make SLDs
-    thisMask = deut[contrast]
+    thisMask = deut[contrast - 1]
 
     if thisMask[0] == 0:
         thisWater = (H2O * 0.9249) + (D2O * 0.0871)
@@ -57,7 +60,7 @@ def Model_IIb(params, bulk_in, bulk_out, contrast):
         thisWater = D2O
 
     # Calculate mole fraction of D2O from the bulk SLD
-    d2o_molfr = (1 / D2O - H2O) * ((bulk_out[contrast] / 0.036182336306) - H2O)
+    d2o_molfr = (1 / D2O - H2O) * ((bulk_out[contrast - 1] / 0.036182336306) - H2O)
     thisWater = (d2o_molfr * D2O) + ((1 - d2o_molfr) * H2O)
 
     if thisMask[1] == 0:
