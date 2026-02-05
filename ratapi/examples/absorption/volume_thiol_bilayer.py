@@ -138,7 +138,7 @@ def volume_thiol_bilayer(params, bulk_in, bulk_out, contrast):
 
     if contrast == 2 or contrast == 4:
         output = [alloyUp, gold, SAMTAILS, SAMHEAD, CW, *BILAYER]
-    else:
+    elif contrast == 1 or contrast == 3:
         output = [alloyDown, gold, SAMTAILS, SAMHEAD, CW, *BILAYER]
 
     return output, subRough

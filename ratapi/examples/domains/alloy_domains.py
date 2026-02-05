@@ -28,7 +28,7 @@ def alloy_domains(params, bulkIn, bulkOut, contrast, domain):
     # Make the model depending on which domain we are looking at
     if domain == 1:
         output = [alloyUp, gold]
-    else:
+    elif domain == 2:
         output = [alloyDn, gold]
 
     return output, subRough

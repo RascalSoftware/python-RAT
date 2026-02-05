@@ -42,7 +42,7 @@ def domains_XY_model(params, bulk_in, bulk_out, contrast, domain):
     # Layer SLD depends on whether we are calculating the domain or not
     if domain == 1:
         laySLD = vfLayer * layerSLD
-    else:
+    elif domain == 2:
         laySLD = vfLayer * domainSLD
 
     # ... and finally the water SLD.
