@@ -78,10 +78,10 @@ class MatlabWrapper:
                     np.array(args[0], "float"),  # params
                     np.array(args[1], "float"),  # bulk in
                     np.array(args[2], "float"),  # bulk out
-                    float(args[3] + 1),  # contrast
+                    float(args[3]),  # contrast
                 ]
                 if len(args) > 4:
-                    matlab_args.append(float(args[4] + 1))  # domain number
+                    matlab_args.append(float(args[4]))  # domain number
 
                 output, sub_rough = getattr(self.engine, self.function_name)(
                     *matlab_args,

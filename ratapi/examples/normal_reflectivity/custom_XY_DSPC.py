@@ -8,6 +8,9 @@ from scipy.special import erf
 
 def custom_XY_DSPC(params, bulk_in, bulk_out, contrast):
     """Calculate the continuous SLD of a supported DSPC bilayer using volume restricted distribution functions."""
+    # Note - The first contrast number is 1 (not 0) so be careful if you use
+    # this variable for array indexing.
+
     # Split up the parameters
     subRough = params[0]
     oxideThick = params[1]
@@ -109,7 +112,7 @@ def custom_XY_DSPC(params, bulk_in, bulk_out, contrast):
     sldHeadL = vfHeadL * sld_Value_Head
     sldHeadR = vfHeadR * sld_Value_Head
     sldTails = vfTails * sld_Value_Tails
-    sldWat = vfWat * bulk_out[contrast]
+    sldWat = vfWat * bulk_out[contrast - 1]
 
     # Put this all together
     totSLD = sldSilicon + sldOxide + sldHeadL + sldTails + sldHeadR + sldWat

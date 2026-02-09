@@ -53,7 +53,7 @@ def _extract_plot_data(event_data: PlotEventData, q4: bool, show_error_bar: bool
         zip(event_data.reflectivity, event_data.shiftedData, event_data.sldProfiles, strict=False)
     ):
         # Calculate the divisor
-        div = 1 if i == 0 and not q4 else 10 ** ((i / 100) * shift_value)
+        div = 1 if i == 0 and not q4 else 10 ** ((i + 1) / 100 * shift_value)
         q4_data = 1 if not q4 or not event_data.dataPresent[i] else data[:, 0] ** 4
         mult = q4_data / div
 
@@ -63,14 +63,17 @@ def _extract_plot_data(event_data: PlotEventData, q4: bool, show_error_bar: bool
         if event_data.dataPresent[i]:
             sd_x = data[:, 0]
             sd_y, sd_e = map(lambda x: x * mult, (data[:, 1], data[:, 2]))
+            errors = np.zeros(len(sd_e))
 
             if show_error_bar:
-                errors = np.zeros(len(sd_e))
                 valid = sd_y - sd_e >= 0
                 errors[valid] = sd_e[valid]
                 valid |= sd_y < 0
+            else:
+                valid = np.ones(len(sd_e)).astype(bool)
+                sd_e = errors
 
-                results["error"].append([sd_x[valid], sd_y[valid], sd_e[valid]])
+            results["error"].append([sd_x[valid], sd_y[valid], sd_e[valid]])
 
         results["sld"].append([])
         for j in range(len(sld)):
@@ -145,7 +148,7 @@ def plot_ref_sld_helper(
         fig.clf()
         fig.subplots(1, 2)
 
-    fig.subplots_adjust(wspace=0.3)
+    fig.subplots_adjust(wspace=0.3, hspace=0)
 
     ref_plot: plt.Axes = fig.axes[0]
     sld_plot: plt.Axes = fig.axes[1]
@@ -170,7 +173,7 @@ def plot_ref_sld_helper(
             mult = (1 if not q4 else plot_data["ref"][i][0] ** 4) / div
             ref_plot.fill_between(plot_data["ref"][i][0], ref_min * mult, ref_max * mult, alpha=0.6, color="grey")
 
-        if data.dataPresent[i] and show_error_bar:
+        if data.dataPresent[i]:
             # Plot the errorbars
             ref_plot.errorbar(
                 x=plot_data["error"][i][0],
@@ -529,7 +532,7 @@ class BlittingSupport:
         self.figure.canvas.restore_region(self.bg)
         plot_data = _extract_plot_data(data, self.q4, self.show_error_bar, self.shift_value)
 
-        offset = 2 if self.show_error_bar else 1
+        offset = 2
         for i in range(
             0,
             len(self.figure.axes[0].lines),

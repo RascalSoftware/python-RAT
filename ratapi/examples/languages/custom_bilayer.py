@@ -5,6 +5,9 @@ import numpy as np
 
 def custom_bilayer(params, bulk_in, bulk_out, contrast):
     """Calculate the layer parameters for a custom bilayer model."""
+    # Note - The first contrast number is 1 (not 0) so be careful if you use
+    # this variable for array indexing.
+
     sub_rough = params[0]
     oxide_thick = params[1]
     oxide_hydration = params[2]
@@ -54,13 +57,13 @@ def custom_bilayer(params, bulk_in, bulk_out, contrast):
     tailThick = vTail / lipidAPM
 
     # Manually deal with hydration for layers in this example.
-    oxSLD = (oxide_hydration * bulk_out[contrast]) + ((1 - oxide_hydration) * oxide_SLD)
-    headSLD = (headHydration * bulk_out[contrast]) + ((1 - headHydration) * SLDhead)
-    tailSLD = (bilayerHydration * bulk_out[contrast]) + ((1 - bilayerHydration) * SLDtail)
+    oxSLD = (oxide_hydration * bulk_out[contrast - 1]) + ((1 - oxide_hydration) * oxide_SLD)
+    headSLD = (headHydration * bulk_out[contrast - 1]) + ((1 - headHydration) * SLDhead)
+    tailSLD = (bilayerHydration * bulk_out[contrast - 1]) + ((1 - bilayerHydration) * SLDtail)
 
     # Make the layers
     oxide = [oxide_thick, oxSLD, sub_rough]
-    water = [waterThick, bulk_out[contrast], bilayerRough]
+    water = [waterThick, bulk_out[contrast - 1], bilayerRough]
     head = [headThick, headSLD, bilayerRough]
     tail = [tailThick, tailSLD, bilayerRough]
 
