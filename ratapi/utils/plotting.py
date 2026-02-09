@@ -53,7 +53,7 @@ def _extract_plot_data(event_data: PlotEventData, q4: bool, show_error_bar: bool
         zip(event_data.reflectivity, event_data.shiftedData, event_data.sldProfiles, strict=False)
     ):
         # Calculate the divisor
-        div = 1 if i == 0 and not q4 else 10 ** ((i / 100) * shift_value)
+        div = 1 if i == 0 and not q4 else 10 ** ((i + 1) / 100 * shift_value)
         q4_data = 1 if not q4 or not event_data.dataPresent[i] else data[:, 0] ** 4
         mult = q4_data / div
 
@@ -148,7 +148,7 @@ def plot_ref_sld_helper(
         fig.clf()
         fig.subplots(1, 2)
 
-    fig.subplots_adjust(wspace=0.3)
+    fig.subplots_adjust(wspace=0.3, hspace=0)
 
     ref_plot: plt.Axes = fig.axes[0]
     sld_plot: plt.Axes = fig.axes[1]
