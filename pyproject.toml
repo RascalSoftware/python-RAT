@@ -8,7 +8,7 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = "ratapi"
-version = "0.0.0.dev11"
+version = "0.0.0.dev12"
 description = "Python extension for the Reflectivity Analysis Toolbox (RAT)"
 readme = "README.md"
 requires-python = ">=3.10"
