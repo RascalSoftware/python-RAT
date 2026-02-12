@@ -956,12 +956,16 @@ from numpy import array, empty, inf
             elif field == "custom_files":
 
                 def make_custom_file_dict(item):
-                    return {
+                    file_dict = {
                         "name": item.name,
                         "filename": item.filename,
                         "language": item.language,
                         "path": try_relative_to(item.path, filepath.parent),
                     }
+                    if item.name != item.function_name:
+                        file_dict["function_name"] = item.function_name
+
+                    return file_dict
 
                 json_dict["custom_files"] = [make_custom_file_dict(file) for file in attr]
 

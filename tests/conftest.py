@@ -8537,3 +8537,11 @@ def absorption():
     """The project from the absorption example."""
     project, _ = ratapi.examples.absorption()
     return project
+
+
+@pytest.fixture
+def absorption_different_function():
+    """The project from the absorption example with a function name different from filename."""
+    project, _ = ratapi.examples.absorption()
+    project.custom_files[0].function_name = "test_func"
+    return project

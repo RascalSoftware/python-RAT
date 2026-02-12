@@ -1616,6 +1616,7 @@ def test_wrap_extend(test_project, class_list: str, model_type: str, field: str,
         "domains_custom_layers",
         "domains_custom_xy",
         "absorption",
+        "absorption_different_function",
     ],
 )
 def test_save_load(project, request):
