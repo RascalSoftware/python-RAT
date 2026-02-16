@@ -32,14 +32,23 @@ def test_default_names(model: Callable, model_name: str, model_params: dict) -> 
     format: "New <model name> <integer>".
     """
     model_1 = model(**model_params)
+    prefix = f"New {model_name} "
+    assert model_1.name.startswith(prefix)
+    index = int(model_1.name[len(prefix) :])
+
     model_2 = model(**model_params)
     model_3 = model(name="Given Name", **model_params)
     model_4 = model(**model_params)
 
-    assert model_1.name == f"New {model_name} 1"
-    assert model_2.name == f"New {model_name} 2"
+    assert model_1.name == f"New {model_name} {index}"
+    assert model_2.name == f"New {model_name} {index + 1}"
     assert model_3.name == "Given Name"
-    assert model_4.name == f"New {model_name} 3"
+    assert model_4.name == f"New {model_name} {index + 2}"
+
+    # If user adds name in similar format. The next auto number will take it into account.
+    model(name=f"{prefix}{index + 20}", **model_params)
+    model_5 = model(**model_params)
+    assert model_5.name == f"New {model_name} {index + 21}"
 
 
 @pytest.mark.parametrize(
@@ -98,13 +107,6 @@ class TestModels:
             match=f"1 validation error for {model.__name__}\nnew_field\n  Extra inputs are not permitted",
         ):
             model(new_field=1, **model_params)
-
-
-# def test_custom_file_path_is_absolute() -> None:
-#     """If we use provide a relative path to the custom file model, it should be converted to an absolute path."""
-#     relative_path = pathlib.Path("./relative_path")
-#     custom_file = ratapi.models.CustomFile(path=relative_path)
-#     assert custom_file.path.is_absolute()
 
 
 def test_data_eq() -> None:
