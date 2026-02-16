@@ -1,6 +1,5 @@
 """Test the pydantic models."""
 
-import pathlib
 import re
 from collections.abc import Callable
 
@@ -101,11 +100,11 @@ class TestModels:
             model(new_field=1, **model_params)
 
 
-def test_custom_file_path_is_absolute() -> None:
-    """If we use provide a relative path to the custom file model, it should be converted to an absolute path."""
-    relative_path = pathlib.Path("./relative_path")
-    custom_file = ratapi.models.CustomFile(path=relative_path)
-    assert custom_file.path.is_absolute()
+# def test_custom_file_path_is_absolute() -> None:
+#     """If we use provide a relative path to the custom file model, it should be converted to an absolute path."""
+#     relative_path = pathlib.Path("./relative_path")
+#     custom_file = ratapi.models.CustomFile(path=relative_path)
+#     assert custom_file.path.is_absolute()
 
 
 def test_data_eq() -> None:

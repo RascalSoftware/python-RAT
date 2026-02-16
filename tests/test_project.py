@@ -1616,6 +1616,7 @@ def test_wrap_extend(test_project, class_list: str, model_type: str, field: str,
         "domains_custom_layers",
         "domains_custom_xy",
         "absorption",
+        "absorption_different_function",
     ],
 )
 def test_save_load(project, request):
@@ -1637,24 +1638,25 @@ def test_save_load(project, request):
 def test_relative_paths():
     """Test that ``try_relative_to`` correctly creates relative paths to subfolders."""
 
-    with tempfile.TemporaryDirectory() as tmp:
-        data_path = Path(tmp, "data/myfile.dat")
+    cur_path = Path(".").resolve()
+    data_path = cur_path / "data/myfile.dat"
+    assert Path(ratapi.project.try_relative_to(data_path, cur_path)) == Path("data/myfile.dat")
 
-        assert Path(ratapi.project.try_relative_to(data_path, tmp)) == Path("data/myfile.dat")
+    # relative path will be left relative.
+    data_path = "data/myfile.dat"
+    assert Path(ratapi.project.try_relative_to(data_path, cur_path)) == Path("data/myfile.dat")
 
 
 def test_relative_paths_warning():
     """Test that we get a warning for trying to walk up paths."""
 
-    data_path = "/tmp/project/data/mydata.dat"
-    relative_path = "/tmp/project/project_path/myproj.dat"
+    cur_path = Path(".").resolve()
+    data_path = cur_path / "tmp/project/data/mydata.dat"
+    relative_path = cur_path / "tmp/project/project_path/myproj.dat"
 
     with pytest.warns(
         match="Could not write custom file path as relative to the project directory, "
         "which means that it may not work on other devices. If you would like to share your project, "
         "make sure your custom files are in a subfolder of the project save location.",
     ):
-        assert (
-            Path(ratapi.project.try_relative_to(data_path, relative_path))
-            == Path("/tmp/project/data/mydata.dat").resolve()
-        )
+        assert Path(ratapi.project.try_relative_to(data_path, relative_path)) == data_path
