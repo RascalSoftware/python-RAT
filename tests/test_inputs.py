@@ -2,6 +2,8 @@
 
 import pathlib
 import pickle
+import tempfile
+from unittest.mock import patch
 
 import numpy as np
 import pytest
@@ -673,6 +675,30 @@ def test_make_controls(standard_layers_controls) -> None:
     """
     controls = make_controls(ratapi.Controls())
     check_controls_equal(controls, standard_layers_controls)
+
+
+@patch("ratapi.wrappers.MatlabWrapper")
+def test_file_handles(wrapper):
+    handle = FileHandles([ratapi.models.CustomFile(name="Test Custom File", filename="cpp_test.dll", language="cpp")])
+
+    with pytest.raises(FileNotFoundError, match="The custom file \\(Test Custom File\\) does not have a valid path."):
+        handle.get_handle(0)
+
+    with tempfile.NamedTemporaryFile("w", suffix=".dll") as f:
+        tmp_file = pathlib.Path(f.name)
+        handle.files[0]["path"] = tmp_file.parent
+        handle.files[0]["filename"] = tmp_file.name
+        handle.files[0]["function_name"] = ""
+        # No function name should throw exception
+        with pytest.raises(
+            ValueError, match="The custom file \\(Test Custom File\\) does not have a valid function name."
+        ):
+            handle.get_handle(0)
+
+        # Matlab does not need function name
+        handle.files[0]["language"] = "matlab"
+        handle.get_handle(0)
+        wrapper.assert_called()
 
 
 def check_problem_equal(actual_problem, expected_problem) -> None:

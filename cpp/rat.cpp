@@ -525,8 +525,8 @@ OutputBayesResult OutputBayesResultsFromStruct(const RAT::BayesResults results)
     bayesResults.confidenceIntervals.percentile65 = pyArrayFromRatArray2d(results.confidenceIntervals.percentile65);
     bayesResults.confidenceIntervals.mean = pyArrayFromRatArray2d(results.confidenceIntervals.mean);
 
-    bayesResults.nestedSamplerOutput.logZ = results.nestedSamplerOutput.LogZ;
-    bayesResults.nestedSamplerOutput.logZErr = results.nestedSamplerOutput.LogZErr;
+    bayesResults.nestedSamplerOutput.logZ = results.nestedSamplerOutput.logZ;
+    bayesResults.nestedSamplerOutput.logZErr = results.nestedSamplerOutput.logZErr;
     bayesResults.nestedSamplerOutput.nestSamples = pyArrayFromRatArray2d(results.nestedSamplerOutput.nestSamples);
     bayesResults.nestedSamplerOutput.postSamples = pyArrayFromRatArray2d(results.nestedSamplerOutput.postSamples);
 

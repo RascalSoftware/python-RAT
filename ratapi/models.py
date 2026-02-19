@@ -2,7 +2,7 @@
 
 import pathlib
 import warnings
-from itertools import count
+from contextlib import suppress
 from typing import Any
 
 import numpy as np
@@ -18,14 +18,41 @@ except ImportError:
 
 
 # Create a counter for each model
-background_number = count(1)
-contrast_number = count(1)
-custom_file_number = count(1)
-data_number = count(1)
-domain_contrast_number = count(1)
-layer_number = count(1)
-parameter_number = count(1)
-resolution_number = count(1)
+background_number = ["Background", 0]
+contrast_number = ["Contrast", 0]
+custom_file_number = ["Custom File", 0]
+data_number = ["Data", 0]
+domain_contrast_number = ["Domain Contrast", 0]
+layer_number = ["Layer", 0]
+parameter_number = ["Parameter", 0]
+resolution_number = ["Resolution", 0]
+
+_model_counter = {
+    "Background": background_number,
+    "Contrast": contrast_number,
+    "ContrastWithRatio": contrast_number,
+    "CustomFile": custom_file_number,
+    "Data": data_number,
+    "DomainContrast": domain_contrast_number,
+    "Layer": layer_number,
+    "AbsorptionLayer": layer_number,
+    "Parameter": parameter_number,
+    "ProtectedParameter": parameter_number,
+    "Resolution": resolution_number,
+}
+
+
+def _model_name_factory(model_name: str) -> str:
+    """Generate a unique name for model using a global counter.
+
+    Parameters
+    ----------
+    model_name : str
+        The name of the model class.
+    """
+    title, number = _model_counter[model_name]
+    _model_counter[model_name][1] += 1
+    return f"New {title} {(number + 1)}"
 
 
 class RATModel(BaseModel, validate_assignment=True, extra="forbid"):
@@ -37,6 +64,25 @@ class RATModel(BaseModel, validate_assignment=True, extra="forbid"):
             for a, v in self.__repr_args__()
         )
         return f"{self.__repr_name__()}({fields_repr})"
+
+    @field_validator("name", mode="after", check_fields=False)
+    @classmethod
+    def update_counter(cls, name: str) -> str:
+        """Update the auto name counter if a similar name is manually given.
+
+        Parameters
+        ----------
+        name : str
+            The name of the model.
+        """
+        title, number = _model_counter[cls.__name__]
+        prefix = f"New {title} "
+        if name.startswith(prefix):
+            with suppress(ValueError):
+                new_number = int(name[len(prefix) :])
+                if new_number > number:
+                    _model_counter[cls.__name__][1] = new_number
+        return name
 
     def __str__(self):
         table = prettytable.PrettyTable()
@@ -116,7 +162,7 @@ class Background(Signal):
 
     """
 
-    name: str = Field(default_factory=lambda: f"New Background {next(background_number)}", min_length=1)
+    name: str = Field(default_factory=lambda: _model_name_factory("Background"), min_length=1)
 
     @model_validator(mode="after")
     def check_unsupported_parameters(self):
@@ -173,7 +219,7 @@ class Contrast(RATModel):
 
     """
 
-    name: str = Field(default_factory=lambda: f"New Contrast {next(contrast_number)}", min_length=1)
+    name: str = Field(default_factory=lambda: _model_name_factory("Contrast"), min_length=1)
     data: str = ""
     background: str = ""
     background_action: BackgroundActions = BackgroundActions.Add
@@ -255,7 +301,7 @@ class ContrastWithRatio(RATModel):
 
     """
 
-    name: str = Field(default_factory=lambda: f"New Contrast {next(contrast_number)}", min_length=1)
+    name: str = Field(default_factory=lambda: _model_name_factory("ContrastWithRatio"), min_length=1)
     data: str = ""
     background: str = ""
     background_action: BackgroundActions = BackgroundActions.Add
@@ -309,7 +355,7 @@ class CustomFile(RATModel):
 
     """
 
-    name: str = Field(default_factory=lambda: f"New Custom File {next(custom_file_number)}", min_length=1)
+    name: str = Field(default_factory=lambda: _model_name_factory("CustomFile"), min_length=1)
     filename: str = ""
     function_name: str = ""
     language: Languages = Languages.Python
@@ -348,7 +394,7 @@ class Data(RATModel, arbitrary_types_allowed=True):
 
     """
 
-    name: str = Field(default_factory=lambda: f"New Data {next(data_number)}", min_length=1)
+    name: str = Field(default_factory=lambda: _model_name_factory("Data"), min_length=1)
     data: np.ndarray = np.empty([0, 3])
     data_range: list[float] = Field(default=[], min_length=2, max_length=2)
     simulation_range: list[float] = Field(default=[], min_length=2, max_length=2)
@@ -453,7 +499,7 @@ class DomainContrast(RATModel):
 
     """
 
-    name: str = Field(default_factory=lambda: f"New Domain Contrast {next(domain_contrast_number)}", min_length=1)
+    name: str = Field(default_factory=lambda: _model_name_factory("DomainContrast"), min_length=1)
     model: list[str] = []
 
     def __str__(self):
@@ -483,7 +529,7 @@ class Layer(RATModel, populate_by_name=True):
 
     """
 
-    name: str = Field(default_factory=lambda: f"New Layer {next(layer_number)}", min_length=1)
+    name: str = Field(default_factory=lambda: _model_name_factory("Layer"), min_length=1)
     thickness: str
     SLD: str = Field(validation_alias="SLD_real")
     roughness: str
@@ -522,7 +568,7 @@ class AbsorptionLayer(RATModel, populate_by_name=True):
 
     """
 
-    name: str = Field(default_factory=lambda: f"New Layer {next(layer_number)}", min_length=1)
+    name: str = Field(default_factory=lambda: _model_name_factory("AbsorptionLayer"), min_length=1)
     thickness: str
     SLD_real: str = Field(validation_alias="SLD")
     SLD_imaginary: str
@@ -555,7 +601,7 @@ class Parameter(RATModel):
 
     """
 
-    name: str = Field(default_factory=lambda: f"New Parameter {next(parameter_number)}", min_length=1)
+    name: str = Field(default_factory=lambda: _model_name_factory("Parameter"), min_length=1)
     min: float = 0.0
     value: float = 0.0
     max: float = 0.0
@@ -638,7 +684,7 @@ class Resolution(Signal):
 
     """
 
-    name: str = Field(default_factory=lambda: f"New Resolution {next(resolution_number)}", min_length=1)
+    name: str = Field(default_factory=lambda: _model_name_factory("Resolution"), min_length=1)
 
     @field_validator("type")
     @classmethod

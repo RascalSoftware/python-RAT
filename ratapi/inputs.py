@@ -77,6 +77,13 @@ class FileHandles:
         """
         custom_file = self.files[index]
         full_path = os.path.join(custom_file["path"], custom_file["filename"])
+
+        if not os.path.isfile(full_path):
+            raise FileNotFoundError(f"The custom file ({custom_file['name']}) does not have a valid path.")
+
+        if not custom_file["function_name"] and custom_file["language"] != Languages.Matlab:
+            raise ValueError(f"The custom file ({custom_file['name']}) does not have a valid function name.")
+
         if custom_file["language"] == Languages.Python:
             file_handle = get_python_handle(custom_file["filename"], custom_file["function_name"], custom_file["path"])
         elif custom_file["language"] == Languages.Matlab:
