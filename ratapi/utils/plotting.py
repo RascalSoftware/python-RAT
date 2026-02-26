@@ -505,6 +505,7 @@ class BlittingSupport:
             show_error_bar=self.show_error_bar,
             show_grid=self.show_grid,
             show_legend=self.show_legend,
+            shift_value=self.shift_value,
             animated=True,
         )
         self.figure.canvas.draw()
