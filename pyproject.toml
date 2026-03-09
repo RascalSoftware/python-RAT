@@ -2,13 +2,13 @@
 requires = [
     'setuptools>=61',
     'wheel',
-    'pybind11>=2.4',
+    'pybind11>=2.4, <=2.13.6',
 ]
 build-backend = 'setuptools.build_meta'
 
 [project]
 name = "ratapi"
-version = "0.0.0.dev12"
+version = "0.0.0.dev13"
 description = "Python extension for the Reflectivity Analysis Toolbox (RAT)"
 readme = "README.md"
 requires-python = ">=3.10"
