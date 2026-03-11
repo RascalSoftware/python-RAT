@@ -67,7 +67,7 @@ jobs:
           export PATH="$pythonLocation:$PATH"
           CIBW_TEST_COMMAND='cd ${pwd}/tmp && python -m pytest tests'
           echo "CIBW_TEST_COMMAND=${CIBW_TEST_COMMAND}" >> $GITHUB_ENV
-          python -m pip install cibuildwheel==2.23.3
+          python -m pip install cibuildwheel
           python -m cibuildwheel --output-dir ./wheelhouse 
       - uses: actions/upload-artifact@v4
         with:
