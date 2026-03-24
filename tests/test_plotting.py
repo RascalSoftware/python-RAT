@@ -490,8 +490,8 @@ def test_extract_plot_data(data) -> None:
     assert len(plot_data["ref"]) == len(data.reflectivity)
     assert len(plot_data["sld"]) == len(data.shiftedData)
 
-    with pytest.raises(ValueError, match=r"Parameter `shift_value` must be between 1 and 100"):
-        RATplot._extract_plot_data(data, False, True, 0)
+    with pytest.raises(ValueError, match=r"Parameter `shift_value` must be between 0 and 100"):
+        RATplot._extract_plot_data(data, False, True, -0.1)
 
-    with pytest.raises(ValueError, match=r"Parameter `shift_value` must be between 1 and 100"):
+    with pytest.raises(ValueError, match=r"Parameter `shift_value` must be between 0 and 100"):
         RATplot._extract_plot_data(data, False, True, 100.5)

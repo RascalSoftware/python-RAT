@@ -36,7 +36,7 @@ def _extract_plot_data(event_data: PlotEventData, q4: bool, show_error_bar: bool
     show_error_bar : bool, default: True
         Controls whether the error bars are shown
     shift_value : float
-        A value between 1 and 100 that controls the spacing between the reflectivity plots for each of the contrasts
+        A value between 0 and 100 that controls the spacing between the reflectivity plots for each of the contrasts
 
     Returns
     -------
@@ -46,14 +46,14 @@ def _extract_plot_data(event_data: PlotEventData, q4: bool, show_error_bar: bool
     """
     results = {"ref": [], "error": [], "sld": [], "sld_resample": []}
 
-    if shift_value < 1 or shift_value > 100:
-        raise ValueError("Parameter `shift_value` must be between 1 and 100")
+    if shift_value < 0 or shift_value > 100:
+        raise ValueError("Parameter `shift_value` must be between 0 and 100")
 
     for i, (r, data, sld) in enumerate(
         zip(event_data.reflectivity, event_data.shiftedData, event_data.sldProfiles, strict=False)
     ):
         # Calculate the divisor
-        div = 1 if i == 0 and not q4 else 10 ** ((i + 1) / 100 * shift_value)
+        div = 10 ** (i / 100 * shift_value)
         q4_data = 1 if not q4 or not event_data.dataPresent[i] else data[:, 0] ** 4
         mult = q4_data / div
 
@@ -137,7 +137,7 @@ def plot_ref_sld_helper(
     show_legend : bool, default: True
         Controls whether the legend is shown
     shift_value : float, default: 100
-        A value between 1 and 100 that controls the spacing between the reflectivity plots for each of the contrasts
+        A value between 0 and 100 that controls the spacing between the reflectivity plots for each of the contrasts
     animated : bool, default: False
         Controls whether the animated property of foreground plot elements should be set.
 
@@ -168,7 +168,7 @@ def plot_ref_sld_helper(
         # Plot confidence intervals if required
         if confidence_intervals is not None:
             # Calculate the divisor
-            div = 1 if i == 0 and not q4 else 10 ** ((i / 100) * shift_value)
+            div = 10 ** (i / 100 * shift_value)
             ref_min, ref_max = confidence_intervals["reflectivity"][i]
             mult = (1 if not q4 else plot_data["ref"][i][0] ** 4) / div
             ref_plot.fill_between(plot_data["ref"][i][0], ref_min * mult, ref_max * mult, alpha=0.6, color="grey")
@@ -277,7 +277,7 @@ def plot_ref_sld(
     show_legend : bool, default: True
             Controls whether the legend is shown
     shift_value : float, default: 100
-        A value between 1 and 100 that controls the spacing between the reflectivity plots for each of the contrasts
+        A value between 0 and 100 that controls the spacing between the reflectivity plots for each of the contrasts
 
     Returns
     -------
@@ -387,7 +387,7 @@ class BlittingSupport:
     show_legend : bool, default: True
         Controls whether the legend is shown
     shift_value : float, default: 100
-        A value between 1 and 100 that controls the spacing between the reflectivity plots for each of the contrasts
+        A value between 0 and 100 that controls the spacing between the reflectivity plots for each of the contrasts
     """
 
     def __init__(
