@@ -5,7 +5,7 @@ from collections.abc import Iterable
 from os import PathLike
 from pathlib import Path
 
-from numpy import array, empty
+from numpy import array, empty, ndarray
 from scipy.io.matlab import MatlabOpaque, loadmat
 
 from ratapi import Project, wrappers
@@ -226,6 +226,12 @@ def r1_to_project(filename: str | PathLike) -> Project:
     # if just one contrast, resolNames is a string; fix that here
     if isinstance(mat_project["resolNames"], str):
         mat_project["resolNames"] = [mat_project["resolNames"]]
+
+    if isinstance(mat_project["contrastNames"], (ndarray, list)) and len(
+        dict.fromkeys(mat_project["contrastNames"])
+    ) != len(mat_project["contrastNames"]):
+        # contrast names are not unique so create unique ones
+        mat_project["contrastNames"] = [f"Contrast {i + 1}" for i in range(len(mat_project["contrastNames"]))]
 
     contrasts = ClassList(
         [
