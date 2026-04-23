@@ -69,6 +69,13 @@ def test_r1_to_project(file, project, path_type, request):
         assert getattr(output_project, class_list) == getattr(expected_project, class_list)
 
 
+def test_r1_with_non_unique_contrast_names():
+    """Test that R1 to Project class conversion returns the expected Project."""
+    output_project = r1_to_project(pathlib.Path(TEST_DIR_PATH, "nonUniqueContrast.mat"))
+    assert output_project.contrasts[0].name == "Contrast 1"
+    assert output_project.contrasts[1].name == "Contrast 2"
+
+
 @pytest.mark.parametrize(
     "project",
     [
