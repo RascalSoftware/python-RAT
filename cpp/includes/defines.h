@@ -595,7 +595,7 @@ resampleMinAngle : float
 resampleNPoints : int
     The number of initial points to use for resampling.
 display : str
-    How much RAT should print to the terminal. Can be 'off', 'iter', 'notify', or 'final'.
+    How much RAT should print to the terminal. Can be 'off', 'iter', or 'final'.
 IPCFilePath : str
     The path of the inter process communication file.
 updateFreq : int

@@ -66,7 +66,7 @@ class Controls(BaseModel, validate_assignment=True, extra="forbid", use_attribut
     """The number of initial points to use for resampling."""
 
     display: Display = Display.Iter
-    """How much RAT should print to the terminal. Can be 'off', 'iter', 'notify', or 'final'."""
+    """How much RAT should print to the terminal. Can be 'off', 'iter', or 'final'."""
 
     # Simplex
     xTolerance: float = Field(1.0e-6, gt=0.0)

@@ -60,7 +60,6 @@ class Display(RATEnum):
 
     Off = "off"
     Iter = "iter"
-    Notify = "notify"
     Final = "final"
 
 

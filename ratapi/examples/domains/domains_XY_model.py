@@ -36,7 +36,7 @@ def domains_XY_model(params, bulk_in, bulk_out, contrast, domain):
     vfWater = 1 - totalVF
 
     # Now convert the Volume Fractions to SLDs
-    siSLD = vfSilicon * bulk_in
+    siSLD = vfSilicon * bulk_in[contrast - 1]
     oxSLD = vfOxide * 3.41e-6
 
     # Layer SLD depends on whether we are calculating the domain or not

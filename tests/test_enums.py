@@ -35,7 +35,6 @@ from ratapi.utils.enums import (
         (Parallel, "contrasts", Parallel.Contrasts),
         (Display, "off", Display.Off),
         (Display, "iter", Display.Iter),
-        (Display, "notify", Display.Notify),
         (Display, "final", Display.Final),
         (BoundHandling, "off", BoundHandling.Off),
         (BoundHandling, "reflect", BoundHandling.Reflect),

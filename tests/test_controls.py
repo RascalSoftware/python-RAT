@@ -116,7 +116,7 @@ class TestCalculate:
             ("numSimulationPoints", 10),
             ("resampleMinAngle", 0.2),
             ("resampleNPoints", 1),
-            ("display", Display.Notify),
+            ("display", Display.Final),
         ],
     )
     def test_calculate_property_setters(self, control_property: str, value: Any) -> None:
@@ -211,7 +211,7 @@ class TestCalculate:
     @pytest.mark.parametrize("value", ["test", "iterate", True, 1, 3.0])
     def test_calculate_display_validation(self, value: Any) -> None:
         """Tests the display setter validation in Calculate class."""
-        with pytest.raises(pydantic.ValidationError, match="Input should be 'off', 'iter', 'notify' or 'final'"):
+        with pytest.raises(pydantic.ValidationError, match="Input should be 'off', 'iter' or 'final'"):
             self.calculate.display = value
 
     def test_str(self, table_str) -> None:
@@ -277,7 +277,7 @@ class TestSimplex:
             ("numSimulationPoints", 10),
             ("resampleMinAngle", 0.2),
             ("resampleNPoints", 1),
-            ("display", Display.Notify),
+            ("display", Display.Final),
             ("xTolerance", 4e-6),
             ("funcTolerance", 3e-4),
             ("maxFuncEvals", 100),
@@ -436,7 +436,7 @@ class TestDE:
             ("numSimulationPoints", 10),
             ("resampleMinAngle", 0.2),
             ("resampleNPoints", 1),
-            ("display", Display.Notify),
+            ("display", Display.Final),
             ("populationSize", 20),
             ("fWeight", 0.3),
             ("crossoverProbability", 0.4),
@@ -603,7 +603,7 @@ class TestNS:
             ("numSimulationPoints", 10),
             ("resampleMinAngle", 0.2),
             ("resampleNPoints", 1),
-            ("display", Display.Notify),
+            ("display", Display.Final),
             ("nLive", 1500),
             ("nMCMC", 1),
             ("propScale", 0.5),
@@ -773,7 +773,7 @@ class TestDream:
             ("numSimulationPoints", 10),
             ("resampleMinAngle", 0.2),
             ("resampleNPoints", 1),
-            ("display", Display.Notify),
+            ("display", Display.Final),
             ("nSamples", 500),
             ("nChains", 1000),
             ("jumpProbability", 0.7),
