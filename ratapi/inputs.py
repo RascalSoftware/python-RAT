@@ -49,6 +49,38 @@ def get_python_handle(file_name: str, function_name: str, path: str | pathlib.Pa
     return handle
 
 
+def get_used_custom_files(project):
+    """Get custom files referenced in the project.
+
+    Parameters
+    ----------
+    project : RAT.Project
+        The project model, which defines the physical system under study.
+
+    Returns
+    -------
+    files : ClassList[CustomFile]
+        A list of custom file models used in the project.
+
+    """
+    used_custom_files = {}
+    files = {file.name: file for file in project.custom_files}
+    if project.model != "standard layers":
+        for contrast in project.contrasts:
+            if contrast.model:
+                used_custom_files[contrast.model[0]] = files[contrast.model[0]]
+
+    for background in project.backgrounds:
+        if background.type == "function":
+            used_custom_files[background.source] = files[background.source]
+
+    for resolution in project.resolutions:
+        if resolution.type == "function":
+            used_custom_files[resolution.source] = files[resolution.source]
+
+    return ratapi.ClassList(list(used_custom_files.values()))
+
+
 class FileHandles:
     """Class to defer creation of custom file handles.
 
@@ -206,10 +238,11 @@ def make_problem(project: ratapi.Project, validate_range: bool = False) -> Probl
         contrast_models = [[]] * len(project.contrasts)
 
     # Set contrast parameters according to model type
+    used_custom_files = get_used_custom_files(project)
     if project.model == LayerModels.StandardLayers:
         contrast_custom_files = [float("NaN")] * len(project.contrasts)
     else:
-        contrast_custom_files = [project.custom_files.index(contrast.model[0], True) for contrast in project.contrasts]
+        contrast_custom_files = [used_custom_files.index(contrast.model[0], True) for contrast in project.contrasts]
 
     # Get details of defined layers
     layer_details = get_layer_details(project)
@@ -253,7 +286,7 @@ def make_problem(project: ratapi.Project, validate_range: bool = False) -> Probl
             data = append_data_background(data, project.data[background.source].data)
 
         elif background.type == TypeOptions.Function:
-            contrast_background_param.append(project.custom_files.index(background.source, True))
+            contrast_background_param.append(used_custom_files.index(background.source, True))
             contrast_background_param.extend(
                 [
                     project.background_parameters.index(value, True)
@@ -278,7 +311,7 @@ def make_problem(project: ratapi.Project, validate_range: bool = False) -> Probl
         contrast_resolution_types.append(resolution.type)
         contrast_resolution_param = []
         if resolution.type == TypeOptions.Function:
-            contrast_resolution_param.append(project.custom_files.index(resolution.source, True))
+            contrast_resolution_param.append(used_custom_files.index(resolution.source, True))
             contrast_resolution_param.extend(
                 [
                     project.resolution_parameters.index(value, True)
@@ -334,7 +367,7 @@ def make_problem(project: ratapi.Project, validate_range: bool = False) -> Probl
     problem.numberOfLayers = len(project.layers)
     problem.contrastLayers = [contrast_model if contrast_model else [] for contrast_model in contrast_models]
     problem.layersDetails = layer_details if project.model == LayerModels.StandardLayers else []
-    problem.customFiles = FileHandles(project.custom_files)
+    problem.customFiles = FileHandles(used_custom_files)
     problem.modelType = project.model
     problem.contrastCustomFiles = contrast_custom_files
 

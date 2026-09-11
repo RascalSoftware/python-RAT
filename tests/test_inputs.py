@@ -10,7 +10,7 @@ import pytest
 
 import ratapi
 import ratapi.wrappers
-from ratapi.inputs import FileHandles, check_indices, make_controls, make_input, make_problem
+from ratapi.inputs import FileHandles, check_indices, get_used_custom_files, make_controls, make_input, make_problem
 from ratapi.rat_core import Checks, Control, NameStore, ProblemDefinition
 from ratapi.utils.enums import (
     BackgroundActions,
@@ -464,6 +464,23 @@ def test_make_input(test_project, test_problem, test_controls, request) -> None:
 
     controls = pickle.loads(pickle.dumps(controls))
     check_controls_equal(controls, test_controls)
+
+
+def test_get_used_custom_files(custom_xy_project):
+    """Test unused custom files are removed."""
+
+    used_custom_files = get_used_custom_files(custom_xy_project)
+    assert len(used_custom_files) == len(custom_xy_project.custom_files)
+    assert used_custom_files[0] == custom_xy_project.custom_files[0]
+
+    custom_xy_project.custom_files.append(name="Test Custom File2", filename="matlab_test.m", language="matlab")
+    used_custom_files = get_used_custom_files(custom_xy_project)
+    assert len(used_custom_files) == 1
+    assert used_custom_files[0].name == custom_xy_project.custom_files[0].name
+
+    custom_xy_project.backgrounds.append(name="b2", type="function", source="Test Custom File2")
+    used_custom_files = get_used_custom_files(custom_xy_project)
+    assert len(used_custom_files) == len(custom_xy_project.custom_files)
 
 
 @pytest.mark.parametrize(
