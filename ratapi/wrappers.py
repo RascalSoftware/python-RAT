@@ -51,7 +51,7 @@ class MatlabWrapper:
             raise ImportError(self.loader_error_message) from None
 
         self.engine = self.loader.result()
-        path = pathlib.Path(filename)
+        path = pathlib.Path(filename).resolve()
         self.engine.cd(str(path.parent), nargout=0)
         self.function_name = path.stem
 
