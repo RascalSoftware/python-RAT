@@ -4,6 +4,7 @@ import collections
 import copy
 import functools
 import json
+import sys
 import warnings
 from collections.abc import Callable
 from enum import Enum
@@ -879,7 +880,8 @@ class Project(BaseModel, validate_assignment=True, extra="forbid", use_attribute
                 if not np.any(item.data):  # if array is empty, e.g. in simulation data
                     item_str += "'data': empty([0, 3]), "
                 else:
-                    item_str += f"'data': {repr(item.data)}, "
+                    with np.printoptions(threshold=sys.maxsize):
+                        item_str += f"'data': {repr(item.data)}, "
                 if len(item.data_range) != 0:
                     item_str += f"'data_range': {item.data_range}, "
                 if len(item.simulation_range) != 0:
