@@ -961,9 +961,8 @@ from numpy import array, empty, inf
                         "filename": item.filename,
                         "language": item.language,
                         "path": str(item.path),
+                        "function_name": item.function_name,
                     }
-                    if item.name != item.function_name:
-                        file_dict["function_name"] = item.function_name
 
                     return file_dict
 
