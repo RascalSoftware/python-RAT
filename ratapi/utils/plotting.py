@@ -142,7 +142,8 @@ def plot_ref_sld_helper(
         A value between 0 and 100 that controls the spacing between the reflectivity plots for each of the contrasts
     animated : bool, default: False
         Controls whether the animated property of foreground plot elements should be set.
-
+    align_profile : bool, default: False
+        Controls whether the profiles should be aligned.
     """
     preserve_zoom = False
 
@@ -588,10 +589,9 @@ class BlittingSupport:
 
         offset = 0
         for i in range(len(data.contrastNames)):
-            for _ in range(int(data.dataPresent[i]) + 1):
-                self.figure.axes[0].lines[offset].set_data(plot_data["ref"][i][0], plot_data["ref"][i][1])
-                self.figure.axes[0].draw_artist(self.figure.axes[0].lines[offset])
-                offset += 1
+            self.figure.axes[0].lines[offset].set_data(plot_data["ref"][i][0], plot_data["ref"][i][1])
+            self.figure.axes[0].draw_artist(self.figure.axes[0].lines[offset])
+            offset += 2 if data.dataPresent[i] else 1
 
         i = 0
         for j in range(len(plot_data["sld"])):
